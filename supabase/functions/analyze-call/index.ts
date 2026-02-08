@@ -6,6 +6,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Allowed roles for analysis access
+const ALLOWED_ROLES = ['admin', 'geschaeftsfuehrung', 'teamleiter', 'mitarbeiter'];
+
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const ANALYSIS_TOOL = {
   type: "function",
   function: {
@@ -184,19 +190,96 @@ serve(async (req) => {
   }
 
   try {
-    const { call_id } = await req.json();
-
-    if (!call_id) {
+    // ============================================
+    // AUTHENTICATION: Verify JWT and check roles
+    // ============================================
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      console.error("Missing or invalid Authorization header");
       return new Response(
-        JSON.stringify({ error: "call_id is required" }),
+        JSON.stringify({ error: "Authorization required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Create client with user's token to validate auth
+    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Verify user token
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await userSupabase.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.error("Invalid JWT token:", claimsError);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    console.log("Authenticated user:", userId);
+
+    // Create service client for role check and data operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check user role
+    const { data: roles, error: rolesError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+
+    if (rolesError) {
+      console.error("Error fetching user roles:", rolesError);
+      return new Response(
+        JSON.stringify({ error: "Failed to verify permissions" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userRoles = roles?.map(r => r.role) || [];
+    const hasPermission = userRoles.some(role => ALLOWED_ROLES.includes(role));
+
+    if (!hasPermission) {
+      console.error("User lacks required role. User roles:", userRoles);
+      return new Response(
+        JSON.stringify({ error: "Insufficient permissions. Staff role required." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("User authorized with roles:", userRoles);
+
+    // ============================================
+    // INPUT VALIDATION
+    // ============================================
+    const body = await req.json();
+    const { call_id } = body;
+
+    if (!call_id || typeof call_id !== "string") {
+      return new Response(
+        JSON.stringify({ error: "call_id is required and must be a string" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Validate UUID format
+    if (!UUID_REGEX.test(call_id)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid call_id format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ============================================
+    // BUSINESS LOGIC
+    // ============================================
 
     // Fetch call and transcript
     const { data: call, error: callError } = await supabase
@@ -323,7 +406,7 @@ Führe eine vollständige Analyse durch und liefere die Ergebnisse über die sub
       .update({ status: "analyzed" })
       .eq("id", call_id);
 
-    console.log("Analysis stored successfully:", analysis.id);
+    console.log("Analysis stored successfully:", analysis.id, "by user:", userId);
 
     return new Response(
       JSON.stringify({ success: true, analysis_id: analysis.id }),
@@ -332,7 +415,7 @@ Führe eine vollständige Analyse durch und liefere die Ergebnisse über die sub
   } catch (error) {
     console.error("analyze-call error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "An error occurred processing your request" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
