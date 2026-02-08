@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/app/Dashboard";
 import CRM from "./pages/app/CRM";
 import Leads from "./pages/app/Leads";
+import Pipeline from "./pages/app/Pipeline";
 import Customers from "./pages/app/Customers";
 import Tasks from "./pages/app/Tasks";
 import Courses from "./pages/app/Courses";
@@ -57,6 +58,11 @@ const App = () => (
               <Route path="leads" element={
                 <ProtectedRoute requireMinRole="mitarbeiter">
                   <Leads />
+                </ProtectedRoute>
+              } />
+              <Route path="pipeline" element={
+                <ProtectedRoute requireMinRole="mitarbeiter">
+                  <Pipeline />
                 </ProtectedRoute>
               } />
               <Route path="customers" element={

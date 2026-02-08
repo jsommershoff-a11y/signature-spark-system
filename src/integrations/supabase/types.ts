@@ -53,6 +53,165 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_leads: {
+        Row: {
+          company: string | null
+          created_at: string
+          dedupe_key: string | null
+          discovered_by:
+            | Database["public"]["Enums"]["lead_discovered_by"]
+            | null
+          email: string
+          enrichment_json: Json | null
+          first_name: string
+          icp_fit_reason: Json | null
+          icp_fit_score: number | null
+          id: string
+          industry: string | null
+          last_name: string | null
+          location: string | null
+          notes: string | null
+          owner_user_id: string | null
+          phone: string | null
+          source_confidence_score: number | null
+          source_detail: string | null
+          source_priority_weight: number | null
+          source_type: Database["public"]["Enums"]["lead_source_type"]
+          status: Database["public"]["Enums"]["lead_status"] | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          discovered_by?:
+            | Database["public"]["Enums"]["lead_discovered_by"]
+            | null
+          email: string
+          enrichment_json?: Json | null
+          first_name: string
+          icp_fit_reason?: Json | null
+          icp_fit_score?: number | null
+          id?: string
+          industry?: string | null
+          last_name?: string | null
+          location?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          phone?: string | null
+          source_confidence_score?: number | null
+          source_detail?: string | null
+          source_priority_weight?: number | null
+          source_type: Database["public"]["Enums"]["lead_source_type"]
+          status?: Database["public"]["Enums"]["lead_status"] | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          discovered_by?:
+            | Database["public"]["Enums"]["lead_discovered_by"]
+            | null
+          email?: string
+          enrichment_json?: Json | null
+          first_name?: string
+          icp_fit_reason?: Json | null
+          icp_fit_score?: number | null
+          id?: string
+          industry?: string | null
+          last_name?: string | null
+          location?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          phone?: string | null
+          source_confidence_score?: number | null
+          source_detail?: string | null
+          source_priority_weight?: number | null
+          source_type?: Database["public"]["Enums"]["lead_source_type"]
+          status?: Database["public"]["Enums"]["lead_status"] | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_tasks: {
+        Row: {
+          assigned_user_id: string
+          created_at: string
+          description: string | null
+          due_at: string | null
+          id: string
+          lead_id: string | null
+          member_id: string | null
+          meta: Json | null
+          status: Database["public"]["Enums"]["task_status"] | null
+          title: string
+          type: Database["public"]["Enums"]["task_type"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_user_id: string
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          lead_id?: string | null
+          member_id?: string | null
+          meta?: Json | null
+          status?: Database["public"]["Enums"]["task_status"] | null
+          title: string
+          type: Database["public"]["Enums"]["task_type"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_user_id?: string
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          lead_id?: string | null
+          member_id?: string | null
+          meta?: Json | null
+          status?: Database["public"]["Enums"]["task_status"] | null
+          title?: string
+          type?: Database["public"]["Enums"]["task_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_assigned_user_id_fkey"
+            columns: ["assigned_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -116,6 +275,50 @@ export type Database = {
         }
         Relationships: []
       }
+      pipeline_items: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          pipeline_priority_score: number | null
+          purchase_readiness: number | null
+          stage: Database["public"]["Enums"]["pipeline_stage"] | null
+          stage_updated_at: string | null
+          updated_at: string
+          urgency: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          pipeline_priority_score?: number | null
+          purchase_readiness?: number | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"] | null
+          stage_updated_at?: string | null
+          updated_at?: string
+          urgency?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          pipeline_priority_score?: number | null
+          purchase_readiness?: number | null
+          stage?: Database["public"]["Enums"]["pipeline_stage"] | null
+          stage_updated_at?: string | null
+          updated_at?: string
+          urgency?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_items_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: true
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           assigned_to: string | null
@@ -128,6 +331,7 @@ export type Database = {
           id: string
           last_name: string | null
           phone: string | null
+          team_id: string | null
           updated_at: string
           user_id: string
         }
@@ -142,6 +346,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           phone?: string | null
+          team_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -156,6 +361,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           phone?: string | null
+          team_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -163,6 +369,13 @@ export type Database = {
           {
             foreignKeyName: "profiles_assigned_to_fkey"
             columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_team_id_fkey"
+            columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -195,6 +408,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_pipeline_priority: {
+        Args: {
+          _icp_score: number
+          _purchase_readiness: number
+          _source_weight: number
+          _urgency: number
+        }
+        Returns: number
+      }
+      get_team_member_ids: { Args: { _user_id: string }; Returns: string[] }
+      get_user_profile_id: { Args: { _user_id: string }; Returns: string }
       has_min_role: {
         Args: {
           _min_role: Database["public"]["Enums"]["app_role"]
@@ -220,6 +444,27 @@ export type Database = {
         | "teamleiter"
         | "geschaeftsfuehrung"
       application_status: "pending" | "reviewing" | "accepted" | "rejected"
+      lead_discovered_by: "daily_ai" | "manual" | "inbound"
+      lead_source_type:
+        | "inbound_paid"
+        | "inbound_organic"
+        | "referral"
+        | "outbound_ai"
+        | "outbound_manual"
+        | "partner"
+      lead_status: "new" | "qualified" | "unqualified"
+      pipeline_stage:
+        | "new_lead"
+        | "setter_call_scheduled"
+        | "setter_call_done"
+        | "analysis_ready"
+        | "offer_draft"
+        | "offer_sent"
+        | "payment_unlocked"
+        | "won"
+        | "lost"
+      task_status: "open" | "done" | "blocked"
+      task_type: "call" | "followup" | "review_offer" | "intervention"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -357,6 +602,29 @@ export const Constants = {
         "geschaeftsfuehrung",
       ],
       application_status: ["pending", "reviewing", "accepted", "rejected"],
+      lead_discovered_by: ["daily_ai", "manual", "inbound"],
+      lead_source_type: [
+        "inbound_paid",
+        "inbound_organic",
+        "referral",
+        "outbound_ai",
+        "outbound_manual",
+        "partner",
+      ],
+      lead_status: ["new", "qualified", "unqualified"],
+      pipeline_stage: [
+        "new_lead",
+        "setter_call_scheduled",
+        "setter_call_done",
+        "analysis_ready",
+        "offer_draft",
+        "offer_sent",
+        "payment_unlocked",
+        "won",
+        "lost",
+      ],
+      task_status: ["open", "done", "blocked"],
+      task_type: ["call", "followup", "review_offer", "intervention"],
     },
   },
 } as const
