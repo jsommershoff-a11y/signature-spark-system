@@ -1,10 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
+
+// Input validation schema
+const inputSchema = z.object({
+  lead_id: z.string().uuid('Invalid lead_id format'),
+  trigger_event: z.string().max(100).optional(),
+});
 
 // Generate AI-powered followup plan based on lead context
 serve(async (req) => {
@@ -16,18 +23,77 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const cronSecret = Deno.env.get('CRON_SECRET');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { lead_id, trigger_event } = await req.json();
+    // Verify authorization
+    const cronHeader = req.headers.get('x-cron-secret');
+    const authHeader = req.headers.get('Authorization');
+    
+    let isAuthorized = false;
+    
+    // Check cron secret first (for automated triggers)
+    if (cronSecret && cronHeader === cronSecret) {
+      isAuthorized = true;
+      console.log('Authorized via cron secret');
+    }
+    // Check user authentication
+    else if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      const anonClient = createClient(
+        supabaseUrl,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      
+      const { data: claims, error: authError } = await anonClient.auth.getUser(token);
+      
+      if (!authError && claims?.user) {
+        // Check if user has staff role
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', claims.user.id)
+          .in('role', ['admin', 'geschaeftsfuehrung', 'teamleiter', 'mitarbeiter']);
+        
+        if (roles && roles.length > 0) {
+          isAuthorized = true;
+          console.log('Authorized via user token:', claims.user.id);
+        }
+      }
+    }
 
-    if (!lead_id) {
+    if (!isAuthorized) {
+      console.error('Unauthorized request');
       return new Response(
-        JSON.stringify({ error: 'lead_id is required' }),
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse and validate input
+    let rawInput: unknown;
+    try {
+      rawInput = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON payload' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Generating followup plan for lead ${lead_id}, trigger: ${trigger_event}`);
+    const parseResult = inputSchema.safeParse(rawInput);
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.message);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input: ' + parseResult.error.issues[0]?.message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { lead_id, trigger_event } = parseResult.data;
+
+    console.log(`Generating followup plan for lead ${lead_id}, trigger: ${trigger_event || 'manual'}`);
 
     // 1. Load lead with all context
     const { data: lead, error: leadError } = await supabase
@@ -44,7 +110,13 @@ serve(async (req) => {
       .eq('id', lead_id)
       .single();
 
-    if (leadError) throw leadError;
+    if (leadError || !lead) {
+      console.error('Lead not found:', lead_id);
+      return new Response(
+        JSON.stringify({ error: 'Lead not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // 2. Load call history
     const { data: calls } = await supabase
@@ -75,12 +147,12 @@ serve(async (req) => {
       .order('created_at', { ascending: false })
       .limit(3);
 
-    // 4. Build context for AI
+    // 4. Build context for AI (sanitize sensitive data)
     const context = {
       lead: {
-        name: `${lead.first_name} ${lead.last_name || ''}`,
-        company: lead.company,
-        industry: lead.industry,
+        name: `${lead.first_name || ''} ${lead.last_name || ''}`.trim().slice(0, 100),
+        company: lead.company?.slice(0, 100),
+        industry: lead.industry?.slice(0, 50),
         source: lead.source_type,
         icp_score: lead.icp_fit_score,
       },
@@ -88,14 +160,14 @@ serve(async (req) => {
       recentCalls: calls?.map(c => ({
         date: c.started_at || c.scheduled_at,
         status: c.status,
-        notes: c.notes,
+        notes: c.notes?.slice(0, 200),
         analysis: c.ai_analyses?.[0],
       })),
       offers: offers?.map(o => ({
         status: o.status,
         date: o.created_at,
       })),
-      triggerEvent: trigger_event,
+      triggerEvent: trigger_event?.slice(0, 100),
     };
 
     // 5. Generate plan using AI (or fallback to template)
@@ -163,7 +235,7 @@ Antworte NUR mit validem JSON in diesem Format:
       .from('followup_plans')
       .insert({
         lead_id,
-        triggered_by: trigger_event || 'manual',
+        triggered_by: trigger_event?.slice(0, 100) || 'manual',
         status: 'pending',
         plan_json: planContent,
       })
@@ -173,12 +245,13 @@ Antworte NUR mit validem JSON in diesem Format:
     if (planError) throw planError;
 
     // 7. Create followup steps
-    const steps = planContent.steps || [];
+    const steps = (planContent.steps || []).slice(0, 10); // Max 10 steps
     let stepOrder = 1;
     let cumulativeDelay = 0;
 
     for (const step of steps) {
-      cumulativeDelay += step.delay_hours || 0;
+      const delayHours = Math.max(0, Math.min(step.delay_hours || 0, 720)); // Max 30 days
+      cumulativeDelay += delayHours;
       const scheduledAt = new Date(Date.now() + cumulativeDelay * 60 * 60 * 1000);
 
       await supabase
@@ -186,9 +259,13 @@ Antworte NUR mit validem JSON in diesem Format:
         .insert({
           plan_id: plan.id,
           step_order: stepOrder,
-          step_type: step.type || 'task',
+          step_type: validateStepType(step.type),
           scheduled_at: scheduledAt.toISOString(),
-          content_json: step,
+          content_json: {
+            type: step.type,
+            content: (step.content || '').slice(0, 500),
+            delay_hours: delayHours,
+          },
           status: 'pending',
         });
 
@@ -209,7 +286,7 @@ Antworte NUR mit validem JSON in diesem Format:
   } catch (error) {
     console.error('Generate followup plan error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -217,6 +294,14 @@ Antworte NUR mit validem JSON in diesem Format:
     );
   }
 });
+
+function validateStepType(type: unknown): string {
+  const validTypes = ['email', 'whatsapp', 'call', 'task'];
+  if (typeof type === 'string' && validTypes.includes(type)) {
+    return type;
+  }
+  return 'task';
+}
 
 function generateTemplatePlan(context: Record<string, unknown>): Record<string, unknown> {
   const pipeline = context.pipeline as { stage?: string; purchase_readiness?: number } | undefined;

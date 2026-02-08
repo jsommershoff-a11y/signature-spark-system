@@ -3,10 +3,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
 
 // Daily recalculation of customer avatar (PCA) based on closed customers
+// This is an expensive AI operation - requires authentication
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -16,7 +17,53 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const cronSecret = Deno.env.get('CRON_SECRET');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify authorization - either cron secret or authenticated admin user
+    const cronHeader = req.headers.get('x-cron-secret');
+    const authHeader = req.headers.get('Authorization');
+    
+    let isAuthorized = false;
+    
+    // Check cron secret first (for scheduled jobs)
+    if (cronSecret && cronHeader === cronSecret) {
+      isAuthorized = true;
+      console.log('Authorized via cron secret');
+    }
+    // Check user authentication (for manual triggers - admin/GF only)
+    else if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      const anonClient = createClient(
+        supabaseUrl,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      
+      const { data: claims, error: authError } = await anonClient.auth.getUser(token);
+      
+      if (!authError && claims?.user) {
+        // Only admin/geschaeftsfuehrung can trigger expensive AI operations
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', claims.user.id)
+          .in('role', ['admin', 'geschaeftsfuehrung']);
+        
+        if (roles && roles.length > 0) {
+          isAuthorized = true;
+          console.log('Authorized via user token:', claims.user.id);
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      console.error('Unauthorized request');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const today = new Date().toISOString().split('T')[0];
     console.log(`Starting avatar daily recalc for ${today}`);
@@ -81,41 +128,57 @@ serve(async (req) => {
         };
       };
       
-      // Industry
-      if (data.lead?.industry) {
-        aggregatedData.industries[data.lead.industry] = 
-          (aggregatedData.industries[data.lead.industry] || 0) + 1;
+      // Industry (sanitize and limit)
+      if (data.lead?.industry && typeof data.lead.industry === 'string') {
+        const industry = data.lead.industry.slice(0, 50);
+        aggregatedData.industries[industry] = 
+          (aggregatedData.industries[industry] || 0) + 1;
       }
 
       // Source
-      if (data.lead?.source_type) {
-        aggregatedData.sources[data.lead.source_type] = 
-          (aggregatedData.sources[data.lead.source_type] || 0) + 1;
+      if (data.lead?.source_type && typeof data.lead.source_type === 'string') {
+        const source = data.lead.source_type.slice(0, 50);
+        aggregatedData.sources[source] = 
+          (aggregatedData.sources[source] || 0) + 1;
       }
 
-      // ICP Score
-      if (data.lead?.icp_fit_score) {
+      // ICP Score (validate bounds)
+      if (typeof data.lead?.icp_fit_score === 'number' && 
+          data.lead.icp_fit_score >= 0 && data.lead.icp_fit_score <= 100) {
         totalIcp += data.lead.icp_fit_score;
       }
 
-      // Purchase Readiness
-      if (data.analysis?.purchase_readiness) {
+      // Purchase Readiness (validate bounds)
+      if (typeof data.analysis?.purchase_readiness === 'number' &&
+          data.analysis.purchase_readiness >= 0 && data.analysis.purchase_readiness <= 100) {
         totalReadiness += data.analysis.purchase_readiness;
       }
 
-      // Pain Points from ICP fit reason
-      if (data.lead?.icp_fit_reason?.pain_points) {
-        aggregatedData.painPoints.push(...data.lead.icp_fit_reason.pain_points);
+      // Pain Points from ICP fit reason (limit array size)
+      if (Array.isArray(data.lead?.icp_fit_reason?.pain_points)) {
+        const points = data.lead.icp_fit_reason.pain_points
+          .filter((p): p is string => typeof p === 'string')
+          .slice(0, 10)
+          .map(p => p.slice(0, 100));
+        aggregatedData.painPoints.push(...points);
       }
 
       // Objections
-      if (data.lead?.icp_fit_reason?.objections) {
-        aggregatedData.objections.push(...data.lead.icp_fit_reason.objections);
+      if (Array.isArray(data.lead?.icp_fit_reason?.objections)) {
+        const objections = data.lead.icp_fit_reason.objections
+          .filter((o): o is string => typeof o === 'string')
+          .slice(0, 10)
+          .map(o => o.slice(0, 100));
+        aggregatedData.objections.push(...objections);
       }
     }
 
     aggregatedData.avgIcpScore = Math.round(totalIcp / snapshots.length);
     aggregatedData.avgPurchaseReadiness = Math.round(totalReadiness / snapshots.length);
+
+    // Limit aggregated arrays
+    aggregatedData.painPoints = [...new Set(aggregatedData.painPoints)].slice(0, 20);
+    aggregatedData.objections = [...new Set(aggregatedData.objections)].slice(0, 20);
 
     // 4. Generate avatar using AI or template
     let avatarJson;
@@ -247,7 +310,7 @@ Antworte NUR mit validem JSON in diesem Format:
   } catch (error) {
     console.error('Avatar daily recalc error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

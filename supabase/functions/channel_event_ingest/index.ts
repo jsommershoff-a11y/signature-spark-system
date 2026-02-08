@@ -1,10 +1,31 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-api-key',
 };
+
+// Allowed channel and event types (whitelist)
+const VALID_CHANNELS = ['email', 'whatsapp', 'phone'] as const;
+const VALID_EVENT_TYPES = {
+  email: ['opened', 'clicked', 'bounced', 'delivered', 'unsubscribed'],
+  whatsapp: ['replied', 'read', 'delivered', 'failed'],
+  phone: ['missed', 'voicemail', 'answered', 'failed'],
+} as const;
+
+// Input validation schema
+const inputSchema = z.object({
+  channel: z.enum(VALID_CHANNELS),
+  event_type: z.string().min(1).max(50),
+  lead_id: z.string().uuid().optional(),
+  lead_email: z.string().email().max(255).optional(),
+  payload: z.record(z.unknown()).optional(),
+}).refine(
+  data => data.lead_id || data.lead_email,
+  { message: 'Either lead_id or lead_email is required' }
+);
 
 // Ingest channel events (email, whatsapp, phone) for lead activity tracking
 serve(async (req) => {
@@ -15,22 +36,91 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const apiKey = Deno.env.get('CHANNEL_INGEST_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { channel, event_type, lead_id, lead_email, payload } = await req.json();
+    // Verify authorization via API key or user auth
+    const requestApiKey = req.headers.get('x-api-key');
+    const authHeader = req.headers.get('Authorization');
+    
+    let isAuthorized = false;
+    
+    // Check API key first (for external integrations)
+    if (apiKey && requestApiKey === apiKey) {
+      isAuthorized = true;
+      console.log('Authorized via API key');
+    }
+    // Check user authentication
+    else if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      const anonClient = createClient(
+        supabaseUrl,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      
+      const { data: claims, error: authError } = await anonClient.auth.getUser(token);
+      
+      if (!authError && claims?.user) {
+        // Check if user has staff role
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', claims.user.id)
+          .in('role', ['admin', 'geschaeftsfuehrung', 'teamleiter', 'mitarbeiter']);
+        
+        if (roles && roles.length > 0) {
+          isAuthorized = true;
+          console.log('Authorized via user token:', claims.user.id);
+        }
+      }
+    }
 
-    console.log(`Channel event: ${channel}/${event_type} for ${lead_id || lead_email}`);
-
-    // Validate required fields
-    if (!channel || !event_type) {
+    if (!isAuthorized) {
+      console.error('Unauthorized request');
       return new Response(
-        JSON.stringify({ error: 'channel and event_type are required' }),
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse and validate input
+    let rawInput: unknown;
+    try {
+      rawInput = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON payload' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    const parseResult = inputSchema.safeParse(rawInput);
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.message);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input: ' + parseResult.error.issues[0]?.message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { channel, event_type, lead_id, lead_email, payload } = parseResult.data;
+
+    // Validate event_type against whitelist for the channel
+    const validEvents = VALID_EVENT_TYPES[channel];
+    if (!validEvents.includes(event_type as typeof validEvents[number])) {
+      console.error(`Invalid event_type '${event_type}' for channel '${channel}'`);
+      return new Response(
+        JSON.stringify({ error: `Invalid event_type for channel ${channel}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Channel event: ${channel}/${event_type} for ${lead_id || lead_email}`);
+
     // Find lead by ID or email
-    let lead;
+    let lead: { id: string; owner_user_id?: string } | null = null;
+    
     if (lead_id) {
       const { data } = await supabase
         .from('crm_leads')
@@ -58,27 +148,38 @@ serve(async (req) => {
       );
     }
 
+    // Sanitize payload for storage
+    const sanitizedPayload: Record<string, unknown> = {};
+    if (payload) {
+      for (const [key, value] of Object.entries(payload)) {
+        if (typeof key === 'string' && key.length <= 50) {
+          if (typeof value === 'string') {
+            sanitizedPayload[key] = value.slice(0, 500);
+          } else if (typeof value === 'number' || typeof value === 'boolean') {
+            sanitizedPayload[key] = value;
+          }
+        }
+      }
+    }
+
     // Process based on channel and event type
     let actionTaken = 'logged';
 
     switch (channel) {
       case 'email':
-        await processEmailEvent(supabase, lead, event_type, payload);
-        actionTaken = event_type === 'opened' ? 'updated_urgency' : 'logged';
+        await processEmailEvent(supabase, lead, event_type, sanitizedPayload);
+        actionTaken = event_type === 'opened' || event_type === 'clicked' ? 'updated_urgency' : 'logged';
         break;
 
       case 'whatsapp':
-        await processWhatsAppEvent(supabase, lead, event_type, payload);
+        await processWhatsAppEvent(supabase, lead, event_type, sanitizedPayload);
         actionTaken = event_type === 'replied' ? 'created_task' : 'logged';
         break;
 
       case 'phone':
-        await processPhoneEvent(supabase, lead, event_type, payload);
+        await processPhoneEvent(supabase, lead, event_type, sanitizedPayload);
         actionTaken = 'logged_call';
         break;
-
-      default:
-        console.log(`Unknown channel: ${channel}`);
     }
 
     // Check if we should trigger a followup plan
@@ -99,7 +200,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Channel event ingest error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -121,12 +222,8 @@ async function processEmailEvent(
       await supabase
         .from('pipeline_items')
         .update({
-          urgency: supabase.rpc('calculate_pipeline_priority', {
-            _icp_score: 50,
-            _source_weight: 1,
-            _purchase_readiness: 60,
-            _urgency: 80,
-          }),
+          urgency: 80,
+          updated_at: new Date().toISOString(),
         })
         .eq('lead_id', lead.id);
       break;
@@ -139,10 +236,14 @@ async function processEmailEvent(
         .eq('id', lead.id)
         .single();
 
+      const existingNotes = currentLead?.notes || '';
+      const emailInfo = typeof payload?.email === 'string' ? payload.email.slice(0, 100) : 'Unknown';
+      
       await supabase
         .from('crm_leads')
         .update({
-          notes: `${currentLead?.notes || ''}\n[${new Date().toISOString()}] E-Mail bounced: ${payload?.email || 'Unknown'}`,
+          notes: `${existingNotes}\n[${new Date().toISOString()}] E-Mail bounced: ${emailInfo}`.slice(0, 5000),
+          updated_at: new Date().toISOString(),
         })
         .eq('id', lead.id);
       break;
@@ -159,6 +260,10 @@ async function processWhatsAppEvent(
     case 'replied':
       // Create urgent task
       if (lead.owner_user_id) {
+        const message = typeof payload?.message === 'string' 
+          ? payload.message.slice(0, 200) 
+          : 'Nachricht prüfen';
+        
         await supabase
           .from('crm_tasks')
           .insert({
@@ -166,7 +271,7 @@ async function processWhatsAppEvent(
             lead_id: lead.id,
             type: 'followup',
             title: 'WhatsApp-Antwort bearbeiten',
-            description: `Lead hat auf WhatsApp geantwortet: ${payload?.message || 'Nachricht prüfen'}`,
+            description: `Lead hat auf WhatsApp geantwortet: ${message}`,
             status: 'open',
             due_at: new Date().toISOString(), // Immediate
           });
@@ -177,7 +282,10 @@ async function processWhatsAppEvent(
       // Update urgency
       await supabase
         .from('pipeline_items')
-        .update({ urgency: 70 })
+        .update({ 
+          urgency: 70,
+          updated_at: new Date().toISOString(),
+        })
         .eq('lead_id', lead.id);
       break;
   }
@@ -187,7 +295,7 @@ async function processPhoneEvent(
   supabase: ReturnType<typeof createClient>,
   lead: { id: string; owner_user_id?: string },
   eventType: string,
-  payload: Record<string, unknown>
+  _payload: Record<string, unknown>
 ) {
   // Log call events
   if (eventType === 'missed' || eventType === 'voicemail') {
@@ -234,7 +342,6 @@ async function checkFollowupTrigger(
 
     if (!existingPlan) {
       // Trigger new followup plan generation via Edge Function
-      // This would typically be done via n8n webhook, but we can call directly
       console.log(`Would trigger followup plan for lead ${leadId}`);
       return true;
     }
