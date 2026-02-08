@@ -118,30 +118,56 @@ export type Database = {
       }
       profiles: {
         Row: {
+          assigned_to: string | null
           avatar_url: string | null
+          company: string | null
           created_at: string
+          email: string | null
+          first_name: string | null
           full_name: string | null
           id: string
+          last_name: string | null
+          phone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          assigned_to?: string | null
           avatar_url?: string | null
+          company?: string | null
           created_at?: string
+          email?: string | null
+          first_name?: string | null
           full_name?: string | null
           id?: string
+          last_name?: string | null
+          phone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          assigned_to?: string | null
           avatar_url?: string | null
+          company?: string | null
           created_at?: string
+          email?: string | null
+          first_name?: string | null
           full_name?: string | null
           id?: string
+          last_name?: string | null
+          phone?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -169,6 +195,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_min_role: {
+        Args: {
+          _min_role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -178,7 +211,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "kunde"
+        | "mitarbeiter"
+        | "teamleiter"
+        | "geschaeftsfuehrung"
       application_status: "pending" | "reviewing" | "accepted" | "rejected"
     }
     CompositeTypes: {
@@ -307,7 +347,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "kunde",
+        "mitarbeiter",
+        "teamleiter",
+        "geschaeftsfuehrung",
+      ],
       application_status: ["pending", "reviewing", "accepted", "rejected"],
     },
   },
