@@ -414,6 +414,190 @@ export type Database = {
         }
         Relationships: []
       }
+      offers: {
+        Row: {
+          analysis_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          lead_id: string
+          notes: string | null
+          offer_json: Json
+          payment_unlocked: boolean
+          payment_unlocked_at: string | null
+          payment_unlocked_by: string | null
+          public_token: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["offer_status"]
+          updated_at: string
+          version: number
+          viewed_at: string | null
+        }
+        Insert: {
+          analysis_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          lead_id: string
+          notes?: string | null
+          offer_json?: Json
+          payment_unlocked?: boolean
+          payment_unlocked_at?: string | null
+          payment_unlocked_by?: string | null
+          public_token?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["offer_status"]
+          updated_at?: string
+          version?: number
+          viewed_at?: string | null
+        }
+        Update: {
+          analysis_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          offer_json?: Json
+          payment_unlocked?: boolean
+          payment_unlocked_at?: string | null
+          payment_unlocked_by?: string | null
+          public_token?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["offer_status"]
+          updated_at?: string
+          version?: number
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "ai_analyses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_payment_unlocked_by_fkey"
+            columns: ["payment_unlocked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          error_message: string | null
+          failed_at: string | null
+          id: string
+          lead_id: string
+          member_id: string | null
+          metadata: Json | null
+          offer_id: string | null
+          paid_at: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_customer_id: string | null
+          provider_order_id: string | null
+          refunded_at: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          lead_id: string
+          member_id?: string | null
+          metadata?: Json | null
+          offer_id?: string | null
+          paid_at?: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_customer_id?: string | null
+          provider_order_id?: string | null
+          refunded_at?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          lead_id?: string
+          member_id?: string | null
+          metadata?: Json | null
+          offer_id?: string | null
+          paid_at?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_customer_id?: string | null
+          provider_order_id?: string | null
+          refunded_at?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipeline_items: {
         Row: {
           created_at: string
@@ -655,6 +839,15 @@ export type Database = {
         | "outbound_manual"
         | "partner"
       lead_status: "new" | "qualified" | "unqualified"
+      offer_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "sent"
+        | "viewed"
+        | "expired"
+      order_status: "pending" | "paid" | "failed" | "refunded" | "cancelled"
+      payment_provider: "stripe" | "copecart" | "bank_transfer" | "manual"
       pipeline_stage:
         | "new_lead"
         | "setter_call_scheduled"
@@ -827,6 +1020,16 @@ export const Constants = {
         "partner",
       ],
       lead_status: ["new", "qualified", "unqualified"],
+      offer_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "sent",
+        "viewed",
+        "expired",
+      ],
+      order_status: ["pending", "paid", "failed", "refunded", "cancelled"],
+      payment_provider: ["stripe", "copecart", "bank_transfer", "manual"],
       pipeline_stage: [
         "new_lead",
         "setter_call_scheduled",

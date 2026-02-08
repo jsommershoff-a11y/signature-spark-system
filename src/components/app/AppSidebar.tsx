@@ -13,6 +13,7 @@ import {
   Building2,
   Kanban,
   Phone,
+  FileText,
 } from 'lucide-react';
 
 interface NavItem {
@@ -57,6 +58,12 @@ const navItems: NavItem[] = [
     label: 'Calls', 
     href: '/app/calls', 
     icon: Phone,
+    minRole: 'mitarbeiter'
+  },
+  { 
+    label: 'Angebote', 
+    href: '/app/offers', 
+    icon: FileText,
     minRole: 'mitarbeiter'
   },
   {
