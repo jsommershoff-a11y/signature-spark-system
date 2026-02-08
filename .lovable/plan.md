@@ -1,38 +1,68 @@
 
-# Logo-Integration im Header
 
-## Ziel
-Ersetzen des Text-Platzhalters im Header durch das offizielle KRS Signature Logo mit dem markanten Säulen-Icon.
+# Vollständige Projektfertigstellung
 
-## Logo-Auswahl
-Ich werde die **erste Logo-Variante** (weißer Hintergrund, dunkles Icon mit orangem Akzent) verwenden, da diese am besten zum hellen Header passt.
+## 1. Logo-Wechsel (Sofort)
 
-## Umsetzung
+### Änderung
+- Aktuelles Logo löschen und durch **Logo 2 (Orange/Gold)** ersetzen
+- Datei: `src/assets/logo-signature.png` wird überschrieben
 
-### 1. Logo-Datei kopieren
-- Speichern des Logos nach `src/assets/logo-signature.png`
-- Verwendung der Version auf weißem Hintergrund
+---
 
-### 2. Header-Komponente aktualisieren
-- Import des Logo-Bildes als ES6-Modul
-- Ersetzen des Platzhalter-Divs durch ein `<img>`-Tag
-- Logo-Größe: ca. 40-48px Höhe für optimale Header-Darstellung
-- Beibehalten des "KRS Signature" Textlabels neben dem Icon für bessere Lesbarkeit
+## 2. Screenshots Mitgliederbereich
 
-### Vorher/Nachher
+### Was ich brauche
+- Screenshots von deiner Signature System Plattform (Skool, Memberspot, etc.)
+- Idealerweise: Dashboard-Übersicht, Kursbereich, Community-Bereich
 
-```text
-VORHER:
-+---------------------------+
-| [K-Box] KRS Signature     |
-+---------------------------+
+### Wo sie eingesetzt werden
+- **Plattform-Proof Sektion** auf `/start` und `/growth`
+- Aktuell sind dort graue Platzhalter-Boxen
 
-NACHHER:
-+---------------------------+
-| [Logo-Icon] KRS Signature |
-+---------------------------+
-```
+---
 
-### Betroffene Dateien
-- `src/assets/logo-signature.png` (neu)
-- `src/components/landing/Header.tsx` (aktualisiert)
+## 3. Texte anpassen
+
+### Bitte teile mir mit
+- Welche Headlines/Texte sollen geändert werden?
+- Auf welcher Seite? (`/`, `/start`, `/growth`)
+- Neuer gewünschter Text
+
+---
+
+## 4. Weitere Fotos/Bilder
+
+### Mögliche Einsatzorte
+- Hero-Bereich (Hintergrundbild oder weiteres Portrait)
+- Testimonial-Sektion (falls gewünscht)
+- Zusätzliche Fotos für verschiedene Sektionen
+
+### Was ich brauche
+- Weitere Fotos, die du nutzen möchtest
+- Info wo sie erscheinen sollen
+
+---
+
+## 5. Kontaktformular testen
+
+### Aktueller Stand
+- Formular ist technisch implementiert
+- Speichert in Supabase-Tabelle `leads`
+
+### Test durchführen
+Nach dem Logo-Wechsel solltest du:
+1. Auf `/start` oder `/growth` gehen
+2. "Kostenloses Klarheitsgespräch sichern" klicken
+3. Testdaten eingeben und absenden
+4. Mir bestätigen ob es funktioniert hat
+
+---
+
+## Nächste Schritte
+
+1. **Jetzt**: Logo 2 (Orange) einfügen
+2. **Du**: Screenshots und Textkorrekturen liefern
+3. **Du**: Kontaktformular testen
+4. **Ich**: Finale Anpassungen umsetzen
+
