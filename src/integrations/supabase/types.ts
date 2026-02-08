@@ -14,6 +14,70 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_analyses: {
+        Row: {
+          analysis_json: Json
+          call_id: string
+          created_at: string
+          id: string
+          lead_id: string | null
+          model_version: string | null
+          primary_type: Database["public"]["Enums"]["structogram_type"] | null
+          purchase_readiness: number | null
+          secondary_type: Database["public"]["Enums"]["structogram_type"] | null
+          status: string | null
+          success_probability: number | null
+          updated_at: string
+        }
+        Insert: {
+          analysis_json: Json
+          call_id: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          model_version?: string | null
+          primary_type?: Database["public"]["Enums"]["structogram_type"] | null
+          purchase_readiness?: number | null
+          secondary_type?:
+            | Database["public"]["Enums"]["structogram_type"]
+            | null
+          status?: string | null
+          success_probability?: number | null
+          updated_at?: string
+        }
+        Update: {
+          analysis_json?: Json
+          call_id?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          model_version?: string | null
+          primary_type?: Database["public"]["Enums"]["structogram_type"] | null
+          purchase_readiness?: number | null
+          secondary_type?:
+            | Database["public"]["Enums"]["structogram_type"]
+            | null
+          status?: string | null
+          success_probability?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analyses_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_analyses_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           created_at: string
@@ -52,6 +116,81 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      calls: {
+        Row: {
+          call_type: Database["public"]["Enums"]["call_type"] | null
+          conducted_by: string | null
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          external_id: string | null
+          id: string
+          lead_id: string
+          meta: Json | null
+          notes: string | null
+          provider: Database["public"]["Enums"]["call_provider"] | null
+          recording_url: string | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["call_status"] | null
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          call_type?: Database["public"]["Enums"]["call_type"] | null
+          conducted_by?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          external_id?: string | null
+          id?: string
+          lead_id: string
+          meta?: Json | null
+          notes?: string | null
+          provider?: Database["public"]["Enums"]["call_provider"] | null
+          recording_url?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["call_status"] | null
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          call_type?: Database["public"]["Enums"]["call_type"] | null
+          conducted_by?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          external_id?: string | null
+          id?: string
+          lead_id?: string
+          meta?: Json | null
+          notes?: string | null
+          provider?: Database["public"]["Enums"]["call_provider"] | null
+          recording_url?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["call_status"] | null
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calls_conducted_by_fkey"
+            columns: ["conducted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calls_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_leads: {
         Row: {
@@ -382,6 +521,59 @@ export type Database = {
           },
         ]
       }
+      transcripts: {
+        Row: {
+          call_id: string
+          confidence_score: number | null
+          created_at: string
+          error_message: string | null
+          id: string
+          language: string | null
+          provider: string | null
+          segments: Json | null
+          status: Database["public"]["Enums"]["transcript_status"] | null
+          text: string | null
+          updated_at: string
+          word_count: number | null
+        }
+        Insert: {
+          call_id: string
+          confidence_score?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          language?: string | null
+          provider?: string | null
+          segments?: Json | null
+          status?: Database["public"]["Enums"]["transcript_status"] | null
+          text?: string | null
+          updated_at?: string
+          word_count?: number | null
+        }
+        Update: {
+          call_id?: string
+          confidence_score?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          language?: string | null
+          provider?: string | null
+          segments?: Json | null
+          status?: Database["public"]["Enums"]["transcript_status"] | null
+          text?: string | null
+          updated_at?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcripts_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -444,6 +636,16 @@ export type Database = {
         | "teamleiter"
         | "geschaeftsfuehrung"
       application_status: "pending" | "reviewing" | "accepted" | "rejected"
+      call_provider: "zoom" | "twilio" | "sipgate" | "manual"
+      call_status:
+        | "scheduled"
+        | "in_progress"
+        | "completed"
+        | "recording_ready"
+        | "transcribed"
+        | "analyzed"
+        | "failed"
+      call_type: "phone" | "zoom" | "teams" | "other"
       lead_discovered_by: "daily_ai" | "manual" | "inbound"
       lead_source_type:
         | "inbound_paid"
@@ -463,8 +665,10 @@ export type Database = {
         | "payment_unlocked"
         | "won"
         | "lost"
+      structogram_type: "red" | "green" | "blue" | "mixed" | "unknown"
       task_status: "open" | "done" | "blocked"
       task_type: "call" | "followup" | "review_offer" | "intervention"
+      transcript_status: "pending" | "processing" | "done" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -602,6 +806,17 @@ export const Constants = {
         "geschaeftsfuehrung",
       ],
       application_status: ["pending", "reviewing", "accepted", "rejected"],
+      call_provider: ["zoom", "twilio", "sipgate", "manual"],
+      call_status: [
+        "scheduled",
+        "in_progress",
+        "completed",
+        "recording_ready",
+        "transcribed",
+        "analyzed",
+        "failed",
+      ],
+      call_type: ["phone", "zoom", "teams", "other"],
       lead_discovered_by: ["daily_ai", "manual", "inbound"],
       lead_source_type: [
         "inbound_paid",
@@ -623,8 +838,10 @@ export const Constants = {
         "won",
         "lost",
       ],
+      structogram_type: ["red", "green", "blue", "mixed", "unknown"],
       task_status: ["open", "done", "blocked"],
       task_type: ["call", "followup", "review_offer", "intervention"],
+      transcript_status: ["pending", "processing", "done", "failed"],
     },
   },
 } as const

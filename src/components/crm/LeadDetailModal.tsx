@@ -21,7 +21,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useTasks } from '@/hooks/useTasks';
+import { useCalls } from '@/hooks/useCalls';
 import { TaskCard } from './TaskCard';
+import { CallList } from '@/components/calls/CallList';
+import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
 import {
   CrmLead,
   UpdateLeadInput,
@@ -31,6 +34,7 @@ import {
   LEAD_STATUS_LABELS,
   SOURCE_TYPE_LABELS,
 } from '@/types/crm';
+import { Call, CreateCallInput } from '@/types/calls';
 import { 
   User, 
   Building2, 
@@ -41,6 +45,7 @@ import {
   Briefcase,
   Save,
   Loader2,
+  Plus,
 } from 'lucide-react';
 
 interface LeadDetailModalProps {
@@ -62,8 +67,10 @@ export function LeadDetailModal({
   const [formData, setFormData] = useState<Partial<CrmLead>>({});
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
 
   const { tasks, updateTask } = useTasks({ lead_id: lead?.id });
+  const { calls, loading: callsLoading, createCall } = useCalls({ lead_id: lead?.id });
 
   useEffect(() => {
     if (lead) {
@@ -122,6 +129,17 @@ export function LeadDetailModal({
     await updateTask({ id: taskId, status: 'open' });
   };
 
+  const handleScheduleCall = async (data: CreateCallInput) => {
+    await createCall(data);
+    setScheduleCallOpen(false);
+  };
+
+  const handleViewCall = (call: Call) => {
+    // Navigate to call detail - close modal first
+    onOpenChange(false);
+    window.location.href = `/app/calls/${call.id}`;
+  };
+
   if (!lead) return null;
 
   const currentStage = lead.pipeline_item?.stage || 'new_lead';
@@ -141,8 +159,11 @@ export function LeadDetailModal({
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
+            <TabsTrigger value="calls">
+              Calls {calls.length > 0 && `(${calls.length})`}
+            </TabsTrigger>
             <TabsTrigger value="activities">
               Aktivitäten {tasks.length > 0 && `(${tasks.length})`}
             </TabsTrigger>
@@ -308,6 +329,24 @@ export function LeadDetailModal({
             </div>
           </TabsContent>
 
+          <TabsContent value="calls" className="mt-4">
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Button onClick={() => setScheduleCallOpen(true)} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Call planen
+                </Button>
+              </div>
+              <CallList
+                calls={calls}
+                loading={callsLoading}
+                onViewCall={handleViewCall}
+                compact
+                emptyMessage="Keine Calls für diesen Lead"
+              />
+            </div>
+          </TabsContent>
+
           <TabsContent value="activities" className="mt-4">
             <div className="space-y-4">
               {tasks.length === 0 ? (
@@ -357,6 +396,14 @@ export function LeadDetailModal({
             )}
           </Button>
         </DialogFooter>
+
+        <ScheduleCallDialog
+          open={scheduleCallOpen}
+          onOpenChange={setScheduleCallOpen}
+          leadId={lead.id}
+          leadName={`${lead.first_name} ${lead.last_name || ''}`}
+          onSchedule={handleScheduleCall}
+        />
       </DialogContent>
     </Dialog>
   );
