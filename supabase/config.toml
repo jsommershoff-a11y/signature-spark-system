@@ -2,3 +2,12 @@ project_id = "onbxoflsgrwdszjltnge"
 
 [functions.analyze-call]
 verify_jwt = false
+
+[functions.webhook-zoom]
+verify_jwt = false
+
+[functions.webhook-twilio]
+verify_jwt = false
+
+[functions.webhook-payment]
+verify_jwt = false

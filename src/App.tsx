@@ -13,6 +13,7 @@ import Start from "./pages/Start";
 import Growth from "./pages/Growth";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import PublicOffer from "./pages/Offer";
 
 // Protected app pages
 import Dashboard from "./pages/app/Dashboard";
@@ -28,6 +29,7 @@ import Admin from "./pages/app/Admin";
 import Unauthorized from "./pages/app/Unauthorized";
 import Calls from "./pages/app/Calls";
 import CallDetail from "./pages/app/CallDetail";
+import Offers from "./pages/app/Offers";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +85,11 @@ const App = () => (
                   <CallDetail />
                 </ProtectedRoute>
               } />
+              <Route path="offers" element={
+                <ProtectedRoute requireMinRole="mitarbeiter">
+                  <Offers />
+                </ProtectedRoute>
+              } />
               <Route path="courses" element={<Courses />} />
               <Route path="reports" element={
                 <ProtectedRoute requireMinRole="teamleiter">
@@ -97,6 +104,9 @@ const App = () => (
               } />
               <Route path="unauthorized" element={<Unauthorized />} />
             </Route>
+            
+            {/* Public offer page */}
+            <Route path="/offer/:token" element={<PublicOffer />} />
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
