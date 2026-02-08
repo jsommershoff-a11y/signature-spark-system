@@ -23,6 +23,7 @@ import Pipeline from "./pages/app/Pipeline";
 import Customers from "./pages/app/Customers";
 import Tasks from "./pages/app/Tasks";
 import Courses from "./pages/app/Courses";
+import Members from "./pages/app/Members";
 import Reports from "./pages/app/Reports";
 import Settings from "./pages/app/Settings";
 import Admin from "./pages/app/Admin";
@@ -91,6 +92,11 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="courses" element={<Courses />} />
+              <Route path="members" element={
+                <ProtectedRoute requireMinRole="mitarbeiter">
+                  <Members />
+                </ProtectedRoute>
+              } />
               <Route path="reports" element={
                 <ProtectedRoute requireMinRole="teamleiter">
                   <Reports />

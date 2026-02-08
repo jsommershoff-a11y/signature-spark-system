@@ -11,3 +11,18 @@ verify_jwt = false
 
 [functions.webhook-payment]
 verify_jwt = false
+
+[functions.prospecting_daily_run]
+verify_jwt = false
+
+[functions.generate_followup_plan]
+verify_jwt = false
+
+[functions.approve_followup_plan]
+verify_jwt = true
+
+[functions.avatar_daily_recalc]
+verify_jwt = false
+
+[functions.channel_event_ingest]
+verify_jwt = false
