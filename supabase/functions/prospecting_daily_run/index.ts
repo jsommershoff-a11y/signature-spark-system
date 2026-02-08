@@ -3,10 +3,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
 
 // Daily prospecting run - generates new leads, tasks, and call queues
+// This is an internal automation function - requires API key or cron secret
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -15,7 +16,53 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const cronSecret = Deno.env.get('CRON_SECRET');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify authorization - either cron secret or authenticated staff user
+    const cronHeader = req.headers.get('x-cron-secret');
+    const authHeader = req.headers.get('Authorization');
+    
+    let isAuthorized = false;
+    
+    // Check cron secret first (for scheduled jobs)
+    if (cronSecret && cronHeader === cronSecret) {
+      isAuthorized = true;
+      console.log('Authorized via cron secret');
+    }
+    // Check user authentication (for manual triggers)
+    else if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      const anonClient = createClient(
+        supabaseUrl,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      
+      const { data: claims, error: authError } = await anonClient.auth.getUser(token);
+      
+      if (!authError && claims?.user) {
+        // Check if user has staff role
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', claims.user.id)
+          .in('role', ['admin', 'geschaeftsfuehrung', 'teamleiter']);
+        
+        if (roles && roles.length > 0) {
+          isAuthorized = true;
+          console.log('Authorized via user token:', claims.user.id);
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      console.error('Unauthorized request');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const today = new Date().toISOString().split('T')[0];
     console.log(`Starting prospecting daily run for ${today}`);
@@ -215,7 +262,7 @@ serve(async (req) => {
           assigned_user_id: lead.owner_user_id,
           lead_id: lead.id,
           type: 'followup',
-          title: `Follow-up: ${lead.first_name} ${lead.last_name || ''}`,
+          title: `Follow-up: ${lead.first_name} ${lead.last_name || ''}`.slice(0, 100),
           description: `Automatisch generiert basierend auf Pipeline-Priorität (${item.pipeline_priority_score || 0}).`,
           status: 'open',
           due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
@@ -243,7 +290,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Prospecting daily run error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
