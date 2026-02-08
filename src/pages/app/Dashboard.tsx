@@ -9,7 +9,7 @@ import {
   GraduationCap,
   Clock
 } from 'lucide-react';
-import { TopLeadsWidget, RecentAnalysesWidget, PipelineStatsWidget } from '@/components/dashboard';
+import { TopLeadsWidget, RecentAnalysesWidget, PipelineStatsWidget, CallQueueWidget } from '@/components/dashboard';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function Dashboard() {
@@ -126,6 +126,7 @@ export default function Dashboard() {
 
       {/* Widgets Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <CallQueueWidget />
         <TopLeadsWidget leads={topLeads} isLoading={topLeadsLoading} />
         <RecentAnalysesWidget analyses={recentAnalyses} isLoading={recentAnalysesLoading} />
         <PipelineStatsWidget stats={pipelineStats} isLoading={pipelineStatsLoading} />
@@ -193,6 +194,7 @@ export default function Dashboard() {
 
       {/* Widgets Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <CallQueueWidget />
         <TopLeadsWidget leads={topLeads} isLoading={topLeadsLoading} />
         <RecentAnalysesWidget analyses={recentAnalyses} isLoading={recentAnalysesLoading} />
         <PipelineStatsWidget stats={pipelineStats} isLoading={pipelineStatsLoading} />
