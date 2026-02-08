@@ -1,112 +1,103 @@
 
-# Umsetzung aller Vorschlaege
 
-## Uebersicht
+# Test-Benutzer jsommershoff@googlemail.com einrichten
 
-Dieser Plan implementiert alle offenen Punkte:
+## Aktueller Status
 
-1. **CallQueueWidget ins Dashboard integrieren** - Widget fehlt im Dashboard
-2. **Cron-Job fuer taegliche Prospecting-Ausfuehrung** - Automatische Queue-Generierung
-3. **Auth-Hinweis** - E-Mail-Bestaetigung in Supabase deaktivieren
+| Eigenschaft | Wert |
+|-------------|------|
+| Email | jsommershoff@googlemail.com |
+| User ID | 2b61d31a-e087-4ce3-bc34-3e39786fa9bd |
+| Profile ID | ce75e352-10e4-4d01-83cb-28436366845e |
+| Aktuelle Rolle | kunde |
+| Member-Eintrag | Nein |
+| Call Queue | Nein |
 
----
-
-## Phase 1: CallQueueWidget ins Dashboard einbinden
-
-### Problem
-Das `CallQueueWidget` existiert bereits (`src/components/dashboard/CallQueueWidget.tsx`), ist aber nicht im Dashboard eingebunden.
-
-### Loesung
-Dashboard.tsx anpassen - Widget fuer Staff und Admin hinzufuegen:
-
-```typescript
-// Import hinzufuegen
-import { TopLeadsWidget, RecentAnalysesWidget, PipelineStatsWidget, CallQueueWidget } from '@/components/dashboard';
-
-// In renderStaffDashboard() und renderAdminDashboard():
-<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-  <CallQueueWidget />  // NEU - An erster Stelle
-  <TopLeadsWidget ... />
-  <RecentAnalysesWidget ... />
-  <PipelineStatsWidget ... />
-</div>
-```
-
----
-
-## Phase 2: Cron-Job fuer prospecting_daily_run
-
-### Voraussetzungen
-Die Supabase-Extensions `pg_cron` und `pg_net` muessen aktiviert werden.
-
-### SQL-Migration
+## Erforderliche SQL-Migration
 
 ```sql
--- Extensions aktivieren
-CREATE EXTENSION IF NOT EXISTS pg_cron;
-CREATE EXTENSION IF NOT EXISTS pg_net;
+-- 1. Profil mit Namen aktualisieren
+UPDATE profiles 
+SET first_name = 'Jan', 
+    last_name = 'Sommershoff', 
+    full_name = 'Jan Sommershoff'
+WHERE user_id = '2b61d31a-e087-4ce3-bc34-3e39786fa9bd';
 
--- Berechtigung fuer cron auf public Schema
-GRANT USAGE ON SCHEMA cron TO postgres;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA cron TO postgres;
+-- 2. Mitarbeiter-Rolle hinzufuegen
+INSERT INTO user_roles (user_id, role)
+VALUES ('2b61d31a-e087-4ce3-bc34-3e39786fa9bd', 'mitarbeiter')
+ON CONFLICT (user_id, role) DO NOTHING;
 
--- Cron-Job erstellen: Taeglich um 06:00 UTC (07:00 CET)
-SELECT cron.schedule(
-  'prospecting-daily-run',
-  '0 6 * * *',
-  $$
-  SELECT net.http_post(
-    url := 'https://onbxoflsgrwdszjltnge.supabase.co/functions/v1/prospecting_daily_run',
-    headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9uYnhvZmxzZ3J3ZHN6amx0bmdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzOTc4NDIsImV4cCI6MjA4NTk3Mzg0Mn0.5ZsfdmpwROPn_DRYKAR0PseLdfH_Ur9Zho4lmeXmDfU"}'::jsonb,
-    body := '{}'::jsonb
-  ) AS request_id;
-  $$
+-- 3. Member-Eintrag fuer LMS-Zugang erstellen
+INSERT INTO members (user_id, profile_id, status, onboarded_at, last_active_at)
+VALUES (
+  '2b61d31a-e087-4ce3-bc34-3e39786fa9bd',
+  'ce75e352-10e4-4d01-83cb-28436366845e',
+  'active',
+  now(),
+  now()
 );
+
+-- 4. Call Queue fuer heute erstellen
+INSERT INTO call_queues (assigned_to, date, generated_by)
+VALUES (
+  'ce75e352-10e4-4d01-83cb-28436366845e',
+  '2026-02-08',
+  'manual'
+);
+
+-- 5. Call Queue Items aus bestehenden Pipeline-Items generieren
+WITH new_queue AS (
+  SELECT id FROM call_queues 
+  WHERE assigned_to = 'ce75e352-10e4-4d01-83cb-28436366845e' 
+  AND date = '2026-02-08'
+),
+ranked_items AS (
+  SELECT 
+    pi.lead_id,
+    pi.stage,
+    pi.pipeline_priority_score,
+    ROW_NUMBER() OVER (ORDER BY pi.pipeline_priority_score DESC) as priority_rank,
+    CASE pi.stage
+      WHEN 'new_lead' THEN 'Erstgespraech'
+      WHEN 'setter_call_scheduled' THEN 'Geplanter Call'
+      WHEN 'setter_call_done' THEN 'Follow-up'
+      WHEN 'analysis_ready' THEN 'Analyse besprechen'
+      WHEN 'closer_call_scheduled' THEN 'Closer Call'
+      WHEN 'offer_draft' THEN 'Angebot finalisieren'
+      WHEN 'offer_sent' THEN 'Angebot nachfassen'
+      ELSE 'Kontaktieren'
+    END as reason
+  FROM pipeline_items pi
+  WHERE pi.stage NOT IN ('won', 'lost')
+  LIMIT 7
+)
+INSERT INTO call_queue_items (queue_id, lead_id, priority_rank, reason, status)
+SELECT 
+  (SELECT id FROM new_queue),
+  ri.lead_id,
+  ri.priority_rank,
+  ri.reason,
+  'pending'
+FROM ranked_items ri;
 ```
 
-### Zeitplan
-- **06:00 UTC** = 07:00 CET (Winterzeit) / 08:00 CEST (Sommerzeit)
-- Laeuft jeden Tag automatisch
-- Generiert Call Queues und Follow-up Tasks fuer alle Staff-Mitglieder
+## Code-Aenderung: useCallQueue Hook Fix
 
----
+Der Hook verwendet `assigned_to` korrekt - das passt bereits zur Datenbank-Struktur.
 
-## Phase 3: Auth-Konfiguration
-
-### Manuelle Schritte in Supabase Dashboard
-1. Gehe zu **Authentication > Providers > Email**
-2. Deaktiviere **"Confirm email"**
-3. Speichere die Einstellungen
-
-Link: https://supabase.com/dashboard/project/onbxoflsgrwdszjltnge/auth/providers
-
----
-
-## Aenderungen im Code
-
-### Datei 1: src/pages/app/Dashboard.tsx
-
-| Zeile | Aenderung |
-|-------|-----------|
-| 12 | CallQueueWidget zum Import hinzufuegen |
-| 128-132 | CallQueueWidget in Staff-Dashboard einfuegen |
-| 195-199 | CallQueueWidget in Admin-Dashboard einfuegen |
-
----
-
-## Erwartetes Ergebnis
+## Erwartetes Ergebnis nach Migration
 
 | Feature | Status |
 |---------|--------|
-| CallQueueWidget im Dashboard | Sichtbar fuer Staff/Admin |
-| Cron-Job | Laeuft taeglich um 07:00 CET |
-| Auth | Login ohne E-Mail-Bestaetigung |
+| Rolle | mitarbeiter + kunde |
+| LMS-Zugang | Aktiv (member status = active) |
+| Call Queue | 7 Items fuer heute |
 
----
+## UI-Verifikation nach Migration
 
-## Zusammenfassung
+1. **Login** als jsommershoff@googlemail.com
+2. **Dashboard** - CallQueueWidget zeigt 7 priorisierte Leads
+3. **Kurse** - /app/courses zeigt 2 Kurse (Closer Mastery, Lead-Generierung)
+4. **markAsCalled** - Phone-Button aendert Lead-Status
 
-Nach der Umsetzung:
-- Staff und Admins sehen ihre **täglichen Calls** direkt im Dashboard
-- Die **Call Queue wird automatisch** jeden Morgen generiert
-- **Login funktioniert** ohne E-Mail-Bestätigung
