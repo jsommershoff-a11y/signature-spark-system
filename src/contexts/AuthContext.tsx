@@ -3,6 +3,17 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { AppRole, getHighestRole, hasMinRole as checkMinRole } from '@/lib/roles';
 
+const VIEW_AS_STORAGE_KEY = 'admin_viewAsRole';
+
+const getInitialViewAsRole = (): AppRole | null => {
+  try {
+    const stored = sessionStorage.getItem(VIEW_AS_STORAGE_KEY);
+    return stored as AppRole | null;
+  } catch {
+    return null;
+  }
+};
+
 interface Profile {
   id: string;
   user_id: string;
@@ -48,12 +59,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewAsRole, setViewAsRole] = useState<AppRole | null>(null);
+  const [viewAsRoleState, setViewAsRoleState] = useState<AppRole | null>(getInitialViewAsRole);
 
   // Computed values for Admin View-As feature
   const isRealAdmin = roles.includes('admin');
-  const isViewingAs = isRealAdmin && viewAsRole !== null;
-  const effectiveRole = isViewingAs ? viewAsRole : getHighestRole(roles);
+  const isViewingAs = isRealAdmin && viewAsRoleState !== null;
+  const effectiveRole = isViewingAs ? viewAsRoleState : getHighestRole(roles);
+
+  // Wrapper for setViewAsRole with sessionStorage persistence
+  const setViewAsRole = (role: AppRole | null) => {
+    setViewAsRoleState(role);
+    try {
+      if (role) {
+        sessionStorage.setItem(VIEW_AS_STORAGE_KEY, role);
+      } else {
+        sessionStorage.removeItem(VIEW_AS_STORAGE_KEY);
+      }
+    } catch {
+      // sessionStorage not available
+    }
+  };
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -171,6 +196,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setRoles([]);
+    setViewAsRoleState(null);
+    try {
+      sessionStorage.removeItem(VIEW_AS_STORAGE_KEY);
+    } catch {
+      // sessionStorage not available
+    }
   };
 
   // hasRole checks effective role for UI purposes, but real admin always has access
@@ -208,7 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     refreshProfile,
     // Admin View-As Feature
-    viewAsRole,
+    viewAsRole: viewAsRoleState,
     setViewAsRole,
     effectiveRole,
     isViewingAs,
