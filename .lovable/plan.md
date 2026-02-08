@@ -1,213 +1,166 @@
 
 
-# Vollständige Übersicht: Offene Punkte
+# Test-Daten für Calls und Transkripte erstellen
 
-Nach Durchsicht des gesamten Chatverlaufs und der Codebasis wurden folgende noch nicht umgesetzte Punkte identifiziert:
+## Ziel
 
-## Status-Übersicht
-
-| Nr. | Auftrag | Status |
-|-----|---------|--------|
-| 1 | Admin View-As Feature | Erledigt |
-| 2 | sessionStorage Persistierung | Erledigt |
-| 3 | Tutorial-Tooltip für AdminViewSwitcher | **OFFEN** |
-| 4 | Auto-Reset Timer (30 Min.) für View-As | **OFFEN** |
-| 5 | FollowupApprovalsWidget im Dashboard einbinden | **OFFEN** |
-| 6 | CustomerAvatarWidget im Dashboard einbinden | **OFFEN** |
-| 7 | Dashboard-Rendering-Logik vereinfachen (Bug) | **OFFEN** |
+Erstellen von realistischen Test-Daten in der Datenbank, damit die `analyze-call` Funktion vollständig getestet werden kann.
 
 ---
 
-## Detaillierte Änderungen
+## Vorhandene Daten
 
-### 1. Tutorial-Tooltip für AdminViewSwitcher
-
-**Datei:** `src/components/app/AdminViewSwitcher.tsx`
-
-| Änderung | Beschreibung |
-|----------|--------------|
-| Import | TooltipProvider, Tooltip, TooltipTrigger, TooltipContent |
-| Wrapping | Button in Tooltip-Komponenten einpacken |
-| Inhalt | Erklärungstext zur Funktion anzeigen |
-
-```text
-+--------------------------------+
-|  [Ansicht: Admin v] <-- Hover  |
-+--------------------------------+
-          |
-          v
-+----------------------------------------+
-| Wechsle die Ansicht, um die App aus    |
-| verschiedenen Rollen-Perspektiven      |
-| zu erleben.                            |
-+----------------------------------------+
-```
+| Tabelle | Daten |
+|---------|-------|
+| crm_leads | 5 Leads vorhanden (Max Mustermann, Anna Schmidt, etc.) |
+| profiles | 1 Profil: Jan Sommershoff (Admin) |
+| calls | Leer |
+| transcripts | Leer |
 
 ---
 
-### 2. Auto-Reset Timer (30 Minuten)
+## Zu erstellende Test-Daten
 
-**Dateien:** 
-- `src/contexts/AuthContext.tsx`
-- `src/components/app/ViewAsBanner.tsx`
+### 1. Calls (3 Stück mit verschiedenen Status)
 
-| Komponente | Änderung |
-|------------|----------|
-| AuthContext | Timestamp `admin_viewAsStartTime` in sessionStorage speichern |
-| ViewAsBanner | useEffect mit Timer-Logik, Countdown-Anzeige |
+| # | Lead | Status | Beschreibung |
+|---|------|--------|--------------|
+| 1 | Max Mustermann | `transcribed` | Bereit zur Analyse |
+| 2 | Anna Schmidt | `transcribed` | Bereit zur Analyse |
+| 3 | Thomas Weber | `completed` | Noch ohne Transkript |
 
-**Logik:**
-```text
-setViewAsRole(role) --> sessionStorage.setItem('admin_viewAsStartTime', Date.now())
-                              |
-                              v
-                    ViewAsBanner useEffect
-                              |
-                              v
-              Prüfe alle 60 Sekunden: elapsed > 30 Min?
-                              |
-              Ja: setViewAsRole(null) + Toast
-              Nein: Zeige verbleibende Minuten
-```
+### 2. Transkripte (2 Stück)
 
-**UI im Banner:**
-```text
-+-------------------------------------------------------------------------+
-| 👁 Du siehst die App als "Mitarbeiter"  | ⏱ 28 Min.  |  [Beenden]     |
-+-------------------------------------------------------------------------+
-```
+Realistische Verkaufsgespräch-Transkripte mit:
+- Vollständigem Text
+- Segmenten (Speaker, Timestamps)
+- Status `done`
+- Word Count und Confidence Score
 
 ---
 
-### 3. Fehlende Dashboard-Widgets einbinden
+## SQL-Statements
 
-**Datei:** `src/pages/app/Dashboard.tsx`
+### Step 1: Calls einfügen
 
-Aktuell werden nur 4 Widgets verwendet:
-- CallQueueWidget
-- TopLeadsWidget  
-- RecentAnalysesWidget
-- PipelineStatsWidget
-
-Aber es existieren noch 2 weitere Widgets:
-- **FollowupApprovalsWidget** (Genehmigungen für Followup-Pläne)
-- **CustomerAvatarWidget** (Kunden-Avatar PCA)
-
-Diese sollen in die Admin- und Staff-Dashboards integriert werden.
-
-**Neue Widget-Anordnung:**
-
-```text
-Admin/Staff Dashboard Grid:
-+-------------------+-------------------+-------------------+
-| CallQueueWidget   | TopLeadsWidget    | RecentAnalyses    |
-+-------------------+-------------------+-------------------+
-| PipelineStats     | FollowupApprovals | CustomerAvatar    |
-+-------------------+-------------------+-------------------+
+```sql
+INSERT INTO calls (lead_id, conducted_by, provider, call_type, status, scheduled_at, started_at, ended_at, duration_seconds, notes)
+VALUES 
+  -- Call 1: Max Mustermann - transcribed
+  ('b73b9a6c-c7e7-49d8-b95d-43ec65e573b9', '2824ab54-05a2-4358-8a98-4ec7ae1262f9', 
+   'manual', 'phone', 'transcribed', 
+   NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days' + INTERVAL '1 hour', 
+   NOW() - INTERVAL '2 days' + INTERVAL '1 hour 45 minutes', 2700,
+   'Erstes Verkaufsgespräch - Interesse an Premium-Paket'),
+   
+  -- Call 2: Anna Schmidt - transcribed  
+  ('1a1134e0-4be8-4433-9d2a-d242d95ce482', '2824ab54-05a2-4358-8a98-4ec7ae1262f9',
+   'zoom', 'zoom', 'transcribed',
+   NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day' + INTERVAL '2 hours',
+   NOW() - INTERVAL '1 day' + INTERVAL '2 hours 30 minutes', 1800,
+   'Follow-up Call nach Demo'),
+   
+  -- Call 3: Thomas Weber - completed (kein Transkript)
+  ('56de6996-f58f-4959-90e0-c7f83dd84ebb', '2824ab54-05a2-4358-8a98-4ec7ae1262f9',
+   'twilio', 'phone', 'completed',
+   NOW() - INTERVAL '3 hours', NOW() - INTERVAL '2 hours 30 minutes',
+   NOW() - INTERVAL '2 hours', 1800,
+   'Discovery Call');
 ```
 
----
+### Step 2: Transkripte einfügen
 
-### 4. Dashboard-Rendering-Logik Bug fixen
+```sql
+-- Transkript für Call 1 (Max Mustermann)
+INSERT INTO transcripts (call_id, provider, language, status, text, word_count, confidence_score, segments)
+SELECT 
+  id, 'whisper', 'de', 'done',
+  'Verkäufer: Guten Tag Herr Mustermann, vielen Dank dass Sie sich die Zeit nehmen. 
+Kunde: Ja, gerne. Ich habe mir Ihre Lösung angeschaut und finde das Konzept interessant.
+Verkäufer: Das freut mich zu hören. Was genau hat Sie angesprochen?
+Kunde: Vor allem die Automatisierung der Prozesse. Wir verlieren aktuell viel Zeit mit manuellen Aufgaben.
+Verkäufer: Das verstehe ich. Wie viele Stunden pro Woche verbringen Sie damit?
+Kunde: Ich würde sagen mindestens 15-20 Stunden pro Woche, nur für Reporting.
+Verkäufer: Das ist erheblich. Mit unserer Lösung könnten Sie das auf 2-3 Stunden reduzieren.
+Kunde: Das klingt gut, aber was kostet das?
+Verkäufer: Das Premium-Paket liegt bei 499€ pro Monat. Dafür bekommen Sie alle Features.
+Kunde: Das ist schon eine Investition. Gibt es eine Testphase?
+Verkäufer: Ja, wir bieten 14 Tage kostenlos an. Ohne Risiko.
+Kunde: Okay, das klingt fair. Ich würde das gerne mit meinem Partner besprechen.
+Verkäufer: Natürlich. Wann kann ich mich wieder melden?
+Kunde: Nächste Woche Mittwoch wäre gut.
+Verkäufer: Perfekt, ich trage das ein. Vielen Dank für das Gespräch!',
+  280, 0.94,
+  '[{"start": 0, "end": 8, "speaker": "Verkäufer", "text": "Guten Tag Herr Mustermann, vielen Dank dass Sie sich die Zeit nehmen.", "confidence": 0.95},
+    {"start": 8, "end": 15, "speaker": "Kunde", "text": "Ja, gerne. Ich habe mir Ihre Lösung angeschaut und finde das Konzept interessant.", "confidence": 0.93},
+    {"start": 15, "end": 22, "speaker": "Verkäufer", "text": "Das freut mich zu hören. Was genau hat Sie angesprochen?", "confidence": 0.96},
+    {"start": 22, "end": 35, "speaker": "Kunde", "text": "Vor allem die Automatisierung der Prozesse. Wir verlieren aktuell viel Zeit mit manuellen Aufgaben.", "confidence": 0.92}]'::jsonb
+FROM calls 
+WHERE lead_id = 'b73b9a6c-c7e7-49d8-b95d-43ec65e573b9'
+LIMIT 1;
 
-**Problem in Dashboard.tsx (Zeilen 223-226):**
-
-```typescript
-// Aktuell (fehlerhaft):
-{isEffectiveAdmin && !isViewingAs && renderAdminDashboard()}
-{isEffectiveAdmin && isViewingAs && renderAdminDashboard()}  // Doppelt!
-{!isEffectiveAdmin && isEffectiveStaff && renderStaffDashboard()}
-{isEffectiveKunde && !isEffectiveStaff && renderKundeDashboard()}
-```
-
-Admin-Dashboard wird zweimal gerendert und Logik ist verwirrend.
-
-**Korrektur:**
-
-```typescript
-// Korrigiert:
-{isEffectiveAdmin && renderAdminDashboard()}
-{!isEffectiveAdmin && isEffectiveStaff && renderStaffDashboard()}
-{!isEffectiveStaff && renderKundeDashboard()}
+-- Transkript für Call 2 (Anna Schmidt)
+INSERT INTO transcripts (call_id, provider, language, status, text, word_count, confidence_score, segments)
+SELECT 
+  id, 'whisper', 'de', 'done',
+  'Verkäufer: Hallo Frau Schmidt, schön Sie wiederzusehen. Wie war die Demo letzte Woche?
+Kunde: Sehr beeindruckend. Mein Team war begeistert von der Benutzeroberfläche.
+Verkäufer: Das freut mich. Gab es noch offene Fragen?
+Kunde: Ja, zur Integration. Funktioniert das mit unserem SAP-System?
+Verkäufer: Absolut, wir haben eine zertifizierte SAP-Schnittstelle. Die Einrichtung dauert etwa 2 Tage.
+Kunde: Und was ist mit dem Support? Wir brauchen schnelle Reaktionszeiten.
+Verkäufer: Im Business-Paket haben Sie 4-Stunden-Reaktionszeit, im Enterprise-Paket sogar 1 Stunde.
+Kunde: Das Enterprise-Paket wäre dann das richtige für uns. Was kostet das genau?
+Verkäufer: 1.499€ pro Monat bei jährlicher Zahlung. Bei monatlicher Zahlung 1.699€.
+Kunde: Das muss ich mit der Geschäftsführung abstimmen. Wann brauchen Sie eine Entscheidung?
+Verkäufer: Unser aktuelles Angebot gilt noch bis Ende des Monats.
+Kunde: Verstanden. Ich melde mich bis Freitag.
+Verkäufer: Perfekt. Soll ich Ihnen nochmal alle Details per E-Mail schicken?
+Kunde: Ja, das wäre hilfreich. Danke!',
+  245, 0.91,
+  '[{"start": 0, "end": 10, "speaker": "Verkäufer", "text": "Hallo Frau Schmidt, schön Sie wiederzusehen. Wie war die Demo letzte Woche?", "confidence": 0.94},
+    {"start": 10, "end": 20, "speaker": "Kunde", "text": "Sehr beeindruckend. Mein Team war begeistert von der Benutzeroberfläche.", "confidence": 0.89},
+    {"start": 20, "end": 28, "speaker": "Verkäufer", "text": "Das freut mich. Gab es noch offene Fragen?", "confidence": 0.95},
+    {"start": 28, "end": 40, "speaker": "Kunde", "text": "Ja, zur Integration. Funktioniert das mit unserem SAP-System?", "confidence": 0.92}]'::jsonb
+FROM calls
+WHERE lead_id = '1a1134e0-4be8-4433-9d2a-d242d95ce482'
+LIMIT 1;
 ```
 
 ---
 
-## Zusammenfassung der Änderungen
+## Erwartetes Ergebnis
 
-| Datei | Änderungen |
-|-------|------------|
-| `src/components/app/AdminViewSwitcher.tsx` | Tooltip hinzufügen |
-| `src/contexts/AuthContext.tsx` | Timestamp-Speicherung für Timer |
-| `src/components/app/ViewAsBanner.tsx` | Countdown + Auto-Reset Logik |
-| `src/pages/app/Dashboard.tsx` | Widgets ergänzen + Logik-Fix |
+Nach Ausführung:
 
----
+| Tabelle | Anzahl Datensätze |
+|---------|-------------------|
+| calls | 3 |
+| transcripts | 2 |
 
-## Nicht umsetzbar (erfordert manuellen Test)
+### Testbare Szenarien
 
-| Punkt | Grund |
-|-------|-------|
-| CallQueueWidget mit 7 Leads prüfen | Erfordert Login als spezifischer Benutzer |
-| Kurse-Seite testen | Erfordert Benutzer mit member-Datensatz |
-| Phone-Button Status-Wechsel | Erfordert manuelle Interaktion |
-
-Diese Tests müssen vom Benutzer nach Login durchgeführt werden.
+1. **Call 1 (Max Mustermann)**: Status `transcribed` mit Transkript - Analyse-Button sollte funktionieren
+2. **Call 2 (Anna Schmidt)**: Status `transcribed` mit Transkript - Analyse-Button sollte funktionieren
+3. **Call 3 (Thomas Weber)**: Status `completed` ohne Transkript - Analyse-Button sollte deaktiviert/nicht sichtbar sein
 
 ---
 
-## Technische Details
+## Transkript-Inhalte für KI-Analyse
 
-### Timer-Implementierung in ViewAsBanner
+Die Transkripte enthalten absichtlich:
 
-```typescript
-const VIEW_AS_START_KEY = 'admin_viewAsStartTime';
-const VIEW_AS_TIMEOUT_MS = 30 * 60 * 1000; // 30 Minuten
+- **Problems identified**: Zeitverlust durch manuelle Prozesse, Integrationsfragen
+- **Objections**: Preis-Einwände, Abstimmung mit Partner/Geschäftsführung
+- **Buying signals**: Interesse an Premium/Enterprise, konkrete Nachfragen
+- **Structogram indicators**: Verschiedene Kommunikationsstile
+- **Next steps**: Konkrete Follow-up Termine
 
-useEffect(() => {
-  if (!isViewingAs) {
-    setRemainingMinutes(null);
-    return;
-  }
+---
 
-  const checkExpiry = () => {
-    const startTime = sessionStorage.getItem(VIEW_AS_START_KEY);
-    if (startTime) {
-      const elapsed = Date.now() - parseInt(startTime);
-      const remaining = VIEW_AS_TIMEOUT_MS - elapsed;
-      
-      if (remaining <= 0) {
-        setViewAsRole(null);
-        toast.info('View-As Modus nach 30 Minuten beendet');
-      } else {
-        setRemainingMinutes(Math.ceil(remaining / 60000));
-      }
-    }
-  };
+## Technische Hinweise
 
-  checkExpiry();
-  const interval = setInterval(checkExpiry, 60000);
-  return () => clearInterval(interval);
-}, [isViewingAs, setViewAsRole]);
-```
-
-### Tooltip-Implementierung in AdminViewSwitcher
-
-```typescript
-<TooltipProvider>
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <DropdownMenuTrigger asChild>
-        <Button ...>...</Button>
-      </DropdownMenuTrigger>
-    </TooltipTrigger>
-    <TooltipContent side="bottom" className="max-w-[200px]">
-      <p className="text-sm">
-        Wechsle die Ansicht, um die App aus der Perspektive 
-        verschiedener Benutzerrollen zu erleben.
-      </p>
-    </TooltipContent>
-  </Tooltip>
-</TooltipProvider>
-```
+- `conducted_by` verweist auf Jan Sommershoff's Profil-ID (nicht user_id)
+- Transkript-Segmente sind im korrekten JSON-Format
+- Timestamps sind relativ zu `NOW()` für aktuelle Daten
 
