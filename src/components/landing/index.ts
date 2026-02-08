@@ -1,0 +1,12 @@
+export { CTAButton } from "./CTAButton";
+export { Hero } from "./Hero";
+export { ProblemSection } from "./ProblemSection";
+export { SystemSection } from "./SystemSection";
+export { PlatformProof } from "./PlatformProof";
+export { PersonalSupport } from "./PersonalSupport";
+export { FAQSection } from "./FAQSection";
+export { FinalCTA } from "./FinalCTA";
+export { OutcomeSection } from "./OutcomeSection";
+export { Header } from "./Header";
+export { Footer } from "./Footer";
+export { ContactModal } from "./ContactModal";
