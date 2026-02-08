@@ -104,21 +104,30 @@ const navItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { hasRole, hasMinRole, highestRole } = useAuth();
+  const { hasRole, hasMinRole, effectiveRole, isRealAdmin } = useAuth();
 
   const filteredNavItems = navItems.filter(item => {
     // No role requirement - show to everyone
     if (!item.minRole && !item.exactRole) return true;
     
-    // Check exact role
+    // Admin menu item always visible for real admins
+    if (item.exactRole === 'admin' && isRealAdmin) return true;
+    
+    // Check exact role against effective role
     if (item.exactRole) {
-      // Special case: admin can see everything
-      if (hasRole('admin')) return true;
-      return hasRole(item.exactRole);
+      return effectiveRole === item.exactRole;
     }
     
-    // Check minimum role
+    // Check minimum role against effective role
     if (item.minRole) {
+      // Real admins see everything, but we use effective role for UI filtering
+      if (isRealAdmin) {
+        // Show based on effective role hierarchy
+        const roleHierarchy = ['kunde', 'mitarbeiter', 'teamleiter', 'geschaeftsfuehrung', 'admin'];
+        const effectiveIndex = effectiveRole ? roleHierarchy.indexOf(effectiveRole) : -1;
+        const minIndex = roleHierarchy.indexOf(item.minRole);
+        return effectiveIndex >= minIndex;
+      }
       return hasMinRole(item.minRole);
     }
     

@@ -13,7 +13,7 @@ import { TopLeadsWidget, RecentAnalysesWidget, PipelineStatsWidget, CallQueueWid
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function Dashboard() {
-  const { profile, highestRole, hasMinRole, hasRole } = useAuth();
+  const { profile, effectiveRole, isRealAdmin, isViewingAs } = useAuth();
   const { 
     topLeads, 
     topLeadsLoading, 
@@ -202,6 +202,11 @@ export default function Dashboard() {
     </div>
   );
 
+  // Helper functions to check effective role for UI rendering
+  const isEffectiveAdmin = effectiveRole === 'admin';
+  const isEffectiveStaff = effectiveRole && ['mitarbeiter', 'teamleiter', 'geschaeftsfuehrung', 'admin'].includes(effectiveRole);
+  const isEffectiveKunde = effectiveRole === 'kunde' || !isEffectiveStaff;
+
   return (
     <div className="space-y-6">
       <div>
@@ -209,17 +214,19 @@ export default function Dashboard() {
           {getGreeting()}, {getName()}!
         </h1>
         <p className="text-muted-foreground">
-          {highestRole && `Du bist angemeldet als ${ROLE_LABELS[highestRole]}.`}
+          {effectiveRole && `Du bist angemeldet als ${ROLE_LABELS[effectiveRole]}.`}
+          {isViewingAs && ' (Admin-Ansicht)'}
         </p>
       </div>
 
-      {/* Render dashboard based on role */}
-      {hasRole('admin') && renderAdminDashboard()}
-      {!hasRole('admin') && hasMinRole('mitarbeiter') && renderStaffDashboard()}
-      {!hasMinRole('mitarbeiter') && renderKundeDashboard()}
+      {/* Render dashboard based on effective role */}
+      {isEffectiveAdmin && !isViewingAs && renderAdminDashboard()}
+      {isEffectiveAdmin && isViewingAs && renderAdminDashboard()}
+      {!isEffectiveAdmin && isEffectiveStaff && renderStaffDashboard()}
+      {isEffectiveKunde && !isEffectiveStaff && renderKundeDashboard()}
 
       {/* Quick Actions - only for Kunde */}
-      {!hasMinRole('mitarbeiter') && (
+      {isEffectiveKunde && !isEffectiveStaff && (
         <Card>
           <CardHeader>
             <CardTitle>Schnellzugriff</CardTitle>

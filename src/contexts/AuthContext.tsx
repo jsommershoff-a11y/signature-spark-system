@@ -32,6 +32,12 @@ interface AuthContextType {
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  // Admin View-As Feature
+  viewAsRole: AppRole | null;
+  setViewAsRole: (role: AppRole | null) => void;
+  effectiveRole: AppRole | null;
+  isViewingAs: boolean;
+  isRealAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewAsRole, setViewAsRole] = useState<AppRole | null>(null);
+
+  // Computed values for Admin View-As feature
+  const isRealAdmin = roles.includes('admin');
+  const isViewingAs = isRealAdmin && viewAsRole !== null;
+  const effectiveRole = isViewingAs ? viewAsRole : getHighestRole(roles);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -161,8 +173,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles([]);
   };
 
-  const hasRole = (role: AppRole) => roles.includes(role);
-  const hasMinRoleCheck = (minRole: AppRole) => checkMinRole(getHighestRole(roles), minRole);
+  // hasRole checks effective role for UI purposes, but real admin always has access
+  const hasRoleCheck = (role: AppRole) => {
+    if (isRealAdmin) return true; // Real admins always have all roles for access
+    if (isViewingAs) {
+      // When viewing as another role, check against effective role for UI
+      return role === effectiveRole;
+    }
+    return roles.includes(role);
+  };
+  
+  // hasMinRole uses effective role for UI, but real admin always passes
+  const hasMinRoleCheck = (minRole: AppRole) => {
+    if (isRealAdmin) return true; // Real admins always pass min role checks
+    return checkMinRole(effectiveRole, minRole);
+  };
+
+  // For UI-only role checks (sidebar, dashboard rendering)
+  const hasEffectiveRole = (role: AppRole) => role === effectiveRole;
+  const hasEffectiveMinRole = (minRole: AppRole) => checkMinRole(effectiveRole, minRole);
 
   const value: AuthContextType = {
     user,
@@ -172,12 +201,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     highestRole: getHighestRole(roles),
     isLoading,
     isAuthenticated: !!user,
-    hasRole,
+    hasRole: hasRoleCheck,
     hasMinRole: hasMinRoleCheck,
     signIn,
     signUp,
     signOut,
     refreshProfile,
+    // Admin View-As Feature
+    viewAsRole,
+    setViewAsRole,
+    effectiveRole,
+    isViewingAs,
+    isRealAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
