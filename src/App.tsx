@@ -26,6 +26,8 @@ import Reports from "./pages/app/Reports";
 import Settings from "./pages/app/Settings";
 import Admin from "./pages/app/Admin";
 import Unauthorized from "./pages/app/Unauthorized";
+import Calls from "./pages/app/Calls";
+import CallDetail from "./pages/app/CallDetail";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +73,16 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="tasks" element={<Tasks />} />
+              <Route path="calls" element={
+                <ProtectedRoute requireMinRole="mitarbeiter">
+                  <Calls />
+                </ProtectedRoute>
+              } />
+              <Route path="calls/:callId" element={
+                <ProtectedRoute requireMinRole="mitarbeiter">
+                  <CallDetail />
+                </ProtectedRoute>
+              } />
               <Route path="courses" element={<Courses />} />
               <Route path="reports" element={
                 <ProtectedRoute requireMinRole="teamleiter">
