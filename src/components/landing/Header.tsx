@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logoSignature from "@/assets/logo-signature.png";
 
 export const Header = () => {
   return (
@@ -6,10 +7,11 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2">
-            {/* Logo placeholder */}
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-light rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">K</span>
-            </div>
+            <img 
+              src={logoSignature} 
+              alt="KRS Signature Logo" 
+              className="h-10 w-auto"
+            />
             <span className="text-xl font-bold text-foreground">
               KRS Signature
             </span>
