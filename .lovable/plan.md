@@ -1,697 +1,1034 @@
 
-# Umfassende CRM-Erweiterung: Dashboard, Webhooks, Test-Call & Angebots-Flow
+# Umfassende System-Erweiterung: Mitgliederbereich, Automatisierung & Checkout-Vervollstaendigung
 
 ## Uebersicht
 
-Dieses Update implementiert fuenf Kernbereiche:
-1. Dashboard-Widgets mit Live-Daten (Analysen & Top-Leads)
-2. Webhook-Infrastruktur fuer Zoom/Twilio
-3. Test-Call mit Transkript zur KI-Analyse-Validierung
-4. Angebots- und Checkout-System (offers & orders Tabellen)
-5. Oeffentliche Angebotsseite mit Zahlungsfreigabe
+Diese Implementierung erweitert das bestehende CRM-System um drei Hauptbereiche:
+1. **Mitgliederbereich (LMS MVP)** - Kurse, Fortschritt, KPIs
+2. **Automatisierungs-Infrastruktur** - Edge Functions fuer n8n
+3. **Checkout-Flow Vervollstaendigung** - Member-Erstellung nach Payment
 
 ---
 
-## Phase 1: Dashboard-Widgets mit Live-Daten
+## Was bereits existiert
 
-### 1.1 Neue Komponenten
+Die Analyse zeigt, dass folgende Komponenten bereits implementiert sind:
+
+| Bereich | Status |
+|---------|--------|
+| `offers` Tabelle | Vorhanden mit RLS |
+| `orders` Tabelle | Vorhanden mit RLS |
+| `useOffers` Hook | Funktional |
+| `webhook-payment` Edge Function | Grundlegend implementiert |
+| Dashboard Widgets | TopLeads, Analysen, Pipeline |
+| Courses Seite | Platzhalter vorhanden |
+
+---
+
+## Phase 1: Datenbank-Schema - Mitgliederbereich
+
+### 1.1 Neue Enums
+
+```sql
+-- Member Status
+CREATE TYPE member_status AS ENUM ('active', 'paused', 'churned');
+
+-- Membership Product Tier
+CREATE TYPE membership_product AS ENUM ('starter', 'growth', 'premium');
+
+-- Membership Status
+CREATE TYPE membership_status AS ENUM ('active', 'inactive', 'pending');
+
+-- Lesson Type
+CREATE TYPE lesson_type AS ENUM ('video', 'task', 'worksheet', 'quiz');
+
+-- Progress Status
+CREATE TYPE progress_status AS ENUM ('not_started', 'in_progress', 'completed');
+```
+
+### 1.2 Neue Tabelle: members
+
+```sql
+CREATE TABLE members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehungen
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  lead_id UUID REFERENCES crm_leads(id),
+  profile_id UUID REFERENCES profiles(id),
+  
+  -- Status
+  status member_status DEFAULT 'active',
+  
+  -- Onboarding
+  onboarded_at TIMESTAMPTZ,
+  last_active_at TIMESTAMPTZ,
+  
+  -- Metadaten
+  meta JSONB DEFAULT '{}'::jsonb,
+  
+  UNIQUE(user_id)
+);
+```
+
+### 1.3 Neue Tabelle: memberships (Entitlements)
+
+```sql
+CREATE TABLE memberships (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehung
+  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  order_id UUID REFERENCES orders(id),
+  
+  -- Produkt
+  product membership_product NOT NULL,
+  
+  -- Laufzeit
+  starts_at TIMESTAMPTZ DEFAULT now(),
+  ends_at TIMESTAMPTZ,
+  
+  -- Status
+  status membership_status DEFAULT 'active',
+  
+  -- Zahlungs-Info
+  is_trial BOOLEAN DEFAULT false,
+  trial_ends_at TIMESTAMPTZ
+);
+```
+
+### 1.4 Neue Tabelle: courses
+
+```sql
+CREATE TABLE courses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Inhalt
+  name TEXT NOT NULL,
+  description TEXT,
+  thumbnail_url TEXT,
+  
+  -- Versionierung
+  version INTEGER DEFAULT 1,
+  published BOOLEAN DEFAULT false,
+  published_at TIMESTAMPTZ,
+  
+  -- Zugang
+  required_product membership_product,
+  
+  -- Ordnung
+  sort_order INTEGER DEFAULT 0
+);
+```
+
+### 1.5 Neue Tabelle: modules
+
+```sql
+CREATE TABLE modules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehung
+  course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  
+  -- Inhalt
+  name TEXT NOT NULL,
+  description TEXT,
+  
+  -- Ordnung
+  sort_order INTEGER DEFAULT 0
+);
+```
+
+### 1.6 Neue Tabelle: lessons
+
+```sql
+CREATE TABLE lessons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehung
+  module_id UUID NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
+  
+  -- Inhalt
+  name TEXT NOT NULL,
+  description TEXT,
+  content_ref TEXT,  -- Video URL, Worksheet URL, etc.
+  
+  -- Typ
+  lesson_type lesson_type DEFAULT 'video',
+  
+  -- Dauer (fuer Videos)
+  duration_seconds INTEGER,
+  
+  -- Ordnung
+  sort_order INTEGER DEFAULT 0,
+  
+  -- Meta
+  meta JSONB DEFAULT '{}'::jsonb
+);
+```
+
+### 1.7 Neue Tabelle: lesson_progress
+
+```sql
+CREATE TABLE lesson_progress (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehungen
+  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  lesson_id UUID NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+  
+  -- Fortschritt
+  status progress_status DEFAULT 'not_started',
+  progress_percent INTEGER DEFAULT 0 CHECK (progress_percent >= 0 AND progress_percent <= 100),
+  
+  -- Zeitstempel
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  last_seen_at TIMESTAMPTZ,
+  
+  -- Video-spezifisch
+  last_position_seconds INTEGER DEFAULT 0,
+  
+  UNIQUE(member_id, lesson_id)
+);
+```
+
+### 1.8 Neue Tabelle: member_kpis
+
+```sql
+CREATE TABLE member_kpis (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehung
+  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  
+  -- Zeitraum
+  week_start_date DATE NOT NULL,
+  
+  -- Metriken
+  tasks_completion_rate INTEGER DEFAULT 0 CHECK (tasks_completion_rate >= 0 AND tasks_completion_rate <= 100),
+  lesson_completion_rate INTEGER DEFAULT 0 CHECK (lesson_completion_rate >= 0 AND lesson_completion_rate <= 100),
+  revenue_value INTEGER,  -- Optional: Umsatz in Cent
+  activity_score INTEGER DEFAULT 0 CHECK (activity_score >= 0 AND activity_score <= 100),
+  risk_score INTEGER DEFAULT 0 CHECK (risk_score >= 0 AND risk_score <= 100),
+  
+  -- Detaillierte Daten
+  kpi_json JSONB DEFAULT '{}'::jsonb,
+  
+  -- Notizen
+  notes TEXT,
+  
+  UNIQUE(member_id, week_start_date)
+);
+```
+
+---
+
+## Phase 2: Datenbank-Schema - Automatisierung
+
+### 2.1 Neue Tabellen fuer n8n Workflows
+
+```sql
+-- Followup Plans (KI-generierte Nachfass-Plaene)
+CREATE TABLE followup_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehung
+  lead_id UUID NOT NULL REFERENCES crm_leads(id) ON DELETE CASCADE,
+  triggered_by TEXT,  -- event type that triggered
+  
+  -- Status
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'executed')),
+  approved_by UUID REFERENCES profiles(id),
+  approved_at TIMESTAMPTZ,
+  
+  -- Plan-Inhalt
+  plan_json JSONB NOT NULL,
+  
+  -- Ausfuehrung
+  executed_at TIMESTAMPTZ,
+  execution_result JSONB
+);
+
+-- Followup Steps (einzelne Schritte)
+CREATE TABLE followup_steps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehung
+  plan_id UUID NOT NULL REFERENCES followup_plans(id) ON DELETE CASCADE,
+  
+  -- Step-Details
+  step_order INTEGER NOT NULL,
+  step_type TEXT NOT NULL,  -- 'email', 'whatsapp', 'call', 'task'
+  scheduled_at TIMESTAMPTZ,
+  content_json JSONB,
+  
+  -- Status
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'executed', 'skipped', 'failed')),
+  executed_at TIMESTAMPTZ,
+  result_json JSONB
+);
+
+-- Call Queues (fuer Morgen-Dashboard)
+CREATE TABLE call_queues (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Zuweisung
+  assigned_to UUID NOT NULL REFERENCES profiles(id),
+  date DATE NOT NULL,
+  
+  -- Metadaten
+  generated_by TEXT DEFAULT 'daily_ai',
+  priority_weight NUMERIC DEFAULT 1.0
+);
+
+-- Call Queue Items
+CREATE TABLE call_queue_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehungen
+  queue_id UUID NOT NULL REFERENCES call_queues(id) ON DELETE CASCADE,
+  lead_id UUID NOT NULL REFERENCES crm_leads(id),
+  
+  -- Prioritaet & Kontext
+  priority_rank INTEGER NOT NULL,
+  reason TEXT,
+  context_json JSONB,
+  
+  -- Status
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'called', 'skipped', 'rescheduled')),
+  completed_at TIMESTAMPTZ,
+  outcome TEXT
+);
+
+-- Closed Customer Snapshots (fuer PCA)
+CREATE TABLE closed_customer_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Beziehung
+  order_id UUID NOT NULL REFERENCES orders(id),
+  lead_id UUID NOT NULL REFERENCES crm_leads(id),
+  member_id UUID REFERENCES members(id),
+  
+  -- Snapshot-Daten (zum Zeitpunkt des Kaufs)
+  snapshot_json JSONB NOT NULL
+);
+
+-- Customer Avatar Models (PCA Recalculations)
+CREATE TABLE customer_avatar_models (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  
+  -- Versioning
+  version INTEGER NOT NULL,
+  model_date DATE NOT NULL,
+  
+  -- Model-Daten
+  avatar_json JSONB NOT NULL,
+  
+  -- Meta
+  sample_size INTEGER,
+  confidence_score NUMERIC
+);
+
+-- View: Aktueller Kunden-Avatar
+CREATE OR REPLACE VIEW v_current_customer_avatar AS
+SELECT *
+FROM customer_avatar_models
+WHERE created_at = (SELECT MAX(created_at) FROM customer_avatar_models)
+LIMIT 1;
+```
+
+---
+
+## Phase 3: RLS Policies
+
+### 3.1 Members & Memberships
+
+```sql
+-- Members: Jeder sieht nur sich selbst, Staff sieht alle
+ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users see own member record" ON members
+FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Staff can read all members" ON members
+FOR SELECT USING (has_min_role(auth.uid(), 'mitarbeiter'));
+
+CREATE POLICY "System can insert members" ON members
+FOR INSERT WITH CHECK (true);  -- Webhook darf einfuegen
+
+CREATE POLICY "Staff can update members" ON members
+FOR UPDATE USING (has_min_role(auth.uid(), 'mitarbeiter'));
+
+-- Memberships: Aehnliche Logik
+ALTER TABLE memberships ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Members see own memberships" ON memberships
+FOR SELECT USING (
+  member_id IN (SELECT id FROM members WHERE user_id = auth.uid())
+);
+
+CREATE POLICY "Staff can read all memberships" ON memberships
+FOR SELECT USING (has_min_role(auth.uid(), 'mitarbeiter'));
+```
+
+### 3.2 Courses & Lessons
+
+```sql
+-- Courses: Published sichtbar fuer alle, Draft nur Staff
+ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Published courses visible to members" ON courses
+FOR SELECT USING (
+  published = true OR
+  has_min_role(auth.uid(), 'mitarbeiter')
+);
+
+CREATE POLICY "Staff can manage courses" ON courses
+FOR ALL USING (has_min_role(auth.uid(), 'teamleiter'));
+
+-- Modules & Lessons erben vom Kurs
+ALTER TABLE modules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Modules follow course visibility" ON modules
+FOR SELECT USING (
+  course_id IN (
+    SELECT id FROM courses 
+    WHERE published = true OR has_min_role(auth.uid(), 'mitarbeiter')
+  )
+);
+
+CREATE POLICY "Lessons follow course visibility" ON lessons
+FOR SELECT USING (
+  module_id IN (
+    SELECT id FROM modules WHERE course_id IN (
+      SELECT id FROM courses 
+      WHERE published = true OR has_min_role(auth.uid(), 'mitarbeiter')
+    )
+  )
+);
+```
+
+### 3.3 Lesson Progress & KPIs
+
+```sql
+-- Progress: Nur eigene Daten, Staff kann lesen
+ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Members manage own progress" ON lesson_progress
+FOR ALL USING (
+  member_id IN (SELECT id FROM members WHERE user_id = auth.uid())
+);
+
+CREATE POLICY "Staff can read progress" ON lesson_progress
+FOR SELECT USING (has_min_role(auth.uid(), 'mitarbeiter'));
+
+-- KPIs: Aehnlich
+ALTER TABLE member_kpis ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Members see own KPIs" ON member_kpis
+FOR SELECT USING (
+  member_id IN (SELECT id FROM members WHERE user_id = auth.uid())
+);
+
+CREATE POLICY "Staff can manage KPIs" ON member_kpis
+FOR ALL USING (has_min_role(auth.uid(), 'mitarbeiter'));
+```
+
+---
+
+## Phase 4: Webhook-Payment Erweiterung
+
+### 4.1 Member-Erstellung nach Payment
+
+```typescript
+// webhook-payment/index.ts - Erweiterung
+
+// Nach erfolgreicher Zahlung:
+// 1. Member erstellen (falls nicht vorhanden)
+// 2. Membership erstellen
+// 3. Closed Customer Snapshot speichern
+// 4. Rolle 'kunde' zuweisen (falls noch nicht)
+
+async function createMemberFromPayment(
+  supabase: SupabaseClient,
+  leadId: string,
+  orderId: string,
+  product: 'starter' | 'growth' | 'premium'
+) {
+  // 1. Lead-Daten laden
+  const { data: lead } = await supabase
+    .from('crm_leads')
+    .select('*, profiles!inner(*)')
+    .eq('id', leadId)
+    .single();
+
+  // 2. Auth-User erstellen oder finden
+  // (ueber Einladungs-Email oder vorhandenen Account)
+
+  // 3. Member-Record erstellen
+  const { data: member } = await supabase
+    .from('members')
+    .insert({
+      user_id: userId,
+      lead_id: leadId,
+      profile_id: profileId,
+      status: 'active'
+    })
+    .select()
+    .single();
+
+  // 4. Membership erstellen
+  await supabase
+    .from('memberships')
+    .insert({
+      member_id: member.id,
+      order_id: orderId,
+      product: product,
+      starts_at: new Date().toISOString(),
+      status: 'active'
+    });
+
+  // 5. Snapshot speichern
+  await supabase
+    .from('closed_customer_snapshots')
+    .insert({
+      order_id: orderId,
+      lead_id: leadId,
+      member_id: member.id,
+      snapshot_json: { lead, order, timestamp: new Date().toISOString() }
+    });
+
+  // 6. Rolle 'kunde' zuweisen
+  await supabase
+    .from('user_roles')
+    .insert({
+      user_id: userId,
+      role: 'kunde'
+    })
+    .onConflict('user_id, role')
+    .ignore();
+
+  return member;
+}
+```
+
+---
+
+## Phase 5: Edge Functions fuer n8n
+
+### 5.1 prospecting_daily_run
+
+```typescript
+// supabase/functions/prospecting_daily_run/index.ts
+// Taeglich: Neue Leads + Tasks + Call Queues generieren
+
+serve(async (req) => {
+  // 1. KI-Prospecting: Neue Leads aus Quellen
+  // 2. Tasks fuer neue Leads erstellen
+  // 3. Call Queues fuer Mitarbeiter generieren
+  //    - Priorisiert nach Pipeline Priority Score
+  //    - Verteilt auf Mitarbeiter
+});
+```
+
+### 5.2 generate_followup_plan
+
+```typescript
+// supabase/functions/generate_followup_plan/index.ts
+// Bei Events: KI-generierter Nachfass-Plan
+
+serve(async (req) => {
+  const { lead_id, trigger_event } = await req.json();
+  
+  // 1. Lead-Historie laden (Calls, Analysen, etc.)
+  // 2. KI-Prompt mit Kontext
+  // 3. Plan mit Steps generieren
+  // 4. In followup_plans speichern
+  // 5. Notification an zustaendigen Mitarbeiter
+});
+```
+
+### 5.3 approve_followup_plan
+
+```typescript
+// supabase/functions/approve_followup_plan/index.ts
+// 1-Klick Approval in UI
+
+serve(async (req) => {
+  const { plan_id, approve } = await req.json();
+  
+  if (approve) {
+    // Plan auf 'approved' setzen
+    // Steps als Tasks/Calls erstellen
+  } else {
+    // Plan auf 'rejected' setzen
+  }
+});
+```
+
+### 5.4 avatar_daily_recalc
+
+```typescript
+// supabase/functions/avatar_daily_recalc/index.ts
+// Taeglich: PCA Update basierend auf Closed Customers
+
+serve(async (req) => {
+  // 1. Alle closed_customer_snapshots laden
+  // 2. Clustering/Analyse durchfuehren
+  // 3. Neues Avatar-Modell speichern
+  // 4. Version incrementieren
+});
+```
+
+### 5.5 channel_event_ingest
+
+```typescript
+// supabase/functions/channel_event_ingest/index.ts
+// Email/WhatsApp/Phone Events verarbeiten
+
+serve(async (req) => {
+  const { channel, event_type, lead_id, payload } = await req.json();
+  
+  // 1. Event validieren
+  // 2. Lead-Activity aktualisieren
+  // 3. Optional: Followup-Plan triggern
+});
+```
+
+### 5.6 config.toml erweitern
+
+```toml
+[functions.prospecting_daily_run]
+verify_jwt = false
+
+[functions.generate_followup_plan]
+verify_jwt = false
+
+[functions.approve_followup_plan]
+verify_jwt = true
+
+[functions.avatar_daily_recalc]
+verify_jwt = false
+
+[functions.channel_event_ingest]
+verify_jwt = false
+```
+
+---
+
+## Phase 6: TypeScript Types
+
+### 6.1 Neue Typen: members.ts
+
+```typescript
+// src/types/members.ts
+
+export type MemberStatus = 'active' | 'paused' | 'churned';
+export type MembershipProduct = 'starter' | 'growth' | 'premium';
+export type MembershipStatus = 'active' | 'inactive' | 'pending';
+export type LessonType = 'video' | 'task' | 'worksheet' | 'quiz';
+export type ProgressStatus = 'not_started' | 'in_progress' | 'completed';
+
+export interface Member {
+  id: string;
+  user_id: string;
+  lead_id?: string;
+  profile_id?: string;
+  status: MemberStatus;
+  onboarded_at?: string;
+  last_active_at?: string;
+  created_at: string;
+  // Joined
+  profile?: Profile;
+  memberships?: Membership[];
+}
+
+export interface Membership {
+  id: string;
+  member_id: string;
+  order_id?: string;
+  product: MembershipProduct;
+  starts_at: string;
+  ends_at?: string;
+  status: MembershipStatus;
+  is_trial: boolean;
+  trial_ends_at?: string;
+}
+
+export interface Course {
+  id: string;
+  name: string;
+  description?: string;
+  thumbnail_url?: string;
+  version: number;
+  published: boolean;
+  required_product?: MembershipProduct;
+  sort_order: number;
+  // Joined
+  modules?: Module[];
+}
+
+export interface Module {
+  id: string;
+  course_id: string;
+  name: string;
+  description?: string;
+  sort_order: number;
+  // Joined
+  lessons?: Lesson[];
+}
+
+export interface Lesson {
+  id: string;
+  module_id: string;
+  name: string;
+  description?: string;
+  content_ref?: string;
+  lesson_type: LessonType;
+  duration_seconds?: number;
+  sort_order: number;
+  // Joined (fuer Member)
+  progress?: LessonProgress;
+}
+
+export interface LessonProgress {
+  id: string;
+  member_id: string;
+  lesson_id: string;
+  status: ProgressStatus;
+  progress_percent: number;
+  started_at?: string;
+  completed_at?: string;
+  last_seen_at?: string;
+  last_position_seconds?: number;
+}
+
+export interface MemberKPI {
+  id: string;
+  member_id: string;
+  week_start_date: string;
+  tasks_completion_rate: number;
+  lesson_completion_rate: number;
+  revenue_value?: number;
+  activity_score: number;
+  risk_score: number;
+  kpi_json: Record<string, unknown>;
+  notes?: string;
+}
+
+// UI Labels
+export const MEMBER_STATUS_LABELS: Record<MemberStatus, string> = {
+  active: 'Aktiv',
+  paused: 'Pausiert',
+  churned: 'Gekuendigt',
+};
+
+export const PRODUCT_LABELS: Record<MembershipProduct, string> = {
+  starter: 'Starter',
+  growth: 'Growth',
+  premium: 'Premium',
+};
+
+export const LESSON_TYPE_LABELS: Record<LessonType, string> = {
+  video: 'Video',
+  task: 'Aufgabe',
+  worksheet: 'Arbeitsblatt',
+  quiz: 'Quiz',
+};
+```
+
+---
+
+## Phase 7: React Hooks
+
+### 7.1 useMember Hook (fuer Kunden)
+
+```typescript
+// src/hooks/useMember.ts
+// Funktionen:
+- getMemberProfile() - Eigenes Member-Profil laden
+- getMemberships() - Aktive Memberships
+- getCourses() - Verfuegbare Kurse basierend auf Membership
+- getLessonProgress(lessonId) - Fortschritt laden
+- updateProgress(lessonId, data) - Fortschritt speichern
+- getKPIs() - Eigene KPIs
+```
+
+### 7.2 useCourses Hook
+
+```typescript
+// src/hooks/useCourses.ts
+// Funktionen:
+- fetchCourses() - Alle (published) Kurse
+- fetchCourse(id) - Kurs mit Modulen und Lektionen
+- fetchModules(courseId) - Module eines Kurses
+- fetchLessons(moduleId) - Lektionen eines Moduls
+```
+
+### 7.3 useAdminMembers Hook (fuer Staff)
+
+```typescript
+// src/hooks/useAdminMembers.ts
+// Funktionen:
+- fetchAllMembers() - Alle Members mit Stats
+- getMemberDetails(id) - Detailansicht
+- getMemberKPIs(id) - KPI-Historie
+- getTopPerformers() - Top 5 nach Activity Score
+- getAtRiskMembers() - Members mit Risk Score > 70
+```
+
+### 7.4 useCallQueue Hook
+
+```typescript
+// src/hooks/useCallQueue.ts
+// Funktionen:
+- getTodaysQueue() - Heutige Call Queue fuer User
+- markAsCalled(itemId, outcome) - Item als erledigt
+- skipItem(itemId, reason) - Item ueberspringen
+- rescheduleItem(itemId, date) - Verschieben
+```
+
+### 7.5 useFollowupPlans Hook
+
+```typescript
+// src/hooks/useFollowupPlans.ts
+// Funktionen:
+- getPendingPlans() - Ausstehende Approvals
+- approvePlan(id) - Plan genehmigen
+- rejectPlan(id, reason) - Plan ablehnen
+- getPlanDetails(id) - Plan mit Steps
+```
+
+---
+
+## Phase 8: UI-Komponenten
+
+### 8.1 Mitgliederbereich (Kunden-Sicht)
+
+```text
+src/components/learning/
+  CourseCard.tsx           # Kurs-Karte mit Fortschritt
+  CourseDetail.tsx         # Kurs-Uebersicht mit Modulen
+  ModuleAccordion.tsx      # Aufklappbare Module
+  LessonCard.tsx           # Lektion mit Status
+  VideoPlayer.tsx          # Video mit Progress-Tracking
+  ProgressBar.tsx          # Fortschrittsbalken
+  KPISummary.tsx           # KPI-Zusammenfassung fuer Kunde
+```
+
+### 8.2 Admin-Bereich (Staff-Sicht)
+
+```text
+src/components/members/
+  MemberList.tsx           # Liste aller Members
+  MemberCard.tsx           # Member-Karte
+  MemberDetail.tsx         # Detail-Modal
+  KPIChart.tsx             # KPI-Verlauf Chart
+  RiskIndicator.tsx        # Risk Score Anzeige
+  PerformanceWidget.tsx    # Top/Low Performer
+```
+
+### 8.3 Dashboard-Erweiterungen
 
 ```text
 src/components/dashboard/
-  TopLeadsWidget.tsx       # Top 5 Leads nach Purchase Readiness
-  RecentAnalysesWidget.tsx # Letzte 5 KI-Analysen
-  PipelineStatsWidget.tsx  # Pipeline-Statistiken
-  QuickActionsWidget.tsx   # Schnellzugriff-Buttons
+  CallQueueWidget.tsx      # Morgens: Heutige Calls
+  FollowupApprovalsWidget.tsx  # Pending Approvals
+  CustomerAvatarWidget.tsx # Aktueller PCA
+  MemberRiskWidget.tsx     # At-Risk Members
 ```
 
-### 1.2 TopLeadsWidget Layout
-
-```text
-+----------------------------------------------+
-| Top Leads nach Kaufbereitschaft         [>]  |
-+----------------------------------------------+
-| 1. Max Mustermann - TechStart GmbH           |
-|    [============================] 95%        |
-|    Analyse: Rot | Erfolg: 78%                |
-+----------------------------------------------+
-| 2. Sarah Hoffmann - Consulting Plus          |
-|    [========================] 88%            |
-|    Analyse: Gruen | Erfolg: 72%              |
-+----------------------------------------------+
-| ...                                          |
-+----------------------------------------------+
-```
-
-### 1.3 RecentAnalysesWidget Layout
-
-```text
-+----------------------------------------------+
-| Neueste Analysen                        [>]  |
-+----------------------------------------------+
-| vor 2 Std | Max Mustermann                   |
-| Kaufbereit: 95% | Erfolg: 78% | [ROT]        |
-+----------------------------------------------+
-| vor 5 Std | Thomas Weber                     |
-| Kaufbereit: 72% | Erfolg: 65% | [BLAU]       |
-+----------------------------------------------+
-```
-
-### 1.4 Dashboard.tsx erweitern
+### 8.4 Courses.tsx erweitern
 
 ```typescript
-// Neue Hooks fuer Dashboard-Daten
-const useDashboardData = () => {
-  // Top Leads mit purchase_readiness > 60
-  // Neueste Analysen (letzte 10)
-  // Pipeline-Counts pro Stage
-  // Heutige Tasks
-};
+// src/pages/app/Courses.tsx
+// Kunde sieht:
+// - Verfuegbare Kurse (basierend auf Membership)
+// - Fortschritt pro Kurs
+// - Naechste Lektion
+// - KPI Summary
 
-// Staff/Admin Dashboard mit neuen Widgets
-<TopLeadsWidget leads={topLeads} />
-<RecentAnalysesWidget analyses={recentAnalyses} />
-<PipelineStatsWidget stats={pipelineStats} />
-```
-
----
-
-## Phase 2: Webhook-Infrastruktur
-
-### 2.1 Neue Edge Functions
-
-```text
-supabase/functions/
-  webhook-zoom/index.ts      # Zoom Recording Webhook
-  webhook-twilio/index.ts    # Twilio Recording Webhook
-  transcribe-audio/index.ts  # Audio zu Text (Whisper API)
-```
-
-### 2.2 Zoom Webhook Flow
-
-```text
-+----------+     +---------------+     +-----------+
-|  Zoom    | --> | webhook-zoom  | --> | calls     |
-| Meeting  |     | Edge Function |     | Tabelle   |
-| ended    |     +-------+-------+     +-----------+
-+----------+             |
-                         v
-              +-------------------+
-              | transcribe-audio  |
-              | (async via Queue) |
-              +--------+----------+
-                       |
-                       v
-              +-------------------+
-              | transcripts       |
-              | Tabelle           |
-              +-------------------+
-```
-
-### 2.3 webhook-zoom Implementierung
-
-```typescript
-// supabase/functions/webhook-zoom/index.ts
-serve(async (req) => {
-  const event = await req.json();
-  
-  // Validiere Zoom Signature
-  // Event: recording.completed
-  
-  if (event.event === "recording.completed") {
-    const { meeting_id, recording_files } = event.payload;
-    
-    // 1. Call finden oder erstellen via external_id
-    // 2. Recording URL speichern
-    // 3. Status auf 'recording_ready' setzen
-    // 4. Optional: Transkription starten
-  }
-});
-```
-
-### 2.4 webhook-twilio Implementierung
-
-```typescript
-// supabase/functions/webhook-twilio/index.ts
-serve(async (req) => {
-  // Twilio Call Recording Callback
-  const formData = await req.formData();
-  const recordingUrl = formData.get('RecordingUrl');
-  const callSid = formData.get('CallSid');
-  
-  // 1. Call via external_id=callSid finden
-  // 2. Recording URL speichern
-  // 3. Transkription starten
-});
-```
-
-### 2.5 config.toml erweitern
-
-```toml
-[functions.webhook-zoom]
-verify_jwt = false
-
-[functions.webhook-twilio]
-verify_jwt = false
-
-[functions.transcribe-audio]
-verify_jwt = false
-```
-
----
-
-## Phase 3: Test-Call mit Transkript
-
-### 3.1 SQL Migration: Test-Daten
-
-```sql
--- Test-Call fuer Lead "Max Mustermann"
-INSERT INTO calls (
-  lead_id,
-  provider,
-  call_type,
-  scheduled_at,
-  started_at,
-  ended_at,
-  duration_seconds,
-  status,
-  notes
-) VALUES (
-  (SELECT id FROM crm_leads WHERE email = 'max@techstart.de'),
-  'manual',
-  'phone',
-  now() - interval '1 day',
-  now() - interval '1 day',
-  now() - interval '1 day' + interval '25 minutes',
-  1500,
-  'transcribed',
-  'Setter-Call - Erstgespraech'
-);
-
--- Test-Transkript
-INSERT INTO transcripts (
-  call_id,
-  provider,
-  language,
-  text,
-  segments,
-  status,
-  word_count,
-  confidence_score
-) VALUES (
-  (SELECT id FROM calls WHERE lead_id = (SELECT id FROM crm_leads WHERE email = 'max@techstart.de') LIMIT 1),
-  'manual',
-  'de',
-  'Verkäufer: Guten Tag Herr Mustermann, hier ist Max von SalesFlow. Ich rufe an wegen...
-  
-Kunde: Ah ja, ich habe mich auf Ihrer Webseite umgeschaut. Wir haben aktuell ein großes Problem mit unserer Lead-Verwaltung.
-
-Verkäufer: Das höre ich oft. Was genau ist das Problem?
-
-Kunde: Wir verlieren täglich Leads weil unser aktuelles System zu langsam ist. Die Mitarbeiter müssen alles manuell eingeben. Das dauert einfach zu lange.
-
-Verkäufer: Das klingt frustrierend. Wie viele Leads gehen Ihnen dadurch verloren schätzen Sie?
-
-Kunde: Bestimmt 20-30% der Anfragen. Das sind bei uns schnell 50.000€ im Monat.
-
-Verkäufer: Das ist ein erheblicher Betrag. Wäre es für Sie interessant, wenn wir das automatisieren könnten?
-
-Kunde: Auf jeden Fall! Aber ich muss das mit meinem Geschäftspartner besprechen. Der ist nächste Woche wieder da.
-
-Verkäufer: Verstehe. Was wäre denn Ihr Budget für so eine Lösung?
-
-Kunde: Wenn wir wirklich 50.000€ im Monat sparen... dann wären 2-3.000€ monatlich sicher drin.
-
-Verkäufer: Das klingt machbar. Ich schicke Ihnen vorab ein Angebot. Wann passt es Ihnen nächste Woche für einen Call mit Ihrem Partner?
-
-Kunde: Donnerstag wäre gut. So gegen 14 Uhr.
-
-Verkäufer: Perfekt, ich schicke Ihnen die Einladung. Bis dahin!',
-  '[
-    {"start": 0, "end": 5, "speaker": "Verkäufer", "text": "Guten Tag Herr Mustermann..."},
-    {"start": 5, "end": 15, "speaker": "Kunde", "text": "Ah ja, ich habe mich..."}
-  ]'::jsonb,
-  'done',
-  350,
-  0.95
-);
-```
-
-### 3.2 Anleitung zum Testen
-
-```text
-1. Navigiere zu /app/calls
-2. Suche den Test-Call "Max Mustermann - Erstgespraech"
-3. Klicke auf den Call um die Detail-Ansicht zu oeffnen
-4. Gehe zum Tab "Transkript" und pruefe das Transkript
-5. Klicke "Analyse starten" Button
-6. Warte auf KI-Analyse (ca. 10-20 Sekunden)
-7. Pruefe die Ergebnisse im "Analyse" Tab:
-   - Purchase Readiness sollte ~75-85% sein
-   - Structogram sollte "Rot" zeigen (direkt, ergebnisorientiert)
-   - Probleme: "Leads verlieren", "System zu langsam"
-   - Einwand: "Authority" (muss mit Partner sprechen)
-```
-
----
-
-## Phase 4: Angebots-System (offers & orders)
-
-### 4.1 Neue Enums
-
-```sql
--- Offer Status
-CREATE TYPE offer_status AS ENUM (
-  'draft',
-  'pending_review',
-  'approved',
-  'sent',
-  'viewed',
-  'expired'
-);
-
--- Order Status
-CREATE TYPE order_status AS ENUM (
-  'pending',
-  'paid',
-  'failed',
-  'refunded',
-  'cancelled'
-);
-
--- Payment Provider
-CREATE TYPE payment_provider AS ENUM (
-  'stripe',
-  'copecart',
-  'bank_transfer',
-  'manual'
-);
-```
-
-### 4.2 Neue Tabelle: offers
-
-```sql
-CREATE TABLE offers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  
-  -- Beziehungen
-  lead_id UUID NOT NULL REFERENCES crm_leads(id) ON DELETE CASCADE,
-  analysis_id UUID REFERENCES ai_analyses(id),
-  created_by UUID REFERENCES profiles(id),
-  approved_by UUID REFERENCES profiles(id),
-  
-  -- Status
-  status offer_status DEFAULT 'draft',
-  approved_at TIMESTAMPTZ,
-  sent_at TIMESTAMPTZ,
-  viewed_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  
-  -- Angebots-Inhalt (KI-generiert oder manuell)
-  offer_json JSONB NOT NULL DEFAULT '{}'::jsonb,
-  
-  -- Oeffentlicher Zugang
-  public_token TEXT UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
-  
-  -- Zahlungssteuerung
-  payment_unlocked BOOLEAN DEFAULT false,
-  payment_unlocked_at TIMESTAMPTZ,
-  payment_unlocked_by UUID REFERENCES profiles(id),
-  
-  -- Metadaten
-  notes TEXT,
-  version INTEGER DEFAULT 1
-);
-
--- Indizes
-CREATE INDEX idx_offers_lead_id ON offers(lead_id);
-CREATE INDEX idx_offers_public_token ON offers(public_token);
-CREATE INDEX idx_offers_status ON offers(status);
-```
-
-### 4.3 Neue Tabelle: orders
-
-```sql
-CREATE TABLE orders (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  
-  -- Beziehungen
-  offer_id UUID REFERENCES offers(id),
-  lead_id UUID NOT NULL REFERENCES crm_leads(id),
-  member_id UUID REFERENCES profiles(id),
-  
-  -- Payment Provider
-  provider payment_provider NOT NULL,
-  provider_order_id TEXT,
-  provider_customer_id TEXT,
-  
-  -- Betrag
-  amount_cents INTEGER NOT NULL,
-  currency TEXT DEFAULT 'EUR',
-  
-  -- Status
-  status order_status DEFAULT 'pending',
-  paid_at TIMESTAMPTZ,
-  failed_at TIMESTAMPTZ,
-  refunded_at TIMESTAMPTZ,
-  
-  -- Metadaten
-  metadata JSONB DEFAULT '{}'::jsonb,
-  error_message TEXT
-);
-
--- Indizes
-CREATE INDEX idx_orders_lead_id ON orders(lead_id);
-CREATE INDEX idx_orders_offer_id ON orders(offer_id);
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_provider_order_id ON orders(provider_order_id);
-```
-
-### 4.4 RLS Policies
-
-```sql
--- offers: Staff kann erstellen/lesen, Teamleiter approven
-ALTER TABLE offers ENABLE ROW LEVEL SECURITY;
-
--- Mitarbeiter kann eigene Offers sehen
-CREATE POLICY "Staff can read offers" ON offers
-FOR SELECT USING (has_min_role(auth.uid(), 'mitarbeiter'));
-
--- Teamleiter kann approven
-CREATE POLICY "Teamleiter can update offers" ON offers
-FOR UPDATE USING (has_min_role(auth.uid(), 'teamleiter'));
-
--- Oeffentlicher Zugang via Token (fuer Angebotsseite)
-CREATE POLICY "Public can view via token" ON offers
-FOR SELECT USING (
-  public_token IS NOT NULL AND 
-  payment_unlocked = true
-);
-
--- orders: Staff kann lesen, System kann schreiben
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Staff can read orders" ON orders
-FOR SELECT USING (has_min_role(auth.uid(), 'mitarbeiter'));
-```
-
-### 4.5 offer_json Schema
-
-```typescript
-interface OfferContent {
-  // Header
-  title: string;
-  subtitle?: string;
-  valid_until: string;
-  
-  // Kunde
-  customer: {
-    name: string;
-    company?: string;
-    email: string;
-  };
-  
-  // Produkte/Leistungen
-  line_items: Array<{
-    name: string;
-    description?: string;
-    quantity: number;
-    unit_price_cents: number;
-    total_cents: number;
-  }>;
-  
-  // Zusammenfassung
-  subtotal_cents: number;
-  discount_cents?: number;
-  discount_reason?: string;
-  tax_rate: number;
-  tax_cents: number;
-  total_cents: number;
-  
-  // Zahlungsbedingungen
-  payment_terms: {
-    type: 'one_time' | 'subscription' | 'installments';
-    frequency?: 'monthly' | 'quarterly' | 'yearly';
-    installments?: number;
-  };
-  
-  // KI-generierte Inhalte
-  ai_generated?: {
-    personalized_intro: string;
-    value_propositions: string[];
-    objection_responses: Record<string, string>;
-    urgency_message?: string;
-  };
-  
-  // Terms
-  terms_accepted_at?: string;
-  signature_url?: string;
-}
-```
-
----
-
-## Phase 5: Angebots-UI
-
-### 5.1 Neue Komponenten
-
-```text
-src/components/offers/
-  OfferBuilder.tsx         # Angebots-Editor
-  OfferPreview.tsx         # Angebots-Vorschau
-  OfferApprovalCard.tsx    # Approval-UI fuer Teamleiter
-  PaymentUnlockButton.tsx  # Zahlung freischalten
-  OfferStatusBadge.tsx     # Status-Anzeige
-```
-
-### 5.2 Neue Seiten
-
-```text
-src/pages/app/Offers.tsx       # Angebots-Uebersicht
-src/pages/app/OfferEditor.tsx  # Angebot bearbeiten
-src/pages/Offer.tsx            # Oeffentliche Angebotsseite /offer/{token}
-```
-
-### 5.3 OfferBuilder Layout
-
-```text
+// Layout:
 +-------------------------------------------------------------------+
-| Angebot erstellen: Max Mustermann                                  |
+| Deine Kurse                                                        |
 +-------------------------------------------------------------------+
-| TABS: [Produkte] [Personalisierung] [Vorschau]                     |
+| [Kurs 1: SalesFlow Grundlagen]                                     |
+| [==========================] 75% abgeschlossen                     |
+| Naechste Lektion: "Pipeline-Optimierung"                           |
++-------------------------------------------------------------------+
+| [Kurs 2: Fortgeschrittene Techniken]                              |
+| [==========] 25% abgeschlossen                                     |
+| Naechste Lektion: "Closing-Strategien"                             |
 +-------------------------------------------------------------------+
 |                                                                    |
-| PRODUKTE:                                                          |
-| +------------------------------------------------------------+    |
-| | Produkt            | Menge | Preis      | Gesamt           |    |
-| |------------------------------------------------------------|    |
-| | SalesFlow Pro      | 1     | 2.499€/Mo  | 2.499€           |    |
-| | + Position hinzufuegen                                      |    |
-| +------------------------------------------------------------+    |
-|                                                                    |
-| Rabatt: [___] € oder [___] %  Grund: [____________]               |
-|                                                                    |
-| +------------------------------------------------------------+    |
-| | Zwischensumme:              2.499,00 €                     |    |
-| | Rabatt:                      -249,90 € (10%)               |    |
-| | MwSt (19%):                   427,03 €                     |    |
-| | GESAMT:                     2.676,13 €                     |    |
-| +------------------------------------------------------------+    |
-|                                                                    |
-| PERSONALISIERUNG (KI-generiert):                                   |
-| +------------------------------------------------------------+    |
-| | Intro-Text:                                                 |    |
-| | "Basierend auf unserem Gespraech verstehe ich, dass Sie    |    |
-| | taeglich 20-30% Ihrer Leads verlieren..."                  |    |
-| +------------------------------------------------------------+    |
-|                                                                    |
-| [Als Entwurf speichern] [Zur Pruefung senden]                      |
-+-------------------------------------------------------------------+
-```
-
-### 5.4 Oeffentliche Angebotsseite /offer/{token}
-
-```text
-+-------------------------------------------------------------------+
-| [Logo]                        Angebot #2024-0042                   |
-+-------------------------------------------------------------------+
-|                                                                    |
-| Hallo Max,                                                         |
-|                                                                    |
-| basierend auf unserem Gespraech habe ich ein individuelles        |
-| Angebot fuer TechStart GmbH zusammengestellt.                     |
-|                                                                    |
-| +------------------------------------------------------------+    |
-| | IHRE LOESUNG                                                |    |
-| |------------------------------------------------------------|    |
-| | SalesFlow Pro                                              |    |
-| | - Automatische Lead-Erfassung                              |    |
-| | - KI-gestuetzte Analyse                                    |    |
-| | - Pipeline-Management                                       |    |
-| |                                              2.499€/Monat   |    |
-| +------------------------------------------------------------+    |
-|                                                                    |
-| Ihr Investment: 2.676,13€/Monat (inkl. MwSt)                      |
-|                                                                    |
-| [Zahlung nicht freigeschaltet]                                     |
-| oder                                                               |
-| [Jetzt kaufen] (wenn payment_unlocked=true)                        |
-|                                                                    |
-| Gueltig bis: 15.02.2026                                            |
+| Deine Performance diese Woche:                                     |
+| +--------------------+  +--------------------+                      |
+| | Aufgaben: 80%      |  | Lektionen: 60%     |                     |
+| +--------------------+  +--------------------+                      |
 +-------------------------------------------------------------------+
 ```
 
 ---
 
-## Phase 6: Angebots-Flow
+## Phase 9: Neue Seiten & Routes
 
-### 6.1 Flow-Diagramm
+### 9.1 Neue Seiten
 
 ```text
-+----------------+     +------------------+     +-----------------+
-| Analyse fertig | --> | KI generiert     | --> | offer.status =  |
-| (Call analyzed)|     | offer_json Draft |     | 'draft'         |
-+----------------+     +------------------+     +--------+--------+
-                                                        |
-                                                        v
-+----------------+     +------------------+     +-----------------+
-| Setter prueft  | <-- | Setter bearbeitet| <-- | offer.status =  |
-| und sendet     |     | Angebot          |     | 'pending_review'|
-+----------------+     +------------------+     +--------+--------+
-        |                                               |
-        v                                               |
-+----------------+                                      |
-| Teamleiter     |<-------------------------------------+
-| approved       |
-+-------+--------+
-        |
-        v
-+----------------+     +------------------+     +-----------------+
-| offer.status = | --> | E-Mail mit Link  | --> | Kunde oeffnet   |
-| 'sent'         |     | /offer/{token}   |     | Angebotsseite   |
-+----------------+     +------------------+     +--------+--------+
-                                                        |
-                                                        v
-+----------------+     +------------------+     +-----------------+
-| Setter schaltet| --> | payment_unlocked | --> | Kunde kann      |
-| Zahlung frei   |     | = true           |     | bezahlen        |
-+----------------+     +------------------+     +--------+--------+
-                                                        |
-                                                        v
-+----------------+     +------------------+     +-----------------+
-| Webhook:       | --> | order.status =   | --> | Lead -> Member  |
-| Payment Success|     | 'paid'           |     | Rolle: 'kunde'  |
-+----------------+     +------------------+     +-----------------+
+src/pages/app/Course.tsx        # Kurs-Detailseite
+src/pages/app/Lesson.tsx        # Lektions-Ansicht
+src/pages/app/Members.tsx       # Admin: Member-Uebersicht
+src/pages/app/MemberDetail.tsx  # Admin: Member-Detail
 ```
 
-### 6.2 Edge Function: generate-offer
+### 9.2 Routes erweitern
 
 ```typescript
-// supabase/functions/generate-offer/index.ts
-// Generiert personalisiertes Angebot basierend auf Analyse
+// App.tsx
+// Kunde-Routes (alle authentifizierten)
+<Route path="courses/:courseId" element={<Course />} />
+<Route path="courses/:courseId/lessons/:lessonId" element={<Lesson />} />
 
-serve(async (req) => {
-  const { lead_id, analysis_id, template_id } = await req.json();
-  
-  // 1. Lead und Analyse laden
-  // 2. Lovable AI mit Prompt aufrufen
-  // 3. offer_json generieren mit personalisierten Texten
-  // 4. Offer in DB speichern
-});
+// Staff-Routes
+<Route path="members" element={
+  <ProtectedRoute requireMinRole="mitarbeiter">
+    <Members />
+  </ProtectedRoute>
+} />
+<Route path="members/:memberId" element={
+  <ProtectedRoute requireMinRole="mitarbeiter">
+    <MemberDetail />
+  </ProtectedRoute>
+} />
 ```
 
-### 6.3 Edge Function: webhook-payment
+### 9.3 Sidebar erweitern
 
 ```typescript
-// supabase/functions/webhook-payment/index.ts
-// Verarbeitet Zahlungs-Callbacks von Stripe/CopeCart
+// AppSidebar.tsx
+// Fuer Kunden:
+{ label: 'Kurse', href: '/app/courses', icon: GraduationCap }
 
-serve(async (req) => {
-  const event = await req.json();
-  
-  // Signature validieren (je nach Provider)
-  
-  if (event.type === 'checkout.session.completed') {
-    // 1. Order finden via metadata.order_id
-    // 2. order.status = 'paid'
-    // 3. Lead-Status aktualisieren
-    // 4. Member-Profil erstellen
-    // 5. Rolle 'kunde' zuweisen
-    // 6. Pipeline auf 'won' setzen
-  }
-});
+// Fuer Staff:
+{ label: 'Mitglieder', href: '/app/members', icon: Users, minRole: 'mitarbeiter' }
 ```
 
 ---
 
-## Phase 7: Navigation & Routes
+## Phase 10: Realtime Updates
 
-### 7.1 Neue Routes in App.tsx
+### 10.1 Supabase Realtime fuer Progress
 
 ```typescript
-// Protected Routes
-<Route path="offers" element={<Offers />} />
-<Route path="offers/:offerId" element={<OfferEditor />} />
-<Route path="offers/:offerId/preview" element={<OfferPreview />} />
+// In Course.tsx oder Lesson.tsx
+useEffect(() => {
+  const channel = supabase
+    .channel('lesson_progress_changes')
+    .on(
+      'postgres_changes',
+      { 
+        event: '*', 
+        schema: 'public', 
+        table: 'lesson_progress',
+        filter: `member_id=eq.${memberId}`
+      },
+      (payload) => {
+        // Progress-State aktualisieren
+        refetch();
+      }
+    )
+    .subscribe();
 
-// Public Route (ausserhalb /app)
-<Route path="/offer/:token" element={<PublicOffer />} />
+  return () => { supabase.removeChannel(channel); };
+}, [memberId]);
 ```
 
-### 7.2 Sidebar erweitern
+### 10.2 Realtime fuer Admin-Dashboard
 
 ```typescript
-{
-  label: 'Angebote',
-  href: '/app/offers',
-  icon: FileText,
-  minRole: 'mitarbeiter'
-}
+// In PerformanceWidget.tsx
+// Live-Updates wenn Member Fortschritt macht
+useEffect(() => {
+  const channel = supabase
+    .channel('member_activity')
+    .on('postgres_changes', { ... }, handleUpdate)
+    .subscribe();
+}, []);
 ```
 
 ---
 
-## Zusammenfassung der zu erstellenden Dateien
+## Zusammenfassung: Zu erstellende Dateien
 
 | Datei | Beschreibung |
 |-------|--------------|
-| `src/components/dashboard/TopLeadsWidget.tsx` | Top Leads Widget |
-| `src/components/dashboard/RecentAnalysesWidget.tsx` | Neueste Analysen |
-| `src/components/dashboard/PipelineStatsWidget.tsx` | Pipeline Stats |
-| `src/hooks/useDashboardData.ts` | Dashboard Daten-Hook |
-| `src/components/offers/OfferBuilder.tsx` | Angebots-Editor |
-| `src/components/offers/OfferPreview.tsx` | Vorschau |
-| `src/components/offers/PaymentUnlockButton.tsx` | Zahlung freischalten |
-| `src/hooks/useOffers.ts` | Offers CRUD Hook |
-| `src/types/offers.ts` | TypeScript Types |
-| `src/pages/app/Offers.tsx` | Angebots-Uebersicht |
-| `src/pages/app/OfferEditor.tsx` | Editor-Seite |
-| `src/pages/Offer.tsx` | Oeffentliche Angebotsseite |
-| `supabase/functions/webhook-zoom/index.ts` | Zoom Webhook |
-| `supabase/functions/webhook-twilio/index.ts` | Twilio Webhook |
-| `supabase/functions/generate-offer/index.ts` | Angebot generieren |
-| `supabase/functions/webhook-payment/index.ts` | Payment Webhook |
+| **Types** | |
+| `src/types/members.ts` | Member, Membership, Course, etc. |
+| `src/types/automation.ts` | FollowupPlan, CallQueue, etc. |
+| **Hooks** | |
+| `src/hooks/useMember.ts` | Member-Daten fuer Kunden |
+| `src/hooks/useCourses.ts` | Kurs-Daten |
+| `src/hooks/useLessonProgress.ts` | Fortschritts-Tracking |
+| `src/hooks/useAdminMembers.ts` | Admin Member-Verwaltung |
+| `src/hooks/useCallQueue.ts` | Call Queue |
+| `src/hooks/useFollowupPlans.ts` | Followup-Approvals |
+| **Components** | |
+| `src/components/learning/*` | 7 Komponenten |
+| `src/components/members/*` | 6 Komponenten |
+| `src/components/dashboard/CallQueueWidget.tsx` | |
+| `src/components/dashboard/FollowupApprovalsWidget.tsx` | |
+| `src/components/dashboard/CustomerAvatarWidget.tsx` | |
+| **Pages** | |
+| `src/pages/app/Course.tsx` | Kurs-Detail |
+| `src/pages/app/Lesson.tsx` | Lektions-Ansicht |
+| `src/pages/app/Members.tsx` | Admin-Uebersicht |
+| `src/pages/app/MemberDetail.tsx` | Admin-Detail |
+| **Edge Functions** | |
+| `supabase/functions/prospecting_daily_run/index.ts` | |
+| `supabase/functions/generate_followup_plan/index.ts` | |
+| `supabase/functions/approve_followup_plan/index.ts` | |
+| `supabase/functions/avatar_daily_recalc/index.ts` | |
+| `supabase/functions/channel_event_ingest/index.ts` | |
 
 ## Zu aendernde Dateien
 
 | Datei | Aenderungen |
 |-------|-------------|
-| `src/pages/app/Dashboard.tsx` | Neue Widgets integrieren |
+| `supabase/functions/webhook-payment/index.ts` | Member-Erstellung |
+| `src/pages/app/Courses.tsx` | Vollstaendige Implementierung |
+| `src/pages/app/Dashboard.tsx` | Neue Widgets |
 | `src/App.tsx` | Neue Routes |
-| `src/components/app/AppSidebar.tsx` | Angebote-Link |
+| `src/components/app/AppSidebar.tsx` | Mitglieder-Link |
 | `supabase/config.toml` | Neue Edge Functions |
-| `src/components/crm/LeadDetailModal.tsx` | Angebots-Tab |
 
 ---
 
 ## Naechste Schritte nach Implementierung
 
-1. **Dashboard testen**: Pruefe ob Top-Leads und Analysen angezeigt werden
-2. **Test-Call analysieren**: Starte KI-Analyse und pruefe Ergebnisse
-3. **Angebot erstellen**: Erstelle ein Angebot fuer einen Lead
-4. **Approval-Flow testen**: Teamleiter genehmigt Angebot
-5. **Angebotsseite pruefen**: Oeffne /offer/{token} im Browser
-6. **Zahlung freischalten**: Teste payment_unlocked Toggle
+1. **Migration ausfuehren**: Alle neuen Tabellen erstellen
+2. **Test-Daten**: Demo-Kurse und Module anlegen
+3. **Kunden-Flow testen**: Kurs starten, Fortschritt speichern
+4. **Payment-Flow testen**: Zahlung -> Member erstellen
+5. **Realtime testen**: Fortschritt in Admin-View pruefen
+6. **n8n Integration**: Edge Functions mit n8n verbinden
