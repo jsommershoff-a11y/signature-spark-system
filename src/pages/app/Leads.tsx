@@ -1,39 +1,87 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useLeads } from '@/hooks/useLeads';
+import { LeadFilters } from '@/components/crm/LeadFilters';
+import { LeadTable } from '@/components/crm/LeadTable';
+import { CreateLeadDialog } from '@/components/crm/CreateLeadDialog';
+import { 
+  LeadFilters as LeadFiltersType,
+  CrmLead,
+  CreateLeadInput,
+  PipelineStage,
+} from '@/types/crm';
 
 export default function Leads() {
+  const [filters, setFilters] = useState<LeadFiltersType>({});
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  
+  const { 
+    leads, 
+    loading, 
+    createLead,
+    deleteLead,
+    updatePipelineStage,
+  } = useLeads(filters);
+
+  const handleCreateLead = async (data: CreateLeadInput) => {
+    await createLead(data);
+  };
+
+  const handleViewLead = (lead: CrmLead) => {
+    // TODO: Open detail modal
+    console.log('View lead:', lead);
+  };
+
+  const handleEditLead = (lead: CrmLead) => {
+    // TODO: Open edit modal
+    console.log('Edit lead:', lead);
+  };
+
+  const handleDeleteLead = async (lead: CrmLead) => {
+    if (window.confirm(`Möchtest du ${lead.first_name} ${lead.last_name || ''} wirklich löschen?`)) {
+      await deleteLead(lead.id);
+    }
+  };
+
+  const handleStageChange = async (leadId: string, stage: PipelineStage) => {
+    await updatePipelineStage(leadId, stage);
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Leads</h1>
-        <p className="text-muted-foreground">
-          Verwalte deine Interessenten und neue Anfragen
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Leads</h1>
+          <p className="text-muted-foreground">
+            Verwalte deine Interessenten und neue Anfragen
+          </p>
+        </div>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Neuer Lead
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
-            Lead-Management
-          </CardTitle>
-          <CardDescription>
-            Das Lead-Management wird in Kürze verfügbar sein.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Bald verfügbare Funktionen:
-          </p>
-          <ul className="mt-4 list-disc list-inside text-sm text-muted-foreground space-y-1">
-            <li>Lead-Liste mit Filteroptionen</li>
-            <li>Zuweisung an Mitarbeiter</li>
-            <li>Status-Tracking (Neu, Kontaktiert, Qualifiziert, etc.)</li>
-            <li>Notizen und Aktivitäten</li>
-            <li>Konvertierung zu Kunden</li>
-          </ul>
-        </CardContent>
-      </Card>
+      <LeadFilters 
+        filters={filters}
+        onFiltersChange={setFilters}
+      />
+
+      <LeadTable
+        leads={leads}
+        loading={loading}
+        onViewLead={handleViewLead}
+        onEditLead={handleEditLead}
+        onDeleteLead={handleDeleteLead}
+        onStageChange={handleStageChange}
+      />
+
+      <CreateLeadDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSubmit={handleCreateLead}
+      />
     </div>
   );
 }

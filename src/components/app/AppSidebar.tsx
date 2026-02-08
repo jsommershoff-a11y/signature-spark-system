@@ -10,7 +10,8 @@ import {
   Settings, 
   Shield,
   GraduationCap,
-  Building2
+  Building2,
+  Kanban,
 } from 'lucide-react';
 
 interface NavItem {
@@ -46,6 +47,12 @@ const navItems: NavItem[] = [
     minRole: 'mitarbeiter'
   },
   { 
+    label: 'Pipeline', 
+    href: '/app/pipeline', 
+    icon: Kanban,
+    minRole: 'mitarbeiter'
+  },
+  {
     label: 'Kunden', 
     href: '/app/customers', 
     icon: Users,
