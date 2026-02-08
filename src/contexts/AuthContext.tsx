@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AppRole, getHighestRole, hasMinRole as checkMinRole } from '@/lib/roles';
 
 const VIEW_AS_STORAGE_KEY = 'admin_viewAsRole';
+const VIEW_AS_START_KEY = 'admin_viewAsStartTime';
 
 const getInitialViewAsRole = (): AppRole | null => {
   try {
@@ -72,8 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       if (role) {
         sessionStorage.setItem(VIEW_AS_STORAGE_KEY, role);
+        sessionStorage.setItem(VIEW_AS_START_KEY, Date.now().toString());
       } else {
         sessionStorage.removeItem(VIEW_AS_STORAGE_KEY);
+        sessionStorage.removeItem(VIEW_AS_START_KEY);
       }
     } catch {
       // sessionStorage not available
@@ -199,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setViewAsRoleState(null);
     try {
       sessionStorage.removeItem(VIEW_AS_STORAGE_KEY);
+      sessionStorage.removeItem(VIEW_AS_START_KEY);
     } catch {
       // sessionStorage not available
     }
