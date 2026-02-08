@@ -1,103 +1,145 @@
 
+# Admin-Bereichsauswahl nach Login
 
-# Test-Benutzer jsommershoff@googlemail.com einrichten
+## Uebersicht
 
-## Aktueller Status
+Dieses Feature ermoeglicht Administratoren, nach dem Login eine Ansichtsrolle auszuwaehlen ("Ansicht als"). Der Admin behaelt dabei alle Berechtigungen, sieht aber die App aus der Perspektive der gewaehlten Rolle.
 
-| Eigenschaft | Wert |
-|-------------|------|
-| Email | jsommershoff@googlemail.com |
-| User ID | 2b61d31a-e087-4ce3-bc34-3e39786fa9bd |
-| Profile ID | ce75e352-10e4-4d01-83cb-28436366845e |
-| Aktuelle Rolle | kunde |
-| Member-Eintrag | Nein |
-| Call Queue | Nein |
+## Funktionsweise
 
-## Erforderliche SQL-Migration
-
-```sql
--- 1. Profil mit Namen aktualisieren
-UPDATE profiles 
-SET first_name = 'Jan', 
-    last_name = 'Sommershoff', 
-    full_name = 'Jan Sommershoff'
-WHERE user_id = '2b61d31a-e087-4ce3-bc34-3e39786fa9bd';
-
--- 2. Mitarbeiter-Rolle hinzufuegen
-INSERT INTO user_roles (user_id, role)
-VALUES ('2b61d31a-e087-4ce3-bc34-3e39786fa9bd', 'mitarbeiter')
-ON CONFLICT (user_id, role) DO NOTHING;
-
--- 3. Member-Eintrag fuer LMS-Zugang erstellen
-INSERT INTO members (user_id, profile_id, status, onboarded_at, last_active_at)
-VALUES (
-  '2b61d31a-e087-4ce3-bc34-3e39786fa9bd',
-  'ce75e352-10e4-4d01-83cb-28436366845e',
-  'active',
-  now(),
-  now()
-);
-
--- 4. Call Queue fuer heute erstellen
-INSERT INTO call_queues (assigned_to, date, generated_by)
-VALUES (
-  'ce75e352-10e4-4d01-83cb-28436366845e',
-  '2026-02-08',
-  'manual'
-);
-
--- 5. Call Queue Items aus bestehenden Pipeline-Items generieren
-WITH new_queue AS (
-  SELECT id FROM call_queues 
-  WHERE assigned_to = 'ce75e352-10e4-4d01-83cb-28436366845e' 
-  AND date = '2026-02-08'
-),
-ranked_items AS (
-  SELECT 
-    pi.lead_id,
-    pi.stage,
-    pi.pipeline_priority_score,
-    ROW_NUMBER() OVER (ORDER BY pi.pipeline_priority_score DESC) as priority_rank,
-    CASE pi.stage
-      WHEN 'new_lead' THEN 'Erstgespraech'
-      WHEN 'setter_call_scheduled' THEN 'Geplanter Call'
-      WHEN 'setter_call_done' THEN 'Follow-up'
-      WHEN 'analysis_ready' THEN 'Analyse besprechen'
-      WHEN 'closer_call_scheduled' THEN 'Closer Call'
-      WHEN 'offer_draft' THEN 'Angebot finalisieren'
-      WHEN 'offer_sent' THEN 'Angebot nachfassen'
-      ELSE 'Kontaktieren'
-    END as reason
-  FROM pipeline_items pi
-  WHERE pi.stage NOT IN ('won', 'lost')
-  LIMIT 7
-)
-INSERT INTO call_queue_items (queue_id, lead_id, priority_rank, reason, status)
-SELECT 
-  (SELECT id FROM new_queue),
-  ri.lead_id,
-  ri.priority_rank,
-  ri.reason,
-  'pending'
-FROM ranked_items ri;
+```text
++------------------+     +-------------------+     +------------------+
+|  Admin Login     | --> | Rollen-Auswahl    | --> | App mit View-As  |
+|                  |     | (Modal/Selector)  |     | Banner + Sidebar |
++------------------+     +-------------------+     +------------------+
+                                                          |
+                                                          v
+                                                   +------------------+
+                                                   | Jederzeit        |
+                                                   | wechselbar       |
+                                                   +------------------+
 ```
 
-## Code-Aenderung: useCallQueue Hook Fix
+## Benutzer-Erlebnis
 
-Der Hook verwendet `assigned_to` korrekt - das passt bereits zur Datenbank-Struktur.
+1. **Login als Admin** - Normale Authentifizierung
+2. **Rollen-Selector erscheint** - Admin waehlt "Ansicht als" Rolle
+3. **Dashboard zeigt gewaehlte Perspektive** - Navigation und Widgets passen sich an
+4. **Sichtbarer Hinweis** - Banner zeigt aktive Ansichtsrolle
+5. **Schneller Wechsel** - Jederzeit ueber Header umschaltbar
 
-## Erwartetes Ergebnis nach Migration
+## Aenderungen
 
-| Feature | Status |
-|---------|--------|
-| Rolle | mitarbeiter + kunde |
-| LMS-Zugang | Aktiv (member status = active) |
-| Call Queue | 7 Items fuer heute |
+### 1. AuthContext erweitern
 
-## UI-Verifikation nach Migration
+Neue Eigenschaften im AuthContext:
 
-1. **Login** als jsommershoff@googlemail.com
-2. **Dashboard** - CallQueueWidget zeigt 7 priorisierte Leads
-3. **Kurse** - /app/courses zeigt 2 Kurse (Closer Mastery, Lead-Generierung)
-4. **markAsCalled** - Phone-Button aendert Lead-Status
+| Eigenschaft | Typ | Beschreibung |
+|-------------|-----|--------------|
+| `viewAsRole` | `AppRole \| null` | Aktuell simulierte Rolle (nur fuer Admins) |
+| `setViewAsRole` | `(role: AppRole \| null) => void` | Rolle wechseln |
+| `effectiveRole` | `AppRole \| null` | Die aktuell wirksame Rolle (viewAsRole oder highestRole) |
+| `isViewingAs` | `boolean` | True wenn Admin eine andere Rolle simuliert |
 
+Die `hasMinRole` und `hasRole` Funktionen werden angepasst, um `effectiveRole` statt `highestRole` zu verwenden.
+
+### 2. Neue Komponente: AdminViewSwitcher
+
+Position: Im Header neben dem UserMenu (nur fuer Admins sichtbar)
+
+```text
++--------------------------------------------------+
+|  [Logo]                    [Ansicht: Admin v] [Avatar] |
++--------------------------------------------------+
+```
+
+Funktionen:
+- Dropdown mit allen Rollen
+- Aktuelle Ansichtsrolle hervorgehoben
+- "Zurueck zu Admin" Option
+
+### 3. View-As Banner
+
+Wenn Admin eine andere Rolle simuliert, erscheint ein dezenter Banner:
+
+```text
++--------------------------------------------------+
+| Du siehst die App als "Mitarbeiter"    [Beenden] |
++--------------------------------------------------+
+```
+
+### 4. Angepasste Komponenten
+
+**AppSidebar.tsx**
+- Verwendet `effectiveRole` statt `highestRole` fuer Navigation
+- Admin-Menuepunkt bleibt immer sichtbar (wenn echter Admin)
+
+**Dashboard.tsx**
+- Rendert Dashboard basierend auf `effectiveRole`
+- Admin sieht "echtes" Admin-Dashboard nur wenn viewAsRole = null
+
+**ProtectedRoute.tsx**
+- Echte Admin-Rolle wird fuer Zugangsrechte beibehalten
+- viewAsRole beeinflusst nur UI, nicht Security
+
+**UserMenu.tsx**
+- Zeigt simulierte Rolle im Badge
+- Hinweis wenn View-As aktiv
+
+## Neue Dateien
+
+| Datei | Zweck |
+|-------|-------|
+| `src/components/app/AdminViewSwitcher.tsx` | Rollen-Dropdown fuer Admins |
+| `src/components/app/ViewAsBanner.tsx` | Hinweis-Banner bei aktiver Simulation |
+
+## Sicherheitshinweise
+
+- **Keine echte Impersonation** - Admin bleibt Admin, nur UI aendert sich
+- **RLS bleibt unveraendert** - Datenbank-Abfragen nutzen echte Benutzer-ID
+- **Nur clientseitig** - Kein Backend-Impact
+
+## Technische Details
+
+### AuthContext Erweiterung
+
+```typescript
+// Neue State-Variablen
+const [viewAsRole, setViewAsRole] = useState<AppRole | null>(null);
+
+// Berechnete Werte
+const isRealAdmin = roles.includes('admin');
+const isViewingAs = isRealAdmin && viewAsRole !== null;
+const effectiveRole = isViewingAs ? viewAsRole : getHighestRole(roles);
+
+// Angepasste Funktionen
+const hasMinRoleCheck = (minRole: AppRole) => {
+  // Echte Admin-Berechtigungen fuer geschuetzte Routen
+  if (roles.includes('admin')) return true;
+  return checkMinRole(effectiveRole, minRole);
+};
+```
+
+### AdminViewSwitcher Komponente
+
+```typescript
+// Nur fuer echte Admins sichtbar
+// Dropdown mit allen Rollen
+// Persistiert Auswahl in sessionStorage (optional)
+```
+
+## Zusammenfassung
+
+| Bereich | Aenderung |
+|---------|-----------|
+| AuthContext | +4 neue Eigenschaften, angepasste Logik |
+| AppLayout | AdminViewSwitcher + ViewAsBanner |
+| AppSidebar | Verwendet effectiveRole |
+| Dashboard | Verwendet effectiveRole |
+| Neue Dateien | 2 neue Komponenten |
+
+Nach Umsetzung kann ein Admin:
+- Alle Bereiche sehen (voller Zugang bleibt)
+- UI-Perspektive jeder Rolle erleben
+- Schnell zwischen Ansichten wechseln
+- Kunden-/Mitarbeiter-Erfahrung testen
