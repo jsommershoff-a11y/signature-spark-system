@@ -1,166 +1,176 @@
 
-
-# Test-Daten für Calls und Transkripte erstellen
+# Test-User mit bekannten Zugangsdaten erstellen
 
 ## Ziel
 
-Erstellen von realistischen Test-Daten in der Datenbank, damit die `analyze-call` Funktion vollständig getestet werden kann.
+Einen Test-User mit bekannten Zugangsdaten erstellen, damit automatisierte Browser-Tests (inkl. Analyse-Funktion) durchgeführt werden können.
 
 ---
 
-## Vorhandene Daten
+## Aktueller Stand
 
-| Tabelle | Daten |
-|---------|-------|
-| crm_leads | 5 Leads vorhanden (Max Mustermann, Anna Schmidt, etc.) |
-| profiles | 1 Profil: Jan Sommershoff (Admin) |
-| calls | Leer |
-| transcripts | Leer |
+| User | E-Mail | Rolle |
+|------|--------|-------|
+| Jan Sommershoff | j.s@krsimmobilien.de | admin |
 
----
-
-## Zu erstellende Test-Daten
-
-### 1. Calls (3 Stück mit verschiedenen Status)
-
-| # | Lead | Status | Beschreibung |
-|---|------|--------|--------------|
-| 1 | Max Mustermann | `transcribed` | Bereit zur Analyse |
-| 2 | Anna Schmidt | `transcribed` | Bereit zur Analyse |
-| 3 | Thomas Weber | `completed` | Noch ohne Transkript |
-
-### 2. Transkripte (2 Stück)
-
-Realistische Verkaufsgespräch-Transkripte mit:
-- Vollständigem Text
-- Segmenten (Speaker, Timestamps)
-- Status `done`
-- Word Count und Confidence Score
+Es existiert nur 1 User im System. Für automatisierte Tests benötigen wir einen User mit bekannten Zugangsdaten.
 
 ---
 
-## SQL-Statements
+## Lösung: Edge Function für Test-User
 
-### Step 1: Calls einfügen
+Da die Supabase Admin-API nur serverseitig verfügbar ist, erstellen wir eine Edge Function, die einen Test-User anlegt.
 
-```sql
-INSERT INTO calls (lead_id, conducted_by, provider, call_type, status, scheduled_at, started_at, ended_at, duration_seconds, notes)
-VALUES 
-  -- Call 1: Max Mustermann - transcribed
-  ('b73b9a6c-c7e7-49d8-b95d-43ec65e573b9', '2824ab54-05a2-4358-8a98-4ec7ae1262f9', 
-   'manual', 'phone', 'transcribed', 
-   NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days' + INTERVAL '1 hour', 
-   NOW() - INTERVAL '2 days' + INTERVAL '1 hour 45 minutes', 2700,
-   'Erstes Verkaufsgespräch - Interesse an Premium-Paket'),
-   
-  -- Call 2: Anna Schmidt - transcribed  
-  ('1a1134e0-4be8-4433-9d2a-d242d95ce482', '2824ab54-05a2-4358-8a98-4ec7ae1262f9',
-   'zoom', 'zoom', 'transcribed',
-   NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day' + INTERVAL '2 hours',
-   NOW() - INTERVAL '1 day' + INTERVAL '2 hours 30 minutes', 1800,
-   'Follow-up Call nach Demo'),
-   
-  -- Call 3: Thomas Weber - completed (kein Transkript)
-  ('56de6996-f58f-4959-90e0-c7f83dd84ebb', '2824ab54-05a2-4358-8a98-4ec7ae1262f9',
-   'twilio', 'phone', 'completed',
-   NOW() - INTERVAL '3 hours', NOW() - INTERVAL '2 hours 30 minutes',
-   NOW() - INTERVAL '2 hours', 1800,
-   'Discovery Call');
+### Test-User Daten
+
+| Feld | Wert |
+|------|------|
+| E-Mail | `test-staff@krs-test.dev` |
+| Passwort | `TestUser2026!` |
+| Vorname | Test |
+| Nachname | Mitarbeiter |
+| Rolle | `mitarbeiter` |
+
+---
+
+## Implementierungsschritte
+
+### Step 01: Edge Function erstellen
+
+Neue Edge Function `create-test-user`:
+
+```text
+supabase/functions/create-test-user/index.ts
 ```
 
-### Step 2: Transkripte einfügen
+Funktionalität:
+- Erstellt User via Supabase Admin API
+- Setzt Profil-Daten
+- Weist Rolle zu
+- Nur in Development erlaubt (Sicherheit)
 
-```sql
--- Transkript für Call 1 (Max Mustermann)
-INSERT INTO transcripts (call_id, provider, language, status, text, word_count, confidence_score, segments)
-SELECT 
-  id, 'whisper', 'de', 'done',
-  'Verkäufer: Guten Tag Herr Mustermann, vielen Dank dass Sie sich die Zeit nehmen. 
-Kunde: Ja, gerne. Ich habe mir Ihre Lösung angeschaut und finde das Konzept interessant.
-Verkäufer: Das freut mich zu hören. Was genau hat Sie angesprochen?
-Kunde: Vor allem die Automatisierung der Prozesse. Wir verlieren aktuell viel Zeit mit manuellen Aufgaben.
-Verkäufer: Das verstehe ich. Wie viele Stunden pro Woche verbringen Sie damit?
-Kunde: Ich würde sagen mindestens 15-20 Stunden pro Woche, nur für Reporting.
-Verkäufer: Das ist erheblich. Mit unserer Lösung könnten Sie das auf 2-3 Stunden reduzieren.
-Kunde: Das klingt gut, aber was kostet das?
-Verkäufer: Das Premium-Paket liegt bei 499€ pro Monat. Dafür bekommen Sie alle Features.
-Kunde: Das ist schon eine Investition. Gibt es eine Testphase?
-Verkäufer: Ja, wir bieten 14 Tage kostenlos an. Ohne Risiko.
-Kunde: Okay, das klingt fair. Ich würde das gerne mit meinem Partner besprechen.
-Verkäufer: Natürlich. Wann kann ich mich wieder melden?
-Kunde: Nächste Woche Mittwoch wäre gut.
-Verkäufer: Perfekt, ich trage das ein. Vielen Dank für das Gespräch!',
-  280, 0.94,
-  '[{"start": 0, "end": 8, "speaker": "Verkäufer", "text": "Guten Tag Herr Mustermann, vielen Dank dass Sie sich die Zeit nehmen.", "confidence": 0.95},
-    {"start": 8, "end": 15, "speaker": "Kunde", "text": "Ja, gerne. Ich habe mir Ihre Lösung angeschaut und finde das Konzept interessant.", "confidence": 0.93},
-    {"start": 15, "end": 22, "speaker": "Verkäufer", "text": "Das freut mich zu hören. Was genau hat Sie angesprochen?", "confidence": 0.96},
-    {"start": 22, "end": 35, "speaker": "Kunde", "text": "Vor allem die Automatisierung der Prozesse. Wir verlieren aktuell viel Zeit mit manuellen Aufgaben.", "confidence": 0.92}]'::jsonb
-FROM calls 
-WHERE lead_id = 'b73b9a6c-c7e7-49d8-b95d-43ec65e573b9'
-LIMIT 1;
+### Step 02: Function aufrufen und User erstellen
 
--- Transkript für Call 2 (Anna Schmidt)
-INSERT INTO transcripts (call_id, provider, language, status, text, word_count, confidence_score, segments)
-SELECT 
-  id, 'whisper', 'de', 'done',
-  'Verkäufer: Hallo Frau Schmidt, schön Sie wiederzusehen. Wie war die Demo letzte Woche?
-Kunde: Sehr beeindruckend. Mein Team war begeistert von der Benutzeroberfläche.
-Verkäufer: Das freut mich. Gab es noch offene Fragen?
-Kunde: Ja, zur Integration. Funktioniert das mit unserem SAP-System?
-Verkäufer: Absolut, wir haben eine zertifizierte SAP-Schnittstelle. Die Einrichtung dauert etwa 2 Tage.
-Kunde: Und was ist mit dem Support? Wir brauchen schnelle Reaktionszeiten.
-Verkäufer: Im Business-Paket haben Sie 4-Stunden-Reaktionszeit, im Enterprise-Paket sogar 1 Stunde.
-Kunde: Das Enterprise-Paket wäre dann das richtige für uns. Was kostet das genau?
-Verkäufer: 1.499€ pro Monat bei jährlicher Zahlung. Bei monatlicher Zahlung 1.699€.
-Kunde: Das muss ich mit der Geschäftsführung abstimmen. Wann brauchen Sie eine Entscheidung?
-Verkäufer: Unser aktuelles Angebot gilt noch bis Ende des Monats.
-Kunde: Verstanden. Ich melde mich bis Freitag.
-Verkäufer: Perfekt. Soll ich Ihnen nochmal alle Details per E-Mail schicken?
-Kunde: Ja, das wäre hilfreich. Danke!',
-  245, 0.91,
-  '[{"start": 0, "end": 10, "speaker": "Verkäufer", "text": "Hallo Frau Schmidt, schön Sie wiederzusehen. Wie war die Demo letzte Woche?", "confidence": 0.94},
-    {"start": 10, "end": 20, "speaker": "Kunde", "text": "Sehr beeindruckend. Mein Team war begeistert von der Benutzeroberfläche.", "confidence": 0.89},
-    {"start": 20, "end": 28, "speaker": "Verkäufer", "text": "Das freut mich. Gab es noch offene Fragen?", "confidence": 0.95},
-    {"start": 28, "end": 40, "speaker": "Kunde", "text": "Ja, zur Integration. Funktioniert das mit unserem SAP-System?", "confidence": 0.92}]'::jsonb
-FROM calls
-WHERE lead_id = '1a1134e0-4be8-4433-9d2a-d242d95ce482'
-LIMIT 1;
+Nach Deployment die Function aufrufen um den Test-User zu erstellen.
+
+### Step 03: Login testen
+
+Mit den bekannten Zugangsdaten einloggen und zur Calls-Seite navigieren.
+
+---
+
+## Technische Details
+
+### Edge Function Code (create-test-user/index.ts)
+
+```typescript
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    })
+
+    const testEmail = 'test-staff@krs-test.dev'
+    const testPassword = 'TestUser2026!'
+    
+    // Check if user already exists
+    const { data: existingUsers } = await supabase.auth.admin.listUsers()
+    const existingUser = existingUsers?.users?.find(u => u.email === testEmail)
+    
+    if (existingUser) {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Test user already exists',
+          user_id: existingUser.id,
+          email: testEmail 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Create user
+    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      email: testEmail,
+      password: testPassword,
+      email_confirm: true,
+      user_metadata: {
+        first_name: 'Test',
+        last_name: 'Mitarbeiter',
+        full_name: 'Test Mitarbeiter'
+      }
+    })
+
+    if (createError) throw createError
+
+    // Create profile
+    await supabase.from('profiles').insert({
+      user_id: newUser.user.id,
+      email: testEmail,
+      first_name: 'Test',
+      last_name: 'Mitarbeiter',
+      full_name: 'Test Mitarbeiter'
+    })
+
+    // Assign mitarbeiter role
+    await supabase.from('user_roles').insert({
+      user_id: newUser.user.id,
+      role: 'mitarbeiter'
+    })
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Test user created',
+        user_id: newUser.user.id,
+        email: testEmail,
+        password: testPassword,
+        role: 'mitarbeiter'
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+})
 ```
+
+---
+
+## Sicherheitshinweise
+
+1. Diese Function ist nur für Entwicklung gedacht
+2. In Produktion sollte sie deaktiviert oder entfernt werden
+3. Der Test-User hat die Rolle `mitarbeiter` (kein Admin)
 
 ---
 
 ## Erwartetes Ergebnis
 
-Nach Ausführung:
+Nach Implementierung:
 
-| Tabelle | Anzahl Datensätze |
-|---------|-------------------|
-| calls | 3 |
-| transcripts | 2 |
+| Zugangsdaten | Wert |
+|--------------|------|
+| E-Mail | `test-staff@krs-test.dev` |
+| Passwort | `TestUser2026!` |
+| Rolle | Mitarbeiter |
 
-### Testbare Szenarien
-
-1. **Call 1 (Max Mustermann)**: Status `transcribed` mit Transkript - Analyse-Button sollte funktionieren
-2. **Call 2 (Anna Schmidt)**: Status `transcribed` mit Transkript - Analyse-Button sollte funktionieren
-3. **Call 3 (Thomas Weber)**: Status `completed` ohne Transkript - Analyse-Button sollte deaktiviert/nicht sichtbar sein
-
----
-
-## Transkript-Inhalte für KI-Analyse
-
-Die Transkripte enthalten absichtlich:
-
-- **Problems identified**: Zeitverlust durch manuelle Prozesse, Integrationsfragen
-- **Objections**: Preis-Einwände, Abstimmung mit Partner/Geschäftsführung
-- **Buying signals**: Interesse an Premium/Enterprise, konkrete Nachfragen
-- **Structogram indicators**: Verschiedene Kommunikationsstile
-- **Next steps**: Konkrete Follow-up Termine
-
----
-
-## Technische Hinweise
-
-- `conducted_by` verweist auf Jan Sommershoff's Profil-ID (nicht user_id)
-- Transkript-Segmente sind im korrekten JSON-Format
-- Timestamps sind relativ zu `NOW()` für aktuelle Daten
-
+Damit kann die Analyse-Funktion auf `/app/calls` getestet werden.
