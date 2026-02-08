@@ -1,17 +1,42 @@
+import { useState } from 'react';
 import { usePipeline, PipelineItemWithLead } from '@/hooks/usePipeline';
+import { useLeads } from '@/hooks/useLeads';
 import { PipelineBoard } from '@/components/crm/PipelineBoard';
-import { PipelineStage } from '@/types/crm';
+import { LeadDetailModal } from '@/components/crm/LeadDetailModal';
+import { PipelineStage, CrmLead } from '@/types/crm';
 
 export default function Pipeline() {
+  const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+
   const { 
     pipelineByStage, 
     loading,
     moveToStage,
   } = usePipeline();
 
+  const { updateLead, updatePipelineStage } = useLeads();
+
   const handleItemClick = (item: PipelineItemWithLead) => {
-    // TODO: Open lead detail modal
-    console.log('Pipeline item clicked:', item);
+    if (item.lead) {
+      // Transform the lead to include pipeline_item
+      const leadWithPipeline: CrmLead = {
+        ...item.lead,
+        pipeline_item: {
+          id: item.id,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          lead_id: item.lead_id,
+          stage: item.stage,
+          stage_updated_at: item.stage_updated_at,
+          pipeline_priority_score: item.pipeline_priority_score,
+          purchase_readiness: item.purchase_readiness,
+          urgency: item.urgency,
+        }
+      };
+      setSelectedLead(leadWithPipeline);
+      setDetailModalOpen(true);
+    }
   };
 
   const handleStageChange = async (itemId: string, stage: PipelineStage) => {
@@ -32,6 +57,14 @@ export default function Pipeline() {
         loading={loading}
         onItemClick={handleItemClick}
         onStageChange={handleStageChange}
+      />
+
+      <LeadDetailModal
+        lead={selectedLead}
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        onSave={updateLead}
+        onStageChange={updatePipelineStage}
       />
     </div>
   );

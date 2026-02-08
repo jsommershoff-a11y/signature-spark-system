@@ -5,6 +5,7 @@ import { useLeads } from '@/hooks/useLeads';
 import { LeadFilters } from '@/components/crm/LeadFilters';
 import { LeadTable } from '@/components/crm/LeadTable';
 import { CreateLeadDialog } from '@/components/crm/CreateLeadDialog';
+import { LeadDetailModal } from '@/components/crm/LeadDetailModal';
 import { 
   LeadFilters as LeadFiltersType,
   CrmLead,
@@ -15,11 +16,14 @@ import {
 export default function Leads() {
   const [filters, setFilters] = useState<LeadFiltersType>({});
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   
   const { 
     leads, 
     loading, 
     createLead,
+    updateLead,
     deleteLead,
     updatePipelineStage,
   } = useLeads(filters);
@@ -29,13 +33,13 @@ export default function Leads() {
   };
 
   const handleViewLead = (lead: CrmLead) => {
-    // TODO: Open detail modal
-    console.log('View lead:', lead);
+    setSelectedLead(lead);
+    setDetailModalOpen(true);
   };
 
   const handleEditLead = (lead: CrmLead) => {
-    // TODO: Open edit modal
-    console.log('Edit lead:', lead);
+    setSelectedLead(lead);
+    setDetailModalOpen(true);
   };
 
   const handleDeleteLead = async (lead: CrmLead) => {
@@ -81,6 +85,14 @@ export default function Leads() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         onSubmit={handleCreateLead}
+      />
+
+      <LeadDetailModal
+        lead={selectedLead}
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        onSave={updateLead}
+        onStageChange={updatePipelineStage}
       />
     </div>
   );
