@@ -9,7 +9,14 @@ import {
   GraduationCap,
   Clock
 } from 'lucide-react';
-import { TopLeadsWidget, RecentAnalysesWidget, PipelineStatsWidget, CallQueueWidget } from '@/components/dashboard';
+import { 
+  TopLeadsWidget, 
+  RecentAnalysesWidget, 
+  PipelineStatsWidget, 
+  CallQueueWidget,
+  FollowupApprovalsWidget,
+  CustomerAvatarWidget
+} from '@/components/dashboard';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function Dashboard() {
@@ -130,6 +137,8 @@ export default function Dashboard() {
         <TopLeadsWidget leads={topLeads} isLoading={topLeadsLoading} />
         <RecentAnalysesWidget analyses={recentAnalyses} isLoading={recentAnalysesLoading} />
         <PipelineStatsWidget stats={pipelineStats} isLoading={pipelineStatsLoading} />
+        <FollowupApprovalsWidget />
+        <CustomerAvatarWidget />
       </div>
     </div>
   );
@@ -198,6 +207,8 @@ export default function Dashboard() {
         <TopLeadsWidget leads={topLeads} isLoading={topLeadsLoading} />
         <RecentAnalysesWidget analyses={recentAnalyses} isLoading={recentAnalysesLoading} />
         <PipelineStatsWidget stats={pipelineStats} isLoading={pipelineStatsLoading} />
+        <FollowupApprovalsWidget />
+        <CustomerAvatarWidget />
       </div>
     </div>
   );
@@ -220,10 +231,9 @@ export default function Dashboard() {
       </div>
 
       {/* Render dashboard based on effective role */}
-      {isEffectiveAdmin && !isViewingAs && renderAdminDashboard()}
-      {isEffectiveAdmin && isViewingAs && renderAdminDashboard()}
+      {isEffectiveAdmin && renderAdminDashboard()}
       {!isEffectiveAdmin && isEffectiveStaff && renderStaffDashboard()}
-      {isEffectiveKunde && !isEffectiveStaff && renderKundeDashboard()}
+      {!isEffectiveStaff && renderKundeDashboard()}
 
       {/* Quick Actions - only for Kunde */}
       {isEffectiveKunde && !isEffectiveStaff && (

@@ -9,6 +9,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Eye, ChevronDown, Shield } from 'lucide-react';
 
 const VIEW_AS_ROLES: AppRole[] = ['admin', 'geschaeftsfuehrung', 'teamleiter', 'mitarbeiter', 'kunde'];
@@ -23,19 +29,28 @@ export function AdminViewSwitcher() {
   const currentLabel = effectiveRole ? ROLE_LABELS[effectiveRole] : 'Keine Rolle';
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant={isViewingAs ? "secondary" : "outline"} 
-          size="sm" 
-          className="gap-2"
-        >
-          <Eye className="h-4 w-4" />
-          <span className="hidden sm:inline">Ansicht:</span>
-          <span className="font-medium">{currentLabel}</span>
-          <ChevronDown className="h-3 w-3" />
-        </Button>
-      </DropdownMenuTrigger>
+    <TooltipProvider>
+      <Tooltip>
+        <DropdownMenu>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant={isViewingAs ? "secondary" : "outline"} 
+                size="sm" 
+                className="gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                <span className="hidden sm:inline">Ansicht:</span>
+                <span className="font-medium">{currentLabel}</span>
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-[220px]">
+            <p className="text-sm">
+              Wechsle die Ansicht, um die App aus der Perspektive verschiedener Benutzerrollen zu erleben.
+            </p>
+          </TooltipContent>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex items-center gap-2">
           <Shield className="h-4 w-4" />
@@ -68,7 +83,9 @@ export function AdminViewSwitcher() {
             </DropdownMenuItem>
           </>
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
