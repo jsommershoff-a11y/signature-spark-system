@@ -1,145 +1,102 @@
 
-# Admin-Bereichsauswahl nach Login
 
-## Uebersicht
+# sessionStorage-Persistierung für Admin View-As
 
-Dieses Feature ermoeglicht Administratoren, nach dem Login eine Ansichtsrolle auszuwaehlen ("Ansicht als"). Der Admin behaelt dabei alle Berechtigungen, sieht aber die App aus der Perspektive der gewaehlten Rolle.
+## Übersicht
 
-## Funktionsweise
+Die viewAsRole soll in sessionStorage gespeichert werden, damit die Admin-Ansichtswahl bei Seitenwechsel und Refresh erhalten bleibt.
+
+## Änderungen
+
+### AuthContext.tsx
+
+| Änderung | Beschreibung |
+|----------|--------------|
+| Initialisierung | `viewAsRole` aus sessionStorage laden |
+| Setter-Wrapper | Bei Änderung in sessionStorage speichern |
+| Sign-Out | sessionStorage leeren |
+| Rollen-Laden | Nach Rollen-Fetch prüfen ob gespeicherte Rolle noch gültig |
+
+### Technische Umsetzung
 
 ```text
 +------------------+     +-------------------+     +------------------+
-|  Admin Login     | --> | Rollen-Auswahl    | --> | App mit View-As  |
-|                  |     | (Modal/Selector)  |     | Banner + Sidebar |
+| Admin Login      | --> | sessionStorage    | --> | viewAsRole State |
+|                  |     | "admin_viewAsRole"|     | wird gesetzt     |
 +------------------+     +-------------------+     +------------------+
-                                                          |
-                                                          v
-                                                   +------------------+
-                                                   | Jederzeit        |
-                                                   | wechselbar       |
-                                                   +------------------+
+         |                        ^
+         |                        |
+         v                        |
++------------------+     +-------------------+
+| setViewAsRole()  | --> | sessionStorage    |
+|                  |     | schreiben         |
++------------------+     +-------------------+
 ```
 
-## Benutzer-Erlebnis
+### Code-Änderungen
 
-1. **Login als Admin** - Normale Authentifizierung
-2. **Rollen-Selector erscheint** - Admin waehlt "Ansicht als" Rolle
-3. **Dashboard zeigt gewaehlte Perspektive** - Navigation und Widgets passen sich an
-4. **Sichtbarer Hinweis** - Banner zeigt aktive Ansichtsrolle
-5. **Schneller Wechsel** - Jederzeit ueber Header umschaltbar
-
-## Aenderungen
-
-### 1. AuthContext erweitern
-
-Neue Eigenschaften im AuthContext:
-
-| Eigenschaft | Typ | Beschreibung |
-|-------------|-----|--------------|
-| `viewAsRole` | `AppRole \| null` | Aktuell simulierte Rolle (nur fuer Admins) |
-| `setViewAsRole` | `(role: AppRole \| null) => void` | Rolle wechseln |
-| `effectiveRole` | `AppRole \| null` | Die aktuell wirksame Rolle (viewAsRole oder highestRole) |
-| `isViewingAs` | `boolean` | True wenn Admin eine andere Rolle simuliert |
-
-Die `hasMinRole` und `hasRole` Funktionen werden angepasst, um `effectiveRole` statt `highestRole` zu verwenden.
-
-### 2. Neue Komponente: AdminViewSwitcher
-
-Position: Im Header neben dem UserMenu (nur fuer Admins sichtbar)
-
-```text
-+--------------------------------------------------+
-|  [Logo]                    [Ansicht: Admin v] [Avatar] |
-+--------------------------------------------------+
-```
-
-Funktionen:
-- Dropdown mit allen Rollen
-- Aktuelle Ansichtsrolle hervorgehoben
-- "Zurueck zu Admin" Option
-
-### 3. View-As Banner
-
-Wenn Admin eine andere Rolle simuliert, erscheint ein dezenter Banner:
-
-```text
-+--------------------------------------------------+
-| Du siehst die App als "Mitarbeiter"    [Beenden] |
-+--------------------------------------------------+
-```
-
-### 4. Angepasste Komponenten
-
-**AppSidebar.tsx**
-- Verwendet `effectiveRole` statt `highestRole` fuer Navigation
-- Admin-Menuepunkt bleibt immer sichtbar (wenn echter Admin)
-
-**Dashboard.tsx**
-- Rendert Dashboard basierend auf `effectiveRole`
-- Admin sieht "echtes" Admin-Dashboard nur wenn viewAsRole = null
-
-**ProtectedRoute.tsx**
-- Echte Admin-Rolle wird fuer Zugangsrechte beibehalten
-- viewAsRole beeinflusst nur UI, nicht Security
-
-**UserMenu.tsx**
-- Zeigt simulierte Rolle im Badge
-- Hinweis wenn View-As aktiv
-
-## Neue Dateien
-
-| Datei | Zweck |
-|-------|-------|
-| `src/components/app/AdminViewSwitcher.tsx` | Rollen-Dropdown fuer Admins |
-| `src/components/app/ViewAsBanner.tsx` | Hinweis-Banner bei aktiver Simulation |
-
-## Sicherheitshinweise
-
-- **Keine echte Impersonation** - Admin bleibt Admin, nur UI aendert sich
-- **RLS bleibt unveraendert** - Datenbank-Abfragen nutzen echte Benutzer-ID
-- **Nur clientseitig** - Kein Backend-Impact
-
-## Technische Details
-
-### AuthContext Erweiterung
-
+**1. Storage-Key als Konstante**
 ```typescript
-// Neue State-Variablen
-const [viewAsRole, setViewAsRole] = useState<AppRole | null>(null);
+const VIEW_AS_STORAGE_KEY = 'admin_viewAsRole';
+```
 
-// Berechnete Werte
-const isRealAdmin = roles.includes('admin');
-const isViewingAs = isRealAdmin && viewAsRole !== null;
-const effectiveRole = isViewingAs ? viewAsRole : getHighestRole(roles);
+**2. Initialer State aus sessionStorage**
+```typescript
+const getInitialViewAsRole = (): AppRole | null => {
+  try {
+    const stored = sessionStorage.getItem(VIEW_AS_STORAGE_KEY);
+    return stored as AppRole | null;
+  } catch {
+    return null;
+  }
+};
 
-// Angepasste Funktionen
-const hasMinRoleCheck = (minRole: AppRole) => {
-  // Echte Admin-Berechtigungen fuer geschuetzte Routen
-  if (roles.includes('admin')) return true;
-  return checkMinRole(effectiveRole, minRole);
+const [viewAsRole, setViewAsRoleState] = useState<AppRole | null>(getInitialViewAsRole);
+```
+
+**3. Wrapper für setViewAsRole**
+```typescript
+const setViewAsRole = (role: AppRole | null) => {
+  setViewAsRoleState(role);
+  try {
+    if (role) {
+      sessionStorage.setItem(VIEW_AS_STORAGE_KEY, role);
+    } else {
+      sessionStorage.removeItem(VIEW_AS_STORAGE_KEY);
+    }
+  } catch {
+    // sessionStorage nicht verfügbar
+  }
 };
 ```
 
-### AdminViewSwitcher Komponente
-
+**4. Bei Sign-Out sessionStorage leeren**
 ```typescript
-// Nur fuer echte Admins sichtbar
-// Dropdown mit allen Rollen
-// Persistiert Auswahl in sessionStorage (optional)
+const signOut = async () => {
+  await supabase.auth.signOut();
+  setUser(null);
+  setSession(null);
+  setProfile(null);
+  setRoles([]);
+  setViewAsRoleState(null);
+  try {
+    sessionStorage.removeItem(VIEW_AS_STORAGE_KEY);
+  } catch {}
+};
 ```
 
-## Zusammenfassung
+**5. Validierung nach Rollen-Laden**
+Nach dem Laden der Rollen wird geprüft, ob der Benutzer noch Admin ist. Falls nicht, wird die gespeicherte viewAsRole gelöscht.
 
-| Bereich | Aenderung |
-|---------|-----------|
-| AuthContext | +4 neue Eigenschaften, angepasste Logik |
-| AppLayout | AdminViewSwitcher + ViewAsBanner |
-| AppSidebar | Verwendet effectiveRole |
-| Dashboard | Verwendet effectiveRole |
-| Neue Dateien | 2 neue Komponenten |
+## Sicherheit
 
-Nach Umsetzung kann ein Admin:
-- Alle Bereiche sehen (voller Zugang bleibt)
-- UI-Perspektive jeder Rolle erleben
-- Schnell zwischen Ansichten wechseln
-- Kunden-/Mitarbeiter-Erfahrung testen
+- sessionStorage ist browser-tab-spezifisch
+- Wird beim Schließen des Tabs automatisch gelöscht
+- Kein Sicherheitsrisiko, da viewAsRole nur UI beeinflusst
+
+## Betroffene Datei
+
+| Datei | Änderungen |
+|-------|------------|
+| `src/contexts/AuthContext.tsx` | Storage-Logik hinzufügen |
+
