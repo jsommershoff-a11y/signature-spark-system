@@ -117,6 +117,95 @@ export type Database = {
         }
         Relationships: []
       }
+      call_queue_items: {
+        Row: {
+          completed_at: string | null
+          context_json: Json | null
+          created_at: string | null
+          id: string
+          lead_id: string
+          outcome: string | null
+          priority_rank: number
+          queue_id: string
+          reason: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          context_json?: Json | null
+          created_at?: string | null
+          id?: string
+          lead_id: string
+          outcome?: string | null
+          priority_rank: number
+          queue_id: string
+          reason?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          context_json?: Json | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string
+          outcome?: string | null
+          priority_rank?: number
+          queue_id?: string
+          reason?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_queue_items_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_queue_items_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "call_queues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_queues: {
+        Row: {
+          assigned_to: string
+          created_at: string | null
+          date: string
+          generated_by: string | null
+          id: string
+          priority_weight: number | null
+        }
+        Insert: {
+          assigned_to: string
+          created_at?: string | null
+          date: string
+          generated_by?: string | null
+          id?: string
+          priority_weight?: number | null
+        }
+        Update: {
+          assigned_to?: string
+          created_at?: string | null
+          date?: string
+          generated_by?: string | null
+          id?: string
+          priority_weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_queues_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calls: {
         Row: {
           call_type: Database["public"]["Enums"]["call_type"] | null
@@ -191,6 +280,103 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      closed_customer_snapshots: {
+        Row: {
+          created_at: string | null
+          id: string
+          lead_id: string
+          member_id: string | null
+          order_id: string
+          snapshot_json: Json
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lead_id: string
+          member_id?: string | null
+          order_id: string
+          snapshot_json: Json
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lead_id?: string
+          member_id?: string | null
+          order_id?: string
+          snapshot_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "closed_customer_snapshots_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "closed_customer_snapshots_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "closed_customer_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          published: boolean | null
+          published_at: string | null
+          required_product:
+            | Database["public"]["Enums"]["membership_product"]
+            | null
+          sort_order: number | null
+          thumbnail_url: string | null
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          published?: boolean | null
+          published_at?: string | null
+          required_product?:
+            | Database["public"]["Enums"]["membership_product"]
+            | null
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          published?: boolean | null
+          published_at?: string | null
+          required_product?:
+            | Database["public"]["Enums"]["membership_product"]
+            | null
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
       }
       crm_leads: {
         Row: {
@@ -351,6 +537,140 @@ export type Database = {
           },
         ]
       }
+      customer_avatar_models: {
+        Row: {
+          avatar_json: Json
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          model_date: string
+          sample_size: number | null
+          version: number
+        }
+        Insert: {
+          avatar_json: Json
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          model_date: string
+          sample_size?: number | null
+          version: number
+        }
+        Update: {
+          avatar_json?: Json
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          model_date?: string
+          sample_size?: number | null
+          version?: number
+        }
+        Relationships: []
+      }
+      followup_plans: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          executed_at: string | null
+          execution_result: Json | null
+          id: string
+          lead_id: string
+          plan_json: Json
+          status: string | null
+          triggered_by: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          executed_at?: string | null
+          execution_result?: Json | null
+          id?: string
+          lead_id: string
+          plan_json?: Json
+          status?: string | null
+          triggered_by?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          executed_at?: string | null
+          execution_result?: Json | null
+          id?: string
+          lead_id?: string
+          plan_json?: Json
+          status?: string | null
+          triggered_by?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_plans_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followup_plans_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      followup_steps: {
+        Row: {
+          content_json: Json | null
+          created_at: string | null
+          executed_at: string | null
+          id: string
+          plan_id: string
+          result_json: Json | null
+          scheduled_at: string | null
+          status: string | null
+          step_order: number
+          step_type: string
+        }
+        Insert: {
+          content_json?: Json | null
+          created_at?: string | null
+          executed_at?: string | null
+          id?: string
+          plan_id: string
+          result_json?: Json | null
+          scheduled_at?: string | null
+          status?: string | null
+          step_order: number
+          step_type: string
+        }
+        Update: {
+          content_json?: Json | null
+          created_at?: string | null
+          executed_at?: string | null
+          id?: string
+          plan_id?: string
+          result_json?: Json | null
+          scheduled_at?: string | null
+          status?: string | null
+          step_order?: number
+          step_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_steps_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "followup_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -413,6 +733,309 @@ export type Database = {
           source?: string
         }
         Relationships: []
+      }
+      lesson_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          last_position_seconds: number | null
+          last_seen_at: string | null
+          lesson_id: string
+          member_id: string
+          progress_percent: number | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["progress_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          last_position_seconds?: number | null
+          last_seen_at?: string | null
+          lesson_id: string
+          member_id: string
+          progress_percent?: number | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["progress_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          last_position_seconds?: number | null
+          last_seen_at?: string | null
+          lesson_id?: string
+          member_id?: string
+          progress_percent?: number | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["progress_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          content_ref: string | null
+          created_at: string | null
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          lesson_type: Database["public"]["Enums"]["lesson_type"] | null
+          meta: Json | null
+          module_id: string
+          name: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          content_ref?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          lesson_type?: Database["public"]["Enums"]["lesson_type"] | null
+          meta?: Json | null
+          module_id: string
+          name: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          content_ref?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          lesson_type?: Database["public"]["Enums"]["lesson_type"] | null
+          meta?: Json | null
+          module_id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_kpis: {
+        Row: {
+          activity_score: number | null
+          created_at: string | null
+          id: string
+          kpi_json: Json | null
+          lesson_completion_rate: number | null
+          member_id: string
+          notes: string | null
+          revenue_value: number | null
+          risk_score: number | null
+          tasks_completion_rate: number | null
+          week_start_date: string
+        }
+        Insert: {
+          activity_score?: number | null
+          created_at?: string | null
+          id?: string
+          kpi_json?: Json | null
+          lesson_completion_rate?: number | null
+          member_id: string
+          notes?: string | null
+          revenue_value?: number | null
+          risk_score?: number | null
+          tasks_completion_rate?: number | null
+          week_start_date: string
+        }
+        Update: {
+          activity_score?: number | null
+          created_at?: string | null
+          id?: string
+          kpi_json?: Json | null
+          lesson_completion_rate?: number | null
+          member_id?: string
+          notes?: string | null
+          revenue_value?: number | null
+          risk_score?: number | null
+          tasks_completion_rate?: number | null
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_kpis_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_active_at: string | null
+          lead_id: string | null
+          meta: Json | null
+          onboarded_at: string | null
+          profile_id: string | null
+          status: Database["public"]["Enums"]["member_status"] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_active_at?: string | null
+          lead_id?: string | null
+          meta?: Json | null
+          onboarded_at?: string | null
+          profile_id?: string | null
+          status?: Database["public"]["Enums"]["member_status"] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_active_at?: string | null
+          lead_id?: string | null
+          meta?: Json | null
+          onboarded_at?: string | null
+          profile_id?: string | null
+          status?: Database["public"]["Enums"]["member_status"] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memberships: {
+        Row: {
+          created_at: string | null
+          ends_at: string | null
+          id: string
+          is_trial: boolean | null
+          member_id: string
+          order_id: string | null
+          product: Database["public"]["Enums"]["membership_product"]
+          starts_at: string | null
+          status: Database["public"]["Enums"]["membership_status"] | null
+          trial_ends_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          is_trial?: boolean | null
+          member_id: string
+          order_id?: string | null
+          product: Database["public"]["Enums"]["membership_product"]
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["membership_status"] | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          is_trial?: boolean | null
+          member_id?: string
+          order_id?: string | null
+          product?: Database["public"]["Enums"]["membership_product"]
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["membership_status"] | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memberships_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modules: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       offers: {
         Row: {
@@ -781,7 +1404,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_current_customer_avatar: {
+        Row: {
+          avatar_json: Json | null
+          confidence_score: number | null
+          created_at: string | null
+          id: string | null
+          model_date: string | null
+          sample_size: number | null
+          version: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_pipeline_priority: {
@@ -839,6 +1473,10 @@ export type Database = {
         | "outbound_manual"
         | "partner"
       lead_status: "new" | "qualified" | "unqualified"
+      lesson_type: "video" | "task" | "worksheet" | "quiz"
+      member_status: "active" | "paused" | "churned"
+      membership_product: "starter" | "growth" | "premium"
+      membership_status: "active" | "inactive" | "pending"
       offer_status:
         | "draft"
         | "pending_review"
@@ -858,6 +1496,7 @@ export type Database = {
         | "payment_unlocked"
         | "won"
         | "lost"
+      progress_status: "not_started" | "in_progress" | "completed"
       structogram_type: "red" | "green" | "blue" | "mixed" | "unknown"
       task_status: "open" | "done" | "blocked"
       task_type: "call" | "followup" | "review_offer" | "intervention"
@@ -1020,6 +1659,10 @@ export const Constants = {
         "partner",
       ],
       lead_status: ["new", "qualified", "unqualified"],
+      lesson_type: ["video", "task", "worksheet", "quiz"],
+      member_status: ["active", "paused", "churned"],
+      membership_product: ["starter", "growth", "premium"],
+      membership_status: ["active", "inactive", "pending"],
       offer_status: [
         "draft",
         "pending_review",
@@ -1041,6 +1684,7 @@ export const Constants = {
         "won",
         "lost",
       ],
+      progress_status: ["not_started", "in_progress", "completed"],
       structogram_type: ["red", "green", "blue", "mixed", "unknown"],
       task_status: ["open", "done", "blocked"],
       task_type: ["call", "followup", "review_offer", "intervention"],

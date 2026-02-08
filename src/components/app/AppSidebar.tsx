@@ -14,6 +14,7 @@ import {
   Kanban,
   Phone,
   FileText,
+  UserCheck,
 } from 'lucide-react';
 
 interface NavItem {
@@ -70,6 +71,12 @@ const navItems: NavItem[] = [
     label: 'Kunden', 
     href: '/app/customers', 
     icon: Users,
+    minRole: 'mitarbeiter'
+  },
+  {
+    label: 'Mitglieder', 
+    href: '/app/members', 
+    icon: UserCheck,
     minRole: 'mitarbeiter'
   },
   { 
