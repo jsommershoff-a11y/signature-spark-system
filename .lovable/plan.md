@@ -1,678 +1,697 @@
 
-# Call- & Analyse-Bereich Implementierung
+# Umfassende CRM-Erweiterung: Dashboard, Webhooks, Test-Call & Angebots-Flow
 
 ## Uebersicht
 
-Dieser Plan erweitert das CRM um ein vollstaendiges Call-Management-System mit Transkription und KI-gestuetzter Analyse. Das System erfasst Calls, transkribiert sie und liefert strukturierte Analyse-Ergebnisse fuer die Vertriebsoptimierung.
+Dieses Update implementiert fuenf Kernbereiche:
+1. Dashboard-Widgets mit Live-Daten (Analysen & Top-Leads)
+2. Webhook-Infrastruktur fuer Zoom/Twilio
+3. Test-Call mit Transkript zur KI-Analyse-Validierung
+4. Angebots- und Checkout-System (offers & orders Tabellen)
+5. Oeffentliche Angebotsseite mit Zahlungsfreigabe
 
 ---
 
-## Phase 1: Datenbank-Schema
+## Phase 1: Dashboard-Widgets mit Live-Daten
 
-### 1.1 Neue Enums erstellen
+### 1.1 Neue Komponenten
+
+```text
+src/components/dashboard/
+  TopLeadsWidget.tsx       # Top 5 Leads nach Purchase Readiness
+  RecentAnalysesWidget.tsx # Letzte 5 KI-Analysen
+  PipelineStatsWidget.tsx  # Pipeline-Statistiken
+  QuickActionsWidget.tsx   # Schnellzugriff-Buttons
+```
+
+### 1.2 TopLeadsWidget Layout
+
+```text
++----------------------------------------------+
+| Top Leads nach Kaufbereitschaft         [>]  |
++----------------------------------------------+
+| 1. Max Mustermann - TechStart GmbH           |
+|    [============================] 95%        |
+|    Analyse: Rot | Erfolg: 78%                |
++----------------------------------------------+
+| 2. Sarah Hoffmann - Consulting Plus          |
+|    [========================] 88%            |
+|    Analyse: Gruen | Erfolg: 72%              |
++----------------------------------------------+
+| ...                                          |
++----------------------------------------------+
+```
+
+### 1.3 RecentAnalysesWidget Layout
+
+```text
++----------------------------------------------+
+| Neueste Analysen                        [>]  |
++----------------------------------------------+
+| vor 2 Std | Max Mustermann                   |
+| Kaufbereit: 95% | Erfolg: 78% | [ROT]        |
++----------------------------------------------+
+| vor 5 Std | Thomas Weber                     |
+| Kaufbereit: 72% | Erfolg: 65% | [BLAU]       |
++----------------------------------------------+
+```
+
+### 1.4 Dashboard.tsx erweitern
+
+```typescript
+// Neue Hooks fuer Dashboard-Daten
+const useDashboardData = () => {
+  // Top Leads mit purchase_readiness > 60
+  // Neueste Analysen (letzte 10)
+  // Pipeline-Counts pro Stage
+  // Heutige Tasks
+};
+
+// Staff/Admin Dashboard mit neuen Widgets
+<TopLeadsWidget leads={topLeads} />
+<RecentAnalysesWidget analyses={recentAnalyses} />
+<PipelineStatsWidget stats={pipelineStats} />
+```
+
+---
+
+## Phase 2: Webhook-Infrastruktur
+
+### 2.1 Neue Edge Functions
+
+```text
+supabase/functions/
+  webhook-zoom/index.ts      # Zoom Recording Webhook
+  webhook-twilio/index.ts    # Twilio Recording Webhook
+  transcribe-audio/index.ts  # Audio zu Text (Whisper API)
+```
+
+### 2.2 Zoom Webhook Flow
+
+```text
++----------+     +---------------+     +-----------+
+|  Zoom    | --> | webhook-zoom  | --> | calls     |
+| Meeting  |     | Edge Function |     | Tabelle   |
+| ended    |     +-------+-------+     +-----------+
++----------+             |
+                         v
+              +-------------------+
+              | transcribe-audio  |
+              | (async via Queue) |
+              +--------+----------+
+                       |
+                       v
+              +-------------------+
+              | transcripts       |
+              | Tabelle           |
+              +-------------------+
+```
+
+### 2.3 webhook-zoom Implementierung
+
+```typescript
+// supabase/functions/webhook-zoom/index.ts
+serve(async (req) => {
+  const event = await req.json();
+  
+  // Validiere Zoom Signature
+  // Event: recording.completed
+  
+  if (event.event === "recording.completed") {
+    const { meeting_id, recording_files } = event.payload;
+    
+    // 1. Call finden oder erstellen via external_id
+    // 2. Recording URL speichern
+    // 3. Status auf 'recording_ready' setzen
+    // 4. Optional: Transkription starten
+  }
+});
+```
+
+### 2.4 webhook-twilio Implementierung
+
+```typescript
+// supabase/functions/webhook-twilio/index.ts
+serve(async (req) => {
+  // Twilio Call Recording Callback
+  const formData = await req.formData();
+  const recordingUrl = formData.get('RecordingUrl');
+  const callSid = formData.get('CallSid');
+  
+  // 1. Call via external_id=callSid finden
+  // 2. Recording URL speichern
+  // 3. Transkription starten
+});
+```
+
+### 2.5 config.toml erweitern
+
+```toml
+[functions.webhook-zoom]
+verify_jwt = false
+
+[functions.webhook-twilio]
+verify_jwt = false
+
+[functions.transcribe-audio]
+verify_jwt = false
+```
+
+---
+
+## Phase 3: Test-Call mit Transkript
+
+### 3.1 SQL Migration: Test-Daten
 
 ```sql
--- Call Provider
-CREATE TYPE call_provider AS ENUM (
-  'zoom',
-  'twilio',
-  'sipgate',
-  'manual'
-);
-
--- Call Typ
-CREATE TYPE call_type AS ENUM (
+-- Test-Call fuer Lead "Max Mustermann"
+INSERT INTO calls (
+  lead_id,
+  provider,
+  call_type,
+  scheduled_at,
+  started_at,
+  ended_at,
+  duration_seconds,
+  status,
+  notes
+) VALUES (
+  (SELECT id FROM crm_leads WHERE email = 'max@techstart.de'),
+  'manual',
   'phone',
-  'zoom',
-  'teams',
-  'other'
-);
-
--- Call Status
-CREATE TYPE call_status AS ENUM (
-  'scheduled',
-  'in_progress',
-  'completed',
-  'recording_ready',
+  now() - interval '1 day',
+  now() - interval '1 day',
+  now() - interval '1 day' + interval '25 minutes',
+  1500,
   'transcribed',
-  'analyzed',
-  'failed'
+  'Setter-Call - Erstgespraech'
 );
 
--- Transcript Status
-CREATE TYPE transcript_status AS ENUM (
-  'pending',
-  'processing',
+-- Test-Transkript
+INSERT INTO transcripts (
+  call_id,
+  provider,
+  language,
+  text,
+  segments,
+  status,
+  word_count,
+  confidence_score
+) VALUES (
+  (SELECT id FROM calls WHERE lead_id = (SELECT id FROM crm_leads WHERE email = 'max@techstart.de') LIMIT 1),
+  'manual',
+  'de',
+  'Verkäufer: Guten Tag Herr Mustermann, hier ist Max von SalesFlow. Ich rufe an wegen...
+  
+Kunde: Ah ja, ich habe mich auf Ihrer Webseite umgeschaut. Wir haben aktuell ein großes Problem mit unserer Lead-Verwaltung.
+
+Verkäufer: Das höre ich oft. Was genau ist das Problem?
+
+Kunde: Wir verlieren täglich Leads weil unser aktuelles System zu langsam ist. Die Mitarbeiter müssen alles manuell eingeben. Das dauert einfach zu lange.
+
+Verkäufer: Das klingt frustrierend. Wie viele Leads gehen Ihnen dadurch verloren schätzen Sie?
+
+Kunde: Bestimmt 20-30% der Anfragen. Das sind bei uns schnell 50.000€ im Monat.
+
+Verkäufer: Das ist ein erheblicher Betrag. Wäre es für Sie interessant, wenn wir das automatisieren könnten?
+
+Kunde: Auf jeden Fall! Aber ich muss das mit meinem Geschäftspartner besprechen. Der ist nächste Woche wieder da.
+
+Verkäufer: Verstehe. Was wäre denn Ihr Budget für so eine Lösung?
+
+Kunde: Wenn wir wirklich 50.000€ im Monat sparen... dann wären 2-3.000€ monatlich sicher drin.
+
+Verkäufer: Das klingt machbar. Ich schicke Ihnen vorab ein Angebot. Wann passt es Ihnen nächste Woche für einen Call mit Ihrem Partner?
+
+Kunde: Donnerstag wäre gut. So gegen 14 Uhr.
+
+Verkäufer: Perfekt, ich schicke Ihnen die Einladung. Bis dahin!',
+  '[
+    {"start": 0, "end": 5, "speaker": "Verkäufer", "text": "Guten Tag Herr Mustermann..."},
+    {"start": 5, "end": 15, "speaker": "Kunde", "text": "Ah ja, ich habe mich..."}
+  ]'::jsonb,
   'done',
-  'failed'
-);
-
--- Structogram Typen (Persoenlichkeitsfarben)
-CREATE TYPE structogram_type AS ENUM (
-  'red',
-  'green',
-  'blue',
-  'mixed',
-  'unknown'
+  350,
+  0.95
 );
 ```
 
-### 1.2 Neue Tabelle: calls
+### 3.2 Anleitung zum Testen
+
+```text
+1. Navigiere zu /app/calls
+2. Suche den Test-Call "Max Mustermann - Erstgespraech"
+3. Klicke auf den Call um die Detail-Ansicht zu oeffnen
+4. Gehe zum Tab "Transkript" und pruefe das Transkript
+5. Klicke "Analyse starten" Button
+6. Warte auf KI-Analyse (ca. 10-20 Sekunden)
+7. Pruefe die Ergebnisse im "Analyse" Tab:
+   - Purchase Readiness sollte ~75-85% sein
+   - Structogram sollte "Rot" zeigen (direkt, ergebnisorientiert)
+   - Probleme: "Leads verlieren", "System zu langsam"
+   - Einwand: "Authority" (muss mit Partner sprechen)
+```
+
+---
+
+## Phase 4: Angebots-System (offers & orders)
+
+### 4.1 Neue Enums
 
 ```sql
-CREATE TABLE calls (
+-- Offer Status
+CREATE TYPE offer_status AS ENUM (
+  'draft',
+  'pending_review',
+  'approved',
+  'sent',
+  'viewed',
+  'expired'
+);
+
+-- Order Status
+CREATE TYPE order_status AS ENUM (
+  'pending',
+  'paid',
+  'failed',
+  'refunded',
+  'cancelled'
+);
+
+-- Payment Provider
+CREATE TYPE payment_provider AS ENUM (
+  'stripe',
+  'copecart',
+  'bank_transfer',
+  'manual'
+);
+```
+
+### 4.2 Neue Tabelle: offers
+
+```sql
+CREATE TABLE offers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   
   -- Beziehungen
   lead_id UUID NOT NULL REFERENCES crm_leads(id) ON DELETE CASCADE,
-  conducted_by UUID REFERENCES profiles(id),
-  
-  -- Provider & Typ
-  provider call_provider DEFAULT 'manual',
-  call_type call_type DEFAULT 'phone',
-  
-  -- Zeitplanung
-  scheduled_at TIMESTAMPTZ,
-  started_at TIMESTAMPTZ,
-  ended_at TIMESTAMPTZ,
-  duration_seconds INTEGER,
-  
-  -- Recording
-  recording_url TEXT,
-  storage_path TEXT,
+  analysis_id UUID REFERENCES ai_analyses(id),
+  created_by UUID REFERENCES profiles(id),
+  approved_by UUID REFERENCES profiles(id),
   
   -- Status
-  status call_status DEFAULT 'scheduled',
+  status offer_status DEFAULT 'draft',
+  approved_at TIMESTAMPTZ,
+  sent_at TIMESTAMPTZ,
+  viewed_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  
+  -- Angebots-Inhalt (KI-generiert oder manuell)
+  offer_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+  
+  -- Oeffentlicher Zugang
+  public_token TEXT UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+  
+  -- Zahlungssteuerung
+  payment_unlocked BOOLEAN DEFAULT false,
+  payment_unlocked_at TIMESTAMPTZ,
+  payment_unlocked_by UUID REFERENCES profiles(id),
   
   -- Metadaten
   notes TEXT,
-  external_id TEXT,
-  meta JSONB
+  version INTEGER DEFAULT 1
 );
+
+-- Indizes
+CREATE INDEX idx_offers_lead_id ON offers(lead_id);
+CREATE INDEX idx_offers_public_token ON offers(public_token);
+CREATE INDEX idx_offers_status ON offers(status);
 ```
 
-### 1.3 Neue Tabelle: transcripts
+### 4.3 Neue Tabelle: orders
 
 ```sql
-CREATE TABLE transcripts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  
-  -- Beziehung
-  call_id UUID NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
-  
-  -- Provider & Sprache
-  provider TEXT DEFAULT 'whisper',
-  language TEXT DEFAULT 'de',
-  
-  -- Inhalt
-  text TEXT,
-  segments JSONB,
-  
-  -- Status
-  status transcript_status DEFAULT 'pending',
-  error_message TEXT,
-  
-  -- Metadaten
-  word_count INTEGER,
-  confidence_score NUMERIC(5,4)
-);
-```
-
-### 1.4 Neue Tabelle: ai_analyses
-
-```sql
-CREATE TABLE ai_analyses (
+CREATE TABLE orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   
   -- Beziehungen
-  call_id UUID NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
-  lead_id UUID REFERENCES crm_leads(id),
+  offer_id UUID REFERENCES offers(id),
+  lead_id UUID NOT NULL REFERENCES crm_leads(id),
+  member_id UUID REFERENCES profiles(id),
   
-  -- KI-Analyse Ergebnisse (strukturiertes JSON)
-  analysis_json JSONB NOT NULL,
+  -- Payment Provider
+  provider payment_provider NOT NULL,
+  provider_order_id TEXT,
+  provider_customer_id TEXT,
   
-  -- Scoring
-  purchase_readiness INTEGER CHECK (purchase_readiness >= 0 AND purchase_readiness <= 100),
-  success_probability INTEGER CHECK (success_probability >= 0 AND success_probability <= 100),
-  
-  -- Structogram Typisierung
-  primary_type structogram_type DEFAULT 'unknown',
-  secondary_type structogram_type,
-  
-  -- Analyse-Version
-  model_version TEXT DEFAULT 'v1',
+  -- Betrag
+  amount_cents INTEGER NOT NULL,
+  currency TEXT DEFAULT 'EUR',
   
   -- Status
-  status TEXT DEFAULT 'completed'
+  status order_status DEFAULT 'pending',
+  paid_at TIMESTAMPTZ,
+  failed_at TIMESTAMPTZ,
+  refunded_at TIMESTAMPTZ,
+  
+  -- Metadaten
+  metadata JSONB DEFAULT '{}'::jsonb,
+  error_message TEXT
 );
 
--- Index fuer schnelle Abfragen
-CREATE INDEX idx_ai_analyses_lead_id ON ai_analyses(lead_id);
-CREATE INDEX idx_ai_analyses_call_id ON ai_analyses(call_id);
+-- Indizes
+CREATE INDEX idx_orders_lead_id ON orders(lead_id);
+CREATE INDEX idx_orders_offer_id ON orders(offer_id);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_provider_order_id ON orders(provider_order_id);
 ```
 
----
-
-## Phase 2: RLS Policies
-
-### 2.1 calls Policies
+### 4.4 RLS Policies
 
 ```sql
--- Policies folgen der Lead-Zugriffslogik
--- Admin/GF: Alle Calls sehen
-CREATE POLICY "Admin/GF can read all calls" ON calls
-FOR SELECT USING (has_min_role(auth.uid(), 'geschaeftsfuehrung'));
+-- offers: Staff kann erstellen/lesen, Teamleiter approven
+ALTER TABLE offers ENABLE ROW LEVEL SECURITY;
 
--- Teamleiter: Team-Calls
-CREATE POLICY "Teamleiter can read team calls" ON calls
+-- Mitarbeiter kann eigene Offers sehen
+CREATE POLICY "Staff can read offers" ON offers
+FOR SELECT USING (has_min_role(auth.uid(), 'mitarbeiter'));
+
+-- Teamleiter kann approven
+CREATE POLICY "Teamleiter can update offers" ON offers
+FOR UPDATE USING (has_min_role(auth.uid(), 'teamleiter'));
+
+-- Oeffentlicher Zugang via Token (fuer Angebotsseite)
+CREATE POLICY "Public can view via token" ON offers
 FOR SELECT USING (
-  has_role(auth.uid(), 'teamleiter') AND
-  lead_id IN (
-    SELECT id FROM crm_leads 
-    WHERE owner_user_id IN (SELECT get_team_member_ids(auth.uid()))
-  )
+  public_token IS NOT NULL AND 
+  payment_unlocked = true
 );
 
--- Mitarbeiter: Eigene Calls
-CREATE POLICY "Mitarbeiter can read own calls" ON calls
-FOR SELECT USING (
-  has_min_role(auth.uid(), 'mitarbeiter') AND (
-    conducted_by = get_user_profile_id(auth.uid()) OR
-    lead_id IN (
-      SELECT id FROM crm_leads 
-      WHERE owner_user_id = get_user_profile_id(auth.uid())
-    )
-  )
-);
+-- orders: Staff kann lesen, System kann schreiben
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
--- CRUD Policies fuer alle Tabellen (Insert, Update, Delete)
+CREATE POLICY "Staff can read orders" ON orders
+FOR SELECT USING (has_min_role(auth.uid(), 'mitarbeiter'));
 ```
 
-### 2.2 transcripts & ai_analyses Policies
-
-```text
-Folgen der gleichen Struktur via call_id -> lead_id Verknuepfung
-```
-
----
-
-## Phase 3: KI-Analyse Struktur
-
-### 3.1 Strukturiertes JSON-Schema fuer analysis_json
+### 4.5 offer_json Schema
 
 ```typescript
-interface AnalysisResult {
+interface OfferContent {
+  // Header
+  title: string;
+  subtitle?: string;
+  valid_until: string;
+  
+  // Kunde
+  customer: {
+    name: string;
+    company?: string;
+    email: string;
+  };
+  
+  // Produkte/Leistungen
+  line_items: Array<{
+    name: string;
+    description?: string;
+    quantity: number;
+    unit_price_cents: number;
+    total_cents: number;
+  }>;
+  
   // Zusammenfassung
-  summary: {
-    key_points: string[];
-    call_quality: 'excellent' | 'good' | 'average' | 'poor';
-    next_steps_recommended: string[];
+  subtotal_cents: number;
+  discount_cents?: number;
+  discount_reason?: string;
+  tax_rate: number;
+  tax_cents: number;
+  total_cents: number;
+  
+  // Zahlungsbedingungen
+  payment_terms: {
+    type: 'one_time' | 'subscription' | 'installments';
+    frequency?: 'monthly' | 'quarterly' | 'yearly';
+    installments?: number;
   };
   
-  // Probleme & Schmerzen
-  problems: {
-    identified: Array<{
-      category: string;
-      description: string;
-      severity: 'high' | 'medium' | 'low';
-      quote?: string;
-    }>;
-    pain_intensity: number; // 0-100
+  // KI-generierte Inhalte
+  ai_generated?: {
+    personalized_intro: string;
+    value_propositions: string[];
+    objection_responses: Record<string, string>;
+    urgency_message?: string;
   };
   
-  // Einwaende
-  objections: {
-    raised: Array<{
-      type: 'price' | 'timing' | 'trust' | 'need' | 'authority' | 'other';
-      description: string;
-      handled: boolean;
-      response_quality?: 'excellent' | 'good' | 'average' | 'poor';
-    }>;
-    objection_handling_score: number; // 0-100
-  };
-  
-  // Kaufsignale
-  buying_signals: {
-    positive: string[];
-    negative: string[];
-    strength: number; // 0-100
-  };
-  
-  // Structogram Analyse
-  structogram: {
-    primary_color: 'red' | 'green' | 'blue';
-    secondary_color?: 'red' | 'green' | 'blue';
-    confidence: number;
-    indicators: {
-      red_traits: string[];
-      green_traits: string[];
-      blue_traits: string[];
-    };
-    communication_tips: string[];
-  };
-  
-  // Gespraechsqualitaet
-  conversation_quality: {
-    talk_ratio: {
-      seller_percentage: number;
-      buyer_percentage: number;
-    };
-    engagement_score: number;
-    rapport_score: number;
-  };
-  
-  // Empfehlungen
-  recommendations: {
-    immediate_actions: string[];
-    follow_up_timing: string;
-    offer_adjustments: string[];
-  };
+  // Terms
+  terms_accepted_at?: string;
+  signature_url?: string;
 }
 ```
 
 ---
 
-## Phase 4: Edge Function fuer KI-Analyse
+## Phase 5: Angebots-UI
 
-### 4.1 Neue Edge Function: analyze-call
-
-```typescript
-// supabase/functions/analyze-call/index.ts
-// Nimmt call_id, liest Transkript, ruft Lovable AI auf
-// Liefert strukturiertes JSON zurueck
-
-Ablauf:
-1. Transkript aus DB laden
-2. System-Prompt mit Analyse-Instruktionen
-3. Lovable AI mit Tool-Calling fuer strukturierte Ausgabe
-4. Ergebnis in ai_analyses speichern
-5. Pipeline-Item auf 'analysis_ready' setzen
-```
-
-### 4.2 System-Prompt (Auszug)
+### 5.1 Neue Komponenten
 
 ```text
-Du bist ein Vertriebsanalyse-Experte. Analysiere das folgende Verkaufsgespraech 
-und liefere strukturierte Insights in den folgenden Kategorien:
-
-1. ZUSAMMENFASSUNG: Kernpunkte, Gespraechsqualitaet, naechste Schritte
-2. PROBLEME: Identifizierte Schmerzpunkte des Kunden mit Zitaten
-3. EINWAENDE: Erhobene Einwaende und wie sie behandelt wurden
-4. KAUFSIGNALE: Positive und negative Signale
-5. STRUCTOGRAM: Persoenlichkeitsfarbe basierend auf Kommunikationsstil
-6. EMPFEHLUNGEN: Konkrete naechste Aktionen
-
-Antworte NUR mit strukturiertem JSON gemaess dem vorgegebenen Schema.
+src/components/offers/
+  OfferBuilder.tsx         # Angebots-Editor
+  OfferPreview.tsx         # Angebots-Vorschau
+  OfferApprovalCard.tsx    # Approval-UI fuer Teamleiter
+  PaymentUnlockButton.tsx  # Zahlung freischalten
+  OfferStatusBadge.tsx     # Status-Anzeige
 ```
 
----
-
-## Phase 5: TypeScript Types
-
-### 5.1 Neue Types in src/types/calls.ts
-
-```typescript
-// Call Types
-export type CallProvider = 'zoom' | 'twilio' | 'sipgate' | 'manual';
-export type CallType = 'phone' | 'zoom' | 'teams' | 'other';
-export type CallStatus = 'scheduled' | 'in_progress' | 'completed' | 
-                         'recording_ready' | 'transcribed' | 'analyzed' | 'failed';
-export type TranscriptStatus = 'pending' | 'processing' | 'done' | 'failed';
-export type StructogramType = 'red' | 'green' | 'blue' | 'mixed' | 'unknown';
-
-export interface Call {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  lead_id: string;
-  conducted_by?: string;
-  provider: CallProvider;
-  call_type: CallType;
-  scheduled_at?: string;
-  started_at?: string;
-  ended_at?: string;
-  duration_seconds?: number;
-  recording_url?: string;
-  storage_path?: string;
-  status: CallStatus;
-  notes?: string;
-  external_id?: string;
-  meta?: Record<string, unknown>;
-  // Joined
-  lead?: CrmLead;
-  conductor?: Profile;
-  transcript?: Transcript;
-  analysis?: AiAnalysis;
-}
-
-export interface Transcript {
-  id: string;
-  call_id: string;
-  provider: string;
-  language: string;
-  text?: string;
-  segments?: TranscriptSegment[];
-  status: TranscriptStatus;
-  word_count?: number;
-  confidence_score?: number;
-}
-
-export interface TranscriptSegment {
-  start: number;
-  end: number;
-  text: string;
-  speaker?: string;
-  confidence?: number;
-}
-
-export interface AiAnalysis {
-  id: string;
-  call_id: string;
-  lead_id?: string;
-  analysis_json: AnalysisResult;
-  purchase_readiness?: number;
-  success_probability?: number;
-  primary_type: StructogramType;
-  secondary_type?: StructogramType;
-  model_version: string;
-  created_at: string;
-}
-
-// UI Labels
-export const CALL_STATUS_LABELS: Record<CallStatus, string> = {
-  scheduled: 'Geplant',
-  in_progress: 'Laeuft',
-  completed: 'Beendet',
-  recording_ready: 'Aufnahme bereit',
-  transcribed: 'Transkribiert',
-  analyzed: 'Analysiert',
-  failed: 'Fehlgeschlagen',
-};
-
-export const STRUCTOGRAM_LABELS: Record<StructogramType, string> = {
-  red: 'Rot (Dominant)',
-  green: 'Gruen (Beziehung)',
-  blue: 'Blau (Analytisch)',
-  mixed: 'Gemischt',
-  unknown: 'Unbekannt',
-};
-
-export const STRUCTOGRAM_COLORS: Record<StructogramType, string> = {
-  red: '#EF4444',
-  green: '#22C55E',
-  blue: '#3B82F6',
-  mixed: '#8B5CF6',
-  unknown: '#6B7280',
-};
-```
-
----
-
-## Phase 6: React Hooks
-
-### 6.1 useCalls Hook
-
-```typescript
-// src/hooks/useCalls.ts
-// Funktionen:
-- fetchCalls(leadId?) - Calls laden (optional nach Lead)
-- createCall(data) - Call planen
-- updateCall(id, data) - Call aktualisieren
-- startCall(id) - Call starten
-- endCall(id) - Call beenden
-- getCallWithAnalysis(id) - Call mit Transkript und Analyse
-```
-
-### 6.2 useAnalysis Hook
-
-```typescript
-// src/hooks/useAnalysis.ts
-// Funktionen:
-- fetchAnalysis(callId) - Analyse zu Call laden
-- regenerateAnalysis(callId) - Analyse neu erzeugen (Admin/TL)
-- getLatestAnalysis(leadId) - Neueste Analyse zum Lead
-```
-
----
-
-## Phase 7: UI-Komponenten
-
-### 7.1 Datei-Struktur
+### 5.2 Neue Seiten
 
 ```text
-src/components/calls/
-  CallList.tsx              # Liste aller Calls
-  CallCard.tsx              # Call-Karte (kompakt)
-  CallDetailView.tsx        # Vollstaendige Call-Ansicht
-  CallRecordingPlayer.tsx   # Audio/Video Player
-  TranscriptView.tsx        # Transkript mit Timecodes
-  AnalysisPanel.tsx         # Analyse-Ergebnis Panel
-  StructogramChart.tsx      # Visuelle Structogram-Anzeige
-  ScoreGauge.tsx            # Gauge fuer Scores
-  ObjectionsList.tsx        # Liste der Einwaende
-  ProblemsList.tsx          # Liste der Probleme
-  ScheduleCallDialog.tsx    # Dialog zum Call planen
+src/pages/app/Offers.tsx       # Angebots-Uebersicht
+src/pages/app/OfferEditor.tsx  # Angebot bearbeiten
+src/pages/Offer.tsx            # Oeffentliche Angebotsseite /offer/{token}
 ```
 
-### 7.2 CallDetailView Layout
+### 5.3 OfferBuilder Layout
 
 ```text
 +-------------------------------------------------------------------+
-| Call: Max Mustermann - 15.02.2026 10:30                    [X]    |
+| Angebot erstellen: Max Mustermann                                  |
 +-------------------------------------------------------------------+
-| TABS: [Recording] [Transkript] [Analyse]                          |
+| TABS: [Produkte] [Personalisierung] [Vorschau]                     |
 +-------------------------------------------------------------------+
 |                                                                    |
-| ANALYSE TAB:                                                       |
-| +------------------------+  +------------------------+             |
-| | PURCHASE READINESS     |  | SUCCESS PROBABILITY    |             |
-| |      [====] 78%        |  |      [====] 65%        |             |
-| +------------------------+  +------------------------+             |
+| PRODUKTE:                                                          |
+| +------------------------------------------------------------+    |
+| | Produkt            | Menge | Preis      | Gesamt           |    |
+| |------------------------------------------------------------|    |
+| | SalesFlow Pro      | 1     | 2.499€/Mo  | 2.499€           |    |
+| | + Position hinzufuegen                                      |    |
+| +------------------------------------------------------------+    |
 |                                                                    |
-| STRUCTOGRAM:                                                       |
-| +----------------------------------------------------------+       |
-| |  [ROT: 45%]  [GRUEN: 35%]  [BLAU: 20%]                  |       |
-| |  Dominant, handlungsorientiert, direkt                   |       |
-| +----------------------------------------------------------+       |
+| Rabatt: [___] € oder [___] %  Grund: [____________]               |
 |                                                                    |
-| PROBLEME:                                                          |
-| +----------------------------------------------------------+       |
-| | ! Aktuelle Loesung zu langsam (Hoch)                     |       |
-| |   "Wir verlieren jeden Tag Leads weil..."                |       |
-| | ! Kein Ueberblick ueber Pipeline (Mittel)                |       |
-| +----------------------------------------------------------+       |
+| +------------------------------------------------------------+    |
+| | Zwischensumme:              2.499,00 €                     |    |
+| | Rabatt:                      -249,90 € (10%)               |    |
+| | MwSt (19%):                   427,03 €                     |    |
+| | GESAMT:                     2.676,13 €                     |    |
+| +------------------------------------------------------------+    |
 |                                                                    |
-| EINWAENDE:                                                         |
-| +----------------------------------------------------------+       |
-| | $ Preis zu hoch - BEHANDELT (Gut)                        |       |
-| | ? Timing - wollen erst naechstes Quartal - OFFEN         |       |
-| +----------------------------------------------------------+       |
+| PERSONALISIERUNG (KI-generiert):                                   |
+| +------------------------------------------------------------+    |
+| | Intro-Text:                                                 |    |
+| | "Basierend auf unserem Gespraech verstehe ich, dass Sie    |    |
+| | taeglich 20-30% Ihrer Leads verlieren..."                  |    |
+| +------------------------------------------------------------+    |
 |                                                                    |
-| EMPFEHLUNGEN:                                                      |
-| +----------------------------------------------------------+       |
-| | 1. Nachfassen in 2 Wochen mit ROI-Rechnung               |       |
-| | 2. Demo mit Geschaeftsfuehrung anbieten                  |       |
-| +----------------------------------------------------------+       |
-|                                                                    |
-| [Analyse neu erzeugen] (nur Admin/Teamleiter)                      |
+| [Als Entwurf speichern] [Zur Pruefung senden]                      |
 +-------------------------------------------------------------------+
 ```
 
-### 7.3 Integration in LeadDetailModal
+### 5.4 Oeffentliche Angebotsseite /offer/{token}
 
 ```text
-Neuer Tab "Calls" im LeadDetailModal:
-- Liste aller Calls zum Lead
-- Quick-Action: Call planen
-- Link zur vollstaendigen Call-Ansicht
++-------------------------------------------------------------------+
+| [Logo]                        Angebot #2024-0042                   |
++-------------------------------------------------------------------+
+|                                                                    |
+| Hallo Max,                                                         |
+|                                                                    |
+| basierend auf unserem Gespraech habe ich ein individuelles        |
+| Angebot fuer TechStart GmbH zusammengestellt.                     |
+|                                                                    |
+| +------------------------------------------------------------+    |
+| | IHRE LOESUNG                                                |    |
+| |------------------------------------------------------------|    |
+| | SalesFlow Pro                                              |    |
+| | - Automatische Lead-Erfassung                              |    |
+| | - KI-gestuetzte Analyse                                    |    |
+| | - Pipeline-Management                                       |    |
+| |                                              2.499€/Monat   |    |
+| +------------------------------------------------------------+    |
+|                                                                    |
+| Ihr Investment: 2.676,13€/Monat (inkl. MwSt)                      |
+|                                                                    |
+| [Zahlung nicht freigeschaltet]                                     |
+| oder                                                               |
+| [Jetzt kaufen] (wenn payment_unlocked=true)                        |
+|                                                                    |
+| Gueltig bis: 15.02.2026                                            |
++-------------------------------------------------------------------+
 ```
 
 ---
 
-## Phase 8: Neue Seite & Navigation
+## Phase 6: Angebots-Flow
 
-### 8.1 Neue Seite: Calls.tsx
+### 6.1 Flow-Diagramm
 
-```typescript
-// src/pages/app/Calls.tsx
-// Uebersicht aller Calls mit Filtern
-// Schnellzugriff auf letzte Analysen
+```text
++----------------+     +------------------+     +-----------------+
+| Analyse fertig | --> | KI generiert     | --> | offer.status =  |
+| (Call analyzed)|     | offer_json Draft |     | 'draft'         |
++----------------+     +------------------+     +--------+--------+
+                                                        |
+                                                        v
++----------------+     +------------------+     +-----------------+
+| Setter prueft  | <-- | Setter bearbeitet| <-- | offer.status =  |
+| und sendet     |     | Angebot          |     | 'pending_review'|
++----------------+     +------------------+     +--------+--------+
+        |                                               |
+        v                                               |
++----------------+                                      |
+| Teamleiter     |<-------------------------------------+
+| approved       |
++-------+--------+
+        |
+        v
++----------------+     +------------------+     +-----------------+
+| offer.status = | --> | E-Mail mit Link  | --> | Kunde oeffnet   |
+| 'sent'         |     | /offer/{token}   |     | Angebotsseite   |
++----------------+     +------------------+     +--------+--------+
+                                                        |
+                                                        v
++----------------+     +------------------+     +-----------------+
+| Setter schaltet| --> | payment_unlocked | --> | Kunde kann      |
+| Zahlung frei   |     | = true           |     | bezahlen        |
++----------------+     +------------------+     +--------+--------+
+                                                        |
+                                                        v
++----------------+     +------------------+     +-----------------+
+| Webhook:       | --> | order.status =   | --> | Lead -> Member  |
+| Payment Success|     | 'paid'           |     | Rolle: 'kunde'  |
++----------------+     +------------------+     +-----------------+
 ```
 
-### 8.2 Navigation erweitern
+### 6.2 Edge Function: generate-offer
 
 ```typescript
-// AppSidebar.tsx
+// supabase/functions/generate-offer/index.ts
+// Generiert personalisiertes Angebot basierend auf Analyse
+
+serve(async (req) => {
+  const { lead_id, analysis_id, template_id } = await req.json();
+  
+  // 1. Lead und Analyse laden
+  // 2. Lovable AI mit Prompt aufrufen
+  // 3. offer_json generieren mit personalisierten Texten
+  // 4. Offer in DB speichern
+});
+```
+
+### 6.3 Edge Function: webhook-payment
+
+```typescript
+// supabase/functions/webhook-payment/index.ts
+// Verarbeitet Zahlungs-Callbacks von Stripe/CopeCart
+
+serve(async (req) => {
+  const event = await req.json();
+  
+  // Signature validieren (je nach Provider)
+  
+  if (event.type === 'checkout.session.completed') {
+    // 1. Order finden via metadata.order_id
+    // 2. order.status = 'paid'
+    // 3. Lead-Status aktualisieren
+    // 4. Member-Profil erstellen
+    // 5. Rolle 'kunde' zuweisen
+    // 6. Pipeline auf 'won' setzen
+  }
+});
+```
+
+---
+
+## Phase 7: Navigation & Routes
+
+### 7.1 Neue Routes in App.tsx
+
+```typescript
+// Protected Routes
+<Route path="offers" element={<Offers />} />
+<Route path="offers/:offerId" element={<OfferEditor />} />
+<Route path="offers/:offerId/preview" element={<OfferPreview />} />
+
+// Public Route (ausserhalb /app)
+<Route path="/offer/:token" element={<PublicOffer />} />
+```
+
+### 7.2 Sidebar erweitern
+
+```typescript
 {
-  label: 'Calls',
-  href: '/app/calls',
-  icon: Phone,
+  label: 'Angebote',
+  href: '/app/offers',
+  icon: FileText,
   minRole: 'mitarbeiter'
 }
-
-// App.tsx
-<Route path="calls" element={<Calls />} />
-<Route path="calls/:callId" element={<CallDetail />} />
 ```
 
 ---
 
-## Phase 9: Pipeline-Integration
-
-### 9.1 Automatischer Stage-Wechsel
-
-```sql
--- Trigger: Nach Analyse -> Pipeline auf 'analysis_ready'
-CREATE OR REPLACE FUNCTION update_pipeline_after_analysis()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- Pipeline-Item aktualisieren
-  UPDATE pipeline_items
-  SET 
-    stage = 'analysis_ready',
-    stage_updated_at = now(),
-    purchase_readiness = NEW.purchase_readiness,
-    urgency = CASE 
-      WHEN NEW.success_probability > 70 THEN 80
-      WHEN NEW.success_probability > 40 THEN 50
-      ELSE 30
-    END,
-    pipeline_priority_score = calculate_pipeline_priority(
-      (SELECT icp_fit_score FROM crm_leads WHERE id = NEW.lead_id),
-      (SELECT source_priority_weight FROM crm_leads WHERE id = NEW.lead_id),
-      NEW.purchase_readiness,
-      CASE 
-        WHEN NEW.success_probability > 70 THEN 80
-        WHEN NEW.success_probability > 40 THEN 50
-        ELSE 30
-      END
-    )
-  WHERE lead_id = NEW.lead_id
-    AND stage IN ('setter_call_done', 'setter_call_scheduled');
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-```
-
----
-
-## Zu erstellende Dateien
+## Zusammenfassung der zu erstellenden Dateien
 
 | Datei | Beschreibung |
 |-------|--------------|
-| `src/types/calls.ts` | Call, Transcript, Analysis Types |
-| `src/hooks/useCalls.ts` | Call CRUD Hook |
-| `src/hooks/useAnalysis.ts` | Analyse Hook |
-| `src/components/calls/CallList.tsx` | Call-Liste |
-| `src/components/calls/CallCard.tsx` | Call-Karte |
-| `src/components/calls/CallDetailView.tsx` | Detail-Ansicht |
-| `src/components/calls/TranscriptView.tsx` | Transkript |
-| `src/components/calls/AnalysisPanel.tsx` | Analyse-Panel |
-| `src/components/calls/StructogramChart.tsx` | Structogram |
-| `src/components/calls/ScoreGauge.tsx` | Score-Anzeige |
-| `src/components/calls/ScheduleCallDialog.tsx` | Call planen |
-| `src/pages/app/Calls.tsx` | Calls Seite |
-| `src/pages/app/CallDetail.tsx` | Call Detail Seite |
-| `supabase/functions/analyze-call/index.ts` | KI-Analyse Function |
+| `src/components/dashboard/TopLeadsWidget.tsx` | Top Leads Widget |
+| `src/components/dashboard/RecentAnalysesWidget.tsx` | Neueste Analysen |
+| `src/components/dashboard/PipelineStatsWidget.tsx` | Pipeline Stats |
+| `src/hooks/useDashboardData.ts` | Dashboard Daten-Hook |
+| `src/components/offers/OfferBuilder.tsx` | Angebots-Editor |
+| `src/components/offers/OfferPreview.tsx` | Vorschau |
+| `src/components/offers/PaymentUnlockButton.tsx` | Zahlung freischalten |
+| `src/hooks/useOffers.ts` | Offers CRUD Hook |
+| `src/types/offers.ts` | TypeScript Types |
+| `src/pages/app/Offers.tsx` | Angebots-Uebersicht |
+| `src/pages/app/OfferEditor.tsx` | Editor-Seite |
+| `src/pages/Offer.tsx` | Oeffentliche Angebotsseite |
+| `supabase/functions/webhook-zoom/index.ts` | Zoom Webhook |
+| `supabase/functions/webhook-twilio/index.ts` | Twilio Webhook |
+| `supabase/functions/generate-offer/index.ts` | Angebot generieren |
+| `supabase/functions/webhook-payment/index.ts` | Payment Webhook |
 
 ## Zu aendernde Dateien
 
 | Datei | Aenderungen |
-|-------|--------------|
-| `src/types/crm.ts` | Call-bezogene Erweiterungen |
-| `src/components/crm/LeadDetailModal.tsx` | Neuer "Calls" Tab |
-| `src/components/app/AppSidebar.tsx` | Calls Navigation |
+|-------|-------------|
+| `src/pages/app/Dashboard.tsx` | Neue Widgets integrieren |
 | `src/App.tsx` | Neue Routes |
-| `supabase/config.toml` | Edge Function Config |
-
----
-
-## Technische Details
-
-### Edge Function: analyze-call
-
-```typescript
-// Auszug aus der Implementierung
-const ANALYSIS_TOOL = {
-  type: "function",
-  function: {
-    name: "submit_analysis",
-    description: "Submit structured call analysis",
-    parameters: {
-      type: "object",
-      properties: {
-        summary: { /* ... */ },
-        problems: { /* ... */ },
-        objections: { /* ... */ },
-        buying_signals: { /* ... */ },
-        structogram: { /* ... */ },
-        recommendations: { /* ... */ },
-        scores: {
-          type: "object",
-          properties: {
-            purchase_readiness: { type: "number", minimum: 0, maximum: 100 },
-            success_probability: { type: "number", minimum: 0, maximum: 100 }
-          }
-        }
-      },
-      required: ["summary", "problems", "structogram", "scores"]
-    }
-  }
-};
-```
-
-### Structogram-Farb-Indikatoren
-
-```text
-ROT (Dominant):
-- Direkte Sprache, "Ich will", "Sofort"
-- Schnelle Entscheidungen
-- Ergebnisorientiert
-
-GRUEN (Beziehung):
-- "Wir", Team-Fokus
-- Emotionale Sprache
-- Harmoniebeduerftnis
-
-BLAU (Analytisch):
-- Fragen nach Details, Zahlen
-- Vorsichtige Formulierungen
-- Braucht Zeit fuer Entscheidungen
-```
+| `src/components/app/AppSidebar.tsx` | Angebote-Link |
+| `supabase/config.toml` | Neue Edge Functions |
+| `src/components/crm/LeadDetailModal.tsx` | Angebots-Tab |
 
 ---
 
 ## Naechste Schritte nach Implementierung
 
-1. **Migration ausfuehren**: Tabellen calls, transcripts, ai_analyses erstellen
-2. **Edge Function deployen**: analyze-call Function
-3. **UI testen**: Call planen, Transkript hochladen, Analyse starten
-4. **Pipeline-Integration pruefen**: Automatischer Stage-Wechsel nach Analyse
-5. **Structogram validieren**: Korrekte Farb-Zuordnung testen
+1. **Dashboard testen**: Pruefe ob Top-Leads und Analysen angezeigt werden
+2. **Test-Call analysieren**: Starte KI-Analyse und pruefe Ergebnisse
+3. **Angebot erstellen**: Erstelle ein Angebot fuer einen Lead
+4. **Approval-Flow testen**: Teamleiter genehmigt Angebot
+5. **Angebotsseite pruefen**: Oeffne /offer/{token} im Browser
+6. **Zahlung freischalten**: Teste payment_unlocked Toggle
