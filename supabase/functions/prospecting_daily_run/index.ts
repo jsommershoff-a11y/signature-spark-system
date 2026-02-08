@@ -89,7 +89,49 @@ serve(async (req) => {
         .single();
 
       if (existingQueue) {
-        console.log(`Queue already exists for ${staff.full_name}`);
+        // Check if queue is empty - if so, populate it
+        const { data: existingItems } = await supabase
+          .from('call_queue_items')
+          .select('id')
+          .eq('queue_id', existingQueue.id)
+          .limit(1);
+        
+        if (existingItems && existingItems.length > 0) {
+          console.log(`Queue already exists with items for ${staff.full_name}`);
+          continue;
+        }
+        
+        console.log(`Queue exists but empty for ${staff.full_name}, populating...`);
+        
+        // Get leads owned by this staff member and populate
+        const staffLeads = pipelineItems?.filter(
+          (item) => (item.lead as { owner_user_id?: string })?.owner_user_id === staff.id
+        ) || [];
+        
+        let rank = 1;
+        for (const item of staffLeads.slice(0, 10)) {
+          await supabase
+            .from('call_queue_items')
+            .insert({
+              queue_id: existingQueue.id,
+              lead_id: item.lead_id,
+              priority_rank: rank,
+              reason: getCallReason(item.stage),
+              context_json: {
+                pipeline_stage: item.stage,
+                purchase_readiness: item.purchase_readiness,
+                urgency: item.urgency,
+              },
+              status: 'pending',
+            });
+          rank++;
+        }
+        
+        queuesCreated.push({
+          staff: staff.full_name,
+          queueId: existingQueue.id,
+          itemCount: Math.min(staffLeads.length, 10),
+        });
         continue;
       }
 
