@@ -1,102 +1,83 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
 import { Hero } from "@/components/landing/Hero";
-import { ProblemSection } from "@/components/landing/ProblemSection";
-import { SystemSection } from "@/components/landing/SystemSection";
-import { PlatformProof } from "@/components/landing/PlatformProof";
-import { PersonalSupport } from "@/components/landing/PersonalSupport";
-import { FAQSection } from "@/components/landing/FAQSection";
+import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
+import { RootCauseSection } from "@/components/landing/RootCauseSection";
+import { SystemPhasesSection } from "@/components/landing/SystemPhasesSection";
+import { StructogramUSPSection } from "@/components/landing/StructogramUSPSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
-import { ContactModal } from "@/components/landing/ContactModal";
+import { Filter, MessageSquare, Building } from "lucide-react";
 
 const Immobilien = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const goToQualifizierung = () => navigate("/qualifizierung");
+
+  // Branchenspezifische Target Audience
+  const yesPoints = [
+    "Du bist Makler oder Verwalter mit echter Abschluss-Pipeline",
+    "Lead-Qualität und Follow-up kosten dich Zeit und Nerven",
+    "Du willst systematisch abschließen, nicht vom Portal abhängig sein",
+    "Du bist bereit, operative Gewohnheiten zu ändern",
+  ];
+
+  const noPoints = [
+    "Du bist Hobby-Makler ohne echte Pipeline",
+    "Du suchst nur neue Leads von Portalen",
+    "Du willst weitermachen wie bisher",
+    "Du erwartest Ergebnisse ohne Prozessarbeit",
+  ];
+
+  // Branchenspezifische Root Causes
+  const causes = [
+    {
+      icon: <Filter className="w-8 h-8" />,
+      title: "Lead-Qualität schwankt",
+      description:
+        "Portal-Leads sind teuer und oft unqualifiziert. Kein System trennt die Spreu vom Weizen.",
+    },
+    {
+      icon: <MessageSquare className="w-8 h-8" />,
+      title: "Follow-up chaotisch",
+      description:
+        "Interessenten versanden, Nachfassen passiert zufällig. 80% der Leads gehen verloren.",
+    },
+    {
+      icon: <Building className="w-8 h-8" />,
+      title: "Objektakquise mühsam",
+      description:
+        "Eigentümer-Ansprache ohne System. Jeder Auftrag ist ein Einzelkampf.",
+    },
+  ];
 
   return (
     <PublicLayout>
       <Hero
-        headline="Für Immobilienprofis: Mehr Abschlüsse, bessere Prozesse."
-        subline="Du bist Makler oder Verwalter – aber Lead-Qualität, Follow-up und Objektakquise kosten dich Zeit und Nerven? Wir bringen Struktur rein, damit du mehr abschließt."
+        headline="Leads sind keine Abschlüsse."
+        problem="Portale machen abhängig. Systeme machen frei."
+        solution="Ohne Prozess ist Vertrieb Zufall."
+        subline=""
+        badge="Nur für Unternehmer ab 100.000 € Umsatz"
         ctaText="Kostenloses Analysegespräch sichern"
-        onCtaClick={openModal}
+        onCtaClick={goToQualifizierung}
       />
-      
-      <ProblemSection
-        intro="Das kennen die meisten Immobilienprofis:"
-        problems={[
-          "Leads kommen, aber Qualität schwankt stark",
-          "Follow-up-Prozesse sind chaotisch",
-          "Objektakquise ist mühsam",
-          "Skalierung scheitert an fehlenden Prozessen",
-        ]}
-        outro="Du brauchst keine neuen Leads. Du brauchst ein System, das funktioniert."
+
+      <TargetAudienceSection yesPoints={yesPoints} noPoints={noPoints} />
+
+      <RootCauseSection
+        intro="Das echte Problem ist nicht der Markt – es ist fehlende Struktur im Vertrieb."
+        causes={causes}
       />
-      
-      <SystemSection
-        headline="Dein Immobilien-System in 5 Bereichen"
-        modules={[
-          { title: "Lead-Pipeline & Qualifizierung", icon: "trending" },
-          { title: "Objektakquise & Eigentümer-Ansprache", icon: "target" },
-          { title: "Follow-up & Kundenbetreuung", icon: "users" },
-          { title: "Team & Delegation", icon: "usercheck" },
-          { title: "Prozesse für Skalierung", icon: "cog" },
-        ]}
-      />
-      
-      <PlatformProof
-        headline="Ein Blick ins Signature System"
-        intro="Du bekommst keine lose Kurssammlung, sondern einen strukturierten Mitgliederbereich:"
-        features={[
-          "Vorlagen für Exposés, Akquise-Anschreiben, Follow-ups",
-          "Lead-Scoring und Qualifizierungs-Frameworks",
-          "Umsetzungspfad für die ersten 30 Tage",
-          "Alles an einem Ort – jederzeit abrufbar",
-        ]}
-      />
-      
-      <PersonalSupport
-        headline="Persönliche Begleitung"
-        intro="Im Immobilien-Alltag entstehen die wichtigsten Fragen. Im Signature System bekommst du:"
-        points={[
-          "Persönliches Sparring bei Entscheidungen",
-          "Klare Antworten auf Akquise-Fragen",
-          "Unterstützung beim Umsetzen, nicht nur beim Verstehen",
-        ]}
-        ctaText="Kostenloses Analysegespräch sichern"
-        onCtaClick={openModal}
-      />
-      
-      <FAQSection
-        items={[
-          {
-            question: "Funktioniert das auch für Einzelmakler?",
-            answer: "Ja. Das Signature System ist für Immobilienprofis jeder Größe geeignet – vom Solo-Makler bis zum Team. Entscheidend ist, dass du strukturiert wachsen willst.",
-          },
-          {
-            question: "Ich habe schon ein CRM – brauche ich noch eins?",
-            answer: "Das Signature System ersetzt kein CRM. Es gibt dir die Struktur und Prozesse, damit dein CRM richtig funktioniert.",
-          },
-          {
-            question: "Was kostet das?",
-            answer: "Im kostenlosen Analysegespräch schauen wir gemeinsam, ob das System zu dir passt. Erst dann sprechen wir über Preise. Kein Verkaufsdruck.",
-          },
-        ]}
-      />
-      
+
+      <SystemPhasesSection />
+
+      <StructogramUSPSection />
+
       <FinalCTA
-        headline="Bereit für mehr Abschlüsse mit weniger Aufwand?"
-        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie das Signature System dein Immobilien-Business voranbringt."
-        ctaText="Jetzt Gespräch sichern"
-        onCtaClick={openModal}
-      />
-      
-      <ContactModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-        source="immobilien" 
+        headline="Bereit für Struktur statt Chaos?"
+        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie dein Immobilien-Vertrieb planbar wird."
+        ctaText="Jetzt Analysegespräch sichern"
+        onCtaClick={goToQualifizierung}
       />
     </PublicLayout>
   );

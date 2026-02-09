@@ -1,102 +1,83 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
 import { Hero } from "@/components/landing/Hero";
-import { ProblemSection } from "@/components/landing/ProblemSection";
-import { SystemSection } from "@/components/landing/SystemSection";
-import { PlatformProof } from "@/components/landing/PlatformProof";
-import { PersonalSupport } from "@/components/landing/PersonalSupport";
-import { FAQSection } from "@/components/landing/FAQSection";
+import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
+import { RootCauseSection } from "@/components/landing/RootCauseSection";
+import { SystemPhasesSection } from "@/components/landing/SystemPhasesSection";
+import { StructogramUSPSection } from "@/components/landing/StructogramUSPSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
-import { ContactModal } from "@/components/landing/ContactModal";
+import { Brain, Users, TrendingDown } from "lucide-react";
 
 const Handwerk = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const goToQualifizierung = () => navigate("/qualifizierung");
+
+  // Branchenspezifische Target Audience
+  const yesPoints = [
+    "Du bist Handwerksmeister mit Team und voller Auftragslage",
+    "Dein Betrieb läuft – aber das Chaos wächst mit",
+    "Du willst Prozesse, die ohne dich funktionieren",
+    "Du bist bereit, operative Gewohnheiten zu ändern",
+  ];
+
+  const noPoints = [
+    "Du bist Solo-Handwerker ohne Wachstumsziel",
+    "Du suchst nur ein neues Tool oder eine App",
+    "Du willst weitermachen wie bisher – nur einfacher",
+    "Du erwartest magische Lösungen ohne Veränderung",
+  ];
+
+  // Branchenspezifische Root Causes
+  const causes = [
+    {
+      icon: <Brain className="w-8 h-8" />,
+      title: "Terminplanung im Kopf",
+      description:
+        "Kein System, keine Übersicht. Du jonglierst Aufträge im Kopf – und vergisst trotzdem Details.",
+    },
+    {
+      icon: <TrendingDown className="w-8 h-8" />,
+      title: "Angebote bleiben liegen",
+      description:
+        "Nach dem Ortstermin passiert wochenlang nichts. Kunden warten, du verlierst Aufträge.",
+    },
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Mitarbeiter brauchen ständig Anleitung",
+      description:
+        "Keine klaren Prozesse bedeutet: Du bist der Engpass. Ohne dich läuft nichts.",
+    },
+  ];
 
   return (
     <PublicLayout>
       <Hero
-        headline="Für Handwerksbetriebe: Mehr Aufträge, weniger Chaos im Büro."
-        subline="Du bist Meister deines Fachs – aber Termine, Angebote und Mitarbeiter kosten dich den letzten Nerv? Wir bringen Struktur rein, damit dein Betrieb wieder rund läuft."
+        headline="Volle Auftragsbücher – aber der Betrieb frisst dich auf?"
+        problem="Ihr Problem ist nicht Arbeit. Ihr Problem ist fehlende Struktur."
+        solution="KRS Signature baut ein System, das den Betrieb führt – nicht Sie allein."
+        subline=""
+        badge="Nur für Unternehmer ab 100.000 € Umsatz"
         ctaText="Kostenloses Analysegespräch sichern"
-        onCtaClick={openModal}
+        onCtaClick={goToQualifizierung}
       />
-      
-      <ProblemSection
-        intro="Das kennen die meisten Handwerker:"
-        problems={[
-          "Terminplanung ist ein Dauerkampf",
-          "Angebote bleiben liegen, Nachkalkulation fehlt",
-          "Mitarbeiter brauchen ständig Anleitung",
-          "Abends noch Papierkram statt Feierabend",
-        ]}
-        outro="Du brauchst keine App. Du brauchst ein System, das funktioniert."
+
+      <TargetAudienceSection yesPoints={yesPoints} noPoints={noPoints} />
+
+      <RootCauseSection
+        intro="Das echte Problem ist nicht die Arbeit – es ist fehlende Struktur im Betrieb."
+        causes={causes}
       />
-      
-      <SystemSection
-        headline="Dein Handwerker-System in 5 Bereichen"
-        modules={[
-          { title: "Auftragsmanagement & Planung", icon: "calendar" },
-          { title: "Angebote & Preiskalkulation", icon: "target" },
-          { title: "Mitarbeiterführung & Delegation", icon: "usercheck" },
-          { title: "Kundengewinnung ohne Kaltakquise", icon: "users" },
-          { title: "Prozesse, die den Alltag erleichtern", icon: "cog" },
-        ]}
-      />
-      
-      <PlatformProof
-        headline="Ein Blick ins Signature System"
-        intro="Du bekommst keine lose Kurssammlung, sondern einen strukturierten Mitgliederbereich:"
-        features={[
-          "Vorlagen für Angebote, Rechnungen, Checklisten",
-          "Schritt-für-Schritt Anleitungen für jeden Bereich",
-          "Umsetzungspfad für die ersten 30 Tage",
-          "Alles an einem Ort – jederzeit abrufbar",
-        ]}
-      />
-      
-      <PersonalSupport
-        headline="Persönliche Begleitung"
-        intro="Im Alltag entstehen die wichtigsten Fragen. Im Signature System bekommst du:"
-        points={[
-          "Persönliches Sparring bei Entscheidungen",
-          "Klare Antworten statt Grübeln",
-          "Unterstützung beim Umsetzen, nicht nur beim Verstehen",
-        ]}
-        ctaText="Kostenloses Analysegespräch sichern"
-        onCtaClick={openModal}
-      />
-      
-      <FAQSection
-        items={[
-          {
-            question: "Ich habe wenig Zeit – passt das trotzdem?",
-            answer: "Gerade dann. Das System ist so aufgebaut, dass du pro Woche nur 1-2 Stunden investierst. Alles ist auf Umsetzung ausgelegt, nicht auf stundenlanges Zuschauen.",
-          },
-          {
-            question: "Brauche ich dafür technische Vorkenntnisse?",
-            answer: "Nein. Das Signature System ist einfach gehalten. Wir führen dich Schritt für Schritt – auch ohne IT-Kenntnisse.",
-          },
-          {
-            question: "Was kostet das?",
-            answer: "Im kostenlosen Analysegespräch schauen wir gemeinsam, ob das System zu dir passt. Erst dann sprechen wir über Preise. Kein Verkaufsdruck.",
-          },
-        ]}
-      />
-      
+
+      <SystemPhasesSection />
+
+      <StructogramUSPSection />
+
       <FinalCTA
-        headline="Bereit für weniger Chaos und mehr Kontrolle?"
-        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie das Signature System deinen Betrieb voranbringt."
-        ctaText="Jetzt Gespräch sichern"
-        onCtaClick={openModal}
-      />
-      
-      <ContactModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-        source="handwerk" 
+        headline="Bereit für Struktur statt Chaos?"
+        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie dein Betrieb ohne dich läuft."
+        ctaText="Jetzt Analysegespräch sichern"
+        onCtaClick={goToQualifizierung}
       />
     </PublicLayout>
   );

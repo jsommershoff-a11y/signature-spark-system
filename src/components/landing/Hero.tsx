@@ -1,13 +1,28 @@
 import { CTAButton } from "./CTAButton";
+import { landingTokens } from "@/styles/landing-tokens";
 
 interface HeroProps {
   headline: string;
   subline: string;
   ctaText: string;
   onCtaClick: () => void;
+  /** Optional problem statement below headline */
+  problem?: string;
+  /** Optional solution statement */
+  solution?: string;
+  /** Optional revenue badge (e.g., "Nur für Unternehmer ab 100.000 € Umsatz") */
+  badge?: string;
 }
 
-export const Hero = ({ headline, subline, ctaText, onCtaClick }: HeroProps) => {
+export const Hero = ({ 
+  headline, 
+  subline, 
+  ctaText, 
+  onCtaClick,
+  problem,
+  solution,
+  badge,
+}: HeroProps) => {
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-background via-muted to-background overflow-hidden">
       {/* Background decoration */}
@@ -18,13 +33,44 @@ export const Hero = ({ headline, subline, ctaText, onCtaClick }: HeroProps) => {
       
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-8">
+          {/* Revenue Badge */}
+          {badge && (
+            <span className={`${landingTokens.badgeAccent} mb-6`}>
+              {badge}
+            </span>
+          )}
+          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6 mt-4">
             {headline}
           </h1>
           
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-10 max-w-3xl mx-auto">
-            {subline}
-          </p>
+          {/* Problem Statement */}
+          {problem && (
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-4 max-w-3xl mx-auto">
+              {problem}
+            </p>
+          )}
+          
+          {/* Solution Statement */}
+          {solution && (
+            <p className="text-lg md:text-xl font-medium text-foreground leading-relaxed mb-6 max-w-3xl mx-auto">
+              {solution}
+            </p>
+          )}
+          
+          {/* Original Subline (if no problem/solution) */}
+          {!problem && !solution && (
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-10 max-w-3xl mx-auto">
+              {subline}
+            </p>
+          )}
+          
+          {/* Subline when problem/solution are present */}
+          {(problem || solution) && subline && (
+            <p className="text-base text-muted-foreground leading-relaxed mb-8 max-w-2xl mx-auto">
+              {subline}
+            </p>
+          )}
           
           <CTAButton onClick={onCtaClick}>
             {ctaText}
