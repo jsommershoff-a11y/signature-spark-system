@@ -1,76 +1,73 @@
 
 
-# Step 08 — FinalCTA-Button auf Orange-Gradient umstellen
+# Step 09 — Impressum & Datenschutz Links im Footer einfügen
 
 ## Objective
-Der Button in der FinalCTA-Sektion wird vom aktuellen weißen Stil auf den konsistenten Orange-Gradient umgestellt, damit alle CTA-Buttons im gesamten Design einheitlich aussehen.
+Die Platzhalter "Impressum (folgt)" und "Datenschutz (folgt)" im Footer werden durch funktionierende externe Links zur KRS Immobilien Website ersetzt.
 
 ## Aktuelle Situation
 
-Der FinalCTA-Button überschreibt aktuell den Standard-Gradient:
+Der Footer enthält aktuell inaktive Platzhalter:
 ```tsx
-<CTAButton 
-  onClick={onCtaClick}
-  className="bg-white text-primary hover:bg-white/90 hover:text-primary-deep"
->
+<span className="text-muted text-sm">Impressum (folgt)</span>
+<span className="text-muted text-sm">Datenschutz (folgt)</span>
 ```
-
-Das ergibt einen **weißen Button mit orangem Text** auf einem orangen Hintergrund.
 
 ## Geplante Änderung
 
-Die custom className wird entfernt, sodass der Button den Standard-Orange-Gradient der CTAButton-Komponente verwendet:
+Die `<span>`-Elemente werden durch externe `<a>`-Links ersetzt:
+
+| Platzhalter | Neuer Link |
+|-------------|------------|
+| Impressum (folgt) | https://krsimmobilien.de/impressum |
+| Datenschutz (folgt) | https://krsimmobilien.de/datenschutz |
+
+## Technische Details
+
+**Zeile 57-58 in Footer.tsx:**
+
+Vorher:
 ```tsx
-<CTAButton onClick={onCtaClick}>
-  {ctaText}
-</CTAButton>
+<span className="text-muted text-sm">Impressum (folgt)</span>
+<span className="text-muted text-sm">Datenschutz (folgt)</span>
 ```
 
-## Visueller Effekt
+Nachher:
+```tsx
+<a 
+  href="https://krsimmobilien.de/impressum"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-muted hover:text-primary-foreground transition-colors text-sm"
+>
+  Impressum
+</a>
+<a 
+  href="https://krsimmobilien.de/datenschutz"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-muted hover:text-primary-foreground transition-colors text-sm"
+>
+  Datenschutz
+</a>
+```
 
-| Vorher | Nachher |
-|--------|---------|
-| Weißer Button, oranger Text | Oranger Gradient-Button, weißer Text |
-| Weniger auffällig | Einheitlich mit allen anderen CTAs |
+## Wichtige Attribute
+
+- `target="_blank"` — Öffnet in neuem Tab (externe Domain)
+- `rel="noopener noreferrer"` — Sicherheit bei externen Links
 
 ## Datei
 
 | Aktion | Datei | Beschreibung |
 |--------|-------|--------------|
-| UPDATE | `src/components/landing/FinalCTA.tsx` | className-Override entfernen |
-
-## Technische Details
-
-**Zeile 29-33 in FinalCTA.tsx:**
-
-Vorher:
-```tsx
-<CTAButton 
-  onClick={onCtaClick}
-  className="bg-white text-primary hover:bg-white/90 hover:text-primary-deep"
->
-  {ctaText}
-</CTAButton>
-```
-
-Nachher:
-```tsx
-<CTAButton onClick={onCtaClick}>
-  {ctaText}
-</CTAButton>
-```
-
-Der Button übernimmt dann automatisch:
-- `bg-gradient-to-r from-primary to-primary-light` (Orange-Gradient)
-- `hover:from-primary-deep hover:to-primary` (Hover-Effekt)
-- `hover:shadow-[0_0_20px_rgba(230,126,34,0.3)]` (Orange Glow)
-- `text-primary-foreground` (Weißer Text)
+| UPDATE | `src/components/landing/Footer.tsx` | Platzhalter durch externe Links ersetzen |
 
 ## Validation Checklist
 
 - [ ] Build erfolgreich (0 TypeScript-Fehler)
-- [ ] FinalCTA-Button zeigt Orange-Gradient
-- [ ] Hover-Effekt mit Orange-Glow funktioniert
-- [ ] Button ist auf orangem Hintergrund gut sichtbar
-- [ ] Konsistenz mit anderen CTAs auf der Seite
+- [ ] Impressum-Link öffnet krsimmobilien.de/impressum in neuem Tab
+- [ ] Datenschutz-Link öffnet krsimmobilien.de/datenschutz in neuem Tab
+- [ ] Hover-Effekt funktioniert (text-muted → text-primary-foreground)
+- [ ] Links erscheinen konsistent mit anderen Footer-Links
 
