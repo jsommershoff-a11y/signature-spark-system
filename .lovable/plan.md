@@ -1,108 +1,97 @@
 
 
-# Step 03 - Branchen-Landingpages auf PublicLayout migrieren
+# Step 04 — Logo-Integration + Markenfarben-Export
 
 ## Objective
-Migration aller 5 Branchen-Landingpages auf das neue `PublicLayout`-Pattern für konsistentes Styling und reduzierte Code-Duplizierung.
+Das neue KRS Signature Logo wird als offizielles Logo integriert und die Markenfarben aus dem Logo werden in das Design-System exportiert, um als Akzentfarben verwendet zu werden.
 
-## Abgeschlossene Steps (Zusammenfassung)
+## Farbanalyse aus dem Logo
 
-| Step | Titel | Status |
-|------|-------|--------|
-| 01.1 | Industry Landing Pages (5 Seiten) | PASS |
-| 01.2 | Qualification Funnel (/qualifizierung + /danke) | PASS |
-| 01.3 | Database Constraint Fix (leads_source_check) | PASS |
-| 02 | Homepage Redesign + Landing Token System | PASS |
+Aus dem hochgeladenen Logo wurden folgende Farben extrahiert:
+
+| Farbe | Verwendung | HSL-Wert |
+|-------|------------|----------|
+| **Brand Orange** | Hintergrund, Akzent | 30 90% 55% |
+| **Brand Cream** | Balken hell | 35 25% 75% |
+| **Brand Brown** | Balken mittel | 20 30% 35% |
+| **Brand Charcoal** | Balken dunkel | 20 20% 25% |
 
 ## Scope
 
-### Betroffene Dateien (5 Landingpages)
+### 1. Logo-Datei kopieren
+Das hochgeladene Logo wird in den Assets-Ordner kopiert als `logo-krs-signature.png` (neuer Name zur Unterscheidung vom alten Logo).
 
-| Datei | Aktuelle Struktur |
-|-------|-------------------|
-| `src/pages/landing/Handwerk.tsx` | Manuelles Header/Footer |
-| `src/pages/landing/Praxen.tsx` | Manuelles Header/Footer |
-| `src/pages/landing/Dienstleister.tsx` | Manuelles Header/Footer |
-| `src/pages/landing/Immobilien.tsx` | Manuelles Header/Footer |
-| `src/pages/landing/Kurzzeitvermietung.tsx` | Manuelles Header/Footer |
+### 2. CSS-Variablen erweitern
+**Datei:** `src/index.css`
 
-### Transformation pro Datei
-
-**Vorher:**
-```text
-import { Header } from "@/components/landing/Header";
-import { Footer } from "@/components/landing/Footer";
-...
-return (
-  <div className="min-h-screen flex flex-col">
-    <Header />
-    <main className="flex-1 pt-16">
-      <Hero ... />
-      <ProblemSection ... />
-      ...
-    </main>
-    <Footer />
-    <ContactModal ... />
-  </div>
-);
+Neue Brand-Farben im CSS hinzufügen:
+```css
+/* Brand Colors from Logo */
+--brand-orange: 30 90% 55%;
+--brand-cream: 35 25% 75%;
+--brand-brown: 20 30% 35%;
+--brand-charcoal: 20 20% 25%;
 ```
 
-**Nachher:**
+### 3. Tailwind-Config erweitern
+**Datei:** `tailwind.config.ts`
+
+Neue Farben in Tailwind verfügbar machen:
 ```text
-import { PublicLayout } from "@/components/landing/PublicLayout";
-...
-return (
-  <PublicLayout>
-    <Hero ... />
-    <ProblemSection ... />
-    ...
-    <ContactModal ... />
-  </PublicLayout>
-);
+brand: {
+  orange: "hsl(var(--brand-orange))",
+  cream: "hsl(var(--brand-cream))",
+  brown: "hsl(var(--brand-brown))",
+  charcoal: "hsl(var(--brand-charcoal))",
+}
 ```
 
-### Entfernte Imports (pro Datei)
-- `Header` (jetzt via PublicLayout)
-- `Footer` (jetzt via PublicLayout)
+### 4. Header aktualisieren
+**Datei:** `src/components/landing/Header.tsx`
 
-### Hinzugefügte Imports (pro Datei)
-- `PublicLayout`
+Neues Logo importieren und verwenden:
+- Import von `logo-krs-signature.png`
+- Groessere Logo-Darstellung (h-12 statt h-10)
+- Optional: Nur Logo ohne Text-Marke
 
-## Vorteile der Migration
-
-1. **Weniger Code-Duplizierung**: Header/Footer-Wrapper an einer Stelle
-2. **Konsistenz**: Alle Landingpages nutzen dasselbe Layout
-3. **Wartbarkeit**: Layout-Anpassungen nur in PublicLayout.tsx
-4. **Zukuenftige Erweiterungen**: z.B. Cookie-Banner, Analytics-Skripte zentral einfuegen
-
-## Dateien (5)
+## Dateien (4)
 
 | Aktion | Datei | Beschreibung |
 |--------|-------|--------------|
-| UPDATE | `src/pages/landing/Handwerk.tsx` | PublicLayout Migration |
-| UPDATE | `src/pages/landing/Praxen.tsx` | PublicLayout Migration |
-| UPDATE | `src/pages/landing/Dienstleister.tsx` | PublicLayout Migration |
-| UPDATE | `src/pages/landing/Immobilien.tsx` | PublicLayout Migration |
-| UPDATE | `src/pages/landing/Kurzzeitvermietung.tsx` | PublicLayout Migration |
+| COPY | `user-uploads://...png` → `src/assets/logo-krs-signature.png` | Logo-Datei kopieren |
+| UPDATE | `src/index.css` | Brand-Farbvariablen hinzufuegen |
+| UPDATE | `tailwind.config.ts` | Brand-Farben in Tailwind |
+| UPDATE | `src/components/landing/Header.tsx` | Neues Logo verwenden |
 
 ## Technische Details
 
-### ContactModal Position
-Das ContactModal bleibt innerhalb des PublicLayout-Wrappers, da es:
-- Den lokalen `isModalOpen` State benoetigt
-- Keine Interferenz mit Header/Footer hat
-- Portal-basiert rendert (Dialog-Komponente)
+### Farbverwendung im Design
+Die neuen Brand-Farben ergaenzen das bestehende Blau-Schema:
+- **brand-orange**: Fuer Akzente, Badges, Hover-States
+- **brand-cream/brown/charcoal**: Fuer subtile Hintergruende, Borders, Variationen
 
-### Keine funktionalen Aenderungen
-- Alle Props bleiben identisch
-- CTA-Funktionen unveraendert
-- Source-Werte fuer Leads bleiben gleich
+### Logo-Groesse
+Das neue Logo hat mehr Details, daher:
+- Header Desktop: h-12 (48px)
+- Header Mobile: h-10 (40px)
+
+### Abwaertskompatibilitaet
+Das alte `logo-signature.png` bleibt bestehen fuer eventuelle Fallbacks.
+
+## Farbpalette Visualisierung
+
+```text
++-------------+-------------+-------------+-------------+
+| Brand Orange| Brand Cream | Brand Brown | Brand Charcoal|
+| #E67E22     | #C9B896     | #73503C     | #4A3D33     |
+| 30 90% 55%  | 35 25% 75%  | 20 30% 35%  | 20 20% 25%  |
++-------------+-------------+-------------+-------------+
+```
 
 ## Validation Checklist
 - [ ] Build erfolgreich (0 TypeScript-Fehler)
-- [ ] Alle 5 Landingpages rendern korrekt
-- [ ] Header/Footer erscheinen auf allen Seiten
-- [ ] ContactModal funktioniert (Oeffnen/Schliessen/Submit)
-- [ ] Mobile Navigation funktioniert
-- [ ] CTAs fuehren zu /qualifizierung
+- [ ] Logo wird korrekt im Header angezeigt
+- [ ] Brand-Farben sind ueber Tailwind-Klassen nutzbar
+- [ ] Responsive: Logo skaliert auf Mobile
+- [ ] Keine Regression auf bestehenden Seiten
 
