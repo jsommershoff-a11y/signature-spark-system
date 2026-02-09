@@ -11,3 +11,7 @@ export { Header } from "./Header";
 export { Footer } from "./Footer";
 export { ContactModal } from "./ContactModal";
 export { PublicLayout } from "./PublicLayout";
+export { TargetAudienceSection } from "./TargetAudienceSection";
+export { RootCauseSection } from "./RootCauseSection";
+export { SystemPhasesSection } from "./SystemPhasesSection";
+export { StructogramUSPSection } from "./StructogramUSPSection";
