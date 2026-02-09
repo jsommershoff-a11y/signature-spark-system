@@ -1,76 +1,100 @@
 
-# Step 05 — Footer Logo-Update
+# Step 06 — Brand-Farben Integration (brand-orange)
 
 ## Objective
-Der Footer wird mit dem neuen KRS Signature Logo aktualisiert, um konsistentes Branding auf allen oeffentlichen Seiten zu gewaehrleisten.
+Die neuen Brand-Farben (insbesondere `brand-orange`) werden als Akzentfarben in CTAs, Badges und UI-Elementen eingesetzt, um das Branding vom Logo auf die gesamte Benutzeroberflaeche zu uebertragen.
 
-## Aktuelle Situation
+## Designstrategie
 
-Der Footer verwendet derzeit ein einfaches Platzhalter-Logo:
+Das bestehende Blau-Schema bleibt als Hauptfarbe erhalten. Die Brand-Farbe Orange wird strategisch als **Aufmerksamkeits-Akzent** eingesetzt:
+
+| Element | Aktuelle Farbe | Neue Farbe | Begruendung |
+|---------|----------------|------------|-------------|
+| Umsatz-Badge (Homepage) | Grauer Border | Orange Border + Text | Eye-Catcher fuer Qualifikation |
+| CTA Hover-State | Dunkelblau | Orange Glow/Akzent | Erhoehte Klick-Motivation |
+| Checkmarks (PersonalSupport) | Blau | Orange | Konsistenz mit Logo |
+| Dekorative Elemente | Blau/10 | Orange/20 | Subtiler Marken-Akzent |
+
+## Geplante Aenderungen
+
+### 1. Landing-Tokens erweitern
+**Datei:** `src/styles/landing-tokens.ts`
+
+Neuer Badge-Stil mit Brand-Orange:
 ```text
-<div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-  <span className="text-primary-foreground font-bold">K</span>
-</div>
-<span className="text-primary-foreground font-semibold">KRS Signature</span>
+badgeAccent: "inline-flex items-center rounded-full border-2 border-brand-orange/60 bg-brand-orange/10 px-4 py-1 text-sm font-semibold text-brand-orange"
 ```
 
-## Geplante Aenderung
+### 2. Homepage Badge aktualisieren
+**Datei:** `src/pages/landing/MasterHome.tsx`
 
-Ersetzen des Platzhalters durch das offizielle Logo:
+Das "Nur fuer Unternehmer ab 100.000 EUR"-Badge erhaelt den neuen Orange-Akzent-Stil.
+
+### 3. CTAButton Hover-Akzent
+**Datei:** `src/components/landing/CTAButton.tsx`
+
+Subtiler Orange-Glow beim Hover:
 ```text
-<Link to="/" className="flex items-center mb-4">
-  <img 
-    src={logoSignature} 
-    alt="KRS Signature Logo" 
-    className="h-10 w-auto"
-  />
-</Link>
+hover:shadow-[0_0_20px_rgba(230,126,34,0.3)]
 ```
 
-## Technische Details
+### 4. PersonalSupport Checkmarks
+**Datei:** `src/components/landing/PersonalSupport.tsx`
 
-### Logo-Import
-```text
-import logoSignature from "@/assets/logo-krs-signature.png";
-```
+Checkmark-Kreise von `bg-primary` zu `bg-brand-orange` aendern, um die Logo-Farbe aufzugreifen.
 
-### Styling-Ueberlegungen
-- **Hoehe**: h-10 (40px) im Footer (etwas kleiner als h-12 im Header)
-- **Hintergrund**: Der Footer hat `bg-foreground` (dunkler Hintergrund)
-- **Logo-Sichtbarkeit**: Das Logo ist auf dunklem Hintergrund gut sichtbar (orangene Elemente)
-- **Link**: Logo wird klickbar und fuehrt zur Startseite
+### 5. Dekorative Elemente
+**Datei:** `src/components/landing/PersonalSupport.tsx`
 
-### Entfallende Elemente
-- Das blaue "K"-Quadrat Platzhalter
-- Der separate "KRS Signature" Text (im Logo enthalten)
+Die dekorativen Quadrate neben dem Portrait von `bg-primary/10` zu `bg-brand-orange/20` aendern.
 
-## Dateien (1)
+## Dateien (4)
 
 | Aktion | Datei | Beschreibung |
 |--------|-------|--------------|
-| UPDATE | `src/components/landing/Footer.tsx` | Logo-Import und Ersetzung des Platzhalters |
+| UPDATE | `src/styles/landing-tokens.ts` | Neuen `badgeAccent` Token hinzufuegen |
+| UPDATE | `src/pages/landing/MasterHome.tsx` | Badge mit Orange-Akzent |
+| UPDATE | `src/components/landing/CTAButton.tsx` | Orange Hover-Glow |
+| UPDATE | `src/components/landing/PersonalSupport.tsx` | Checkmarks + Deko in Orange |
 
-## Vorher/Nachher Vergleich
+## Farbharmonie
 
-**Vorher:**
 ```text
-+--------+  KRS Signature
-|   K    |  Die Plattform + ...
-+--------+
+Primaer (Blau)     + Akzent (Orange)
++---------------+  +---------------+
+| CTA Buttons   |  | Badges        |
+| Backgrounds   |  | Checkmarks    |
+| Links         |  | Hover-Effects |
+| Headers       |  | Deko-Elemente |
++---------------+  +---------------+
 ```
 
-**Nachher:**
+Die Komplementaerfarben Blau und Orange erzeugen einen professionellen, aber auffaelligen Kontrast, der die Conversion steigern kann.
+
+## Technische Details
+
+### CSS Variablen (bereits vorhanden)
+```css
+--brand-orange: 30 90% 55%;  /* HSL */
+```
+
+### Tailwind Klassen (bereits verfuegbar)
+- `bg-brand-orange` — Hintergrund
+- `text-brand-orange` — Textfarbe
+- `border-brand-orange` — Rahmenfarbe
+- Mit Opacity: `bg-brand-orange/20`, `border-brand-orange/60`
+
+### Hover Shadow (RGB fuer box-shadow)
+Da Tailwind keine HSL-Shadows unterstuetzt, verwenden wir RGB:
 ```text
-+------------------+
-| [KRS Logo Image] |  (klickbar -> /)
-+------------------+
-Die Plattform + ...
+rgba(230, 126, 34, 0.3)  /* Brand Orange mit 30% Opacity */
 ```
 
 ## Validation Checklist
 - [ ] Build erfolgreich (0 TypeScript-Fehler)
-- [ ] Logo wird im Footer korrekt angezeigt
-- [ ] Logo ist auf dunklem Hintergrund gut sichtbar
-- [ ] Logo-Link fuehrt zur Startseite
-- [ ] Responsive: Footer sieht auf Mobile gut aus
-- [ ] Konsistenz: Header und Footer nutzen dasselbe Logo
+- [ ] Badge auf Homepage zeigt Orange-Akzent
+- [ ] CTA-Buttons haben Orange-Glow beim Hover
+- [ ] Checkmarks in PersonalSupport sind orange
+- [ ] Dekorative Elemente greifen Logo-Farbe auf
+- [ ] Farbharmonie zwischen Blau und Orange ist stimmig
+- [ ] Responsive: Alle Aenderungen funktionieren auf Mobile
