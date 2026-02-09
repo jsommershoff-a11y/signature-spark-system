@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logoSignature from "@/assets/logo-krs-signature.png";
 
 const branches = [
   { title: "Handwerk", path: "/handwerk" },
@@ -15,14 +16,13 @@ export const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Logo & Info */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold">K</span>
-              </div>
-              <span className="text-primary-foreground font-semibold">
-                KRS Signature
-              </span>
-            </div>
+            <Link to="/" className="flex items-center mb-4">
+              <img 
+                src={logoSignature} 
+                alt="KRS Signature Logo" 
+                className="h-10 w-auto"
+              />
+            </Link>
             <p className="text-muted text-sm">
               Die Plattform + persönliches Sparring für echte Unternehmer.
             </p>
