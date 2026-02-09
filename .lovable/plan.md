@@ -1,87 +1,74 @@
 
 
-## Step 07 -- Admin-Dashboard: Leads-Ubersicht mit Qualification-Score
+## Step 08 -- Team-Management: team_id Zuweisung fur Mitarbeiter
 
 ### Ziel
 
-Das Admin-Dashboard (`/app/admin`) um einen neuen Tab "Leads-Ubersicht" erweitern, der alle Inbound-Leads aus der `leads`-Tabelle anzeigt -- inkl. Qualification-Score, Qualified/Disqualified-Filter und Sortierung.
+Admins konnen im Admin-Bereich Mitarbeiter einem Team zuweisen. Ein "Team" wird durch die `profile.id` eines Teamleiters definiert -- alle Mitarbeiter mit derselben `team_id` gehoren zu dessen Team. Damit funktioniert die bestehende RLS-Logik (`get_user_team_id`, `get_team_member_ids`).
 
-### Datenquelle
+### Ist-Zustand
 
-Die Tabelle `leads` (nicht `crm_leads`) enthalt die Inbound-Formulardaten mit:
-- `name`, `email`, `phone`, `source`, `branche`
-- `qualification_score`, `is_qualified`
-- `jahresumsatz`, `entscheider_status`, `motivation`, `entscheidungsstil`
-- `created_at`
+- `profiles.team_id` existiert bereits, ist aber bei allen Benutzern `NULL`
+- Teamleiter-RLS-Policies (`Teamleiter can view team profiles`, etc.) sind bereits implementiert
+- Helper-Funktionen `get_user_team_id()` und `get_team_member_ids()` sind vorhanden
+- Admins haben bereits UPDATE-Zugriff auf `profiles` via RLS
 
-RLS: Admins haben bereits SELECT-Zugriff (`Admins can view all leads`). Keine DB-Anderungen notig.
+### Konzept
 
-### UI-Anderungen
-
-**1. Admin-Seite auf Tabs umstellen**
-
-Die bestehende Admin-Seite bekommt zwei Tabs:
-- **Benutzer** (bestehende Benutzerverwaltung)
-- **Leads** (neue Leads-Ubersicht)
-
-**2. Neue Komponente: `AdminLeadsTable`**
-
-```text
-src/components/admin/AdminLeadsTable.tsx
-```
-
-Funktionen:
-- Tabelle mit Spalten: Score, Qualifiziert, Name, E-Mail, Branche, Umsatz, Quelle, Datum
-- Score-Anzeige mit Farbcodierung (0 = rot, 50+ = gelb, 80+ = grun)
-- Qualified/Disqualified Badge
-- Filter: qualified / disqualified / alle
-- Sortierung: nach Score (absteigend, Standard), Datum, Name
-- Suchfeld fur Name/E-Mail
-
-**3. Neuer Hook: `useAdminLeads`**
-
-```text
-src/hooks/useAdminLeads.ts
-```
-
-- Ladt alle Leads aus der `leads`-Tabelle
-- Unterstutzt Sortierung und Filterung client-seitig (Datenmenge uberschaubar)
-- React Query mit Key `['admin', 'leads']`
-
-### Technische Details
-
-**AdminLeadsTable Spalten:**
-
-| Spalte | Feld | Darstellung |
-|--------|------|-------------|
-| Score | `qualification_score` | Zahl mit Farbcodierung |
-| Status | `is_qualified` | Badge grun/rot |
-| Name | `name` | Text |
-| E-Mail | `email` | Text |
-| Branche | `branche` | Text oder "-" |
-| Umsatz | `jahresumsatz` | Text |
-| Quelle | `source` | Badge |
-| Datum | `created_at` | dd.MM.yy Format |
-
-**Filter-Leiste:**
-- Select: "Alle" / "Qualifiziert" / "Disqualifiziert"
-- Select: Sortierung (Score absteigend, Score aufsteigend, Neueste zuerst, Alteste zuerst)
-- Suchfeld: Freitextsuche uber Name und E-Mail
-
-**Admin.tsx Anderungen:**
-- Import von `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`
-- Bestehende Benutzerverwaltung in Tab "Benutzer" verschieben
-- Neuer Tab "Leads" mit `AdminLeadsTable`
-
-### Dateien
-
-| Datei | Aktion |
-|-------|--------|
-| `src/hooks/useAdminLeads.ts` | Neu erstellen |
-| `src/components/admin/AdminLeadsTable.tsx` | Neu erstellen |
-| `src/pages/app/Admin.tsx` | Tabs hinzufugen, LeadsTable integrieren |
+- Der Teamleiter selbst bekommt seine eigene `profile.id` als `team_id` (er ist sein eigener Team-Chef)
+- Mitarbeiter bekommen die `profile.id` des Teamleiters als `team_id`
+- In der UI: Admin wahlt pro Benutzer aus einem Dropdown den Teamleiter aus
 
 ### Keine DB-Migration erforderlich
 
-Die `leads`-Tabelle und ihre RLS-Policies existieren bereits. Admins haben SELECT-Zugriff.
+Die Spalte `profiles.team_id` und alle RLS-Policies existieren bereits.
+
+### Anderungen
+
+**1. `AdminUserManagement.tsx` erweitern**
+
+Neue Spalte "Team" in der Tabelle:
+- Zeigt den aktuellen Teamleiter-Namen an (oder "-" wenn kein Team)
+- Dropdown mit allen Teamleitern zur Auswahl
+- Option "Kein Team" zum Entfernen der Zuweisung
+
+Datenfluss:
+- Beim Laden: Profiles mit `team_id` abrufen (bereits im Query enthalten, muss nur erweitert werden)
+- Teamleiter-Liste: Aus den geladenen Benutzern filtern (Rolle = teamleiter oder hoher)
+- Bei Anderung: `profiles.team_id` per Supabase UPDATE setzen
+
+Technische Details:
+- `fetchUsers` erweitern: `team_id` und `id` (profile.id) mit abfragen
+- Interface `UserWithRole` um `team_id` und `profile_id` erweitern
+- Teamleiter-Kandidaten aus der User-Liste filtern (Rolle >= teamleiter)
+- Neuer Handler `handleTeamChange(userId, teamId)` fur UPDATE auf profiles
+- Neues Select-Dropdown in der Tabelle
+
+**2. Dateien**
+
+| Datei | Aktion |
+|-------|--------|
+| `src/components/admin/AdminUserManagement.tsx` | Erweitern um Team-Spalte |
+
+Nur eine Datei wird geandert -- die bestehende Benutzerverwaltung bekommt eine zusatzliche Spalte.
+
+### UI-Entwurf
+
+```text
+| Name | E-Mail | Rolle | Rolle andern | Team | Registriert |
+|------|--------|-------|--------------|------|-------------|
+| Jan  | ...    | Admin | [Select]     | -    | 01.01.26    |
+| Test | ...    | TL    | [Select]     | [Select: Jan / Kein Team] | 02.01.26 |
+```
+
+Team-Dropdown zeigt:
+- "Kein Team" (setzt team_id = null)
+- Liste aller Teamleiter/GF/Admins mit Namen
+
+### Validierung nach Implementierung
+
+1. Als Admin einloggen und Team-Spalte sehen
+2. Mitarbeiter einem Teamleiter zuweisen
+3. Verifizieren dass team_id in der DB gesetzt wird
+4. Security-Scan -- keine Regressionen
 
