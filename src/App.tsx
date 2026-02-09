@@ -8,9 +8,14 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/app/AppLayout";
 
 // Public pages
-import Home from "./pages/Home";
-import Start from "./pages/Start";
-import Growth from "./pages/Growth";
+import MasterHome from "./pages/landing/MasterHome";
+import Handwerk from "./pages/landing/Handwerk";
+import Praxen from "./pages/landing/Praxen";
+import Dienstleister from "./pages/landing/Dienstleister";
+import Immobilien from "./pages/landing/Immobilien";
+import Kurzzeitvermietung from "./pages/landing/Kurzzeitvermietung";
+import Qualifizierung from "./pages/landing/Qualifizierung";
+import Thanks from "./pages/landing/Thanks";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import PublicOffer from "./pages/Offer";
@@ -42,10 +47,17 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/start" element={<Start />} />
-            <Route path="/growth" element={<Growth />} />
+            {/* Public landing routes */}
+            <Route path="/" element={<MasterHome />} />
+            <Route path="/handwerk" element={<Handwerk />} />
+            <Route path="/praxen" element={<Praxen />} />
+            <Route path="/dienstleister" element={<Dienstleister />} />
+            <Route path="/immobilien" element={<Immobilien />} />
+            <Route path="/kurzzeitvermietung" element={<Kurzzeitvermietung />} />
+            <Route path="/qualifizierung" element={<Qualifizierung />} />
+            <Route path="/danke" element={<Thanks />} />
+            
+            {/* Auth */}
             <Route path="/auth" element={<Auth />} />
             
             {/* Protected app routes */}
