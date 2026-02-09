@@ -1,117 +1,108 @@
 
-# Step 02 - Homepage Redesign + Landing Token System
+
+# Step 03 - Branchen-Landingpages auf PublicLayout migrieren
 
 ## Objective
-Implementierung eines neuen Design-Token-Systems und einer komplett überarbeiteten Homepage, die den neuen Positionierungstext verwendet ("Struktur schlägt Talent. Systeme schlagen Chaos.").
+Migration aller 5 Branchen-Landingpages auf das neue `PublicLayout`-Pattern für konsistentes Styling und reduzierte Code-Duplizierung.
+
+## Abgeschlossene Steps (Zusammenfassung)
+
+| Step | Titel | Status |
+|------|-------|--------|
+| 01.1 | Industry Landing Pages (5 Seiten) | PASS |
+| 01.2 | Qualification Funnel (/qualifizierung + /danke) | PASS |
+| 01.3 | Database Constraint Fix (leads_source_check) | PASS |
+| 02 | Homepage Redesign + Landing Token System | PASS |
 
 ## Scope
 
-### 1. Neues Token-System erstellen
-**Datei:** `src/styles/landing-tokens.ts` (NEU)
+### Betroffene Dateien (5 Landingpages)
 
-Ein zentrales Token-File für konsistentes Styling aller Landingpages:
+| Datei | Aktuelle Struktur |
+|-------|-------------------|
+| `src/pages/landing/Handwerk.tsx` | Manuelles Header/Footer |
+| `src/pages/landing/Praxen.tsx` | Manuelles Header/Footer |
+| `src/pages/landing/Dienstleister.tsx` | Manuelles Header/Footer |
+| `src/pages/landing/Immobilien.tsx` | Manuelles Header/Footer |
+| `src/pages/landing/Kurzzeitvermietung.tsx` | Manuelles Header/Footer |
 
+### Transformation pro Datei
+
+**Vorher:**
 ```text
-landingTokens = {
-  container     → "max-w-6xl mx-auto px-4"
-  sectionPadding→ "py-16 md:py-24"
-  headline.h1   → "text-4xl md:text-6xl font-bold tracking-tight leading-tight"
-  headline.h2   → "text-2xl md:text-4xl font-semibold tracking-tight"
-  headline.h3   → "text-xl md:text-2xl font-semibold"
-  text.body     → "text-base md:text-lg text-muted-foreground leading-relaxed"
-  text.small    → "text-sm text-muted-foreground"
-  badge         → Umsatz-Badge Styling
-  card          → "rounded-2xl border border-border/40 bg-background/80 ..."
-  ctaPrimary    → Gradient-Button Klassen
-  ctaSecondary  → Underline-Link Klassen
-}
+import { Header } from "@/components/landing/Header";
+import { Footer } from "@/components/landing/Footer";
+...
+return (
+  <div className="min-h-screen flex flex-col">
+    <Header />
+    <main className="flex-1 pt-16">
+      <Hero ... />
+      <ProblemSection ... />
+      ...
+    </main>
+    <Footer />
+    <ContactModal ... />
+  </div>
+);
 ```
 
-### 2. PublicLayout Komponente erstellen
-**Datei:** `src/components/landing/PublicLayout.tsx` (NEU)
+**Nachher:**
+```text
+import { PublicLayout } from "@/components/landing/PublicLayout";
+...
+return (
+  <PublicLayout>
+    <Hero ... />
+    <ProblemSection ... />
+    ...
+    <ContactModal ... />
+  </PublicLayout>
+);
+```
 
-Wrapper-Komponente für alle öffentlichen Landingpages:
-- Einheitliche Header/Footer Integration
-- Konsistente min-h-screen + flex-col Struktur
-- Zentrale pt-16 Padding für Header-Offset
+### Entfernte Imports (pro Datei)
+- `Header` (jetzt via PublicLayout)
+- `Footer` (jetzt via PublicLayout)
 
-### 3. Homepage komplett überarbeiten
-**Datei:** `src/pages/landing/MasterHome.tsx` (UPDATE)
+### Hinzugefügte Imports (pro Datei)
+- `PublicLayout`
 
-Neues Design mit drei Bereichen:
+## Vorteile der Migration
 
-**HERO Section:**
-- Umsatz-Badge: "Nur für Unternehmer ab 100.000 EUR Jahresumsatz"
-- Headline: "Struktur schlägt Talent. / Systeme schlagen Chaos."
-- Subtext: KRS Signature Positionierung (kein Kurs, kein Coaching)
-- Dual-CTA: Primary Button + Secondary Link
+1. **Weniger Code-Duplizierung**: Header/Footer-Wrapper an einer Stelle
+2. **Konsistenz**: Alle Landingpages nutzen dasselbe Layout
+3. **Wartbarkeit**: Layout-Anpassungen nur in PublicLayout.tsx
+4. **Zukuenftige Erweiterungen**: z.B. Cookie-Banner, Analytics-Skripte zentral einfuegen
 
-**VALUE CARDS Section:**
-- 3 Cards im Grid-Layout (md:grid-cols-3)
-- Themen: Vertrieb planbar machen, Unternehmer entlasten, KI als Steuerungshebel
-- Verwendung der neuen card-Tokens
-
-### 4. Barrel-Export aktualisieren
-**Datei:** `src/components/landing/index.ts` (UPDATE)
-
-Export der neuen PublicLayout Komponente hinzufügen.
-
-## Dateien (4)
+## Dateien (5)
 
 | Aktion | Datei | Beschreibung |
 |--------|-------|--------------|
-| CREATE | `src/styles/landing-tokens.ts` | Zentrales Token-System |
-| CREATE | `src/components/landing/PublicLayout.tsx` | Layout-Wrapper |
-| UPDATE | `src/pages/landing/MasterHome.tsx` | Neue Homepage |
-| UPDATE | `src/components/landing/index.ts` | Export aktualisieren |
+| UPDATE | `src/pages/landing/Handwerk.tsx` | PublicLayout Migration |
+| UPDATE | `src/pages/landing/Praxen.tsx` | PublicLayout Migration |
+| UPDATE | `src/pages/landing/Dienstleister.tsx` | PublicLayout Migration |
+| UPDATE | `src/pages/landing/Immobilien.tsx` | PublicLayout Migration |
+| UPDATE | `src/pages/landing/Kurzzeitvermietung.tsx` | PublicLayout Migration |
 
 ## Technische Details
 
-### Token-System Vorteile
-- Einheitliche Spacing/Typography über alle Landingpages
-- Einfache globale Anpassungen durch ein zentrales File
-- Type-Safety durch TypeScript-Objekt
+### ContactModal Position
+Das ContactModal bleibt innerhalb des PublicLayout-Wrappers, da es:
+- Den lokalen `isModalOpen` State benoetigt
+- Keine Interferenz mit Header/Footer hat
+- Portal-basiert rendert (Dialog-Komponente)
 
-### PublicLayout Pattern
-Ermöglicht spätere Migration aller Branchen-Seiten:
-```tsx
-// Vorher (jede Seite einzeln)
-<div className="min-h-screen flex flex-col">
-  <Header />
-  <main className="flex-1 pt-16">...</main>
-  <Footer />
-</div>
-
-// Nachher (mit PublicLayout)
-<PublicLayout>
-  <HeroSection />
-  <ValueCards />
-</PublicLayout>
-```
-
-### Homepage Content-Struktur
-```text
-+------------------------------------------+
-|  [Badge] Nur für Unternehmer ab 100k     |
-+------------------------------------------+
-|  Struktur schlägt Talent.                |
-|  Systeme schlagen Chaos.                 |
-+------------------------------------------+
-|  KRS Signature ist kein Kurs...          |
-+------------------------------------------+
-|  [Kostenlose Systemanalyse sichern]      |
-|  Passt das überhaupt zu mir?             |
-+------------------------------------------+
-
-+------------+------------+------------+
-| Vertrieb   | Unternehmer| KI als     |
-| planbar    | entlasten  | Steuerung  |
-+------------+------------+------------+
-```
+### Keine funktionalen Aenderungen
+- Alle Props bleiben identisch
+- CTA-Funktionen unveraendert
+- Source-Werte fuer Leads bleiben gleich
 
 ## Validation Checklist
 - [ ] Build erfolgreich (0 TypeScript-Fehler)
-- [ ] Homepage rendert korrekt auf Desktop/Mobile
-- [ ] CTAs verlinken korrekt zu /qualifizierung
-- [ ] Header/Footer funktionieren wie gewohnt
-- [ ] Tokens werden korrekt angewendet
+- [ ] Alle 5 Landingpages rendern korrekt
+- [ ] Header/Footer erscheinen auf allen Seiten
+- [ ] ContactModal funktioniert (Oeffnen/Schliessen/Submit)
+- [ ] Mobile Navigation funktioniert
+- [ ] CTAs fuehren zu /qualifizierung
+
