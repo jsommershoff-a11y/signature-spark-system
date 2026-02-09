@@ -1,87 +1,117 @@
 
+# Step 02 - Homepage Redesign + Landing Token System
 
-# Step 01.3 - Fix leads_source_check Constraint
+## Objective
+Implementierung eines neuen Design-Token-Systems und einer komplett überarbeiteten Homepage, die den neuen Positionierungstext verwendet ("Struktur schlägt Talent. Systeme schlagen Chaos.").
 
-## Problem
+## Scope
 
-Das Qualifizierungs-Formular schlägt beim Speichern fehl mit:
-```
-new row for relation "leads" violates check constraint "leads_source_check"
-```
+### 1. Neues Token-System erstellen
+**Datei:** `src/styles/landing-tokens.ts` (NEU)
 
-Der aktuelle CHECK-Constraint erlaubt nur:
-```sql
-CHECK ((source = ANY (ARRAY['start'::text, 'growth'::text])))
-```
+Ein zentrales Token-File für konsistentes Styling aller Landingpages:
 
-Aber der Code verwendet 8 verschiedene Source-Werte:
-- `start` (erlaubt)
-- `growth` (erlaubt)
-- `handwerk` (nicht erlaubt)
-- `praxen` (nicht erlaubt)
-- `dienstleister` (nicht erlaubt)
-- `immobilien` (nicht erlaubt)
-- `kurzzeitvermietung` (nicht erlaubt)
-- `qualifizierung` (nicht erlaubt)
-
----
-
-## Lösung
-
-Den bestehenden CHECK-Constraint droppen und durch einen erweiterten Constraint ersetzen.
-
-### SQL Migration:
-
-```sql
--- Step 1: Drop the existing constraint
-ALTER TABLE public.leads 
-DROP CONSTRAINT IF EXISTS leads_source_check;
-
--- Step 2: Add new constraint with all valid source values
-ALTER TABLE public.leads 
-ADD CONSTRAINT leads_source_check 
-CHECK (source = ANY (ARRAY[
-  'start'::text, 
-  'growth'::text, 
-  'handwerk'::text, 
-  'praxen'::text, 
-  'dienstleister'::text, 
-  'immobilien'::text, 
-  'kurzzeitvermietung'::text, 
-  'qualifizierung'::text
-]));
+```text
+landingTokens = {
+  container     → "max-w-6xl mx-auto px-4"
+  sectionPadding→ "py-16 md:py-24"
+  headline.h1   → "text-4xl md:text-6xl font-bold tracking-tight leading-tight"
+  headline.h2   → "text-2xl md:text-4xl font-semibold tracking-tight"
+  headline.h3   → "text-xl md:text-2xl font-semibold"
+  text.body     → "text-base md:text-lg text-muted-foreground leading-relaxed"
+  text.small    → "text-sm text-muted-foreground"
+  badge         → Umsatz-Badge Styling
+  card          → "rounded-2xl border border-border/40 bg-background/80 ..."
+  ctaPrimary    → Gradient-Button Klassen
+  ctaSecondary  → Underline-Link Klassen
+}
 ```
 
----
+### 2. PublicLayout Komponente erstellen
+**Datei:** `src/components/landing/PublicLayout.tsx` (NEU)
 
-## Betroffene Dateien
+Wrapper-Komponente für alle öffentlichen Landingpages:
+- Einheitliche Header/Footer Integration
+- Konsistente min-h-screen + flex-col Struktur
+- Zentrale pt-16 Padding für Header-Offset
 
-| Datei | Aktion |
-|-------|--------|
-| Supabase Migration | CHECK-Constraint aktualisieren |
+### 3. Homepage komplett überarbeiten
+**Datei:** `src/pages/landing/MasterHome.tsx` (UPDATE)
 
-Keine Code-Änderungen erforderlich - die Frontend-Komponenten verwenden bereits die korrekten Source-Werte.
+Neues Design mit drei Bereichen:
 
----
+**HERO Section:**
+- Umsatz-Badge: "Nur für Unternehmer ab 100.000 EUR Jahresumsatz"
+- Headline: "Struktur schlägt Talent. / Systeme schlagen Chaos."
+- Subtext: KRS Signature Positionierung (kein Kurs, kein Coaching)
+- Dual-CTA: Primary Button + Secondary Link
 
-## Validierung nach Fix
+**VALUE CARDS Section:**
+- 3 Cards im Grid-Layout (md:grid-cols-3)
+- Themen: Vertrieb planbar machen, Unternehmer entlasten, KI als Steuerungshebel
+- Verwendung der neuen card-Tokens
 
-| Test | Erwartetes Ergebnis |
-|------|---------------------|
-| Qualifizierung: Formular absenden | ✓ Erfolgreiche Speicherung in Supabase |
-| Qualifizierung: Weiterleitung | ✓ Navigation zu /danke |
-| ContactModal mit source="handwerk" | ✓ Erfolgreiche Speicherung |
-| ContactModal mit source="praxen" | ✓ Erfolgreiche Speicherung |
-| Supabase: leads-Tabelle prüfen | ✓ Neue Einträge mit korrektem source-Wert |
-| Console: Keine Errors | ✓ Keine 400-Fehler mehr |
+### 4. Barrel-Export aktualisieren
+**Datei:** `src/components/landing/index.ts` (UPDATE)
 
----
+Export der neuen PublicLayout Komponente hinzufügen.
 
-## Technical Details
+## Dateien (4)
 
-Der Fix ist eine reine Datenbank-Migration ohne Anwendungscode-Änderungen. Die Migration verwendet:
+| Aktion | Datei | Beschreibung |
+|--------|-------|--------------|
+| CREATE | `src/styles/landing-tokens.ts` | Zentrales Token-System |
+| CREATE | `src/components/landing/PublicLayout.tsx` | Layout-Wrapper |
+| UPDATE | `src/pages/landing/MasterHome.tsx` | Neue Homepage |
+| UPDATE | `src/components/landing/index.ts` | Export aktualisieren |
 
-1. `DROP CONSTRAINT IF EXISTS` - sicher falls der Constraint nicht existiert
-2. `ADD CONSTRAINT` mit allen 8 gültigen Source-Werten
-3. Keine Datenänderung nötig (bestehende Daten haben nur 'start' oder 'growth')
+## Technische Details
 
+### Token-System Vorteile
+- Einheitliche Spacing/Typography über alle Landingpages
+- Einfache globale Anpassungen durch ein zentrales File
+- Type-Safety durch TypeScript-Objekt
+
+### PublicLayout Pattern
+Ermöglicht spätere Migration aller Branchen-Seiten:
+```tsx
+// Vorher (jede Seite einzeln)
+<div className="min-h-screen flex flex-col">
+  <Header />
+  <main className="flex-1 pt-16">...</main>
+  <Footer />
+</div>
+
+// Nachher (mit PublicLayout)
+<PublicLayout>
+  <HeroSection />
+  <ValueCards />
+</PublicLayout>
+```
+
+### Homepage Content-Struktur
+```text
++------------------------------------------+
+|  [Badge] Nur für Unternehmer ab 100k     |
++------------------------------------------+
+|  Struktur schlägt Talent.                |
+|  Systeme schlagen Chaos.                 |
++------------------------------------------+
+|  KRS Signature ist kein Kurs...          |
++------------------------------------------+
+|  [Kostenlose Systemanalyse sichern]      |
+|  Passt das überhaupt zu mir?             |
++------------------------------------------+
+
++------------+------------+------------+
+| Vertrieb   | Unternehmer| KI als     |
+| planbar    | entlasten  | Steuerung  |
++------------+------------+------------+
+```
+
+## Validation Checklist
+- [ ] Build erfolgreich (0 TypeScript-Fehler)
+- [ ] Homepage rendert korrekt auf Desktop/Mobile
+- [ ] CTAs verlinken korrekt zu /qualifizierung
+- [ ] Header/Footer funktionieren wie gewohnt
+- [ ] Tokens werden korrekt angewendet
