@@ -1,5 +1,21 @@
 import { Link } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
 import logoSignature from "@/assets/logo-signature.png";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const branches = [
+  { title: "Handwerk", path: "/handwerk" },
+  { title: "Praxen", path: "/praxen" },
+  { title: "Dienstleister", path: "/dienstleister" },
+  { title: "Immobilien", path: "/immobilien" },
+  { title: "Kurzzeitvermietung", path: "/kurzzeitvermietung" },
+];
 
 export const Header = () => {
   return (
@@ -18,17 +34,29 @@ export const Header = () => {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <Link 
-              to="/start" 
-              className="text-muted-foreground hover:text-primary transition-colors font-medium"
-            >
-              Für Gründer
-            </Link>
-            <Link 
-              to="/growth" 
-              className="text-muted-foreground hover:text-primary transition-colors font-medium"
-            >
-              Für Unternehmer
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors font-medium">
+                Branchen
+                <ChevronDown className="w-4 h-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-48">
+                {branches.map((branch) => (
+                  <DropdownMenuItem key={branch.path} asChild>
+                    <Link to={branch.path} className="w-full cursor-pointer">
+                      {branch.title}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <Link to="/qualifizierung">
+              <Button 
+                size="sm" 
+                className="bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary"
+              >
+                Analysegespräch sichern
+              </Button>
             </Link>
           </nav>
         </div>

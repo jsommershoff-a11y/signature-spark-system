@@ -29,7 +29,7 @@ type ContactFormData = z.infer<typeof contactSchema>;
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
-  source: "start" | "growth";
+  source: "start" | "growth" | "handwerk" | "praxen" | "dienstleister" | "immobilien" | "kurzzeitvermietung" | "qualifizierung";
 }
 
 export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => {
