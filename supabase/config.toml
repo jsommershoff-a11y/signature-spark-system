@@ -27,5 +27,3 @@ verify_jwt = false
 [functions.channel_event_ingest]
 verify_jwt = false
 
-[functions.create-test-user]
-verify_jwt = false
