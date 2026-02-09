@@ -45,6 +45,12 @@ All colors MUST be HSL.
     --gradient-start: 224 76% 48%;
     --gradient-end: 217 91% 60%;
 
+    /* Brand Colors from Logo */
+    --brand-orange: 30 90% 55%;
+    --brand-cream: 35 25% 75%;
+    --brand-brown: 20 30% 35%;
+    --brand-charcoal: 20 20% 25%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 224 76% 48%;
@@ -90,6 +96,12 @@ All colors MUST be HSL.
     --primary-light: 217 91% 60%;
     --gradient-start: 224 76% 48%;
     --gradient-end: 217 91% 60%;
+
+    /* Brand Colors from Logo */
+    --brand-orange: 30 90% 55%;
+    --brand-cream: 35 25% 75%;
+    --brand-brown: 20 30% 35%;
+    --brand-charcoal: 20 20% 25%;
 
     --sidebar-background: 226 71% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;
