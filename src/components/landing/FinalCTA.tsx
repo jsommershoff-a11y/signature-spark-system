@@ -26,10 +26,7 @@ export const FinalCTA = ({ headline, subline, ctaText, onCtaClick }: FinalCTAPro
             {subline}
           </p>
           
-          <CTAButton 
-            onClick={onCtaClick}
-            className="bg-white text-primary hover:bg-white/90 hover:text-primary-deep"
-          >
+          <CTAButton onClick={onCtaClick}>
             {ctaText}
           </CTAButton>
         </div>
