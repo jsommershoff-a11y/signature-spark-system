@@ -5,16 +5,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ROLE_LABELS, ROLE_COLORS, AppRole } from '@/lib/roles';
+import { ROLE_LABELS, ROLE_COLORS, ROLE_HIERARCHY, AppRole } from '@/lib/roles';
 import { Users, Loader2 } from 'lucide-react';
 
 interface UserWithRole {
   user_id: string;
+  profile_id: string;
   email: string | null;
   first_name: string | null;
   last_name: string | null;
   full_name: string | null;
   role: AppRole;
+  team_id: string | null;
   created_at: string;
 }
 
@@ -29,7 +31,7 @@ export default function AdminUserManagement() {
 
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('user_id, email, first_name, last_name, full_name, created_at');
+      .select('id, user_id, email, first_name, last_name, full_name, team_id, created_at');
 
     if (profilesError) {
       toast({ variant: 'destructive', title: 'Fehler beim Laden', description: profilesError.message });
@@ -47,7 +49,17 @@ export default function AdminUserManagement() {
 
     const usersWithRoles: UserWithRole[] = profiles.map((profile) => {
       const userRole = roles.find((r) => r.user_id === profile.user_id);
-      return { ...profile, role: (userRole?.role as AppRole) || 'kunde' };
+      return {
+        user_id: profile.user_id,
+        profile_id: profile.id,
+        email: profile.email,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        full_name: profile.full_name,
+        role: (userRole?.role as AppRole) || 'kunde',
+        team_id: profile.team_id,
+        created_at: profile.created_at,
+      };
     });
 
     setUsers(usersWithRoles);
@@ -86,10 +98,39 @@ export default function AdminUserManagement() {
     setUpdatingUser(null);
   };
 
+  const handleTeamChange = async (profileId: string, teamId: string | null) => {
+    setUpdatingUser(profileId);
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ team_id: teamId })
+      .eq('id', profileId);
+
+    if (error) {
+      toast({ variant: 'destructive', title: 'Fehler beim Team-Update', description: error.message });
+    } else {
+      toast({ title: 'Team aktualisiert', description: teamId ? 'Benutzer wurde einem Team zugewiesen.' : 'Team-Zuweisung entfernt.' });
+      await fetchUsers();
+    }
+
+    setUpdatingUser(null);
+  };
+
   const getDisplayName = (user: UserWithRole) => {
     if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
     if (user.full_name) return user.full_name;
     return user.email || 'Unbekannt';
+  };
+
+  // Team leaders: users with role >= teamleiter
+  const teamLeaderCandidates = users.filter(
+    (u) => ROLE_HIERARCHY[u.role] >= ROLE_HIERARCHY['teamleiter']
+  );
+
+  const getTeamLeaderName = (teamId: string | null) => {
+    if (!teamId) return '-';
+    const leader = users.find((u) => u.profile_id === teamId);
+    return leader ? getDisplayName(leader) : '-';
   };
 
   return (
@@ -99,7 +140,7 @@ export default function AdminUserManagement() {
           <Users className="h-5 w-5" />
           Benutzerverwaltung
         </CardTitle>
-        <CardDescription>Verwalte Benutzerrollen und Berechtigungen</CardDescription>
+        <CardDescription>Verwalte Benutzerrollen, Teams und Berechtigungen</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -114,6 +155,7 @@ export default function AdminUserManagement() {
                 <TableHead>E-Mail</TableHead>
                 <TableHead>Aktuelle Rolle</TableHead>
                 <TableHead>Rolle ändern</TableHead>
+                <TableHead>Team</TableHead>
                 <TableHead>Registriert</TableHead>
               </TableRow>
             </TableHeader>
@@ -129,7 +171,7 @@ export default function AdminUserManagement() {
                     <Select
                       value={user.role}
                       onValueChange={(value) => handleRoleChange(user.user_id, value as AppRole)}
-                      disabled={updatingUser === user.user_id}
+                      disabled={updatingUser === user.user_id || updatingUser === user.profile_id}
                     >
                       <SelectTrigger className="w-40">
                         <SelectValue />
@@ -140,6 +182,27 @@ export default function AdminUserManagement() {
                         <SelectItem value="teamleiter">Teamleiter</SelectItem>
                         <SelectItem value="geschaeftsfuehrung">Geschäftsführung</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={user.team_id || '__none__'}
+                      onValueChange={(value) =>
+                        handleTeamChange(user.profile_id, value === '__none__' ? null : value)
+                      }
+                      disabled={updatingUser === user.user_id || updatingUser === user.profile_id}
+                    >
+                      <SelectTrigger className="w-44">
+                        <SelectValue placeholder="-">{getTeamLeaderName(user.team_id)}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Kein Team</SelectItem>
+                        {teamLeaderCandidates.map((leader) => (
+                          <SelectItem key={leader.profile_id} value={leader.profile_id}>
+                            {getDisplayName(leader)} ({ROLE_LABELS[leader.role]})
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </TableCell>
