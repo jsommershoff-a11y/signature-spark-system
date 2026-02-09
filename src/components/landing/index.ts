@@ -10,3 +10,4 @@ export { OutcomeSection } from "./OutcomeSection";
 export { Header } from "./Header";
 export { Footer } from "./Footer";
 export { ContactModal } from "./ContactModal";
+export { PublicLayout } from "./PublicLayout";
