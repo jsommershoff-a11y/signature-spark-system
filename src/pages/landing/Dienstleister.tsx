@@ -1,102 +1,83 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
 import { Hero } from "@/components/landing/Hero";
-import { ProblemSection } from "@/components/landing/ProblemSection";
-import { SystemSection } from "@/components/landing/SystemSection";
-import { PlatformProof } from "@/components/landing/PlatformProof";
-import { PersonalSupport } from "@/components/landing/PersonalSupport";
-import { FAQSection } from "@/components/landing/FAQSection";
+import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
+import { RootCauseSection } from "@/components/landing/RootCauseSection";
+import { SystemPhasesSection } from "@/components/landing/SystemPhasesSection";
+import { StructogramUSPSection } from "@/components/landing/StructogramUSPSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
-import { ContactModal } from "@/components/landing/ContactModal";
+import { TrendingDown, DollarSign, User } from "lucide-react";
 
 const Dienstleister = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const goToQualifizierung = () => navigate("/qualifizierung");
+
+  // Branchenspezifische Target Audience
+  const yesPoints = [
+    "Du bist Agentur- oder Beratungsinhaber mit Team",
+    "Dein Umsatz schwankt – jeder Monat ist ein Neustart",
+    "Du willst Vertrieb systematisieren, nicht dem Zufall überlassen",
+    "Du bist bereit, operative Gewohnheiten zu ändern",
+  ];
+
+  const noPoints = [
+    "Du bist Freelancer ohne Wachstumsziel",
+    "Du suchst nur neue Leads oder Marketing-Tricks",
+    "Du willst weitermachen wie bisher",
+    "Du erwartest Ergebnisse ohne Strukturarbeit",
+  ];
+
+  // Branchenspezifische Root Causes
+  const causes = [
+    {
+      icon: <TrendingDown className="w-8 h-8" />,
+      title: "Akquise ist Auf und Ab",
+      description:
+        "Mal läuft es, mal nicht. Kein planbarer Prozess, kein vorhersehbarer Umsatz.",
+    },
+    {
+      icon: <DollarSign className="w-8 h-8" />,
+      title: "Projekte laufen, Marge schrumpft",
+      description:
+        "Mehr Arbeit, weniger Gewinn. Scope Creep, unklare Prozesse, fehlende Grenzen.",
+    },
+    {
+      icon: <User className="w-8 h-8" />,
+      title: "In jedem Projekt selbst involviert",
+      description:
+        "Du bist der Engpass. Ohne dich läuft nichts – und Skalierung ist unmöglich.",
+    },
+  ];
 
   return (
     <PublicLayout>
       <Hero
-        headline="Für Agenturen & Berater: Skalierbare Prozesse, bessere Kundengewinnung."
-        subline="Du lieferst exzellente Arbeit – aber Akquise, Projektmanagement und Team kosten dich den letzten Nerv? Wir bringen Struktur rein, damit dein Business skaliert."
+        headline="Wenn Umsatz von Ihnen abhängt, ist es kein Unternehmen."
+        problem="Jeder Monat neu. Jeder Abschluss hängt an Ihnen."
+        solution="KRS Signature macht Vertrieb reproduzierbar."
+        subline=""
+        badge="Nur für Unternehmen ab 100.000 € Umsatz"
         ctaText="Kostenloses Analysegespräch sichern"
-        onCtaClick={openModal}
+        onCtaClick={goToQualifizierung}
       />
-      
-      <ProblemSection
-        intro="Das kennen die meisten Dienstleister:"
-        problems={[
-          "Kundenakquise ist ein Auf und Ab",
-          "Projekte laufen, aber Marge schrumpft",
-          "Du bist in jedem Projekt selbst involviert",
-          "Team wächst, aber Chaos wächst mit",
-        ]}
-        outro="Du brauchst kein neues CRM. Du brauchst ein System, das funktioniert."
+
+      <TargetAudienceSection yesPoints={yesPoints} noPoints={noPoints} />
+
+      <RootCauseSection
+        intro="Das echte Problem ist nicht dein Angebot – es ist fehlende Struktur im Vertrieb."
+        causes={causes}
       />
-      
-      <SystemSection
-        headline="Dein Dienstleister-System in 5 Bereichen"
-        modules={[
-          { title: "Akquise & Lead-Pipeline", icon: "trending" },
-          { title: "Projektmanagement & Delivery", icon: "package" },
-          { title: "Preisgestaltung & Marge", icon: "chart" },
-          { title: "Team & Delegation", icon: "usercheck" },
-          { title: "Prozesse für Skalierung", icon: "cog" },
-        ]}
-      />
-      
-      <PlatformProof
-        headline="Ein Blick ins Signature System"
-        intro="Du bekommst keine lose Kurssammlung, sondern einen strukturierten Mitgliederbereich:"
-        features={[
-          "Vorlagen für Angebote, Verträge, Onboarding",
-          "SOPs für wiederkehrende Prozesse",
-          "Umsetzungspfad für die ersten 30 Tage",
-          "Alles an einem Ort – jederzeit abrufbar",
-        ]}
-      />
-      
-      <PersonalSupport
-        headline="Persönliche Begleitung"
-        intro="Im Agentur-Alltag entstehen die wichtigsten Fragen. Im Signature System bekommst du:"
-        points={[
-          "Persönliches Sparring bei Entscheidungen",
-          "Klare Antworten auf Skalierungs-Fragen",
-          "Unterstützung beim Umsetzen, nicht nur beim Verstehen",
-        ]}
-        ctaText="Kostenloses Analysegespräch sichern"
-        onCtaClick={openModal}
-      />
-      
-      <FAQSection
-        items={[
-          {
-            question: "Ist das nur für große Agenturen?",
-            answer: "Nein. Das Signature System ist für Dienstleister jeder Größe geeignet – vom Freelancer bis zur 20-Mann-Agentur. Entscheidend ist, dass du wachsen willst.",
-          },
-          {
-            question: "Ich habe schon Tools – brauche ich noch eins?",
-            answer: "Das Signature System ersetzt keine Tools. Es gibt dir die Struktur und Prozesse, damit deine Tools richtig funktionieren.",
-          },
-          {
-            question: "Was kostet das?",
-            answer: "Im kostenlosen Analysegespräch schauen wir gemeinsam, ob das System zu dir passt. Erst dann sprechen wir über Preise. Kein Verkaufsdruck.",
-          },
-        ]}
-      />
-      
+
+      <SystemPhasesSection />
+
+      <StructogramUSPSection />
+
       <FinalCTA
-        headline="Bereit für planbares Wachstum?"
-        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie das Signature System dein Business voranbringt."
-        ctaText="Jetzt Gespräch sichern"
-        onCtaClick={openModal}
-      />
-      
-      <ContactModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-        source="dienstleister" 
+        headline="Bereit für Struktur statt Chaos?"
+        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie dein Vertrieb reproduzierbar wird."
+        ctaText="Jetzt Analysegespräch sichern"
+        onCtaClick={goToQualifizierung}
       />
     </PublicLayout>
   );

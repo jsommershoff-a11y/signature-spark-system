@@ -1,102 +1,83 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
 import { Hero } from "@/components/landing/Hero";
-import { ProblemSection } from "@/components/landing/ProblemSection";
-import { SystemSection } from "@/components/landing/SystemSection";
-import { PlatformProof } from "@/components/landing/PlatformProof";
-import { PersonalSupport } from "@/components/landing/PersonalSupport";
-import { FAQSection } from "@/components/landing/FAQSection";
+import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
+import { RootCauseSection } from "@/components/landing/RootCauseSection";
+import { SystemPhasesSection } from "@/components/landing/SystemPhasesSection";
+import { StructogramUSPSection } from "@/components/landing/StructogramUSPSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
-import { ContactModal } from "@/components/landing/ContactModal";
+import { Clock, Users, FileText } from "lucide-react";
 
 const Praxen = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const goToQualifizierung = () => navigate("/qualifizierung");
+
+  // Branchenspezifische Target Audience
+  const yesPoints = [
+    "Du bist Praxisinhaber mit Team und Verantwortung",
+    "Terminausfälle, Personal-Chaos und Verwaltung kosten dich Energie",
+    "Du willst Systeme, die Planbarkeit schaffen",
+    "Du bist bereit, operative Gewohnheiten zu ändern",
+  ];
+
+  const noPoints = [
+    "Du bist angestellter Arzt ohne Entscheidungsmacht",
+    "Du suchst nur eine neue Praxissoftware",
+    "Du erwartest Veränderung ohne eigene Arbeit",
+    "Du willst weitermachen wie bisher",
+  ];
+
+  // Branchenspezifische Root Causes
+  const causes = [
+    {
+      icon: <Clock className="w-8 h-8" />,
+      title: "Terminausfälle und No-Shows",
+      description:
+        "Patienten erscheinen nicht, Slots bleiben leer. Umsatzverlust, den niemand trackt.",
+    },
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Personal kommt und geht",
+      description:
+        "Einarbeitung frisst Zeit, Wissen geht verloren. Jeder neue Mitarbeiter ist ein Neuanfang.",
+    },
+    {
+      icon: <FileText className="w-8 h-8" />,
+      title: "Verwaltung frisst Zeit",
+      description:
+        "Dokumentation, Abrechnung, Bürokratie. Der Praxisalltag endet nie um 18 Uhr.",
+    },
+  ];
 
   return (
     <PublicLayout>
       <Hero
-        headline="Für Praxen: Mehr Zeit für Patienten, weniger Verwaltungschaos."
-        subline="Du bist Arzt, Zahnarzt oder Therapeut – aber Terminausfälle, Personal und Abrechnung fressen deine Energie? Wir bringen Struktur in deinen Praxisalltag."
+        headline="Ihre Praxis läuft – aber nicht planbar?"
+        problem="Medizinisch stark. Unternehmerisch ungeführt."
+        solution="Mehr Patienten lösen kein Chaos. Systeme schon."
+        subline=""
+        badge="Nur für Praxisinhaber ab 100.000 € Umsatz"
         ctaText="Kostenloses Analysegespräch sichern"
-        onCtaClick={openModal}
+        onCtaClick={goToQualifizierung}
       />
-      
-      <ProblemSection
-        intro="Das kennen die meisten Praxisinhaber:"
-        problems={[
-          "Terminausfälle und No-Shows kosten Umsatz",
-          "Mitarbeiter kommen und gehen – Einarbeitung frisst Zeit",
-          "Abrechnung, Dokumentation, Verwaltung: endlos",
-          "Work-Life-Balance? Eher Work-Work-Balance.",
-        ]}
-        outro="Du brauchst kein neues Tool. Du brauchst ein System, das funktioniert."
+
+      <TargetAudienceSection yesPoints={yesPoints} noPoints={noPoints} />
+
+      <RootCauseSection
+        intro="Das echte Problem ist nicht der Patientenstrom – es ist fehlende Struktur in der Praxis."
+        causes={causes}
       />
-      
-      <SystemSection
-        headline="Dein Praxis-System in 5 Bereichen"
-        modules={[
-          { title: "Praxisorganisation & Terminmanagement", icon: "calendar" },
-          { title: "Patientengewinnung ohne Werbedruck", icon: "users" },
-          { title: "Team & Mitarbeiterführung", icon: "usercheck" },
-          { title: "Prozesse, die den Alltag erleichtern", icon: "cog" },
-          { title: "Work-Life-Balance für Praxisinhaber", icon: "compass" },
-        ]}
-      />
-      
-      <PlatformProof
-        headline="Ein Blick ins Signature System"
-        intro="Du bekommst keine lose Kurssammlung, sondern einen strukturierten Mitgliederbereich:"
-        features={[
-          "Vorlagen für Patientenkommunikation & Prozesse",
-          "Checklisten für Einarbeitung neuer Mitarbeiter",
-          "Umsetzungspfad für die ersten 30 Tage",
-          "Alles an einem Ort – jederzeit abrufbar",
-        ]}
-      />
-      
-      <PersonalSupport
-        headline="Persönliche Begleitung"
-        intro="Im Praxisalltag entstehen die wichtigsten Fragen. Im Signature System bekommst du:"
-        points={[
-          "Persönliches Sparring bei Entscheidungen",
-          "Klare Antworten auf Organisations-Fragen",
-          "Unterstützung beim Umsetzen, nicht nur beim Verstehen",
-        ]}
-        ctaText="Kostenloses Analysegespräch sichern"
-        onCtaClick={openModal}
-      />
-      
-      <FAQSection
-        items={[
-          {
-            question: "Ich habe kaum Zeit neben der Praxis – passt das?",
-            answer: "Gerade dann. Das System ist so aufgebaut, dass du pro Woche nur 1-2 Stunden investierst. Alles ist auf Umsetzung ausgelegt, nicht auf stundenlanges Zuschauen.",
-          },
-          {
-            question: "Funktioniert das auch für kleine Praxen?",
-            answer: "Ja. Das Signature System ist für Praxen jeder Größe geeignet – vom Einzelkämpfer bis zur Gemeinschaftspraxis.",
-          },
-          {
-            question: "Was kostet das?",
-            answer: "Im kostenlosen Analysegespräch schauen wir gemeinsam, ob das System zu dir passt. Erst dann sprechen wir über Preise. Kein Verkaufsdruck.",
-          },
-        ]}
-      />
-      
+
+      <SystemPhasesSection />
+
+      <StructogramUSPSection />
+
       <FinalCTA
-        headline="Bereit für mehr Fokus auf das, was zählt?"
-        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie das Signature System deinen Praxisalltag verändert."
-        ctaText="Jetzt Gespräch sichern"
-        onCtaClick={openModal}
-      />
-      
-      <ContactModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-        source="praxen" 
+        headline="Bereit für Struktur statt Chaos?"
+        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie deine Praxis planbar wird."
+        ctaText="Jetzt Analysegespräch sichern"
+        onCtaClick={goToQualifizierung}
       />
     </PublicLayout>
   );
