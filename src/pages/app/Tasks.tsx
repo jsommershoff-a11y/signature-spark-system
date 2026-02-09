@@ -28,13 +28,11 @@ export default function Tasks() {
   };
 
   const handleTaskClick = (task: CrmTask) => {
-    // TODO: Open task detail modal
-    console.log('Task clicked:', task);
+    // TODO: Open task detail modal - placeholder for future implementation
   };
 
   const handleEditTask = (task: CrmTask) => {
-    // TODO: Open edit modal
-    console.log('Edit task:', task);
+    // TODO: Open edit modal - placeholder for future implementation
   };
 
   const todayTasks = openTasks.filter(task => {
