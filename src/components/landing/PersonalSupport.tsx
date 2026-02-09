@@ -26,8 +26,8 @@ export const PersonalSupport = ({ headline, intro, points, ctaText, onCtaClick }
                   />
                 </div>
                 {/* Decorative element */}
-                <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/10 rounded-xl -z-10" />
-                <div className="absolute -top-4 -left-4 w-16 h-16 bg-primary-light/20 rounded-lg -z-10" />
+                <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-brand-orange/20 rounded-xl -z-10" />
+                <div className="absolute -top-4 -left-4 w-16 h-16 bg-brand-orange/15 rounded-lg -z-10" />
               </div>
             </div>
             
@@ -47,7 +47,7 @@ export const PersonalSupport = ({ headline, intro, points, ctaText, onCtaClick }
                     key={index}
                     className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm">
+                    <div className="flex-shrink-0 w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center text-white font-bold text-sm">
                       ✓
                     </div>
                     <p className="text-foreground text-lg pt-0.5">{point}</p>

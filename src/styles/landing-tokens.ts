@@ -14,6 +14,8 @@ export const landingTokens = {
     "inline-flex items-center rounded-full border border-border/50 bg-background/60 px-4 py-1 text-sm font-medium",
   card:
     "rounded-2xl border border-border/40 bg-background/80 shadow-sm hover:shadow-md transition-all p-6",
+  badgeAccent:
+    "inline-flex items-center rounded-full border-2 border-brand-orange/60 bg-brand-orange/10 px-4 py-1 text-sm font-semibold text-brand-orange",
   ctaPrimary:
     "bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary text-primary-foreground font-semibold text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all",
   ctaSecondary:
