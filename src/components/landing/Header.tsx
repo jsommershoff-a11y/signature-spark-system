@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, Menu } from "lucide-react";
-import logoSignature from "@/assets/logo-signature.png";
+import logoSignature from "@/assets/logo-krs-signature.png";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -39,15 +39,12 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center">
             <img 
               src={logoSignature} 
               alt="KRS Signature Logo" 
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
-            <span className="text-xl font-bold text-foreground">
-              KRS Signature
-            </span>
           </Link>
           
           {/* Desktop Navigation (md und größer) */}

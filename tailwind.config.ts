@@ -60,6 +60,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        brand: {
+          orange: "hsl(var(--brand-orange))",
+          cream: "hsl(var(--brand-cream))",
+          brown: "hsl(var(--brand-brown))",
+          charcoal: "hsl(var(--brand-charcoal))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
