@@ -54,8 +54,22 @@ export const Footer = () => {
               >
                 Analysegespräch sichern
               </Link>
-              <span className="text-muted text-sm">Impressum (folgt)</span>
-              <span className="text-muted text-sm">Datenschutz (folgt)</span>
+              <a 
+                href="https://krsimmobilien.de/impressum"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted hover:text-primary-foreground transition-colors text-sm"
+              >
+                Impressum
+              </a>
+              <a 
+                href="https://krsimmobilien.de/datenschutz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted hover:text-primary-foreground transition-colors text-sm"
+              >
+                Datenschutz
+              </a>
             </nav>
           </div>
         </div>
