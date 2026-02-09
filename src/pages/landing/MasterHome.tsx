@@ -17,7 +17,7 @@ const MasterHome = () => {
         <div className={`${landingTokens.container} py-20 relative z-10`}>
           <div className="max-w-4xl mx-auto text-center">
             {/* Umsatz Badge */}
-            <span className={`${landingTokens.badge} mb-8`}>
+            <span className={`${landingTokens.badgeAccent} mb-8`}>
               Nur für Unternehmer ab 100.000 € Jahresumsatz
             </span>
 
