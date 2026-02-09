@@ -1,235 +1,225 @@
 
 
-# SEO-Optimierung für Landing-Pages
+# Step 01 – Neue Landing-Seitenstruktur & Routing
 
 ## Ziel
 
-Vollständige SEO-Optimierung der öffentlichen Landing-Pages (/, /start, /growth) für bessere Suchmaschinen-Sichtbarkeit und Social-Media-Vorschauen.
+Branchenspezifische Public-Landingpages hinzufügen und die bestehenden Seiten (`Home.tsx`, `Start.tsx`, `Growth.tsx`) durch die neue Struktur ersetzen. Alle wichtigen Komponenten und Sections werden übertragen.
 
 ---
 
-## Identifizierte Probleme
+## Zu übertragende Elemente (aus bestehenden Seiten)
 
-| Priorität | Problem | Impact |
-|-----------|---------|--------|
-| Kritisch | Statische Meta-Tags für alle Seiten | Google indexiert falsche Inhalte |
-| Kritisch | Falscher Page Title "Lovable App" | Schlechte Klickraten in Suchergebnissen |
-| Kritisch | Falsche OG-Daten | Schlechte Social-Media-Vorschauen |
-| Hoch | Keine Sitemap | Langsame/unvollständige Indexierung |
-| Hoch | HTML lang="en" statt "de" | Falsche Sprachzuordnung |
-| Mittel | Keine Schema.org-Daten | Fehlende Rich Snippets für FAQs |
-| Mittel | robots.txt ohne Sitemap-Referenz | Crawler finden Sitemap nicht |
-| Niedrig | Fehlende Impressum/Datenschutz-Links | Rechtliche Compliance |
+| Komponente | Verwendung | Status |
+|------------|------------|--------|
+| `Hero` | Headline + Subline + CTA | ✅ Wird weiterverwendet |
+| `ProblemSection` | Schmerzpunkte der Zielgruppe | ✅ Wird weiterverwendet |
+| `SystemSection` | Module/Bereiche des Systems | ✅ Wird weiterverwendet |
+| `PlatformProof` | Features + Screenshot | ✅ Wird weiterverwendet |
+| `PersonalSupport` | Sparring + Portrait | ✅ Wird weiterverwendet |
+| `OutcomeSection` | Ergebnisse (nur Growth) | ✅ Wird weiterverwendet |
+| `FAQSection` | Häufige Fragen | ✅ Wird weiterverwendet |
+| `FinalCTA` | Abschluss-CTA | ✅ Wird weiterverwendet |
+| `ContactModal` | Lead-Formular | ✅ Erweitert mit neuen Sources |
+| `Header` | Navigation | ✅ Angepasst für Branchen |
+| `Footer` | Footer-Links | ✅ Angepasst für neue Struktur |
 
 ---
 
-## Lösung: react-helmet-async Integration
+## Neue Dateistruktur
 
-Da die App auf React/Vite basiert (SPA), benötigen wir eine Lösung für dynamische Meta-Tags. Wir verwenden `react-helmet-async`.
+```text
+src/pages/landing/
+├── MasterHome.tsx        → / (Branchenauswahl)
+├── Handwerk.tsx          → /handwerk
+├── Praxen.tsx            → /praxen
+├── Dienstleister.tsx     → /dienstleister
+├── Immobilien.tsx        → /immobilien
+├── Kurzzeitvermietung.tsx → /kurzzeitvermietung
+├── Qualifizierung.tsx    → /qualifizierung
+└── Thanks.tsx            → /danke
+```
 
 ---
 
 ## Implementierungsschritte
 
-### Step 01: Dependency installieren
+### Step 01.1: Neue Landing-Seiten erstellen
 
-```bash
-react-helmet-async
+**MasterHome.tsx** (ersetzt Home.tsx):
+- Branchenauswahl-Karten statt Start/Growth-Weiche
+- 5 Branchen-Links mit Icons
+- CTA zu `/qualifizierung`
+
+**Branchenseiten** (Handwerk, Praxen, etc.):
+- Volle Seitenstruktur wie Start.tsx:
+  - Hero (branchenspezifisch)
+  - ProblemSection (branchenspezifisch)
+  - SystemSection (angepasste Module)
+  - PlatformProof
+  - PersonalSupport
+  - FAQSection (branchenspezifisch)
+  - FinalCTA
+- ContactModal mit branch-spezifischem `source`
+
+**Qualifizierung.tsx**:
+- Direkte Formular-Seite (CTA-Endpunkt)
+- Integriertes ContactModal oder Inline-Formular
+
+**Thanks.tsx**:
+- Bestätigungsseite nach Formular-Submit
+- Redirect-Option zurück zur Startseite
+
+### Step 01.2: ContactModal erweitern
+
+Neue Source-Typen für Lead-Tracking:
+
+```typescript
+type LeadSource = 
+  | "start" 
+  | "growth" 
+  | "handwerk" 
+  | "praxen" 
+  | "dienstleister" 
+  | "immobilien" 
+  | "kurzzeitvermietung" 
+  | "qualifizierung";
 ```
 
-### Step 02: HTML-Sprache korrigieren
+### Step 01.3: Header anpassen
 
-```html
-<!-- index.html -->
-<html lang="de">
-```
+Neue Navigation:
+- Logo → `/`
+- Branchen-Dropdown (Handwerk, Praxen, Dienstleister, Immobilien, Kurzzeitvermietung)
+- CTA-Button → `/qualifizierung`
 
-### Step 03: HelmetProvider in App.tsx hinzufügen
+### Step 01.4: Footer anpassen
+
+Neue Links:
+- Branchen-Links statt Start/Growth
+- Impressum/Datenschutz (Platzhalter)
+
+### Step 01.5: App.tsx Router erweitern
 
 ```tsx
-import { HelmetProvider } from 'react-helmet-async';
+// Neue Imports
+import MasterHome from "./pages/landing/MasterHome";
+import Handwerk from "./pages/landing/Handwerk";
+import Praxen from "./pages/landing/Praxen";
+import Dienstleister from "./pages/landing/Dienstleister";
+import Immobilien from "./pages/landing/Immobilien";
+import Kurzzeitvermietung from "./pages/landing/Kurzzeitvermietung";
+import Qualifizierung from "./pages/landing/Qualifizierung";
+import Thanks from "./pages/landing/Thanks";
 
-// Wrap App content with HelmetProvider
-<HelmetProvider>
-  {/* existing app */}
-</HelmetProvider>
+<Routes>
+  {/* Neue Public Landing Routes */}
+  <Route path="/" element={<MasterHome />} />
+  <Route path="/handwerk" element={<Handwerk />} />
+  <Route path="/praxen" element={<Praxen />} />
+  <Route path="/dienstleister" element={<Dienstleister />} />
+  <Route path="/immobilien" element={<Immobilien />} />
+  <Route path="/kurzzeitvermietung" element={<Kurzzeitvermietung />} />
+  <Route path="/qualifizierung" element={<Qualifizierung />} />
+  <Route path="/danke" element={<Thanks />} />
+  
+  {/* Auth - UNVERÄNDERT */}
+  <Route path="/auth" element={<Auth />} />
+  
+  {/* Protected /app/* Block - UNVERÄNDERT */}
+  <Route path="/app" element={...}>
+    {/* alle bestehenden nested routes */}
+  </Route>
+  
+  {/* Public Offer - UNVERÄNDERT */}
+  <Route path="/offer/:token" element={<PublicOffer />} />
+  
+  {/* Catch-all */}
+  <Route path="*" element={<NotFound />} />
+</Routes>
 ```
 
-### Step 04: SEO-Komponente erstellen
+### Step 01.6: Alte Seiten löschen
 
-Neue Datei: `src/components/SEO.tsx`
-
-```tsx
-import { Helmet } from 'react-helmet-async';
-
-interface SEOProps {
-  title: string;
-  description: string;
-  canonical?: string;
-  ogImage?: string;
-}
-
-export const SEO = ({ title, description, canonical, ogImage }: SEOProps) => {
-  const siteUrl = 'https://signature-spark-system.lovable.app';
-  const defaultImage = `${siteUrl}/og-image.png`;
-
-  return (
-    <Helmet>
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      <link rel="canonical" href={canonical || siteUrl} />
-      
-      {/* Open Graph */}
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:image" content={ogImage || defaultImage} />
-      <meta property="og:url" content={canonical || siteUrl} />
-      <meta property="og:type" content="website" />
-      <meta property="og:locale" content="de_DE" />
-      
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage || defaultImage} />
-    </Helmet>
-  );
-};
-```
-
-### Step 05: SEO in Landing-Pages integrieren
-
-**Home.tsx:**
-```tsx
-<SEO 
-  title="KRS Signature System | Plattform + Sparring für Unternehmer"
-  description="Die Plattform + persönliches Sparring für echte Unternehmer. Kein loses Coaching. Ein System, das mit dir wächst."
-  canonical="https://signature-spark-system.lovable.app/"
-/>
-```
-
-**Start.tsx:**
-```tsx
-<SEO 
-  title="Signature Start | Dein System für die erste Firma | KRS"
-  description="Du willst gründen? Mit dem Signature System bekommst du Module, Vorlagen, Checklisten und persönliches Sparring für einen strukturierten Start."
-  canonical="https://signature-spark-system.lovable.app/start"
-/>
-```
-
-**Growth.tsx:**
-```tsx
-<SEO 
-  title="Signature Growth | Struktur für skalierende Unternehmer | KRS"
-  description="Du hast Umsatz, aber Prozesse und Team ziehen nicht mit? Wir bauen Ordnung ins System, damit Wachstum kontrollierbar wird."
-  canonical="https://signature-spark-system.lovable.app/growth"
-/>
-```
-
-### Step 06: FAQ Schema.org-Daten hinzufügen
-
-FAQSection erweitern mit JSON-LD:
-
-```tsx
-// In FAQSection.tsx
-<script type="application/ld+json">
-  {JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": items.map(item => ({
-      "@type": "Question",
-      "name": item.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": item.answer
-      }
-    }))
-  })}
-</script>
-```
-
-### Step 07: Sitemap erstellen
-
-Neue Datei: `public/sitemap.xml`
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://signature-spark-system.lovable.app/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://signature-spark-system.lovable.app/start</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://signature-spark-system.lovable.app/growth</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-</urlset>
-```
-
-### Step 08: robots.txt aktualisieren
-
-```text
-User-agent: *
-Allow: /
-Disallow: /app/
-Disallow: /auth
-
-Sitemap: https://signature-spark-system.lovable.app/sitemap.xml
-```
-
-### Step 09: index.html bereinigen
-
-- Sprache auf Deutsch ändern
-- Fallback-Meta-Tags aktualisieren
-- Favicon-Referenz prüfen
+Nach erfolgreicher Implementierung:
+- `src/pages/Home.tsx` → Löschen
+- `src/pages/Start.tsx` → Löschen  
+- `src/pages/Growth.tsx` → Löschen
 
 ---
 
-## Dateien
+## Branchenspezifische Inhalte (Beispiele)
+
+### Handwerk
+
+| Section | Inhalt |
+|---------|--------|
+| Hero | "Für Handwerksbetriebe: Mehr Aufträge, weniger Chaos im Büro." |
+| Problems | Termine, Angebote, Nachkalkulation, Mitarbeiterführung |
+| Modules | Auftragsmanagement, Preiskalkulation, Mitarbeiterführung, Kundengewinnung |
+
+### Praxen
+
+| Section | Inhalt |
+|---------|--------|
+| Hero | "Für Praxen: Mehr Zeit für Patienten, weniger Verwaltungschaos." |
+| Problems | Terminausfälle, Personal, Abrechnung, Work-Life-Balance |
+| Modules | Praxisorganisation, Patientengewinnung, Team, Prozesse |
+
+### Immobilien
+
+| Section | Inhalt |
+|---------|--------|
+| Hero | "Für Immobilienprofis: Mehr Abschlüsse, bessere Prozesse." |
+| Problems | Lead-Qualität, Follow-up, Objektakquise, Skalierung |
+| Modules | Lead-Pipeline, Akquise-System, Kundenbetreuung, Team |
+
+---
+
+## Dateiübersicht
 
 | Datei | Aktion |
 |-------|--------|
-| `index.html` | Bearbeiten (lang="de", Fallback-Metas) |
-| `src/App.tsx` | HelmetProvider hinzufügen |
-| `src/components/SEO.tsx` | Neu erstellen |
-| `src/pages/Home.tsx` | SEO-Komponente integrieren |
-| `src/pages/Start.tsx` | SEO-Komponente integrieren |
-| `src/pages/Growth.tsx` | SEO-Komponente integrieren |
-| `src/components/landing/FAQSection.tsx` | JSON-LD hinzufügen |
-| `public/sitemap.xml` | Neu erstellen |
-| `public/robots.txt` | Aktualisieren |
+| `src/pages/landing/MasterHome.tsx` | NEU erstellen |
+| `src/pages/landing/Handwerk.tsx` | NEU erstellen |
+| `src/pages/landing/Praxen.tsx` | NEU erstellen |
+| `src/pages/landing/Dienstleister.tsx` | NEU erstellen |
+| `src/pages/landing/Immobilien.tsx` | NEU erstellen |
+| `src/pages/landing/Kurzzeitvermietung.tsx` | NEU erstellen |
+| `src/pages/landing/Qualifizierung.tsx` | NEU erstellen |
+| `src/pages/landing/Thanks.tsx` | NEU erstellen |
+| `src/App.tsx` | Routes aktualisieren |
+| `src/components/landing/ContactModal.tsx` | Source-Typen erweitern |
+| `src/components/landing/Header.tsx` | Navigation anpassen |
+| `src/components/landing/Footer.tsx` | Links anpassen |
+| `src/pages/Home.tsx` | LÖSCHEN |
+| `src/pages/Start.tsx` | LÖSCHEN |
+| `src/pages/Growth.tsx` | LÖSCHEN |
 
 ---
 
-## Erwartetes Ergebnis
+## Unverändert bleiben
 
-Nach Implementierung:
-
-- Jede Seite hat eigenen Title und Meta-Description
-- Social-Media-Vorschauen zeigen korrekte Inhalte
-- Google findet alle öffentlichen Seiten via Sitemap
-- FAQ-Seiten können als Rich Snippets erscheinen
-- /app-Bereich wird nicht indexiert (Datenschutz)
+| Bereich | Status |
+|---------|--------|
+| `/app/*` Routing | ✅ Keine Änderung |
+| `ProtectedRoute` Logik | ✅ Keine Änderung |
+| `AppLayout` | ✅ Keine Änderung |
+| Rollen-System (RBAC) | ✅ Keine Änderung |
+| `/auth` Login-Flow | ✅ Keine Änderung |
+| `/offer/:token` | ✅ Keine Änderung |
 
 ---
 
-## Technische Details
+## Quick-Tests nach Implementierung
 
-### Warum react-helmet-async?
-
-- Standardlösung für dynamische Meta-Tags in React SPAs
-- Unterstützt Server-Side Rendering (falls später benötigt)
-- Async-Version verhindert Memory Leaks
-- Kleine Bundle-Größe (~3kb gzipped)
-
-### OG-Image
-
-Aktuell verweist das OG-Image auf lovable.dev. Es sollte ein eigenes OG-Image erstellt werden (empfohlen: 1200x630px).
+| Test | Erwartetes Ergebnis |
+|------|---------------------|
+| `/` aufrufen | Branchenauswahl-Seite |
+| `/handwerk` aufrufen | Handwerk Landing Page |
+| `/qualifizierung` aufrufen | Formular-Seite |
+| `/danke` aufrufen | Danke-Seite |
+| `/start` aufrufen | 404 (gelöscht) |
+| `/app` (ausgeloggt) | Redirect zu `/auth` |
+| `/app` (eingeloggt) | Dashboard |
 
