@@ -7,15 +7,13 @@ export const StructogramUSPSection = () => {
       <div className={landingTokens.container}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <span className={`${landingTokens.badgeAccent} mb-4`}>
-              Wissenschaftlich fundiert
-            </span>
-            <h2 className={`${landingTokens.headline.h2} text-foreground mb-4 mt-4`}>
-              Structogram®-Integration
+            <h2 className={`${landingTokens.headline.h2} text-foreground mb-4`}>
+              Persönlichkeit entscheidet über Umsetzung
             </h2>
             <p className={`${landingTokens.text.body} max-w-2xl mx-auto`}>
-              Wir nutzen die Biostruktur-Analyse, um Kommunikation zu
-              personalisieren – kein Esoterik, sondern Hirnforschung.
+              Systeme funktionieren nur, wenn sie zur Arbeitsweise des Unternehmers passen.
+              Deshalb berücksichtigen wir unterschiedliche Kommunikations- und Entscheidungsstrukturen,
+              damit Prozesse nicht nur gebaut, sondern auch umgesetzt werden.
             </p>
           </div>
 
@@ -27,7 +25,7 @@ export const StructogramUSPSection = () => {
                 <div className="w-6 h-6 rounded-full bg-red-500" />
               </div>
               <h3 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">
-                Dominant (ROT)
+                Zielorientiert
               </h3>
               <p className={landingTokens.text.body}>
                 Schnelle Entscheidungen, direkte Kommunikation, klare Deadlines.
@@ -41,7 +39,7 @@ export const StructogramUSPSection = () => {
                 <div className="w-6 h-6 rounded-full bg-green-500" />
               </div>
               <h3 className="text-xl font-semibold text-green-600 dark:text-green-400 mb-2">
-                Beziehung (GRÜN)
+                Sicherheitsorientiert
               </h3>
               <p className={landingTokens.text.body}>
                 Vertrauen aufbauen, Sicherheit geben, persönliche Begleitung.
@@ -55,7 +53,7 @@ export const StructogramUSPSection = () => {
                 <div className="w-6 h-6 rounded-full bg-blue-500" />
               </div>
               <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                Analytisch (BLAU)
+                Analytisch
               </h3>
               <p className={landingTokens.text.body}>
                 Daten, Fakten, Checklisten. Jede Empfehlung ist nachvollziehbar
