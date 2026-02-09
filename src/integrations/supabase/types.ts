@@ -706,30 +706,51 @@ export type Database = {
       }
       leads: {
         Row: {
+          branche: string | null
           created_at: string
           email: string
+          entscheider_status: string | null
+          entscheidungsstil: string | null
           id: string
+          is_qualified: boolean | null
+          jahresumsatz: string | null
           message: string | null
+          motivation: string | null
           name: string
           phone: string | null
+          qualification_score: number | null
           source: string
         }
         Insert: {
+          branche?: string | null
           created_at?: string
           email: string
+          entscheider_status?: string | null
+          entscheidungsstil?: string | null
           id?: string
+          is_qualified?: boolean | null
+          jahresumsatz?: string | null
           message?: string | null
+          motivation?: string | null
           name: string
           phone?: string | null
+          qualification_score?: number | null
           source: string
         }
         Update: {
+          branche?: string | null
           created_at?: string
           email?: string
+          entscheider_status?: string | null
+          entscheidungsstil?: string | null
           id?: string
+          is_qualified?: boolean | null
+          jahresumsatz?: string | null
           message?: string | null
+          motivation?: string | null
           name?: string
           phone?: string | null
+          qualification_score?: number | null
           source?: string
         }
         Relationships: []
