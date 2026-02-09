@@ -36,6 +36,7 @@ import Unauthorized from "./pages/app/Unauthorized";
 import Calls from "./pages/app/Calls";
 import CallDetail from "./pages/app/CallDetail";
 import Offers from "./pages/app/Offers";
+import OfferDetail from "./pages/app/OfferDetail";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,11 @@ const App = () => (
               <Route path="offers" element={
                 <ProtectedRoute requireMinRole="mitarbeiter">
                   <Offers />
+                </ProtectedRoute>
+              } />
+              <Route path="offers/:offerId" element={
+                <ProtectedRoute requireMinRole="mitarbeiter">
+                  <OfferDetail />
                 </ProtectedRoute>
               } />
               <Route path="courses" element={<Courses />} />

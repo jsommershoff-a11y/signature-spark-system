@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useOffers } from '@/hooks/useOffers';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { OfferApprovalCard } from '@/components/offers';
+import { OfferApprovalCard, CreateOfferDialog } from '@/components/offers';
 import { Plus, Search, FileText } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { OfferStatus } from '@/types/offers';
 
 export default function Offers() {
@@ -16,6 +16,7 @@ export default function Offers() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<OfferStatus | 'all'>('all');
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const canApprove = hasMinRole('teamleiter');
   const canSend = hasMinRole('mitarbeiter');
@@ -70,11 +71,9 @@ export default function Offers() {
             Verwalten Sie Ihre Angebote und verfolgen Sie den Status.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/app/leads">
-            <Plus className="h-4 w-4 mr-2" />
-            Neues Angebot
-          </Link>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Neues Angebot
         </Button>
       </div>
 
@@ -138,6 +137,8 @@ export default function Offers() {
           ))}
         </div>
       )}
+
+      <CreateOfferDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
     </div>
   );
 }
