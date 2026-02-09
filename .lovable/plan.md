@@ -1,97 +1,76 @@
 
-
-# Step 04 — Logo-Integration + Markenfarben-Export
+# Step 05 — Footer Logo-Update
 
 ## Objective
-Das neue KRS Signature Logo wird als offizielles Logo integriert und die Markenfarben aus dem Logo werden in das Design-System exportiert, um als Akzentfarben verwendet zu werden.
+Der Footer wird mit dem neuen KRS Signature Logo aktualisiert, um konsistentes Branding auf allen oeffentlichen Seiten zu gewaehrleisten.
 
-## Farbanalyse aus dem Logo
+## Aktuelle Situation
 
-Aus dem hochgeladenen Logo wurden folgende Farben extrahiert:
-
-| Farbe | Verwendung | HSL-Wert |
-|-------|------------|----------|
-| **Brand Orange** | Hintergrund, Akzent | 30 90% 55% |
-| **Brand Cream** | Balken hell | 35 25% 75% |
-| **Brand Brown** | Balken mittel | 20 30% 35% |
-| **Brand Charcoal** | Balken dunkel | 20 20% 25% |
-
-## Scope
-
-### 1. Logo-Datei kopieren
-Das hochgeladene Logo wird in den Assets-Ordner kopiert als `logo-krs-signature.png` (neuer Name zur Unterscheidung vom alten Logo).
-
-### 2. CSS-Variablen erweitern
-**Datei:** `src/index.css`
-
-Neue Brand-Farben im CSS hinzufügen:
-```css
-/* Brand Colors from Logo */
---brand-orange: 30 90% 55%;
---brand-cream: 35 25% 75%;
---brand-brown: 20 30% 35%;
---brand-charcoal: 20 20% 25%;
-```
-
-### 3. Tailwind-Config erweitern
-**Datei:** `tailwind.config.ts`
-
-Neue Farben in Tailwind verfügbar machen:
+Der Footer verwendet derzeit ein einfaches Platzhalter-Logo:
 ```text
-brand: {
-  orange: "hsl(var(--brand-orange))",
-  cream: "hsl(var(--brand-cream))",
-  brown: "hsl(var(--brand-brown))",
-  charcoal: "hsl(var(--brand-charcoal))",
-}
+<div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+  <span className="text-primary-foreground font-bold">K</span>
+</div>
+<span className="text-primary-foreground font-semibold">KRS Signature</span>
 ```
 
-### 4. Header aktualisieren
-**Datei:** `src/components/landing/Header.tsx`
+## Geplante Aenderung
 
-Neues Logo importieren und verwenden:
-- Import von `logo-krs-signature.png`
-- Groessere Logo-Darstellung (h-12 statt h-10)
-- Optional: Nur Logo ohne Text-Marke
-
-## Dateien (4)
-
-| Aktion | Datei | Beschreibung |
-|--------|-------|--------------|
-| COPY | `user-uploads://...png` → `src/assets/logo-krs-signature.png` | Logo-Datei kopieren |
-| UPDATE | `src/index.css` | Brand-Farbvariablen hinzufuegen |
-| UPDATE | `tailwind.config.ts` | Brand-Farben in Tailwind |
-| UPDATE | `src/components/landing/Header.tsx` | Neues Logo verwenden |
+Ersetzen des Platzhalters durch das offizielle Logo:
+```text
+<Link to="/" className="flex items-center mb-4">
+  <img 
+    src={logoSignature} 
+    alt="KRS Signature Logo" 
+    className="h-10 w-auto"
+  />
+</Link>
+```
 
 ## Technische Details
 
-### Farbverwendung im Design
-Die neuen Brand-Farben ergaenzen das bestehende Blau-Schema:
-- **brand-orange**: Fuer Akzente, Badges, Hover-States
-- **brand-cream/brown/charcoal**: Fuer subtile Hintergruende, Borders, Variationen
-
-### Logo-Groesse
-Das neue Logo hat mehr Details, daher:
-- Header Desktop: h-12 (48px)
-- Header Mobile: h-10 (40px)
-
-### Abwaertskompatibilitaet
-Das alte `logo-signature.png` bleibt bestehen fuer eventuelle Fallbacks.
-
-## Farbpalette Visualisierung
-
+### Logo-Import
 ```text
-+-------------+-------------+-------------+-------------+
-| Brand Orange| Brand Cream | Brand Brown | Brand Charcoal|
-| #E67E22     | #C9B896     | #73503C     | #4A3D33     |
-| 30 90% 55%  | 35 25% 75%  | 20 30% 35%  | 20 20% 25%  |
-+-------------+-------------+-------------+-------------+
+import logoSignature from "@/assets/logo-krs-signature.png";
+```
+
+### Styling-Ueberlegungen
+- **Hoehe**: h-10 (40px) im Footer (etwas kleiner als h-12 im Header)
+- **Hintergrund**: Der Footer hat `bg-foreground` (dunkler Hintergrund)
+- **Logo-Sichtbarkeit**: Das Logo ist auf dunklem Hintergrund gut sichtbar (orangene Elemente)
+- **Link**: Logo wird klickbar und fuehrt zur Startseite
+
+### Entfallende Elemente
+- Das blaue "K"-Quadrat Platzhalter
+- Der separate "KRS Signature" Text (im Logo enthalten)
+
+## Dateien (1)
+
+| Aktion | Datei | Beschreibung |
+|--------|-------|--------------|
+| UPDATE | `src/components/landing/Footer.tsx` | Logo-Import und Ersetzung des Platzhalters |
+
+## Vorher/Nachher Vergleich
+
+**Vorher:**
+```text
++--------+  KRS Signature
+|   K    |  Die Plattform + ...
++--------+
+```
+
+**Nachher:**
+```text
++------------------+
+| [KRS Logo Image] |  (klickbar -> /)
++------------------+
+Die Plattform + ...
 ```
 
 ## Validation Checklist
 - [ ] Build erfolgreich (0 TypeScript-Fehler)
-- [ ] Logo wird korrekt im Header angezeigt
-- [ ] Brand-Farben sind ueber Tailwind-Klassen nutzbar
-- [ ] Responsive: Logo skaliert auf Mobile
-- [ ] Keine Regression auf bestehenden Seiten
-
+- [ ] Logo wird im Footer korrekt angezeigt
+- [ ] Logo ist auf dunklem Hintergrund gut sichtbar
+- [ ] Logo-Link fuehrt zur Startseite
+- [ ] Responsive: Footer sieht auf Mobile gut aus
+- [ ] Konsistenz: Header und Footer nutzen dasselbe Logo
