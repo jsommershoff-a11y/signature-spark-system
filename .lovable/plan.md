@@ -1,218 +1,222 @@
 
-# Step 05 - Qualifizierungsformular mit Scoring-Logik
 
-## Ziel
-Erweiterung des Qualifizierungsformulars mit hartem Umsatz-Filter, Entscheider-Status, strukturierter Motivation und Structogram-Typisierung. Automatische Score-Berechnung filtert unqualifizierte Leads direkt heraus.
+## RLS-Policy-Optimierung: Profiles-Tabelle
 
----
+### Ausgangslage
 
-## Aktuelle Situation
-
-### Bestehendes Formular (`/qualifizierung`)
-- Name (Pflicht)
-- E-Mail (Pflicht)
-- Telefon (optional)
-- Branche (Dropdown)
-- Nachricht (optional Freitext)
-
-### Bestehende `leads`-Tabelle
-| Spalte | Typ | Nullable |
-|--------|-----|----------|
-| id | uuid | NO |
-| name | text | NO |
-| email | text | NO |
-| phone | text | YES |
-| message | text | YES |
-| source | text | NO |
-| created_at | timestamptz | NO |
-
----
-
-## Neue Formularfelder
-
-### 1. Jahresumsatz (Pflicht) - HARD FILTER
-```text
-[ ] Unter 100.000 EUR        -> Score: 0 (DISQUALIFIED)
-[ ] 100.000 - 250.000 EUR    -> Score: 25
-[ ] 250.000 - 500.000 EUR    -> Score: 50
-[ ] 500.000 EUR+             -> Score: 100
-```
-
-### 2. Entscheider-Status (Pflicht) - HARD FILTER
-```text
-[ ] Ja, ich bin Inhaber/Geschaeftsfuehrer    -> Score: 100
-[ ] Ich bin Mitentscheider                   -> Score: 50
-[ ] Nein, ich recherchiere nur               -> Score: 0 (DISQUALIFIED)
-```
-
-### 3. Motivation (Pflicht)
-Freitext mit Minimum-Validierung (mindestens 50 Zeichen = ca. 2-3 Saetze)
-
-### 4. Entscheidungsstil (optional) - Structogram Pre-Typing
-```text
-[ ] Schnell und direkt, wenn das Ziel klar ist   -> RED
-[ ] Im Austausch, wenn ich Sicherheit habe       -> GREEN
-[ ] Nach Analyse aller Fakten                     -> BLUE
-```
-
----
-
-## Scoring-Logik
-
-### Berechnung
-```
-qualification_score = (umsatz_score * 0.5) + (entscheider_score * 0.5)
-```
-
-### Disqualifikation (Hard Filter)
-Lead wird als `disqualified` markiert wenn:
-- Umsatz = "unter_100k"
-- ODER Entscheider = "recherche_nur"
-
-### Qualified Threshold
-- Score >= 50 = qualified
-- Score < 50 = needs_review
-
----
-
-## Datenbank-Migration
-
-### Neue Spalten fuer `leads`-Tabelle
+Die aktuelle `profiles`-SELECT-Policy ist zu permissiv:
 
 ```sql
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS jahresumsatz text;
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS entscheider_status text;
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS motivation text;
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS entscheidungsstil text;
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS qualification_score integer DEFAULT 0;
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS is_qualified boolean DEFAULT false;
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS branche text;
+-- CURRENT (zu weit gefasst)
+USING (
+  auth.uid() = user_id 
+  OR has_min_role(auth.uid(), 'mitarbeiter')
+)
 ```
 
-### Spalten-Beschreibung
-| Spalte | Typ | Beschreibung |
-|--------|-----|--------------|
-| jahresumsatz | text | unter_100k, 100k_250k, 250k_500k, ueber_500k |
-| entscheider_status | text | inhaber, mitentscheider, recherche_nur |
-| motivation | text | Freitext warum Unterstuetzung gesucht wird |
-| entscheidungsstil | text | red, green, blue, null |
-| qualification_score | integer | 0-100 berechneter Score |
-| is_qualified | boolean | true wenn Score >= 50 UND kein Hard-Filter |
-| branche | text | Separate Spalte statt im message-Feld |
+**Problem:** Jeder Mitarbeiter kann ALLE Profile sehen, inkl. sensible Daten (E-Mail, Telefon) von Kunden, die nicht mit ihm arbeiten.
 
----
+### Analyse der Zugriffsanforderungen
 
-## Technische Umsetzung
+| Rolle | Benötigter Zugriff | Begründung |
+|-------|-------------------|------------|
+| Kunde | Nur eigenes Profil | Selbstverwaltung |
+| Mitarbeiter | Eigenes + zugewiesene Leads-Owner | Für CRM-JOINs |
+| Teamleiter | + Team-Mitglieder | Team-Übersicht |
+| Geschäftsführung | Alle Profile | Vollzugriff für Management |
+| Admin | Alle Profile | System-Administration |
 
-### 1. Formular-Schema (Zod)
-```typescript
-const qualifizierungSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email().max(255),
-  phone: z.string().max(30).optional(),
-  branche: z.string().min(1),
-  jahresumsatz: z.enum(["unter_100k", "100k_250k", "250k_500k", "ueber_500k"]),
-  entscheider_status: z.enum(["inhaber", "mitentscheider", "recherche_nur"]),
-  motivation: z.string().min(50, "Bitte mindestens 2-3 Saetze").max(2000),
-  entscheidungsstil: z.enum(["red", "green", "blue"]).optional(),
-});
-```
+### Technische Herausforderung
 
-### 2. Score-Berechnung (Client-Side)
-```typescript
-function calculateQualificationScore(data: QualifizierungFormData): {
-  score: number;
-  isQualified: boolean;
-} {
-  // Hard Disqualifiers
-  if (data.jahresumsatz === "unter_100k") return { score: 0, isQualified: false };
-  if (data.entscheider_status === "recherche_nur") return { score: 0, isQualified: false };
+Profile werden in vielen JOINs verwendet:
+- `crm_leads.owner_user_id → profiles` (Lead-Owner-Anzeige)
+- `members.profile_id → profiles` (Member-Management)
+- `member_kpis.member.profile` (KPI-Dashboard)
 
-  // Umsatz Score
-  const umsatzScores = {
-    "100k_250k": 25,
-    "250k_500k": 50,
-    "ueber_500k": 100,
-  };
-  
-  // Entscheider Score
-  const entscheiderScores = {
-    "inhaber": 100,
-    "mitentscheider": 50,
-  };
+**Kritisch:** Wenn wir den Zugriff zu stark einschränken, brechen diese JOINs.
 
-  const score = (umsatzScores[data.jahresumsatz] * 0.5) + 
-                (entscheiderScores[data.entscheider_status] * 0.5);
-  
-  return { score, isQualified: score >= 50 };
-}
-```
+### Lösungsansatz
 
-### 3. Differenzierte Thank-You Pages
-- Qualified: `/danke` (bestehendes Design)
-- Disqualified: `/danke?status=info` (freundliche Absage mit Ressourcen)
+Eine neue, granulare SELECT-Policy mit mehreren Bedingungen:
 
----
-
-## UI-Anpassungen
-
-### Formular-Layout
 ```text
-+----------------------------------------+
-| KONTAKTDATEN                           |
-| [Name]          [E-Mail]               |
-| [Telefon]       [Branche Dropdown]     |
-+----------------------------------------+
-| QUALIFIZIERUNG                         |
-| Jahresumsatz (Radio-Buttons)           |
-|   ( ) Unter 100.000 EUR                |
-|   ( ) 100.000 - 250.000 EUR            |
-|   ( ) 250.000 - 500.000 EUR            |
-|   ( ) 500.000 EUR+                     |
-|                                        |
-| Entscheider-Status (Radio-Buttons)     |
-|   ( ) Ja, ich bin Inhaber/GF           |
-|   ( ) Ich bin Mitentscheider           |
-|   ( ) Nein, ich recherchiere nur       |
-+----------------------------------------+
-| MOTIVATION                             |
-| [Textarea: Warum suchst du gerade      |
-|  Unterstuetzung? Min. 2-3 Saetze]      |
-+----------------------------------------+
-| ENTSCHEIDUNGSSTIL (optional)           |
-| Wie triffst du Entscheidungen?         |
-|   ( ) Schnell und direkt (Rot)         |
-|   ( ) Im Austausch (Gruen)             |
-|   ( ) Nach Analyse (Blau)              |
-+----------------------------------------+
-| [Gespraech anfordern]                  |
-+----------------------------------------+
+┌─────────────────────────────────────────────────────────────────┐
+│ Profiles SELECT-Policy (neu)                                    │
+├─────────────────────────────────────────────────────────────────┤
+│ 1. Eigenes Profil                                               │
+│    → auth.uid() = user_id                                       │
+│                                                                 │
+│ 2. Zugewiesene Profile (assigned_to = mein Profil)              │
+│    → assigned_to = get_user_profile_id(auth.uid())              │
+│                                                                 │
+│ 3. Team-Mitglieder (für Teamleiter)                             │
+│    → team_id = (SELECT team_id FROM profiles                    │
+│         WHERE user_id = auth.uid())                             │
+│       AND has_min_role(auth.uid(), 'teamleiter')                │
+│                                                                 │
+│ 4. Leads-Owner (Profile die Leads besitzen, die ich sehen darf) │
+│    → id IN (SELECT owner_user_id FROM crm_leads                 │
+│         WHERE RLS erlaubt mir diesen Lead zu sehen)             │
+│                                                                 │
+│ 5. Geschäftsführung/Admin → Alle Profile                        │
+│    → has_min_role(auth.uid(), 'geschaeftsfuehrung')             │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Visuelles Feedback
-- Umsatz-Badge auf der Seite: "Nur fuer Unternehmer ab 100.000 EUR Umsatz"
-- Klare Pflichtfeld-Markierungen
-- Inline-Validation bei Minimum-Text
+### Implementierungsplan
 
----
+**Step 01 — Security-Definer-Funktion erstellen**
 
-## Dateiänderungen
+Neue Hilfsfunktion `can_view_profile()` um Rekursion zu vermeiden:
 
-| Datei | Aenderung |
-|-------|----------|
-| `src/pages/landing/Qualifizierung.tsx` | Kompletter Umbau mit neuen Feldern |
-| `src/pages/landing/Thanks.tsx` | Query-Param-Handling fuer disqualified |
-| Migration | Neue Spalten fuer `leads`-Tabelle |
+```sql
+CREATE OR REPLACE FUNCTION public.can_view_profile(_profile_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT 
+    -- 1. Eigenes Profil
+    EXISTS (SELECT 1 FROM profiles WHERE id = _profile_id AND user_id = auth.uid())
+    OR
+    -- 2. GF/Admin sieht alle
+    has_min_role(auth.uid(), 'geschaeftsfuehrung')
+    OR
+    -- 3. Zugewiesene Profile
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE id = _profile_id 
+      AND assigned_to = get_user_profile_id(auth.uid())
+    )
+    OR
+    -- 4. Team-Mitglieder (für Teamleiter+)
+    (
+      has_min_role(auth.uid(), 'teamleiter')
+      AND EXISTS (
+        SELECT 1 FROM profiles p1, profiles p2
+        WHERE p1.id = _profile_id
+        AND p2.user_id = auth.uid()
+        AND p1.team_id IS NOT NULL
+        AND p1.team_id = p2.team_id
+      )
+    )
+    OR
+    -- 5. Leads-Owner (Profile von Leads die ich besitze/sehen kann)
+    (
+      has_min_role(auth.uid(), 'mitarbeiter')
+      AND EXISTS (
+        SELECT 1 FROM crm_leads l
+        WHERE l.owner_user_id = _profile_id
+        AND l.owner_user_id = get_user_profile_id(auth.uid())
+      )
+    )
+$$;
+```
 
----
+**Step 02 — Alte Policy löschen**
 
-## Validierung nach Step 05
+```sql
+DROP POLICY IF EXISTS "Staff can view profiles based on role" ON profiles;
+```
 
-- [ ] Build erfolgreich (0 TypeScript-Fehler)
-- [ ] Alle neuen Felder validieren korrekt
-- [ ] Score-Berechnung funktioniert
-- [ ] Hard-Filter disqualifiziert korrekt
-- [ ] Daten werden in DB gespeichert
-- [ ] Differenzierte Thank-You Page
-- [ ] Mobile-responsive auf 375px
-- [ ] Keine Aenderungen an /app Routes
+**Step 03 — Neue granulare Policies erstellen**
+
+```sql
+-- Policy 1: Jeder sieht eigenes Profil
+CREATE POLICY "Users can view own profile"
+ON profiles FOR SELECT
+USING (auth.uid() = user_id);
+
+-- Policy 2: GF/Admin sehen alle
+CREATE POLICY "Management can view all profiles"
+ON profiles FOR SELECT
+USING (has_min_role(auth.uid(), 'geschaeftsfuehrung'));
+
+-- Policy 3: Staff sieht zugewiesene Profile
+CREATE POLICY "Staff can view assigned profiles"
+ON profiles FOR SELECT
+USING (
+  has_min_role(auth.uid(), 'mitarbeiter')
+  AND assigned_to = get_user_profile_id(auth.uid())
+);
+
+-- Policy 4: Teamleiter sieht Team-Mitglieder
+CREATE POLICY "Teamleiter can view team profiles"
+ON profiles FOR SELECT
+USING (
+  has_min_role(auth.uid(), 'teamleiter')
+  AND team_id IS NOT NULL
+  AND team_id = (
+    SELECT p.team_id FROM profiles p WHERE p.user_id = auth.uid()
+  )
+);
+
+-- Policy 5: Mitarbeiter kann Lead-Owner-Profile sehen (für JOINs)
+CREATE POLICY "Staff can view lead owner profiles"
+ON profiles FOR SELECT
+USING (
+  has_min_role(auth.uid(), 'mitarbeiter')
+  AND id IN (
+    SELECT DISTINCT cl.owner_user_id 
+    FROM crm_leads cl
+    WHERE cl.owner_user_id = get_user_profile_id(auth.uid())
+  )
+);
+```
+
+**Step 04 — Testing**
+
+1. Als **Kunde** einloggen → Nur eigenes Profil sichtbar
+2. Als **Mitarbeiter** einloggen → Eigenes + zugewiesene Profile
+3. Als **Teamleiter** einloggen → + Team-Mitglieder
+4. Als **Admin** einloggen → Alle Profile
+5. CRM-Lead-Ansicht prüfen → Owner-Name wird korrekt angezeigt
+
+**Step 05 — Validierung**
+
+- Security-Scan durchführen
+- Build-Check (0 Errors)
+- UI-Flow: Leads-Tabelle, Members-Ansicht, Admin-Panel
+
+### Risiken und Mitigation
+
+| Risiko | Mitigation |
+|--------|------------|
+| JOIN-Bruch bei Leads | Policy 5 erlaubt Lead-Owner-Profile |
+| Performance bei vielen Profiles | Indizes auf `team_id`, `assigned_to` |
+| Rekursive RLS | Security-Definer-Funktionen |
+
+### Alternative: Pragmatischer Ansatz
+
+Falls die granulare Lösung zu komplex ist, kann ein **Zwischen-Kompromiss** gewählt werden:
+
+```sql
+-- Nur GF+ sieht alle, Mitarbeiter nur eigenes + zugewiesene
+CREATE POLICY "Restricted profile access"
+ON profiles FOR SELECT
+USING (
+  auth.uid() = user_id
+  OR has_min_role(auth.uid(), 'geschaeftsfuehrung')
+  OR (
+    has_min_role(auth.uid(), 'mitarbeiter')
+    AND (
+      assigned_to = get_user_profile_id(auth.uid())
+      OR id = get_user_profile_id(auth.uid())
+    )
+  )
+);
+```
+
+**Nachteil:** Mitarbeiter sehen keine Lead-Owner-Namen in der UI (NULL-Anzeige).
+
+### Empfehlung
+
+Da `assigned_to` und `team_id` derzeit nicht aktiv genutzt werden (0 Einträge in DB), empfehle ich den **pragmatischen Ansatz** als Zwischenlösung:
+
+1. Mitarbeiter → Nur eigenes Profil
+2. Teamleiter → Team (sobald `team_id` gepflegt wird)
+3. GF/Admin → Alle Profile
+
+Die JOINs für Lead-Owner-Anzeige werden über eine separate Policy oder View gelöst.
+
