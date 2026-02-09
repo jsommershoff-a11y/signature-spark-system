@@ -1,9 +1,23 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
+import { 
+  TargetAudienceSection, 
+  RootCauseSection, 
+  SystemPhasesSection, 
+  StructogramUSPSection,
+  FinalCTA 
+} from "@/components/landing";
 import { landingTokens } from "@/styles/landing-tokens";
 import { Button } from "@/components/ui/button";
 
 const MasterHome = () => {
+  const navigate = useNavigate();
+
+  const handleCTAClick = () => {
+    navigate("/qualifizierung");
+  };
+
   return (
     <PublicLayout>
       {/* HERO Section */}
@@ -37,11 +51,9 @@ const MasterHome = () => {
 
             {/* CTA */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/qualifizierung">
-                <Button className={landingTokens.ctaPrimary}>
-                  Kostenlose Systemanalyse sichern
-                </Button>
-              </Link>
+              <Button onClick={handleCTAClick} className={landingTokens.ctaPrimary}>
+                Kostenlose Systemanalyse sichern
+              </Button>
               <Link to="/qualifizierung" className={landingTokens.ctaSecondary}>
                 Passt das überhaupt zu mir?
               </Link>
@@ -89,6 +101,26 @@ const MasterHome = () => {
           </div>
         </div>
       </section>
+
+      {/* TARGET AUDIENCE Section */}
+      <TargetAudienceSection />
+
+      {/* ROOT CAUSE Section */}
+      <RootCauseSection />
+
+      {/* SYSTEM PHASES Section */}
+      <SystemPhasesSection />
+
+      {/* STRUCTOGRAM USP Section */}
+      <StructogramUSPSection />
+
+      {/* FINAL CTA Section */}
+      <FinalCTA
+        headline="Bereit für Struktur statt Chaos?"
+        subline="Sichere dir jetzt deine kostenlose Systemanalyse. Wir zeigen dir, wo dein Unternehmen blockiert – und wie du es löst."
+        ctaText="Jetzt Systemanalyse sichern"
+        onCtaClick={handleCTAClick}
+      />
     </PublicLayout>
   );
 };
