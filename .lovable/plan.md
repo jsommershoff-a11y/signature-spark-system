@@ -1,199 +1,146 @@
 
 
-# Erweiterung Angebots-/Vertragssystem (Steps 15-24)
+# Steps 19-24: Umsetzungsplan (mit Test nach jedem Schritt)
 
-Fortfuehrung der bestehenden Nummerierung. Neue Features: Bedarfsermittlung im Verkaufsprozess, Kundenportal mit geschuetztem Vertragsbereich, Mindestpreise (Performance 3.000 EUR / Rocket Performance 7.000 EUR), Demo-Zugang, und Zahlungsfreischaltungslogik.
-
----
-
-## Step 15 -- Bedarfsermittlung im Verkaufsprozess (Pain-Point Discovery)
-
-**Ziel:** Im Erstgespraech und Angebotsprozess die Problembereiche des Kunden systematisch erfassen, um diese spaeter im Angebotsgespraech als Trigger fuer die Loesung zu nutzen.
-
-**Neue Datei: `src/components/offers/PainPointDiscovery.tsx`**
-- Mehrstufiger Fragebogen fuer den Setter/Mitarbeiter (nicht fuer den Kunden direkt):
-  1. "Welche Bereiche performen aktuell nicht?" (Mehrfachauswahl):
-     - Vertrieb / Lead-Generierung
-     - Abschlussquote / Closing
-     - Prozesse / Workflows
-     - Fuehrung / Delegation
-     - Sichtbarkeit / Marketing
-     - Kundenbindung / Retention
-  2. "Budget-Einschaetzung des Kunden" (wird mehrfach im Erstgespraech abgefragt):
-     - "Was waere Ihnen eine funktionierende Loesung wert?" (Freitext + Bereichsauswahl: 3.000-5.000 / 5.000-10.000 / 10.000+)
-     - "Zweite Budget-Rueckfrage": gleiche Optionen (zur Konsistenzpruefung)
-  3. "Dringlichkeit" (Sofort / 2-4 Wochen / 1-3 Monate)
-  4. "Structogram-Schnelleinschaetzung" (ROT/GRUEN/BLAU)
-  5. "Gibt es ein internes Team?" (Ja / Teilweise / Nein)
-- Ergebnisse werden als `discovery_data` in `offer_json` gespeichert
-- Automatische Empfehlung: Performance vs. Rocket Performance basierend auf Team-Verfuegbarkeit und Budget
-- Pain-Points werden spaeter in der OfferPreview als "Ihre Herausforderungen" und die passenden Bausteine als "Unsere Loesung" gegenueber gestellt
-
-**Aenderung: `src/types/offers.ts`**
-- Neuer Typ `DiscoveryData` mit Feldern: `pain_points`, `budget_responses`, `urgency`, `structogram_type`, `has_team`, `recommended_mode`
-- `OfferContent` um Feld `discovery_data?: DiscoveryData` erweitern
+Fortsetzung der bestehenden Nummerierung. Jeder Step wird einzeln implementiert und getestet bevor der naechste beginnt.
 
 ---
 
-## Step 16 -- Mindestpreise und Programm-Konfiguration
+## Step 19 -- Pain-Point-Visualisierung (Ist/Soll-Radar fuer Kunden)
 
-**Ziel:** Performance mindestens 3.000 EUR netto, Rocket Performance mindestens 7.000 EUR netto. Hoehere Preise frei waehlbar.
+**Ziel:** Dem Kunden visuell zeigen, wo es hakt und wie die Loesung aussieht.
 
-**Neue Datei: `src/lib/offer-modules.ts`**
-- Konstanten:
-  - `PROGRAM_MIN_PRICES`: `{ performance: 300000, rocket_performance: 700000 }` (in Cent)
-  - `PROGRAM_LABELS`: `{ performance: 'Performance', rocket_performance: 'Rocket Performance' }`
-  - `PROGRAM_DESCRIPTIONS`: Kurzbeschreibung je Programm
-- Validierungsfunktion `validateOfferPrice(mode, totalCents)`: Prueft ob Mindestpreis eingehalten wird
-- 10 Bausteine als Array mit ID, Label, Beschreibung, Deliverables je Modus
-- Kombinationsregeln (Pflichtbausteine, Abhaengigkeiten)
+**Neue Datei: `src/components/offers/PainPointRadar.tsx`**
+- Recharts RadarChart mit 6 Achsen (Vertrieb, Closing, Prozesse, Fuehrung, Sichtbarkeit, Kundenbindung)
+- Rote Flaeche = Ist-Zustand (niedrige Werte fuer ausgewaehlte Pain-Points)
+- Gruene Flaeche = Soll-Zustand nach Umsetzung (alle hoch)
+- Unterhalb: Karten-Grid "Ihre Herausforderungen" (rot) vs. "Unsere Loesung" (gruen) mit Mapping Pain-Point -> Baustein
+- Props: `discoveryData`, `selectedModules`, `offerMode`
 
-**Aenderung: `src/components/offers/CreateOfferDialog.tsx`**
-- Preisvalidierung: Fehlermeldung wenn Gesamtpreis unter Mindestpreis liegt
-- Anzeige des Mindestpreises beim gewaehlten Programm
-- Preis-Eingabe in Euro (nicht Cent) fuer Benutzerfreundlichkeit, interne Umrechnung
+**Mapping-Konstante in `src/lib/offer-modules.ts`:**
+- `PAIN_POINT_MODULE_MAP`: z.B. `vertrieb` -> `vertriebsstruktur`, `prozesse` -> `crm_setup` + `followup`
 
----
-
-## Step 17 -- Programm-Thumbnails (Performance / Rocket Performance)
-
-**Ziel:** Zwei visuell ansprechende, klickbare Karten fuer die Programmauswahl.
-
-**Neue Datei: `src/components/offers/ProgramThumbnail.tsx`**
-- **Performance**: Blaues Design mit Zap-Icon, "Ab 3.000 EUR netto", Stichpunkte (Systemaufbau, CRM, Skripte, Dashboard)
-- **Rocket Performance**: Gold/Amber-Design mit Rocket-Icon, "Ab 7.000 EUR netto", Stichpunkte (Premium-Betreuung, vollstaendiger Aufbau, KI-Integration)
-- Props: `mode`, `selected`, `onSelect`, `disabled`
-- Hover- und Auswahl-Animationen
-
----
-
-## Step 18 -- Kundenportal: Geschuetzter Vertragsbereich
-
-**Ziel:** Kunden (Rolle "kunde") erhalten im App-Bereich Zugriff auf ihre Vertraege. Der Vertragsbereich ist nur nach Login sichtbar und zeigt die dem Kunden zugeordneten Angebote/Vertraege.
-
-**Neue Datei: `src/pages/app/MyContracts.tsx`**
-- Seite fuer Kunden (Rolle "kunde") unter `/app/contracts`
-- Zeigt alle Angebote/Vertraege die dem eingeloggten Kunden zugeordnet sind:
-  - Laedt Angebote ueber `offers`-Tabelle, gefiltert auf die `lead_id` des Kunden (via `members.lead_id` -> `offers.lead_id`)
-  - Status-Anzeige: Angebot / Vertrag angenommen / Bezahlt / Freigeschaltet
-  - Klick oeffnet die Detailansicht mit Vertrag, AGB, Leistungsbeschreibung
-- Freischaltungsstatus sichtbar (welche Inhalte/Kurse nach Zahlung verfuegbar sind)
-- "Demo"-Badge fuer noch nicht bezahlte Inhalte
-
-**Neue Datei: `src/hooks/useMyContracts.ts`**
-- Hook fuer den Kunden-Vertragsbereich
-- Laedt Offers ueber `member.lead_id` Verbindung
-- Filtert auf Status `sent`, `viewed`, `accepted` und Offers mit `payment_unlocked`
-
-**Aenderungen:**
-- `src/App.tsx`: Neue Route `/app/contracts` (keine Rollenbeschraenkung, da nur eigene Daten sichtbar via RLS)
-- `src/components/app/AppSidebar.tsx`: Neuer Menuepunkt "Vertraege" mit `FileText`-Icon, sichtbar fuer Rolle `kunde`
-
----
-
-## Step 19 -- Demo-Bereich fuer Kunden
-
-**Ziel:** Kunden die noch nicht bezahlt haben, erhalten einen eingeschraenkten Demo-Zugang zum Kursbereich.
-
-**Aenderung: `src/pages/app/Courses.tsx`**
-- Statt "Kursbereich ist fuer Mitglieder verfuegbar" wird ein Demo-Modus angezeigt:
-  - Erste 1-2 Lektionen jedes Kurses sichtbar (mit "Demo"-Badge)
-  - Restliche Lektionen als gesperrt angezeigt (Lock-Icon + "Nach Freischaltung verfuegbar")
-  - CTA-Button: "Jetzt freischalten" verlinkt auf den Vertragsbereich
-
-**Aenderung: `src/hooks/useMember.ts`**
-- Neues Feld `isDemoUser`: `true` wenn Profil existiert aber kein aktives Membership vorhanden
-- Demo-Logik: Kurs-Daten werden geladen, aber `progress`-Tracking nur fuer freigeschaltete Lektionen
-
----
-
-## Step 20 -- Freischaltungslogik nach Zahlung
-
-**Ziel:** Nach erfolgreicher Zahlung wird der Vertragsbereich freigeschaltet, Kurs-Zugang aktiviert, und der Kunde informiert.
-
-**Aenderung: `supabase/functions/webhook-payment/index.ts`**
-- Nach erfolgreicher Zahlung zusaetzlich:
-  1. `offers`-Status auf `paid` setzen (neuer Status) statt `viewed`
-  2. Member-Record erstellen/aktivieren (existiert bereits groesstenteils)
-  3. Membership mit korrektem Product erstellen:
-     - Gesamtpreis >= 700000 Cent -> `premium` (Rocket Performance)
-     - Gesamtpreis >= 300000 Cent -> `growth` (Performance)
-  4. Vertragsdokument als "freigeschaltet" markieren in `offer_json`
-
-**Aenderung: `src/types/offers.ts`**
-- `OfferStatus` um `paid` erweitern (nach accepted + Zahlung)
-- Labels und Colors fuer `paid` ergaenzen
-
----
-
-## Step 21 -- An-/Abmeldung und Kontoerstellung
-
-**Ziel:** Kunden koennen sich registrieren und anmelden, um auf den Vertragsbereich und Demo-Kurse zuzugreifen.
-
-**Aenderung: `src/pages/Auth.tsx`**
-- Registrierungs-Tab: Vorname, Nachname, E-Mail, Passwort (existiert groesstenteils)
-- Nach Registrierung: Automatische Weiterleitung zu `/app/contracts` fuer Kunden
-- Login: Weiterleitung basierend auf Rolle (Kunde -> `/app/contracts`, Mitarbeiter -> `/app`)
-
-**Aenderung: `src/pages/app/Dashboard.tsx`**
-- Fuer Kunden: Quick-Links zu "Meine Vertraege" und "Kurse" prominent anzeigen
-- Demo-Hinweis wenn keine aktive Membership
-
----
-
-## Step 22 -- CreateOfferDialog Gesamtueberarbeitung
-
-**Ziel:** Den Dialog um alle neuen Features erweitern (PainPoints, Programmauswahl, Bausteine, Mindestpreise, Zahlungsanbieter).
-
-**Aenderung: `src/components/offers/CreateOfferDialog.tsx`**
-- Mehrstufiger Wizard (5 Schritte mit Fortschrittsanzeige):
-  1. **Bedarfsermittlung**: PainPointDiscovery einbetten
-  2. **Programmauswahl**: ProgramThumbnails (Performance / Rocket Performance), Mindestpreis-Hinweis
-  3. **Bausteine & Positionen**: Baustein-Checkboxen + individuelle Line-Items, Preis-Eingabe in Euro
-  4. **Zahlungsplan & Anbieter**: Einmalzahlung / 3 Raten / 6 Raten + Stripe/CopeCart Auswahl durch Mitarbeiter
-  5. **Zusammenfassung**: Vorschau aller Eingaben, Validierung Mindestpreis, Speichern als Entwurf
-
----
-
-## Step 23 -- Stripe und CopeCart Zahlungsanbieter-Auswahl
-
-**Ziel:** Mitarbeiter waehlt im CreateOfferDialog den Zahlungsanbieter. Auf der oeffentlichen Seite wird der richtige Checkout angezeigt.
-
-**Aenderung: `src/types/offers.ts`**
-- `OfferContent` um `payment_provider_choice: 'stripe' | 'copecart'` erweitern
+**Aenderung: `src/components/offers/OfferPreview.tsx`**
+- Neuer Abschnitt "Ihre aktuelle Situation" mit PainPointRadar (nur wenn `discovery_data` vorhanden)
 
 **Aenderung: `src/pages/Offer.tsx`**
-- Payment-Bereich zeigt je nach `payment_provider_choice`:
-  - Stripe: "Jetzt bezahlen" Button erstellt Stripe Checkout Session
-  - CopeCart: "Jetzt bezahlen" Button leitet auf CopeCart Checkout URL weiter
-- Zahlungsanbieter-Logo wird angezeigt
+- PainPointRadar auch auf der oeffentlichen Angebotsseite anzeigen
 
-**Hinweis:** Stripe-Aktivierung erfolgt ueber das Lovable Stripe-Tool (Secret Key wird abgefragt). CopeCart benoetigt API-Key als Secret. Beide Webhooks laufen ueber die bestehende `webhook-payment` Edge Function.
+**Aenderung: `src/components/offers/index.ts`**
+- Export von `PainPointRadar`
+
+**Test:**
+- Build kompiliert ohne Fehler
+- OfferPreview zeigt Radar wenn discovery_data vorhanden
+- Radar-Chart rendert korrekt mit Beispieldaten
 
 ---
 
-## Step 24 -- Barrel-Exporte, Routing und Build-Pruefung
+## Step 20 -- Demo-Bereich fuer Kunden (Kursbereich)
 
-**Aenderungen:**
-- `src/components/offers/index.ts`: Neue Exporte (`ProgramThumbnail`, `PainPointDiscovery`)
-- `src/App.tsx`: Route `/app/contracts` hinzufuegen
-- `src/components/app/AppSidebar.tsx`: Menuepunkt "Vertraege" fuer Kunden
+**Ziel:** Kunden ohne aktive Membership sehen einen eingeschraenkten Demo-Zugang statt Sperrseite.
+
+**Aenderung: `src/hooks/useMember.ts`**
+- Neues Return-Feld `isDemoUser`: `true` wenn User eingeloggt, aber kein Member-Record oder keine aktive Membership
+
+**Aenderung: `src/pages/app/Courses.tsx`**
+- Wenn `!member` aber User eingeloggt: Demo-Modus
+  - CTA-Banner oben: "Jetzt freischalten" -> `/app/contracts`
+  - Kurse laden (published), erste 2 Lektionen mit "Demo"-Badge
+  - Restliche Lektionen mit Lock-Icon + "Nach Freischaltung verfuegbar"
+
+**Test:**
+- Build kompiliert ohne Fehler
+- Nicht-Member sieht Demo-Modus statt Sperrseite
+- Lock-Icons und Demo-Badges korrekt angezeigt
+
+---
+
+## Step 21 -- Freischaltungslogik nach Zahlung (Webhook)
+
+**Ziel:** Nach erfolgreicher Zahlung: Offer-Status auf `paid`, Member + Membership aktivieren.
+
+**Aenderung: `supabase/functions/webhook-payment/index.ts`**
+- Nach Zeile 269 (Offer-Update):
+  1. Status auf `paid` setzen (statt `viewed`)
+  2. Offer-JSON lesen um `offer_mode` zu ermitteln
+  3. Lead-Email nachschlagen, User-Account finden
+  4. Member-Record erstellen/aktivieren
+  5. Membership erstellen: `rocket_performance` -> `premium`, `performance` -> `growth`
+
+**Test:**
+- Edge Function deployed ohne Fehler
+- TypeScript-Kompilierung sauber
+- Webhook-Logik validiert (offer_mode Mapping korrekt)
+
+---
+
+## Step 22 -- Auth-Routing und Kunden-Dashboard
+
+**Ziel:** Kunden werden nach Login zu Vertraegen geleitet, Dashboard zeigt Quick-Links.
+
+**Aenderung: `src/pages/Auth.tsx`**
+- Nach Login: Rolle pruefen, wenn `kunde` -> `/app/contracts` statt `/app`
+
+**Aenderung: `src/pages/app/Dashboard.tsx`**
+- `renderKundeDashboard()` erweitern:
+  - Quick-Link-Karten: "Meine Vertraege" (`/app/contracts`) und "Kurse" (`/app/courses`)
+  - Demo-Hinweis wenn kein aktives Membership
+
+**Test:**
+- Build kompiliert ohne Fehler
+- Kunden-Dashboard zeigt Quick-Links
+- Auth-Routing funktioniert (Kunde -> /app/contracts)
+
+---
+
+## Step 23 -- CreateOfferDialog Gesamtueberarbeitung (Wizard)
+
+**Ziel:** 5-Schritt-Wizard mit Bedarfsermittlung, Programmauswahl, Bausteinen, Zahlung und Zusammenfassung.
+
+**Aenderung: `src/components/offers/CreateOfferDialog.tsx`**
+- Kompletter Umbau als Wizard mit 5 Tabs/Steps:
+  1. **Bedarfsermittlung**: PainPointDiscovery eingebettet (ueberspringbar)
+  2. **Programmauswahl**: ProgramThumbnails + Laufzeit + Mindestpreis-Hinweis
+  3. **Bausteine und Positionen**: Modul-Checkboxen (Pflicht gesperrt, Abhaengigkeiten validiert) + Line-Items mit Euro-Eingabe
+  4. **Zahlung**: Einmalzahlung/3 Raten/6 Raten + Zahlungsanbieter (Stripe/CopeCart)
+  5. **Zusammenfassung**: OfferPreview mit PainPointRadar, Mindestpreis-Validierung, Speichern
+- Preis-Eingabe in Euro (interne Umrechnung in Cent)
+- Mindestpreis-Validierung vor Speichern (3.000 EUR / 7.000 EUR)
+- Discovery-Daten und selected_modules in offer_json speichern
+
+**Test:**
+- Build kompiliert ohne Fehler
+- Wizard-Navigation funktioniert (vor/zurueck)
+- Pflichtbausteine korrekt gesperrt
+- Mindestpreis-Validierung blockiert bei zu niedrigem Preis
+- Angebot wird korrekt in DB gespeichert
+
+---
+
+## Step 24 -- Barrel-Exporte und Build-Pruefung
+
+**Aenderung: `src/components/offers/index.ts`**
+- Alle neuen Exporte pruefen und ergaenzen
+
+**Test:**
 - TypeScript-Kompilierung: 0 Fehler
-- Visueller Test:
-  - Angebotserstellung mit Bedarfsermittlung und Programmauswahl
-  - Mindestpreis-Validierung (Performance < 3000 EUR -> Fehler)
-  - Kundenportal Vertragsbereich
-  - Demo-Zugang Kurse
-  - Zahlungsanbieter-Auswahl
+- Alle neuen Komponenten importierbar
+- Angebotserstellung End-to-End: Discovery -> Programm -> Bausteine -> Zahlung -> Speichern
+- OfferPreview mit Radar-Chart
+- Kunden-Dashboard Quick-Links
+- Demo-Kursbereich
+- Webhook payment_unlocked Logik
 
 ---
 
 ## Technische Details
 
-- **Mindestpreise** werden client-seitig validiert (UX) und zusaetzlich in der `createOffer`-Mutation geprueft
-- **Vertragsbereich** nutzt bestehende RLS: Kunden sehen nur Offers deren `lead_id` zu ihrem Member-Record passt
-- **Demo-Modus** ist rein Frontend-Logik: Kurs-Daten werden geladen, aber gesperrte Lektionen zeigen Lock-UI
-- **Zahlungsanbieter** wird in `offer_json.payment_provider_choice` gespeichert, die oeffentliche Seite routet entsprechend
-- **Discovery-Daten** werden im Angebotsgespraech als Referenz angezeigt: "Ihre Herausforderungen" -> "Unsere Loesung"
-- **Neuer Status `paid`** schliesst den Lifecycle: draft -> pending_review -> approved -> sent -> viewed -> accepted -> paid
+- **PainPointRadar** nutzt Recharts (bereits installiert) -- RadarChart, PolarGrid, PolarAngleAxis
+- **Demo-Modus** ist rein Frontend-Logik, keine DB-Aenderungen noetig
+- **Webhook-Update** nutzt bestehenden Service-Role-Key fuer Member/Membership-Erstellung
+- **Wizard** ersetzt den bestehenden CreateOfferDialog komplett, behaelt aber die bestehende Lead-Auswahl und Notizen-Logik
+- **Mindestpreise** werden client-seitig validiert (UX) und im Webhook nochmal geprueft
+- **Pain-Point Mapping** als Konstante in offer-modules.ts, erweiterbar
+- Jeder Step endet mit Build-Check und Funktionstest bevor der naechste beginnt
 
