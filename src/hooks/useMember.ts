@@ -230,12 +230,18 @@ export function useMember() {
   // Get current week KPI
   const currentKPI = kpisQuery.data?.[0];
 
+  // Determine demo user status
+  const hasActiveMembership = (membershipsQuery.data || []).length > 0;
+  const isDemoUser = !!user?.id && !memberQuery.data && !memberQuery.isLoading;
+
   return {
     member: memberQuery.data,
     memberships: membershipsQuery.data || [],
     courses: coursesQuery.data || [],
     kpis: kpisQuery.data || [],
     currentKPI,
+    isDemoUser,
+    hasActiveMembership,
     isLoading: memberQuery.isLoading || coursesQuery.isLoading,
     getLessonProgress,
     updateProgress: updateProgressMutation.mutate,

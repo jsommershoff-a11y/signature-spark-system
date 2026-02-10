@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import type { OfferContent } from '@/types/offers';
 import { formatCents } from '@/types/offers';
+import { PainPointRadar } from './PainPointRadar';
 
 interface OfferPreviewProps {
   content: OfferContent;
@@ -41,6 +42,15 @@ export function OfferPreview({ content, companyLogo }: OfferPreviewProps) {
         <div className="bg-accent/50 p-4 rounded-lg">
           <p className="text-sm italic">{content.ai_generated.personalized_intro}</p>
         </div>
+      )}
+
+      {/* Pain-Point Radar */}
+      {content.discovery_data && (
+        <PainPointRadar
+          discoveryData={content.discovery_data}
+          selectedModules={content.selected_modules}
+          offerMode={content.offer_mode}
+        />
       )}
 
       {/* Title */}
@@ -95,7 +105,7 @@ export function OfferPreview({ content, companyLogo }: OfferPreviewProps) {
         </div>
         
         {content.discount_cents && content.discount_cents > 0 && (
-          <div className="flex justify-between text-green-600">
+          <div className="flex justify-between text-primary">
             <span>
               Rabatt{content.discount_reason ? ` (${content.discount_reason})` : ''}:
             </span>

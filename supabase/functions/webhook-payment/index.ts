@@ -265,15 +265,102 @@ serve(async (req) => {
 
     console.log('Order processed:', orderRecord.id);
 
-    // Update offer if exists
+    // Update offer status to 'paid' and activate membership
     if (offerId) {
-      await supabase
+      const { data: offerData } = await supabase
         .from('offers')
         .update({
-          status: 'viewed',
+          status: 'paid',
           updated_at: new Date().toISOString()
         })
-        .eq('id', offerId);
+        .eq('id', offerId)
+        .select('offer_json, lead_id')
+        .single();
+
+      // Activate member + membership based on offer_mode
+      if (offerData) {
+        const offerJson = offerData.offer_json as Record<string, unknown>;
+        const offerMode = offerJson?.offer_mode as string | undefined;
+
+        // Determine membership product from offer_mode
+        let membershipProduct: 'starter' | 'growth' | 'premium' = 'growth';
+        if (offerMode === 'rocket_performance') {
+          membershipProduct = 'premium';
+        } else if (offerMode === 'performance') {
+          membershipProduct = 'growth';
+        }
+
+        // Find user account via lead email
+        const { data: leadData } = await supabase
+          .from('crm_leads')
+          .select('id, email')
+          .eq('id', offerData.lead_id)
+          .single();
+
+        if (leadData?.email) {
+          // Find auth user by email
+          const { data: authUsers } = await supabase.auth.admin.listUsers();
+          const authUser = authUsers?.users?.find(
+            (u: { email?: string }) => u.email?.toLowerCase() === leadData.email.toLowerCase()
+          );
+
+          if (authUser) {
+            // Create or find member record
+            const { data: existingMember } = await supabase
+              .from('members')
+              .select('id')
+              .eq('user_id', authUser.id)
+              .single();
+
+            let memberId: string;
+
+            if (existingMember) {
+              memberId = existingMember.id;
+              // Reactivate if needed
+              await supabase
+                .from('members')
+                .update({ status: 'active', updated_at: new Date().toISOString() })
+                .eq('id', memberId);
+            } else {
+              const { data: newMember, error: memberError } = await supabase
+                .from('members')
+                .insert({
+                  user_id: authUser.id,
+                  lead_id: leadData.id,
+                  status: 'active',
+                })
+                .select('id')
+                .single();
+
+              if (memberError) {
+                console.error('Error creating member:', memberError);
+              }
+              memberId = newMember?.id;
+            }
+
+            // Create membership
+            if (memberId) {
+              const { error: msError } = await supabase
+                .from('memberships')
+                .insert({
+                  member_id: memberId,
+                  order_id: orderRecord.id,
+                  product: membershipProduct,
+                  status: 'active',
+                  starts_at: new Date().toISOString(),
+                });
+
+              if (msError) {
+                console.error('Error creating membership:', msError);
+              } else {
+                console.log(`Membership created: ${membershipProduct} for member ${memberId}`);
+              }
+            }
+          } else {
+            console.log('No auth user found for lead email:', leadData.email);
+          }
+        }
+      }
     }
 
     // Pipeline update happens via trigger (update_pipeline_after_payment)
