@@ -4,9 +4,41 @@
 // ENUMS
 // =============================================
 
-export type OfferStatus = 'draft' | 'pending_review' | 'approved' | 'sent' | 'viewed' | 'expired';
+export type OfferMode = 'performance' | 'rocket_performance';
+export type OfferStatus = 'draft' | 'pending_review' | 'approved' | 'sent' | 'viewed' | 'accepted' | 'paid' | 'expired';
 export type OrderStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'cancelled';
 export type PaymentProvider = 'stripe' | 'copecart' | 'bank_transfer' | 'manual';
+
+// =============================================
+// DISCOVERY DATA (Pain-Point Erfassung)
+// =============================================
+
+export interface DiscoveryPainPoint {
+  id: string;
+  label: string;
+  selected: boolean;
+  notes?: string;
+}
+
+export interface BudgetResponse {
+  question: string;
+  range?: string;
+  freetext?: string;
+}
+
+export type StructogramQuickType = 'rot' | 'gruen' | 'blau' | 'mixed';
+export type UrgencyLevel = 'sofort' | '2_4_wochen' | '1_3_monate';
+export type TeamAvailability = 'ja' | 'teilweise' | 'nein';
+
+export interface DiscoveryData {
+  pain_points: DiscoveryPainPoint[];
+  budget_responses: BudgetResponse[];
+  urgency: UrgencyLevel;
+  structogram_type: StructogramQuickType;
+  has_team: TeamAvailability;
+  recommended_mode?: OfferMode;
+  notes?: string;
+}
 
 // =============================================
 // OFFER JSON SCHEMA
@@ -21,9 +53,8 @@ export interface OfferLineItem {
 }
 
 export interface OfferPaymentTerms {
-  type: 'one_time' | 'subscription' | 'installments';
-  frequency?: 'monthly' | 'quarterly' | 'yearly';
-  installments?: number;
+  type: 'one_time' | 'installments';
+  installments?: number; // 3 or 6
 }
 
 export interface OfferAiGenerated {
@@ -33,11 +64,27 @@ export interface OfferAiGenerated {
   urgency_message?: string;
 }
 
+export interface CompanyInfo {
+  name: string;
+  address: string;
+  ust_id: string;
+  hrb: string;
+  geschaeftsfuehrer: string;
+}
+
 export interface OfferContent {
   // Header
   title: string;
   subtitle?: string;
   valid_until: string;
+  
+  // Program
+  offer_mode?: OfferMode;
+  duration_months?: number;
+  selected_modules?: string[];
+  
+  // Company
+  company_info?: CompanyInfo;
   
   // Kunde
   customer: {
@@ -45,6 +92,9 @@ export interface OfferContent {
     company?: string;
     email: string;
   };
+  
+  // Intro
+  intro_text?: string;
   
   // Produkte/Leistungen
   line_items: OfferLineItem[];
@@ -59,11 +109,30 @@ export interface OfferContent {
   
   // Zahlungsbedingungen
   payment_terms: OfferPaymentTerms;
+  payment_provider_choice?: 'stripe' | 'copecart';
+  
+  // Legal
+  service_description?: string;
+  terms_and_conditions?: string;
+  withdrawal_policy?: string;
+  
+  // Contract acceptance
+  contract_accepted?: boolean;
+  contract_accepted_at?: string;
+  signature_data?: string;
+  signer_name?: string;
+  
+  // Discovery
+  discovery_data?: DiscoveryData;
   
   // KI-generierte Inhalte
   ai_generated?: OfferAiGenerated;
   
-  // Terms
+  // Validity
+  validity_note?: string;
+  attachments_note?: string;
+  
+  // Legacy
   terms_accepted_at?: string;
   signature_url?: string;
 }
@@ -176,6 +245,8 @@ export const OFFER_STATUS_LABELS: Record<OfferStatus, string> = {
   approved: 'Genehmigt',
   sent: 'Gesendet',
   viewed: 'Angesehen',
+  accepted: 'Angenommen',
+  paid: 'Bezahlt',
   expired: 'Abgelaufen',
 };
 
@@ -185,6 +256,8 @@ export const OFFER_STATUS_COLORS: Record<OfferStatus, string> = {
   approved: 'bg-blue-500',
   sent: 'bg-purple-500',
   viewed: 'bg-indigo-500',
+  accepted: 'bg-emerald-500',
+  paid: 'bg-green-600',
   expired: 'bg-red-500',
 };
 
@@ -211,6 +284,11 @@ export const PAYMENT_PROVIDER_LABELS: Record<PaymentProvider, string> = {
   manual: 'Manuell',
 };
 
+export const OFFER_MODE_LABELS: Record<OfferMode, string> = {
+  performance: 'Performance',
+  rocket_performance: 'Rocket Performance',
+};
+
 // =============================================
 // HELPER FUNCTIONS
 // =============================================
@@ -220,6 +298,13 @@ export function formatCents(cents: number, currency = 'EUR'): string {
     style: 'currency',
     currency,
   }).format(cents / 100);
+}
+
+export function formatEuro(euros: number): string {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(euros);
 }
 
 export function calculateOfferTotals(
