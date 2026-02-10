@@ -50,8 +50,7 @@ const formSchema = z.object({
   discount_cents: z.coerce.number().min(0).default(0),
   discount_reason: z.string().max(200).optional(),
   tax_rate: z.coerce.number().min(0).max(100).default(19),
-  payment_type: z.enum(['one_time', 'subscription', 'installments']),
-  payment_frequency: z.enum(['monthly', 'quarterly', 'yearly']).optional(),
+  payment_type: z.enum(['one_time', 'installments']),
   installments: z.coerce.number().min(2).optional(),
   notes: z.string().max(2000).optional(),
 });
@@ -174,7 +173,6 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
         total_cents: calcTotals.total,
         payment_terms: {
           type: values.payment_type,
-          frequency: values.payment_type === 'subscription' ? values.payment_frequency : undefined,
           installments: values.payment_type === 'installments' ? values.installments : undefined,
         },
       };
@@ -454,37 +452,12 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="one_time">Einmalzahlung</SelectItem>
-                      <SelectItem value="subscription">Abonnement</SelectItem>
                       <SelectItem value="installments">Ratenzahlung</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>
               )}
             />
-
-            {paymentType === 'subscription' && (
-              <FormField
-                control={form.control}
-                name="payment_frequency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Frequenz</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Frequenz wählen" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="monthly">Monatlich</SelectItem>
-                        <SelectItem value="quarterly">Quartalsweise</SelectItem>
-                        <SelectItem value="yearly">Jährlich</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-            )}
 
             {paymentType === 'installments' && (
               <FormField

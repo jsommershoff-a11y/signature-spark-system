@@ -115,11 +115,9 @@ export function OfferPreview({ content, companyLogo }: OfferPreviewProps) {
           <span className="text-primary">{formatCents(content.total_cents || 0)}</span>
         </div>
         
-        {content.payment_terms?.type === 'subscription' && (
+        {content.payment_terms?.type === 'installments' && content.payment_terms.installments && (
           <p className="text-sm text-muted-foreground">
-            {content.payment_terms.frequency === 'monthly' && 'pro Monat'}
-            {content.payment_terms.frequency === 'quarterly' && 'pro Quartal'}
-            {content.payment_terms.frequency === 'yearly' && 'pro Jahr'}
+            in {content.payment_terms.installments} Raten
           </p>
         )}
       </div>

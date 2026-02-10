@@ -37,6 +37,7 @@ import Calls from "./pages/app/Calls";
 import CallDetail from "./pages/app/CallDetail";
 import Offers from "./pages/app/Offers";
 import OfferDetail from "./pages/app/OfferDetail";
+import MyContracts from "./pages/app/MyContracts";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="courses" element={<Courses />} />
+              <Route path="contracts" element={<MyContracts />} />
               <Route path="members" element={
                 <ProtectedRoute requireMinRole="mitarbeiter">
                   <Members />

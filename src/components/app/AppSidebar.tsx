@@ -15,6 +15,7 @@ import {
   Phone,
   FileText,
   UserCheck,
+  ScrollText,
 } from 'lucide-react';
 
 interface NavItem {
@@ -35,6 +36,12 @@ const navItems: NavItem[] = [
     label: 'Kurse', 
     href: '/app/courses', 
     icon: GraduationCap,
+    exactRole: 'kunde'
+  },
+  { 
+    label: 'Verträge', 
+    href: '/app/contracts', 
+    icon: ScrollText,
     exactRole: 'kunde'
   },
   { 
