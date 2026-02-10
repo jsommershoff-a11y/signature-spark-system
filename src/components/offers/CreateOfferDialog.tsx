@@ -1,61 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useOffers } from '@/hooks/useOffers';
-import { calculateOfferTotals, formatCents } from '@/types/offers';
-import type { OfferLineItem, OfferContent } from '@/types/offers';
+import { calculateOfferTotals, formatCents, formatEuro } from '@/types/offers';
+import type { OfferLineItem, OfferContent, DiscoveryData, OfferMode } from '@/types/offers';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
+  Plus, Trash2, Loader2, ChevronLeft, ChevronRight, AlertCircle, Check,
+} from 'lucide-react';
+import { PainPointDiscovery } from './PainPointDiscovery';
+import { ProgramThumbnail } from './ProgramThumbnail';
+import { OfferPreview } from './OfferPreview';
+import {
+  OFFER_MODULES, REQUIRED_MODULES, MODULE_DEPENDENCIES,
+  validateOfferPrice, validateModuleSelection, checkModuleDependencies,
+  PROGRAM_MIN_PRICES, PROGRAM_LABELS, generateIntroText,
+} from '@/lib/offer-modules';
+import { generateServiceDescription, DEFAULT_AGB, DEFAULT_WITHDRAWAL_POLICY } from '@/lib/legal-templates';
 
-const lineItemSchema = z.object({
-  name: z.string().min(1, 'Name erforderlich').max(200),
-  description: z.string().max(500).optional(),
-  quantity: z.coerce.number().min(1, 'Mindestens 1'),
-  unit_price_cents: z.coerce.number().min(0, 'Preis erforderlich'),
-});
-
-const formSchema = z.object({
-  lead_id: z.string().min(1, 'Lead auswählen'),
-  title: z.string().min(1, 'Titel erforderlich').max(200),
-  subtitle: z.string().max(300).optional(),
-  valid_until: z.string().min(1, 'Gültigkeitsdatum erforderlich'),
-  line_items: z.array(lineItemSchema).min(1, 'Mindestens eine Position'),
-  discount_cents: z.coerce.number().min(0).default(0),
-  discount_reason: z.string().max(200).optional(),
-  tax_rate: z.coerce.number().min(0).max(100).default(19),
-  payment_type: z.enum(['one_time', 'installments']),
-  installments: z.coerce.number().min(2).optional(),
-  notes: z.string().max(2000).optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+// =============================================
+// Types
+// =============================================
 
 interface Lead {
   id: string;
@@ -65,41 +41,65 @@ interface Lead {
   email: string;
 }
 
+interface LineItemInput {
+  name: string;
+  description: string;
+  quantity: number;
+  unit_price_euro: number;
+}
+
 interface CreateOfferDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const STEPS = [
+  'Bedarfsermittlung',
+  'Programmauswahl',
+  'Bausteine & Positionen',
+  'Zahlung',
+  'Zusammenfassung',
+] as const;
+
+// =============================================
+// Component
+// =============================================
+
 export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps) {
   const { createOffer, isCreating } = useOffers();
+  const [step, setStep] = useState(0);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadSearch, setLeadSearch] = useState('');
 
-  const defaultDate = new Date();
-  defaultDate.setDate(defaultDate.getDate() + 30);
+  // Step 0: Lead selection + Discovery
+  const [selectedLeadId, setSelectedLeadId] = useState('');
+  const [discoveryData, setDiscoveryData] = useState<DiscoveryData | null>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      lead_id: '',
-      title: '',
-      subtitle: '',
-      valid_until: defaultDate.toISOString().split('T')[0],
-      line_items: [{ name: '', description: '', quantity: 1, unit_price_cents: 0 }],
-      discount_cents: 0,
-      discount_reason: '',
-      tax_rate: 19,
-      payment_type: 'one_time',
-      notes: '',
-    },
-  });
+  // Step 1: Program
+  const [offerMode, setOfferMode] = useState<OfferMode>('performance');
+  const [durationMonths, setDurationMonths] = useState(6);
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'line_items',
-  });
+  // Step 2: Modules + Line Items
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
+  const [lineItems, setLineItems] = useState<LineItemInput[]>([
+    { name: '', description: '', quantity: 1, unit_price_euro: 0 },
+  ]);
+  const [discountEuro, setDiscountEuro] = useState(0);
+  const [discountReason, setDiscountReason] = useState('');
+  const [taxRate, setTaxRate] = useState(19);
 
-  // Load leads
+  // Step 3: Payment
+  const [paymentType, setPaymentType] = useState<'one_time' | 'installments'>('one_time');
+  const [installments, setInstallments] = useState(3);
+  const [paymentProvider, setPaymentProvider] = useState<'stripe' | 'copecart'>('stripe');
+
+  // Step 4: Notes
+  const [notes, setNotes] = useState('');
+
+  // Validation
+  const [priceError, setPriceError] = useState('');
+
+  // ---- Load leads ----
   useEffect(() => {
     if (!open) return;
     const fetchLeads = async () => {
@@ -112,393 +112,554 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
     fetchLeads();
   }, [open]);
 
-  const watchedItems = form.watch('line_items');
-  const watchedDiscount = form.watch('discount_cents') || 0;
-  const watchedTaxRate = form.watch('tax_rate') || 19;
+  // ---- Reset on close ----
+  useEffect(() => {
+    if (!open) {
+      setStep(0);
+      setSelectedLeadId('');
+      setDiscoveryData(null);
+      setOfferMode('performance');
+      setDurationMonths(6);
+      setSelectedModules([]);
+      setLineItems([{ name: '', description: '', quantity: 1, unit_price_euro: 0 }]);
+      setDiscountEuro(0);
+      setDiscountReason('');
+      setTaxRate(19);
+      setPaymentType('one_time');
+      setInstallments(3);
+      setPaymentProvider('stripe');
+      setNotes('');
+      setPriceError('');
+    }
+  }, [open]);
 
-  const computedItems: OfferLineItem[] = (watchedItems || []).map((item) => ({
-    name: item.name || '',
-    description: item.description,
-    quantity: item.quantity || 0,
-    unit_price_cents: item.unit_price_cents || 0,
-    total_cents: (item.quantity || 0) * (item.unit_price_cents || 0),
+  // ---- Init required modules when mode changes ----
+  useEffect(() => {
+    setSelectedModules(REQUIRED_MODULES[offerMode]);
+  }, [offerMode]);
+
+  // ---- Computed totals ----
+  const computedLineItems: OfferLineItem[] = lineItems.map(item => ({
+    name: item.name,
+    description: item.description || undefined,
+    quantity: item.quantity,
+    unit_price_cents: Math.round(item.unit_price_euro * 100),
+    total_cents: Math.round(item.quantity * item.unit_price_euro * 100),
   }));
 
-  const totals = calculateOfferTotals(computedItems, watchedDiscount, watchedTaxRate);
+  const discountCents = Math.round(discountEuro * 100);
+  const totals = calculateOfferTotals(computedLineItems, discountCents, taxRate);
+  const minPrice = PROGRAM_MIN_PRICES[offerMode];
+  const minPriceEuro = minPrice / 100;
 
+  // ---- Validate price ----
+  useEffect(() => {
+    const validation = validateOfferPrice(offerMode, totals.total);
+    setPriceError(validation.valid ? '' : validation.message || '');
+  }, [totals.total, offerMode]);
+
+  // ---- Helpers ----
+  const selectedLead = leads.find(l => l.id === selectedLeadId);
   const filteredLeads = leadSearch
-    ? leads.filter(
-        (l) =>
-          l.first_name.toLowerCase().includes(leadSearch.toLowerCase()) ||
-          l.last_name?.toLowerCase().includes(leadSearch.toLowerCase()) ||
-          l.company?.toLowerCase().includes(leadSearch.toLowerCase())
+    ? leads.filter(l =>
+        l.first_name.toLowerCase().includes(leadSearch.toLowerCase()) ||
+        l.last_name?.toLowerCase().includes(leadSearch.toLowerCase()) ||
+        l.company?.toLowerCase().includes(leadSearch.toLowerCase())
       )
     : leads;
 
-  const onSubmit = useCallback(
-    async (values: FormValues) => {
-      const selectedLead = leads.find((l) => l.id === values.lead_id);
+  const toggleModule = (moduleId: string) => {
+    const required = REQUIRED_MODULES[offerMode];
+    if (required.includes(moduleId)) return; // Can't deselect required
 
-      const lineItems: OfferLineItem[] = values.line_items.map((item) => ({
-        name: item.name,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price_cents: item.unit_price_cents,
-        total_cents: item.quantity * item.unit_price_cents,
-      }));
+    setSelectedModules(prev =>
+      prev.includes(moduleId)
+        ? prev.filter(id => id !== moduleId)
+        : [...prev, moduleId]
+    );
+  };
 
-      const calcTotals = calculateOfferTotals(
-        lineItems,
-        values.discount_cents,
-        values.tax_rate
-      );
+  const canProceed = (): boolean => {
+    switch (step) {
+      case 0: return !!selectedLeadId;
+      case 1: return !!offerMode;
+      case 2: return lineItems.some(li => li.name && li.unit_price_euro > 0);
+      case 3: return true;
+      case 4: return !priceError;
+      default: return true;
+    }
+  };
 
-      const offerJson: Partial<OfferContent> = {
-        title: values.title,
-        subtitle: values.subtitle,
-        valid_until: values.valid_until,
-        customer: {
-          name: selectedLead
-            ? `${selectedLead.first_name} ${selectedLead.last_name || ''}`.trim()
-            : '',
-          company: selectedLead?.company || undefined,
-          email: selectedLead?.email || '',
-        },
-        line_items: lineItems,
-        subtotal_cents: calcTotals.subtotal,
-        discount_cents: values.discount_cents || 0,
-        discount_reason: values.discount_reason,
-        tax_rate: values.tax_rate,
-        tax_cents: calcTotals.tax,
-        total_cents: calcTotals.total,
-        payment_terms: {
-          type: values.payment_type,
-          installments: values.payment_type === 'installments' ? values.installments : undefined,
-        },
-      };
+  // ---- Build offer content ----
+  const buildOfferContent = useCallback((): Partial<OfferContent> => {
+    const customerName = selectedLead
+      ? `${selectedLead.first_name} ${selectedLead.last_name || ''}`.trim()
+      : '';
 
-      await createOffer({
-        lead_id: values.lead_id,
-        offer_json: offerJson,
-        notes: values.notes,
-      });
+    const serviceDesc = generateServiceDescription(offerMode, selectedModules);
 
-      form.reset();
-      onOpenChange(false);
-    },
-    [createOffer, form, leads, onOpenChange]
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 30);
+
+    return {
+      title: `KRS Signature – ${PROGRAM_LABELS[offerMode]}`,
+      subtitle: `${durationMonths} Monate Laufzeit`,
+      valid_until: defaultDate.toISOString().split('T')[0],
+      offer_mode: offerMode,
+      duration_months: durationMonths,
+      selected_modules: selectedModules,
+      customer: {
+        name: customerName,
+        company: selectedLead?.company || undefined,
+        email: selectedLead?.email || '',
+      },
+      intro_text: generateIntroText(offerMode, customerName),
+      line_items: computedLineItems.filter(li => li.name),
+      subtotal_cents: totals.subtotal,
+      discount_cents: discountCents,
+      discount_reason: discountReason || undefined,
+      tax_rate: taxRate,
+      tax_cents: totals.tax,
+      total_cents: totals.total,
+      payment_terms: {
+        type: paymentType,
+        installments: paymentType === 'installments' ? installments : undefined,
+      },
+      payment_provider_choice: paymentProvider,
+      service_description: serviceDesc,
+      terms_and_conditions: DEFAULT_AGB,
+      withdrawal_policy: DEFAULT_WITHDRAWAL_POLICY,
+      discovery_data: discoveryData || undefined,
+    };
+  }, [
+    selectedLead, offerMode, durationMonths, selectedModules, computedLineItems,
+    totals, discountCents, discountReason, taxRate, paymentType, installments,
+    paymentProvider, discoveryData,
+  ]);
+
+  // ---- Submit ----
+  const handleSubmit = async () => {
+    if (priceError || !selectedLeadId) return;
+
+    await createOffer({
+      lead_id: selectedLeadId,
+      offer_json: buildOfferContent(),
+      notes: notes || undefined,
+    });
+
+    onOpenChange(false);
+  };
+
+  // =============================================
+  // RENDER STEPS
+  // =============================================
+
+  const renderStep0 = () => (
+    <div className="space-y-6">
+      {/* Lead Selection */}
+      <div className="space-y-2">
+        <Label>Lead auswählen *</Label>
+        <Select onValueChange={setSelectedLeadId} value={selectedLeadId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Lead auswählen..." />
+          </SelectTrigger>
+          <SelectContent>
+            <div className="p-2">
+              <Input
+                placeholder="Suchen..."
+                value={leadSearch}
+                onChange={e => setLeadSearch(e.target.value)}
+                className="mb-2"
+              />
+            </div>
+            {filteredLeads.map(lead => (
+              <SelectItem key={lead.id} value={lead.id}>
+                {lead.first_name} {lead.last_name || ''}{' '}
+                {lead.company ? `(${lead.company})` : ''}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Separator />
+
+      {/* Pain Point Discovery (optional) */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium">Bedarfsermittlung</h3>
+          <Badge variant="secondary" className="text-xs">Optional</Badge>
+        </div>
+        <PainPointDiscovery
+          onComplete={setDiscoveryData}
+          initialData={discoveryData || undefined}
+        />
+      </div>
+    </div>
   );
 
-  const paymentType = form.watch('payment_type');
+  const renderStep1 = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-medium mb-3">Programmauswahl</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <ProgramThumbnail
+            mode="performance"
+            selected={offerMode === 'performance'}
+            onSelect={() => setOfferMode('performance')}
+          />
+          <ProgramThumbnail
+            mode="rocket_performance"
+            selected={offerMode === 'rocket_performance'}
+            onSelect={() => setOfferMode('rocket_performance')}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Laufzeit (Monate)</Label>
+        <Select value={String(durationMonths)} onValueChange={v => setDurationMonths(Number(v))}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="3">3 Monate</SelectItem>
+            <SelectItem value="6">6 Monate</SelectItem>
+            <SelectItem value="9">9 Monate</SelectItem>
+            <SelectItem value="12">12 Monate</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <p className="text-sm text-muted-foreground">
+        Mindestpreis: <span className="font-medium">{formatEuro(minPriceEuro)}</span> netto
+      </p>
+    </div>
+  );
+
+  const renderStep2 = () => {
+    const requiredModules = REQUIRED_MODULES[offerMode];
+
+    return (
+      <div className="space-y-6">
+        {/* Module Selection */}
+        <div>
+          <h3 className="text-sm font-medium mb-3">Bausteine</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {OFFER_MODULES.map(mod => {
+              const isRequired = requiredModules.includes(mod.id);
+              const isSelected = selectedModules.includes(mod.id);
+              const deps = checkModuleDependencies(mod.id, selectedModules);
+              const isDisabled = isRequired || !deps.satisfied;
+
+              return (
+                <div
+                  key={mod.id}
+                  className={`flex items-start gap-2 p-3 rounded-lg border text-sm ${
+                    isSelected ? 'border-primary/50 bg-primary/5' : 'border-border'
+                  }`}
+                >
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => toggleModule(mod.id)}
+                    disabled={isDisabled}
+                  />
+                  <div className="min-w-0">
+                    <p className="font-medium leading-tight">
+                      {mod.label}
+                      {isRequired && (
+                        <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">Pflicht</Badge>
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{mod.description}</p>
+                    {!deps.satisfied && (
+                      <p className="text-xs text-destructive mt-0.5">
+                        Benötigt: {deps.requires.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Line Items (Euro input) */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium">Positionen</h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setLineItems(prev => [...prev, { name: '', description: '', quantity: 1, unit_price_euro: 0 }])
+              }
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Position
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {lineItems.map((item, index) => (
+              <div key={index} className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Position {index + 1}</span>
+                  {lineItems.length > 1 && (
+                    <Button
+                      type="button" variant="ghost" size="icon" className="h-6 w-6"
+                      onClick={() => setLineItems(prev => prev.filter((_, i) => i !== index))}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+                <Input
+                  placeholder="Bezeichnung"
+                  value={item.name}
+                  onChange={e => {
+                    const updated = [...lineItems];
+                    updated[index] = { ...updated[index], name: e.target.value };
+                    setLineItems(updated);
+                  }}
+                />
+                <Input
+                  placeholder="Beschreibung (optional)"
+                  value={item.description}
+                  onChange={e => {
+                    const updated = [...lineItems];
+                    updated[index] = { ...updated[index], description: e.target.value };
+                    setLineItems(updated);
+                  }}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">Menge</Label>
+                    <Input
+                      type="number" min={1} value={item.quantity}
+                      onChange={e => {
+                        const updated = [...lineItems];
+                        updated[index] = { ...updated[index], quantity: Number(e.target.value) || 1 };
+                        setLineItems(updated);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Einzelpreis (€)</Label>
+                    <Input
+                      type="number" min={0} step="0.01" value={item.unit_price_euro}
+                      onChange={e => {
+                        const updated = [...lineItems];
+                        updated[index] = { ...updated[index], unit_price_euro: Number(e.target.value) || 0 };
+                        setLineItems(updated);
+                      }}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground text-right">
+                  Gesamt: {formatEuro(item.quantity * item.unit_price_euro)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Discount + Tax */}
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Label className="text-xs">Rabatt (€)</Label>
+            <Input type="number" min={0} step="0.01" value={discountEuro}
+              onChange={e => setDiscountEuro(Number(e.target.value) || 0)} />
+          </div>
+          <div>
+            <Label className="text-xs">Rabattgrund</Label>
+            <Input placeholder="z.B. Frühbucher" value={discountReason}
+              onChange={e => setDiscountReason(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs">MwSt (%)</Label>
+            <Input type="number" min={0} max={100} value={taxRate}
+              onChange={e => setTaxRate(Number(e.target.value) || 19)} />
+          </div>
+        </div>
+
+        {/* Totals */}
+        <div className="bg-muted/50 rounded-lg p-4 space-y-1 text-sm">
+          <div className="flex justify-between">
+            <span>Zwischensumme:</span>
+            <span>{formatCents(totals.subtotal)}</span>
+          </div>
+          {discountCents > 0 && (
+            <div className="flex justify-between text-primary">
+              <span>Rabatt:</span>
+              <span>-{formatCents(discountCents)}</span>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <span>MwSt ({taxRate}%):</span>
+            <span>{formatCents(totals.tax)}</span>
+          </div>
+          <Separator className="my-2" />
+          <div className="flex justify-between font-bold">
+            <span>Gesamt:</span>
+            <span>{formatCents(totals.total)}</span>
+          </div>
+          {priceError && (
+            <div className="flex items-center gap-2 text-destructive mt-2">
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-xs">{priceError}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderStep3 = () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label>Zahlungsweise</Label>
+        <Select value={paymentType} onValueChange={v => setPaymentType(v as 'one_time' | 'installments')}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="one_time">Einmalzahlung</SelectItem>
+            <SelectItem value="installments">Ratenzahlung</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {paymentType === 'installments' && (
+        <div className="space-y-2">
+          <Label>Anzahl Raten</Label>
+          <Select value={String(installments)} onValueChange={v => setInstallments(Number(v))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="3">3 Raten</SelectItem>
+              <SelectItem value="6">6 Raten</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <Separator />
+
+      <div className="space-y-2">
+        <Label>Zahlungsanbieter</Label>
+        <Select value={paymentProvider} onValueChange={v => setPaymentProvider(v as 'stripe' | 'copecart')}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="stripe">Stripe</SelectItem>
+            <SelectItem value="copecart">CopeCart</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <Label>Interne Notizen</Label>
+        <Textarea
+          placeholder="Interne Anmerkungen..."
+          rows={3}
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+        />
+      </div>
+    </div>
+  );
+
+  const renderStep4 = () => {
+    const content = buildOfferContent() as OfferContent;
+    return (
+      <div className="space-y-4">
+        <OfferPreview content={content} />
+        {priceError && (
+          <div className="flex items-center gap-2 text-destructive p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm">{priceError}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderCurrentStep = () => {
+    switch (step) {
+      case 0: return renderStep0();
+      case 1: return renderStep1();
+      case 2: return renderStep2();
+      case 3: return renderStep3();
+      case 4: return renderStep4();
+      default: return null;
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Neues Angebot erstellen</DialogTitle>
+          {/* Progress */}
+          <div className="flex items-center gap-1 mt-2">
+            {STEPS.map((label, i) => (
+              <div key={label} className="flex items-center gap-1 flex-1">
+                <div className={`flex items-center justify-center h-6 w-6 rounded-full text-xs font-medium shrink-0 ${
+                  i < step ? 'bg-primary text-primary-foreground'
+                  : i === step ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+                }`}>
+                  {i < step ? <Check className="h-3 w-3" /> : i + 1}
+                </div>
+                <span className={`text-xs truncate hidden md:block ${i === step ? 'font-medium' : 'text-muted-foreground'}`}>
+                  {label}
+                </span>
+                {i < STEPS.length - 1 && <div className="h-px flex-1 bg-border ml-1" />}
+              </div>
+            ))}
+          </div>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Lead Selection */}
-            <FormField
-              control={form.control}
-              name="lead_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Lead *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Lead auswählen..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <div className="p-2">
-                        <Input
-                          placeholder="Suchen..."
-                          value={leadSearch}
-                          onChange={(e) => setLeadSearch(e.target.value)}
-                          className="mb-2"
-                        />
-                      </div>
-                      {filteredLeads.map((lead) => (
-                        <SelectItem key={lead.id} value={lead.id}>
-                          {lead.first_name} {lead.last_name || ''}{' '}
-                          {lead.company ? `(${lead.company})` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div className="py-4">
+          {renderCurrentStep()}
+        </div>
 
-            {/* Title */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Titel *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="z.B. Premium Paket" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="valid_until"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gültig bis *</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="subtitle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Untertitel</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Optionaler Untertitel..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Separator />
-
-            {/* Line Items */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium">Positionen *</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    append({ name: '', description: '', quantity: 1, unit_price_cents: 0 })
-                  }
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Position
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <span className="text-xs text-muted-foreground">Position {index + 1}</span>
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => remove(index)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name={`line_items.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input placeholder="Bezeichnung" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`line_items.${index}.description`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input placeholder="Beschreibung (optional)" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormField
-                        control={form.control}
-                        name={`line_items.${index}.quantity`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">Menge</FormLabel>
-                            <FormControl>
-                              <Input type="number" min={1} {...field} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`line_items.${index}.unit_price_cents`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs">Einzelpreis (Cent)</FormLabel>
-                            <FormControl>
-                              <Input type="number" min={0} {...field} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground text-right">
-                      Gesamt: {formatCents(computedItems[index]?.total_cents || 0)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Discount + Tax */}
-            <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="discount_cents"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rabatt (Cent)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="discount_reason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rabattgrund</FormLabel>
-                    <FormControl>
-                      <Input placeholder="z.B. Frühbucher" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="tax_rate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>MwSt (%)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} max={100} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Totals Preview */}
-            <div className="bg-muted/50 rounded-lg p-4 space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span>Zwischensumme:</span>
-                <span>{formatCents(totals.subtotal)}</span>
-              </div>
-              {watchedDiscount > 0 && (
-                <div className="flex justify-between text-primary">
-                  <span>Rabatt:</span>
-                  <span>-{formatCents(watchedDiscount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>MwSt ({watchedTaxRate}%):</span>
-                <span>{formatCents(totals.tax)}</span>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between font-bold">
-                <span>Gesamt:</span>
-                <span>{formatCents(totals.total)}</span>
-              </div>
-            </div>
-
-            {/* Payment Terms */}
-            <FormField
-              control={form.control}
-              name="payment_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Zahlungsbedingungen</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="one_time">Einmalzahlung</SelectItem>
-                      <SelectItem value="installments">Ratenzahlung</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-
-            {paymentType === 'installments' && (
-              <FormField
-                control={form.control}
-                name="installments"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Anzahl Raten</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={2} max={60} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {/* Notes */}
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Interne Notizen</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Interne Anmerkungen..." rows={3} {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Abbrechen
+        <DialogFooter className="flex justify-between sm:justify-between">
+          <div>
+            {step > 0 && (
+              <Button type="button" variant="outline" onClick={() => setStep(s => s - 1)}>
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Zurück
               </Button>
-              <Button type="submit" disabled={isCreating}>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Abbrechen
+            </Button>
+            {step < STEPS.length - 1 ? (
+              <Button type="button" onClick={() => setStep(s => s + 1)} disabled={!canProceed()}>
+                Weiter
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : (
+              <Button type="button" onClick={handleSubmit} disabled={isCreating || !!priceError}>
                 {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Entwurf speichern
               </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            )}
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

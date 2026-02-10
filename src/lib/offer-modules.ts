@@ -195,6 +195,37 @@ export function getDefaultModulesForMode(mode: OfferMode): string[] {
   return REQUIRED_MODULES[mode];
 }
 
+// =============================================
+// PAIN-POINT TO MODULE MAPPING
+// =============================================
+
+export const PAIN_POINT_LABELS: Record<string, string> = {
+  vertrieb: 'Vertrieb / Lead-Generierung',
+  closing: 'Abschlussquote / Closing',
+  prozesse: 'Prozesse / Workflows',
+  fuehrung: 'Führung / Delegation',
+  sichtbarkeit: 'Sichtbarkeit / Marketing',
+  kundenbindung: 'Kundenbindung / Retention',
+};
+
+export const PAIN_POINT_MODULE_MAP: Record<string, string[]> = {
+  vertrieb: ['vertriebsstruktur', 'landingpage'],
+  closing: ['vertriebsstruktur', 'structogram'],
+  prozesse: ['crm_setup', 'followup', 'ki_automationen'],
+  fuehrung: ['team_enablement', 'kpi_dashboard', 'structogram'],
+  sichtbarkeit: ['landingpage'],
+  kundenbindung: ['followup', 'support_reviews'],
+};
+
+export const PAIN_POINT_SOLUTION_TEXTS: Record<string, string> = {
+  vertrieb: 'Strukturierter Vertriebsprozess mit klarer Pipeline und Landingpage-Funnel.',
+  closing: 'Gesprächsleitfäden und Structogram-basierte Closing-Strategien.',
+  prozesse: 'CRM-Automatisierungen, Follow-up-Sequenzen und KI-gestützte Prozesse.',
+  fuehrung: 'KPI-Dashboard, Team-Enablement und Führungsstrukturen nach Structogram.',
+  sichtbarkeit: 'Professionelle Landingpage mit Conversion-optimiertem Offer-Flow.',
+  kundenbindung: 'Automatisierte Follow-up-Logik und regelmäßige Review-Zyklen.',
+};
+
 export function generateIntroText(mode: OfferMode, customerName: string): string {
   if (mode === 'performance') {
     return `Sehr geehrte/r ${customerName},\n\nwie besprochen erhalten Sie hier unser Angebot für KRS Signature – Performance. Ein strukturierter Eingriff in Ihr Unternehmen zur Herstellung von Kontrolle, Planbarkeit und Entlastung.`;

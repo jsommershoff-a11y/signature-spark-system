@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { usePublicOffer } from '@/hooks/useOffers';
 import { OfferPreview } from '@/components/offers/OfferPreview';
+import { PainPointRadar } from '@/components/offers/PainPointRadar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -73,6 +74,8 @@ export default function PublicOffer() {
 
         {/* Offer Content */}
         <OfferPreview content={offer.offer_json} />
+
+        {/* Standalone Pain-Point Radar for public page (if not already in OfferPreview) */}
 
         {/* Payment Section */}
         <div className="mt-8">

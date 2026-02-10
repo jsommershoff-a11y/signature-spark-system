@@ -17,6 +17,7 @@ export interface DiscoveryPainPoint {
   id: string;
   label: string;
   selected: boolean;
+  severity?: number; // 1 = kritisch, 10 = funktioniert gut
   notes?: string;
 }
 

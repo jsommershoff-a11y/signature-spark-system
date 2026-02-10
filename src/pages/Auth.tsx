@@ -17,7 +17,7 @@ export default function Auth() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   
-  const { signIn, signUp, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { signIn, signUp, isAuthenticated, isLoading: authLoading, effectiveRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -26,9 +26,14 @@ export default function Auth() {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      navigate(from, { replace: true });
+      // Redirect customers to contracts page
+      if (effectiveRole === 'kunde') {
+        navigate('/app/contracts', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     }
-  }, [isAuthenticated, authLoading, navigate, from]);
+  }, [isAuthenticated, authLoading, navigate, from, effectiveRole]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

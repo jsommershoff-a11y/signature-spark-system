@@ -1,5 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ROLE_LABELS } from '@/lib/roles';
 import { 
   Users, 
@@ -7,8 +8,11 @@ import {
   CheckSquare, 
   TrendingUp,
   GraduationCap,
-  Clock
+  Clock,
+  FileText,
+  ArrowRight
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { 
   TopLeadsWidget, 
   RecentAnalysesWidget, 
@@ -47,37 +51,72 @@ export default function Dashboard() {
 
   // Role-specific dashboard widgets
   const renderKundeDashboard = () => (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Aktive Kurse</CardTitle>
-          <GraduationCap className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">0</div>
-          <p className="text-xs text-muted-foreground">Kurse in Bearbeitung</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Fortschritt</CardTitle>
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">0%</div>
-          <p className="text-xs text-muted-foreground">Gesamtfortschritt</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Nächste Aufgabe</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">-</div>
-          <p className="text-xs text-muted-foreground">Keine anstehenden Aufgaben</p>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      {/* Quick Links */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="flex items-center gap-4 py-6">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <FileText className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold">Meine Verträge</h3>
+              <p className="text-sm text-muted-foreground">Angebote und Vertragsdokumente einsehen</p>
+            </div>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/app/contracts"><ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="flex items-center gap-4 py-6">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <GraduationCap className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold">Kurse</h3>
+              <p className="text-sm text-muted-foreground">Lernbereich und Fortschritt</p>
+            </div>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/app/courses"><ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Stats */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Aktive Kurse</CardTitle>
+            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Kurse in Bearbeitung</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Fortschritt</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0%</div>
+            <p className="text-xs text-muted-foreground">Gesamtfortschritt</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Nächste Aufgabe</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">-</div>
+            <p className="text-xs text-muted-foreground">Keine anstehenden Aufgaben</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 
@@ -235,20 +274,6 @@ export default function Dashboard() {
       {!isEffectiveAdmin && isEffectiveStaff && renderStaffDashboard()}
       {!isEffectiveStaff && renderKundeDashboard()}
 
-      {/* Quick Actions - only for Kunde */}
-      {isEffectiveKunde && !isEffectiveStaff && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Schnellzugriff</CardTitle>
-            <CardDescription>Häufig verwendete Aktionen</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Die Schnellzugriff-Funktionen werden bald verfügbar sein.
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
