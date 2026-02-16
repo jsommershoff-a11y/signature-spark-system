@@ -72,13 +72,17 @@ export const PricingSection = ({ onCtaClick }: { onCtaClick: () => void }) => {
           {plans.map((plan, i) => (
             <div
               key={i}
-              className={`relative rounded-2xl border p-8 flex flex-col ${
-                plan.featured
-                  ? "border-primary bg-card shadow-lg ring-2 ring-primary/20"
-                  : plan.vip
-                  ? "border-accent bg-card shadow-lg ring-2 ring-accent/30"
-                  : "border-border/40 bg-card shadow-sm"
+              className={`relative rounded-2xl p-8 flex flex-col ${
+                plan.vip
+                  ? "bg-card shadow-[0_0_40px_rgba(218,165,32,0.3)]"
+                  : plan.featured
+                  ? "border border-primary bg-card shadow-lg ring-2 ring-primary/20"
+                  : "border border-border/40 bg-card shadow-sm"
               }`}
+              style={plan.vip ? {
+                background: "linear-gradient(hsl(0,0%,100%), hsl(0,0%,100%)) padding-box, linear-gradient(135deg, hsl(43,80%,55%), hsl(30,90%,55%), hsl(43,80%,55%)) border-box",
+                border: "2px solid transparent",
+              } : undefined}
             >
               {plan.badge && (
                 <span
