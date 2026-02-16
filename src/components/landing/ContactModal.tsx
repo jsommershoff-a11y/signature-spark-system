@@ -64,6 +64,20 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
 
       setIsSuccess(true);
       form.reset();
+
+      // Fire-and-forget: send notification emails
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      fetch(`${supabaseUrl}/functions/v1/notify-new-lead`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          phone: data.phone || null,
+          message: data.message || null,
+          source,
+        }),
+      }).catch((err) => console.error("Notify email failed:", err));
     } catch (error) {
       toast({
         title: "Fehler",
