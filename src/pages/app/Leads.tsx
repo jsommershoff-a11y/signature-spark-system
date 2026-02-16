@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import { useLeads } from '@/hooks/useLeads';
 import { LeadFilters } from '@/components/crm/LeadFilters';
 import { LeadTable } from '@/components/crm/LeadTable';
 import { CreateLeadDialog } from '@/components/crm/CreateLeadDialog';
 import { LeadDetailModal } from '@/components/crm/LeadDetailModal';
+import { ImportLeadsDialog } from '@/components/crm/ImportLeadsDialog';
 import { 
   LeadFilters as LeadFiltersType,
   CrmLead,
@@ -16,6 +17,7 @@ import {
 export default function Leads() {
   const [filters, setFilters] = useState<LeadFiltersType>({});
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   
@@ -26,6 +28,7 @@ export default function Leads() {
     updateLead,
     deleteLead,
     updatePipelineStage,
+    refetch,
   } = useLeads(filters);
 
   const handleCreateLead = async (data: CreateLeadInput) => {
@@ -61,10 +64,16 @@ export default function Leads() {
             Verwalte deine Interessenten und neue Anfragen
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Neuer Lead
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Importieren
+          </Button>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Neuer Lead
+          </Button>
+        </div>
       </div>
 
       <LeadFilters 
@@ -85,6 +94,12 @@ export default function Leads() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         onSubmit={handleCreateLead}
+      />
+
+      <ImportLeadsDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImportComplete={refetch}
       />
 
       <LeadDetailModal
