@@ -1,75 +1,56 @@
 
 
-# Step 40 -- Branchen-Landingpages: Messaging auf KI-Prozessoptimierung umstellen
+# Step 41 -- Pricing-Section: 3 Pakete, Value-First Darstellung, VIP mit Schulungs-Fokus
 
-Die 5 Branchen-Landingpages sprechen noch von reinem Vertrieb und Neukunden. Sie werden auf die neue, breitere Positionierung (KI-gestuetzte Prozessoptimierung, Effizienz, Zeitersparnis) umgestellt -- konsistent mit der aktualisierten MasterHome.
+## Zusammenfassung
 
----
-
-## Betroffene Dateien
-
-### 1. `src/pages/landing/Handwerk.tsx`
-
-- **Hero headline**: "Volle Auftragsbuecher -- aber der Betrieb frisst dich auf?" bleibt (passt bereits)
-- **Hero problem/solution**: Leicht anpassen -- von "System, das den Betrieb fuehrt" zu KI-Prozesse und Automatisierung betonen
-- **Root Causes**: Beibehalten (passen bereits gut -- Terminplanung, Angebote, Mitarbeiter)
-- **FinalCTA subline**: Von "wie dein Betrieb ohne dich laeuft" zu "wie KI deine Betriebsprozesse automatisiert"
-- **CTA-Texte**: Von "Analysegespräch sichern" zu "Jetzt KI-Potenzial aufdecken"
-
-### 2. `src/pages/landing/Praxen.tsx`
-
-- **Hero headline**: "Ihre Praxis laeuft -- aber nicht planbar?" bleibt
-- **Hero solution**: Von "Mehr Patienten loesen kein Chaos" zu "KI-Systeme schaffen Struktur, die Sie entlastet"
-- **Root Causes**: Beibehalten (Terminausfaelle, Personal, Verwaltung -- passen perfekt)
-- **FinalCTA subline**: Auf KI-Automatisierung ausrichten
-- **CTA-Texte**: "Jetzt KI-Potenzial aufdecken"
-
-### 3. `src/pages/landing/Dienstleister.tsx`
-
-- **Hero headline**: Bleibt (passt bereits)
-- **Hero solution**: Von "KRS Signature macht Vertrieb reproduzierbar" zu "KI-Systeme machen Ihre Prozesse reproduzierbar"
-- **Root Causes**: Beibehalten (Akquise, Marge, Engpass -- passen)
-- **FinalCTA subline**: Auf KI-Prozessautomatisierung ausrichten
-- **CTA-Texte**: "Jetzt KI-Potenzial aufdecken"
-
-### 4. `src/pages/landing/Immobilien.tsx`
-
-- **Hero solution**: Von "Ohne Prozess ist Vertrieb Zufall" zu "KI-Systeme machen Ihren Vertrieb planbar"
-- **Root Causes**: Beibehalten
-- **FinalCTA subline**: Auf KI-Automatisierung ausrichten
-- **CTA-Texte**: "Jetzt KI-Potenzial aufdecken"
-
-### 5. `src/pages/landing/Kurzzeitvermietung.tsx`
-
-- **Hero solution**: Von "Automatisierung ist Voraussetzung" zu "KI-Automatisierung macht Wachstum moeglich"
-- **Root Causes**: Beibehalten (passen bereits perfekt)
-- **FinalCTA subline**: Auf KI-Prozesse ausrichten
-- **CTA-Texte**: "Jetzt KI-Potenzial aufdecken"
+Die Pricing-Section wird von 2 auf 3 Pakete erweitert, Preise werden angepasst, und die Darstellung wird auf "Value-First" umgestellt (erst Wert zeigen, dann Investition). Im VIP-Paket wird statt "unbegrenzte Prozesse" der Fokus auf Befaehigung gelegt: Du bzw. ein Mitarbeiter lernt, die KI-Prozesse selbst zu steuern.
 
 ---
 
-## Gemeinsame Aenderungen ueber alle 5 Seiten
+## Neue Paketstruktur
 
-| Element | Alt | Neu |
-|---|---|---|
-| Hero CTA | "Kostenloses Analysegespräch sichern" | "Jetzt KI-Potenzial aufdecken" |
-| FinalCTA headline | "Bereit für Struktur statt Chaos?" | "Bereit fuer KI-gestuetzte Effizienz?" |
-| FinalCTA CTA-Text | "Jetzt Analysegespräch sichern" | "Kostenlose KI-Potenzialanalyse sichern" |
-| Badge | "Nur fuer ... ab 100.000 EUR Umsatz" | Bleibt (passt bereits) |
+| Paket | Investition | Wert | Badge |
+|---|---|---|---|
+| KI-Prozess-Kickstart | 998 EUR | 2.500+ EUR | -- |
+| KI-Komplettpaket | 2.998 EUR | 8.000+ EUR | BELIEBTESTE WAHL |
+| KI-VIP Done-for-You | 9.998 EUR | 25.000+ EUR | MAXIMALER IMPACT |
+
+### VIP-Paket Features (angepasst -- Schulung statt "unbegrenzt")
+- Alles aus dem Komplettpaket
+- Komplettes KI-Setup fuer Ihr Unternehmen
+- Sie oder ein Mitarbeiter werden zum KI-Prozess-Experten ausgebildet
+- Dediziertes Experten-Team an Ihrer Seite
+- 90-Tage intensive 1:1 Betreuung
+- Quartalsweise Strategie-Optimierung
+- Direkter Draht zum Geschaeftsfuehrer
+- Premium-Support mit 4h Reaktionszeit
+- 100% Erfolgs-Garantie
 
 ---
 
-## Nicht betroffen
+## Value-First Preisdarstellung (pro Karte)
 
-- Shared Components (Hero, FinalCTA, SystemPhasesSection, StructogramUSPSection, RootCauseSection) -- bleiben unveraendert, da sie Props empfangen
-- Keine neuen Dateien oder Dependencies
-- Rein textliche Aenderungen in 5 Dateien
+Jede Karte zeigt:
+1. **Paketname**
+2. **"Gesamtwert der Leistungen:"** z.B. 8.000+ EUR (als Anker)
+3. **"Ihre Investition:"** z.B. 2.998 EUR (hervorgehoben)
+4. **"Sie sparen ueber X EUR"** (Ersparnis explizit benannt)
+5. Feature-Liste
+6. CTA-Button
 
 ---
 
-## Sequenz
+## Technische Aenderungen
 
-1. Alle 5 Branchen-Seiten parallel aktualisieren
-2. Build-Test
-3. Visuelle Pruefung einer Beispielseite
+### Datei: `src/components/landing/conversion/PricingSection.tsx`
+
+1. **Datenstruktur**: Felder `valuePrice` und `savings` pro Plan hinzufuegen
+2. **3. Paket**: VIP Done-for-You mit Schulungs-Features einfuegen
+3. **Grid**: Von `md:grid-cols-2` auf `lg:grid-cols-3` aendern, `max-w-4xl` auf `max-w-6xl`
+4. **Preisbereich**: Umbauen auf Value-First-Layout (Wert oben, Investition darunter, Ersparnis-Badge)
+5. **Subtitle**: "Drei Stufen. Ein Ziel: Mehr Effizienz, weniger Aufwand."
+6. **VIP-Button**: Separater Stil (z.B. gold/accent) fuer Premiumwirkung
+
+### Keine weiteren Dateien betroffen
 
