@@ -3,7 +3,7 @@ import { Check } from "lucide-react";
 const plans = [
   {
     name: "KI-Prozess-Kickstart",
-    price: "299",
+    price: "598",
     originalPrice: null,
     badge: null,
     featured: false,
@@ -16,15 +16,15 @@ const plans = [
   },
   {
     name: "KI-Komplettpaket",
-    price: "999",
-    originalPrice: "2.499",
+    price: "1.998",
+    originalPrice: "4.998",
     badge: "BELIEBTESTE WAHL",
     featured: true,
     features: [
       "Alles aus dem Kickstart-Paket",
-      "Komplett-Setup aller Geschäftsprozesse",
+      "Setup von 10 individuellen Prozessen",
       "Automatisierte Workflows & Follow-ups",
-      "90-Tage intensive Betreuung",
+      "30-Tage intensive Betreuung",
       "Persönlicher Ansprechpartner",
       "100% Erfolgs-Garantie",
     ],
