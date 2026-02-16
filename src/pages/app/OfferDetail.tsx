@@ -5,6 +5,7 @@ import { OfferPreview } from '@/components/offers/OfferPreview';
 import { OfferStatusBadge } from '@/components/offers/OfferStatusBadge';
 import { PaymentUnlockButton } from '@/components/offers/PaymentUnlockButton';
 import { PainPointRadar } from '@/components/offers/PainPointRadar';
+import { ProgressTracker } from '@/components/offers/ProgressTracker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,7 +42,7 @@ export default function OfferDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { hasMinRole } = useAuth();
-  const { offers, isLoading, approveOffer, sendOffer, unlockPayment, submitForReview } = useOffers();
+  const { offers, isLoading, approveOffer, sendOffer, unlockPayment, submitForReview, updateOffer } = useOffers();
 
   const offer = offers.find((o) => o.id === offerId);
 
@@ -59,6 +60,11 @@ export default function OfferDetail() {
       navigator.clipboard.writeText(publicUrl);
       toast({ title: 'Link kopiert', description: 'Der öffentliche Link wurde kopiert.' });
     }
+  };
+
+  const handleProgressUpdate = async (updatedJson: any) => {
+    if (!offer) return;
+    await updateOffer({ id: offer.id, offer_json: updatedJson });
   };
 
   if (isLoading) {
@@ -226,6 +232,11 @@ export default function OfferDetail() {
 
       {/* Offer Preview */}
       {offerJson && <OfferPreview content={offerJson} />}
+
+      {/* Progress Tracker for variable offers (staff + admin) */}
+      {offerJson?.offer_mode === 'variable' && hasMinRole('mitarbeiter') && (
+        <ProgressTracker offer={offer} onUpdate={handleProgressUpdate} />
+      )}
 
       {/* Contract Details (if accepted/signed) */}
       {offerJson?.contract_accepted && (
