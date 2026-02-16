@@ -4,9 +4,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const testimonials = [
   {
     name: "René Schreiner",
-    company: "AS Gärten GmbH, Hennef",
-    quote: "20 Stunden pro Woche eingespart – Angebote, Nachfassen und Planung laufen jetzt automatisch.",
-    badge: "20h/Woche gespart",
+    company: "AS Gärten GmbH, Köln",
+    quote: "Neue Website, eigenes CRM, Planungs-, Mitarbeiter- und Kundenportal – alles aus einer Hand implementiert. Dazu über 40 Bewerbungen generiert und neue Mitarbeiter gewonnen. Die gesamten Prozesse wurden extrem erleichtert. Der Value ist ehrlich gesagt unmessbar.",
+    badge: "40+ Bewerbungen generiert",
     initials: "RS",
     link: "https://as-gaerten-gmbh.de",
   },
