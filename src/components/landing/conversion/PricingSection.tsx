@@ -2,16 +2,16 @@ import { Check } from "lucide-react";
 
 const plans = [
   {
-    name: "KI-Sichtbarkeits-Kickstart",
+    name: "KI-Prozess-Kickstart",
     price: "299",
     originalPrice: null,
     badge: null,
     featured: false,
     features: [
-      "Google-Sichtbarkeitsanalyse",
-      "KI-optimierter Maßnahmenplan",
+      "KI-Prozessanalyse Ihres Unternehmens",
+      "Individueller Automatisierungsplan",
       "30-Tage Umsetzungsbegleitung",
-      "Wöchentliche Performance-Reports",
+      "Wöchentliche Effizienz-Reports",
     ],
   },
   {
@@ -22,8 +22,8 @@ const plans = [
     featured: true,
     features: [
       "Alles aus dem Kickstart-Paket",
-      "Komplett-Setup aller Kanäle",
-      "Automatisierte Leadgenerierung",
+      "Komplett-Setup aller Geschäftsprozesse",
+      "Automatisierte Workflows & Follow-ups",
       "90-Tage intensive Betreuung",
       "Persönlicher Ansprechpartner",
       "100% Erfolgs-Garantie",
@@ -40,7 +40,7 @@ export const PricingSection = ({ onCtaClick }: { onCtaClick: () => void }) => {
             Wählen Sie Ihren Startpunkt
           </h2>
           <p className="text-muted-foreground text-lg">
-            Zwei Optionen. Ein Ziel: Mehr Kunden für Ihr Unternehmen.
+            Zwei Optionen. Ein Ziel: Mehr Effizienz, weniger Aufwand.
           </p>
         </div>
 

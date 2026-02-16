@@ -23,7 +23,7 @@ export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void 
               size="sm"
               className="bg-primary hover:bg-primary-deep text-primary-foreground font-semibold shadow-md"
             >
-              Ja, ich will mehr Kunden!
+              Jetzt Potenzial aufdecken!
             </Button>
           </div>
         </div>
