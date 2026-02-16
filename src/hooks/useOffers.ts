@@ -263,6 +263,49 @@ export function useOffers(leadId?: string) {
     },
   });
 
+  // Accept offer (public, no auth needed)
+  const acceptOfferMutation = useMutation({
+    mutationFn: async ({ offerId, acceptanceData }: {
+      offerId: string;
+      acceptanceData: { signer_name: string; signature_data: string };
+    }) => {
+      // First get current offer_json
+      const { data: current, error: fetchError } = await supabase
+        .from('offers')
+        .select('offer_json')
+        .eq('id', offerId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const updatedJson = {
+        ...(current.offer_json as Record<string, unknown>),
+        contract_accepted: true,
+        contract_accepted_at: new Date().toISOString(),
+        signer_name: acceptanceData.signer_name,
+        signature_data: acceptanceData.signature_data,
+      };
+
+      const { data, error } = await supabase
+        .from('offers')
+        .update({
+          status: 'accepted' as unknown as any,
+          offer_json: updatedJson,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', offerId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['offers'] });
+      queryClient.invalidateQueries({ queryKey: ['public-offer'] });
+    },
+  });
+
   return {
     offers: offersQuery.data || [],
     isLoading: offersQuery.isLoading,
@@ -273,6 +316,7 @@ export function useOffers(leadId?: string) {
     approveOffer: approveOfferMutation.mutateAsync,
     sendOffer: sendOfferMutation.mutateAsync,
     unlockPayment: unlockPaymentMutation.mutateAsync,
+    acceptOffer: acceptOfferMutation.mutateAsync,
     isCreating: createOfferMutation.isPending,
     isUpdating: updateOfferMutation.isPending,
   };

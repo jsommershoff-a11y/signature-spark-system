@@ -2,9 +2,10 @@ import { useMyContracts } from '@/hooks/useMyContracts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 import { OfferStatusBadge } from '@/components/offers/OfferStatusBadge';
 import { formatCents, OFFER_MODE_LABELS } from '@/types/offers';
-import { FileText, Lock, CheckCircle2, CreditCard } from 'lucide-react';
+import { FileText, Lock, CheckCircle2, CreditCard, Clock, Eye } from 'lucide-react';
 
 export default function MyContracts() {
   const { data: contracts, isLoading, error } = useMyContracts();
@@ -102,6 +103,29 @@ export default function MyContracts() {
                       </>
                     )}
                   </div>
+
+                  {/* Variable Offer Progress */}
+                  {mode === 'variable' && contract.offer_json?.variable_offer_data && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Fortschritt</span>
+                        <span className="font-medium">{contract.offer_json.variable_offer_data.progress_percent}%</span>
+                      </div>
+                      <Progress value={contract.offer_json.variable_offer_data.progress_percent} className="h-2" />
+                      {/* Published updates */}
+                      {contract.offer_json.variable_offer_data.progress_updates
+                        ?.filter(u => u.published)
+                        .map((u, i) => (
+                          <div key={i} className="flex items-start gap-2 text-xs border-l-2 border-primary/30 pl-3 py-1">
+                            <Clock className="h-3 w-3 mt-0.5 text-muted-foreground shrink-0" />
+                            <div>
+                              <p>{u.text}</p>
+                              <p className="text-muted-foreground">{new Date(u.date).toLocaleDateString('de-DE')}</p>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
 
                   {/* Date */}
                   <p className="text-xs text-muted-foreground">

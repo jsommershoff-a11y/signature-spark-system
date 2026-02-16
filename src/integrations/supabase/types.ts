@@ -1507,6 +1507,8 @@ export type Database = {
         | "sent"
         | "viewed"
         | "expired"
+        | "accepted"
+        | "paid"
       order_status: "pending" | "paid" | "failed" | "refunded" | "cancelled"
       payment_provider: "stripe" | "copecart" | "bank_transfer" | "manual"
       pipeline_stage:
@@ -1693,6 +1695,8 @@ export const Constants = {
         "sent",
         "viewed",
         "expired",
+        "accepted",
+        "paid",
       ],
       order_status: ["pending", "paid", "failed", "refunded", "cancelled"],
       payment_provider: ["stripe", "copecart", "bank_transfer", "manual"],

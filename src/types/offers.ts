@@ -4,7 +4,7 @@
 // ENUMS
 // =============================================
 
-export type OfferMode = 'performance' | 'rocket_performance';
+export type OfferMode = 'performance' | 'rocket_performance' | 'variable';
 export type OfferStatus = 'draft' | 'pending_review' | 'approved' | 'sent' | 'viewed' | 'accepted' | 'paid' | 'expired';
 export type OrderStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'cancelled';
 export type PaymentProvider = 'stripe' | 'copecart' | 'bank_transfer' | 'manual';
@@ -39,6 +39,26 @@ export interface DiscoveryData {
   has_team: TeamAvailability;
   recommended_mode?: OfferMode;
   notes?: string;
+}
+
+// =============================================
+// VARIABLE OFFER DATA
+// =============================================
+
+export interface ProgressUpdate {
+  date: string;
+  text: string;
+  author: string;
+  published: boolean;
+}
+
+export interface VariableOfferData {
+  expected_service: string;
+  estimated_completion: string;
+  estimated_cost_cents: number;
+  additional_cost_note: string;
+  progress_percent: number;
+  progress_updates: ProgressUpdate[];
 }
 
 // =============================================
@@ -125,6 +145,9 @@ export interface OfferContent {
   
   // Discovery
   discovery_data?: DiscoveryData;
+  
+  // Variable Offer Data
+  variable_offer_data?: VariableOfferData;
   
   // KI-generierte Inhalte
   ai_generated?: OfferAiGenerated;
@@ -288,6 +311,7 @@ export const PAYMENT_PROVIDER_LABELS: Record<PaymentProvider, string> = {
 export const OFFER_MODE_LABELS: Record<OfferMode, string> = {
   performance: 'Performance',
   rocket_performance: 'Rocket Performance',
+  variable: 'Variables Angebot',
 };
 
 // =============================================

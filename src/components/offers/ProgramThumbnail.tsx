@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Zap, Rocket, Check } from 'lucide-react';
+import { Zap, Rocket, Check, FileEdit } from 'lucide-react';
 import type { OfferMode } from '@/types/offers';
 import { PROGRAM_MIN_PRICES } from '@/lib/offer-modules';
 
@@ -46,6 +46,20 @@ const CONFIG: Record<OfferMode, {
     gradient: 'from-amber-500/10 to-orange-500/10',
     border: 'border-amber-500',
     iconBg: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
+  },
+  variable: {
+    label: 'Variables Angebot',
+    icon: <FileEdit className="h-8 w-8" />,
+    subtitle: 'Flexibles Kurzangebot',
+    features: [
+      'Einzelne Aufgaben & Projekte',
+      'Sofortzahlung möglich',
+      'Fortschrittsverfolgung',
+      'Kein Mindestbetrag',
+    ],
+    gradient: 'from-emerald-500/10 to-teal-500/10',
+    border: 'border-emerald-500',
+    iconBg: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
   },
 };
 
