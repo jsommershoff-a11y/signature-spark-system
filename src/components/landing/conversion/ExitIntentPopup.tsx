@@ -35,8 +35,8 @@ export const ExitIntentPopup = () => {
             Warten Sie – Bonus-Angebot!
           </DialogTitle>
           <DialogDescription className="text-center text-base mt-2">
-            Nur jetzt: Sichern Sie sich eine <strong className="text-foreground">kostenlose KI-Sichtbarkeitsanalyse</strong> im Wert von 299 €.
-            Wir zeigen Ihnen genau, wo Ihr Unternehmen Kunden verliert.
+            Nur jetzt: Sichern Sie sich eine <strong className="text-foreground">kostenlose KI-Potenzialanalyse</strong> im Wert von 299 €.
+            Wir zeigen Ihnen genau, wo Ihr Unternehmen Zeit und Geld verschwendet.
           </DialogDescription>
         </DialogHeader>
         <button
@@ -46,7 +46,7 @@ export const ExitIntentPopup = () => {
           }}
           className="w-full bg-primary hover:bg-primary-deep text-primary-foreground font-semibold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all mt-2"
         >
-          Kostenlose Analyse sichern →
+          Kostenlose KI-Potenzialanalyse sichern →
         </button>
         <p className="text-xs text-muted-foreground text-center">
           100% kostenlos · Unverbindlich · Kein Risiko

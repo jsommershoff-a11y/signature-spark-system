@@ -6,10 +6,10 @@ const declineData = [
 ];
 
 const painPoints = [
-  "Sie investieren in Werbung – aber die Anfragen bleiben aus",
-  "Ihre Website sieht gut aus – aber generiert keine Kunden",
-  "Empfehlungen reichen nicht mehr – und planbarer Umsatz fehlt",
-  "Sie wissen, dass online Potenzial liegt – aber nicht wo anfangen",
+  "Repetitive Aufgaben fressen Ihre wertvolle Zeit – jeden Tag",
+  "Ihr Team verbringt Stunden mit manueller Verwaltung statt mit dem Kerngeschäft",
+  "Kundenanfragen, Angebote und Follow-ups laufen unstrukturiert und gehen verloren",
+  "Sie wissen, dass Potenzial in Automatisierung liegt – aber nicht wo anfangen",
 ];
 
 export const ProblemAmplifier = () => {
@@ -25,7 +25,7 @@ export const ProblemAmplifier = () => {
             Kommt Ihnen das bekannt vor?
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Die meisten Unternehmer verlieren jeden Tag Kunden – ohne es zu merken.
+            Die meisten Unternehmer verlieren jeden Tag Zeit und Geld – durch Prozesse, die KI längst übernehmen kann.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export const ProblemAmplifier = () => {
           </ul>
 
           <div className="bg-card rounded-2xl border border-border/40 p-6 shadow-sm">
-            <p className="text-sm text-muted-foreground mb-2 font-medium">Ihre Kundengewinnung ohne System</p>
+            <p className="text-sm text-muted-foreground mb-2 font-medium">Ihre Produktivität ohne KI-Systeme</p>
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={declineData}>
                 <Line
@@ -52,7 +52,7 @@ export const ProblemAmplifier = () => {
                 />
               </LineChart>
             </ResponsiveContainer>
-            <p className="text-xs text-muted-foreground text-center mt-2">↓ Sinkende Anfragen & Umsatz</p>
+            <p className="text-xs text-muted-foreground text-center mt-2">↓ Sinkende Effizienz & steigende Kosten</p>
           </div>
         </div>
       </div>

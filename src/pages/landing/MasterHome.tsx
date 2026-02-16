@@ -16,15 +16,15 @@ import {
 const faqItems = [
   {
     question: "Funktioniert das auch in meiner Branche?",
-    answer: "Ja. Unser System ist branchenübergreifend erprobt – von Handwerk über Praxen bis zu Dienstleistern und Immobilien. Wir passen die Strategie individuell an Ihr Geschäftsmodell an.",
+    answer: "Ja. Unser System ist branchenübergreifend erprobt – von Handwerk über Praxen bis zu Dienstleistern und Immobilien. Wir passen die KI-Strategie individuell an Ihre Geschäftsprozesse an.",
   },
   {
     question: "Wie schnell sehe ich Ergebnisse?",
-    answer: "Die meisten Kunden sehen erste Ergebnisse innerhalb von 14–30 Tagen. Messbare Steigerungen der Anfragen sind typischerweise nach 60–90 Tagen dokumentiert.",
+    answer: "Die meisten Kunden sehen erste Effizienzgewinne innerhalb von 14–30 Tagen. Messbare Einsparungen bei Zeit und Kosten sind typischerweise nach 60–90 Tagen dokumentiert.",
   },
   {
     question: "Was passiert, wenn es nicht funktioniert?",
-    answer: "Dann greift unsere 100% Erfolgs-Garantie. Wenn Sie nach 90 Tagen nicht mindestens 30% mehr qualifizierte Anfragen erhalten, arbeiten wir kostenlos weiter.",
+    answer: "Dann greift unsere 100% Erfolgs-Garantie. Wenn Sie nach 90 Tagen keine messbare Effizienzsteigerung in Ihren Kernprozessen sehen, arbeiten wir kostenlos weiter.",
   },
   {
     question: "Muss ich selbst etwas tun?",
@@ -32,7 +32,7 @@ const faqItems = [
   },
   {
     question: "Ist das nicht zu teuer für ein kleines Unternehmen?",
-    answer: "Die Frage ist: Was kostet es Sie, KEINE neuen Kunden zu gewinnen? Ein einziger zusätzlicher Auftrag deckt die Investition meist mehrfach.",
+    answer: "Die Frage ist: Was kostet Sie der manuelle Aufwand jeden Monat? Die meisten Unternehmer sparen durch Automatisierung ein Vielfaches der Investition – an Zeit und Personalkosten.",
   },
 ];
 
@@ -57,22 +57,22 @@ const MasterHome = () => {
                 ⚠️ Achtung: Begrenzt auf 3 Unternehmen pro Monat
               </p>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight text-foreground mb-6">
-                Jeden Tag verlieren Sie Kunden<br className="hidden md:block" /> an Ihre Konkurrenz
+                Ihr Unternehmen arbeitet härter<br className="hidden md:block" /> als nötig
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
-                Während Sie diesen Text lesen, gewinnen Ihre Wettbewerber mit KI-gestützten Systemen
-                die Kunden, die eigentlich <strong className="text-foreground">Ihnen</strong> gehören.
+                Während Sie manuell planen, verwalten und nachfassen, automatisieren Ihre Wettbewerber längst –
+                mit KI-Systemen, die <strong className="text-foreground">rund um die Uhr</strong> arbeiten.
               </p>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
-                In den nächsten 3 Minuten zeigen wir Ihnen, wie Sie das ändern – mit einem bewährten System,
-                das bereits über 150 Unternehmern geholfen hat.
+                In den nächsten 3 Minuten zeigen wir Ihnen, welche Prozesse KI in Ihrem Unternehmen
+                übernehmen kann – und wie über 150 Unternehmer damit Zeit und Geld sparen.
               </p>
 
               <button
                 onClick={handleCTAClick}
                 className="bg-primary hover:bg-primary-deep text-primary-foreground font-bold text-lg md:text-xl px-10 py-5 rounded-xl shadow-lg hover:shadow-[0_0_25px_hsl(30,90%,55%,0.4)] transition-all duration-300 mb-6"
               >
-                Ja, ich will mehr Kunden! →
+                Jetzt Potenzial aufdecken →
               </button>
 
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -121,13 +121,13 @@ const MasterHome = () => {
               <div className="bg-muted/50 rounded-2xl p-6 border border-border/40">
                 <p className="font-bold text-foreground mb-2">Option 1: Nichts tun</p>
                 <p className="text-muted-foreground">
-                  Weiter hoffen, dass irgendwann mehr Kunden kommen. Zusehen, wie die Konkurrenz vorbeizieht.
+                  Weiter manuell arbeiten, Zeit und Geld in repetitive Prozesse stecken. Zusehen, wie die Konkurrenz automatisiert.
                 </p>
               </div>
               <div className="bg-primary/5 rounded-2xl p-6 border-2 border-primary/30">
                 <p className="font-bold text-foreground mb-2">Option 2: Jetzt handeln</p>
                 <p className="text-muted-foreground">
-                  Ein System installieren, das planbar Neukunden generiert. Ab heute. Mit Garantie.
+                  KI-Systeme installieren, die Prozesse automatisieren und Ressourcen freisetzen. Ab heute. Mit Garantie.
                 </p>
               </div>
             </div>
@@ -135,7 +135,7 @@ const MasterHome = () => {
               onClick={handleCTAClick}
               className="bg-primary hover:bg-primary-deep text-primary-foreground font-bold text-lg md:text-xl px-10 py-5 rounded-xl shadow-lg hover:shadow-[0_0_25px_hsl(30,90%,55%,0.4)] transition-all duration-300"
             >
-              Kostenlose Systemanalyse sichern →
+              Kostenlose KI-Potenzialanalyse sichern →
             </button>
             <p className="text-sm text-muted-foreground mt-4">
               ✓ 100% kostenlos · ✓ Unverbindlich · ✓ In 2 Minuten erledigt

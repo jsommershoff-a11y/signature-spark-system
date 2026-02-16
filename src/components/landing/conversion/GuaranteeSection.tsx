@@ -18,7 +18,7 @@ export const GuaranteeSection = () => {
             100% Erfolgs-Garantie
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
-            Wenn Sie nach 90 Tagen nicht mindestens <strong className="text-foreground">30% mehr qualifizierte Anfragen</strong> erhalten,
+            Wenn Sie nach 90 Tagen keine <strong className="text-foreground">messbare Effizienzsteigerung in Ihren Kernprozessen</strong> sehen,
             arbeiten wir kostenlos weiter – bis das Ergebnis stimmt. Ohne Wenn und Aber.
           </p>
 
