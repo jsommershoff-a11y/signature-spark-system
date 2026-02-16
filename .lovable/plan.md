@@ -1,48 +1,75 @@
 
+# Steps 35-36: Login-Button auf Landingpage + E-Mail-Benachrichtigung bei Angebotsversand
 
-# Step 34 -- ProgressTracker in OfferDetail einbinden
+Vier Anforderungen wurden identifiziert. Zwei davon sind Implementierungsaufgaben, zwei sind Tests die nach der Implementierung durchgefuehrt werden.
 
-## Ziel
-Mitarbeiter und Admins koennen bei variablen Angeboten (`offer_mode === 'variable'`) direkt im OfferDetail den Fortschritt pflegen, Updates erfassen und per Toggle veroeffentlichen. Admins haben automatisch vollen Zugriff, da `hasMinRole('mitarbeiter')` fuer Admins immer `true` liefert.
+---
 
-## Aenderungen
+## Step 35 -- Login-Button im Landing-Header
 
-### `src/pages/app/OfferDetail.tsx`
+**Ziel:** Auf allen oeffentlichen Seiten (Landingpages, Branchen-Seiten) ist ein "Anmelden"-Button sichtbar, der zur `/auth`-Seite fuehrt. Gilt fuer Kunden, Admins und alle Rollen.
 
-1. **Import hinzufuegen** (Zeile 7, nach PainPointRadar):
-   - `import { ProgressTracker } from '@/components/offers/ProgressTracker';`
+**Aenderung: `src/components/landing/Header.tsx`**
 
-2. **`updateOffer` destrukturieren** (Zeile 44):
-   - Aendern von: `const { offers, isLoading, approveOffer, sendOffer, unlockPayment, submitForReview } = useOffers();`
-   - Zu: `const { offers, isLoading, approveOffer, sendOffer, unlockPayment, submitForReview, updateOffer } = useOffers();`
+Desktop-Navigation (nach dem "Analysegespraech sichern"-Button, Zeile 75):
+- Neuer Link-Button: "Anmelden" mit `variant="outline"` und `size="sm"`, verlinkt auf `/auth`
+- Icon: `LogIn` von lucide-react
 
-3. **Handler-Funktion** (nach `copyPublicLink`, ca. Zeile 62):
-   ```
-   const handleProgressUpdate = async (updatedJson: any) => {
-     if (!offer) return;
-     await updateOffer({ id: offer.id, offer_json: updatedJson });
-   };
-   ```
+Mobile-Navigation (vor dem CTA-Button, Zeile 120):
+- Neuer Link: "Anmelden" als Menuepunkt im Sheet
+- Gleicher Stil wie "Qualifizierung"-Link
 
-4. **ProgressTracker im JSX rendern** (nach OfferPreview, vor Contract Details, ca. Zeile 229):
-   ```
-   {offerJson?.offer_mode === 'variable' && hasMinRole('mitarbeiter') && (
-     <ProgressTracker offer={offer} onUpdate={handleProgressUpdate} />
-   )}
-   ```
+**Test:**
+- Build kompiliert ohne Fehler
+- Login-Button auf Desktop und Mobile sichtbar
+- Klick fuehrt zur `/auth`-Seite
 
-## Sicherheits-Hinweis
+---
 
-- Die Bedingung `hasMinRole('mitarbeiter')` schliesst automatisch alle hoeheren Rollen ein (Teamleiter, Geschaeftsfuehrung, Admin)
-- Admins haben immer Zugriff, da `hasMinRole` im AuthContext fuer `isRealAdmin` stets `true` zurueckgibt
-- RLS auf der `offers`-Tabelle erlaubt Updates nur fuer `teamleiter+`, was ebenfalls Admins einschliesst
+## Step 36 -- E-Mail-Benachrichtigung bei Angebotsversand
 
-## Test nach Implementierung
+**Ziel:** Wenn ein Mitarbeiter auf "Senden" klickt, erhaelt der Kunde automatisch eine E-Mail mit dem oeffentlichen Angebotslink.
 
-- Build kompiliert ohne Fehler (0 TypeScript-Fehler)
-- OfferDetail fuer ein variables Angebot zeigt den ProgressTracker-Bereich
-- Fortschritts-Slider (0-100%), Update-Eingabe und Veroeffentlichungs-Toggle funktionieren
-- Nach Speichern: Aenderungen persistiert in der Datenbank
-- Kundenportal (MyContracts) zeigt aktualisierte Fortschrittsleiste und nur veroeffentlichte Updates
-- Admin-User sieht den ProgressTracker ebenfalls
+**Voraussetzung:** Ein E-Mail-Dienst (z.B. Resend) wird benoetigt. Aktuell ist kein E-Mail-Provider konfiguriert.
 
+**Neue Datei: `supabase/functions/send-offer-email/index.ts`**
+- Edge Function die eine E-Mail an den Lead sendet
+- Erwartet: `offer_id` im Request Body
+- Laedt Angebot + Lead-Daten aus der DB (mit Service Role Key)
+- Generiert den oeffentlichen Link: `{SITE_URL}/offer/{public_token}`
+- Sendet E-Mail via Resend API (oder alternativer Provider)
+- Inhalt: Professionelle HTML-E-Mail mit Firmenbranding, Angebotslink und Ablaufdatum
+- Authentifizierung: JWT-Validierung + `has_min_role('mitarbeiter')`
+
+**Aenderung: `supabase/config.toml`**
+- Neuer Eintrag: `[functions.send-offer-email]` mit `verify_jwt = false` (Validierung im Code)
+
+**Aenderung: `src/hooks/useOffers.ts`**
+- In `sendOfferMutation.mutationFn`: Nach erfolgreichem Status-Update auf `sent`, zusaetzlich die Edge Function `send-offer-email` aufrufen
+- Fehler beim E-Mail-Versand soll den Sende-Vorgang nicht blockieren (Fire-and-Forget mit Warning-Toast)
+
+**Benoetigtes Secret:** `RESEND_API_KEY` (muss vom Benutzer bereitgestellt werden)
+
+**Test:**
+- Build kompiliert ohne Fehler
+- Edge Function deployed erfolgreich
+- Beim Senden eines Angebots wird E-Mail ausgeloest
+- E-Mail enthaelt korrekten oeffentlichen Link
+
+---
+
+## Zu den Test-Anforderungen
+
+Die beiden Tests (ProgressTracker und Standard-Angebotsflow) werden nach der Implementierung der obigen Steps durchgefuehrt:
+
+1. **ProgressTracker-Test:** Fortschritt auf 50% setzen, Update erstellen, veroeffentlichen, Kundenportal pruefen
+2. **Standard-Angebot (Performance):** Erstellen mit Bausteinen und Bedarfsermittlung, kompletter Workflow bis Vertragsannahme
+
+---
+
+## Technische Details
+
+- **Login-Button:** Nutzt bestehende `Button`-Komponente mit `variant="outline"` und `LogIn`-Icon. Keine neuen Abhaengigkeiten.
+- **E-Mail Edge Function:** Verwendet Resend als Provider (einfachste Integration, guter Free-Tier). Alternative: SendGrid oder SMTP. Der Benutzer muss einen API-Key bereitstellen.
+- **Fire-and-Forget-Pattern:** Der E-Mail-Versand laeuft asynchron nach dem DB-Update. Ein Fehler beim Versand verhindert nicht das Senden des Angebots. Der Benutzer erhaelt einen Warning-Toast bei E-Mail-Fehlern.
+- **E-Mail-Template:** Einfaches HTML mit KRS-Branding, Angebotslink als Button, Ablaufdatum und Kontaktinformationen.
