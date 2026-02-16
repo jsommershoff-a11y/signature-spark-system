@@ -1,146 +1,225 @@
 
 
-# Steps 19-24: Umsetzungsplan (mit Test nach jedem Schritt)
+# Steps 25-33: Angebotsversand, Kundenbestaetigung, Zahlungslink und Variables Angebot
 
-Fortsetzung der bestehenden Nummerierung. Jeder Step wird einzeln implementiert und getestet bevor der naechste beginnt.
+Fortsetzung der bestehenden Nummerierung. Zwei Hauptfeatures: (A) Versand- und Bestaetigungsflow fuer Standard-Angebote, (B) Variables Angebot fuer kleinere Auftraege mit Fortschrittsdokumentation.
 
 ---
 
-## Step 19 -- Pain-Point-Visualisierung (Ist/Soll-Radar fuer Kunden)
+## Step 25 -- Angebotsversand: Status-Workflow und Freigabe im OfferDetail
 
-**Ziel:** Dem Kunden visuell zeigen, wo es hakt und wie die Loesung aussieht.
+**Ziel:** Im internen OfferDetail koennen Mitarbeiter das Angebot durch den kompletten Workflow fuehren: Entwurf -> Pruefung -> Genehmigt -> Senden. Nach dem Senden wird der oeffentliche Link aktiv.
 
-**Neue Datei: `src/components/offers/PainPointRadar.tsx`**
-- Recharts RadarChart mit 6 Achsen (Vertrieb, Closing, Prozesse, Fuehrung, Sichtbarkeit, Kundenbindung)
-- Rote Flaeche = Ist-Zustand (niedrige Werte fuer ausgewaehlte Pain-Points)
-- Gruene Flaeche = Soll-Zustand nach Umsetzung (alle hoch)
-- Unterhalb: Karten-Grid "Ihre Herausforderungen" (rot) vs. "Unsere Loesung" (gruen) mit Mapping Pain-Point -> Baustein
-- Props: `discoveryData`, `selectedModules`, `offerMode`
+**Aenderung: `src/pages/app/OfferDetail.tsx`**
+- Workflow-Status-Leiste oben: Visueller Fortschritt (Entwurf -> Pruefung -> Genehmigt -> Gesendet -> Angesehen -> Angenommen -> Bezahlt)
+- "Zur Pruefung einreichen"-Button (Status `draft`, Rolle `mitarbeiter`)
+- "Genehmigen"-Button bleibt (Status `pending_review`, Rolle `teamleiter`)
+- "Senden"-Button bleibt (Status `approved`, Rolle `mitarbeiter`)
+- "Zahlung freischalten"-Button erst nach Status `accepted` (nicht bei `sent`/`viewed`)
+- PainPointRadar in der internen Ansicht anzeigen (wenn discovery_data vorhanden)
+- Vertragsdetails-Bereich: Wer hat unterschrieben, wann, Unterschrift-Bild (wenn `contract_accepted`)
 
-**Mapping-Konstante in `src/lib/offer-modules.ts`:**
-- `PAIN_POINT_MODULE_MAP`: z.B. `vertrieb` -> `vertriebsstruktur`, `prozesse` -> `crm_setup` + `followup`
+**Test:**
+- Build kompiliert ohne Fehler
+- Workflow-Leiste zeigt korrekten Status
+- Buttons erscheinen nur bei passendem Status und passender Rolle
 
-**Aenderung: `src/components/offers/OfferPreview.tsx`**
-- Neuer Abschnitt "Ihre aktuelle Situation" mit PainPointRadar (nur wenn `discovery_data` vorhanden)
+---
+
+## Step 26 -- Oeffentliche Angebotsseite: Vertragsannahme durch Kunden
+
+**Ziel:** Kunde kann auf der oeffentlichen Seite (`/offer/:token`) das Angebot einsehen, AGB lesen, digital unterschreiben und annehmen. Danach oeffnet sich sofort der Zahlungslink.
+
+**Neue Datei: `src/components/offers/ContractAcceptance.tsx`**
+- Aufklappbare Abschnitte: Leistungsbeschreibung, AGB, Widerrufsbelehrung
+- Pflicht-Checkboxen: "AGB gelesen und akzeptiert" + "Widerrufsbelehrung zur Kenntnis genommen"
+- Name-Eingabefeld fuer Unterschrift
+- SignaturePad (Canvas-basiert, Touch + Mouse)
+- "Angebot annehmen"-Button (nur aktiv wenn alles ausgefuellt)
+- Props: `offer`, `onAccept`
+
+**Neue Datei: `src/components/offers/SignaturePad.tsx`**
+- HTML Canvas-Zeichenflaeche
+- Unterstuetzt Mouse und Touch
+- "Zuruecksetzen"-Button
+- Gibt Base64-PNG als String zurueck via `onSignatureChange`
 
 **Aenderung: `src/pages/Offer.tsx`**
-- PainPointRadar auch auf der oeffentlichen Angebotsseite anzeigen
+- Nach OfferPreview: ContractAcceptance-Bereich anzeigen (nur wenn Status `sent` oder `viewed`, nicht abgelaufen)
+- Nach Annahme (Status `accepted`): Bestaetigung + sofort Zahlungsbereich anzeigen wenn `payment_unlocked`
+- Payment-Bereich: "Jetzt bezahlen"-Button mit Zahlungsanbieter-Info
 
-**Aenderung: `src/components/offers/index.ts`**
-- Export von `PainPointRadar`
-
-**Test:**
-- Build kompiliert ohne Fehler
-- OfferPreview zeigt Radar wenn discovery_data vorhanden
-- Radar-Chart rendert korrekt mit Beispieldaten
-
----
-
-## Step 20 -- Demo-Bereich fuer Kunden (Kursbereich)
-
-**Ziel:** Kunden ohne aktive Membership sehen einen eingeschraenkten Demo-Zugang statt Sperrseite.
-
-**Aenderung: `src/hooks/useMember.ts`**
-- Neues Return-Feld `isDemoUser`: `true` wenn User eingeloggt, aber kein Member-Record oder keine aktive Membership
-
-**Aenderung: `src/pages/app/Courses.tsx`**
-- Wenn `!member` aber User eingeloggt: Demo-Modus
-  - CTA-Banner oben: "Jetzt freischalten" -> `/app/contracts`
-  - Kurse laden (published), erste 2 Lektionen mit "Demo"-Badge
-  - Restliche Lektionen mit Lock-Icon + "Nach Freischaltung verfuegbar"
+**Aenderung: `src/hooks/useOffers.ts`**
+- Neue Funktion `acceptOffer(token, acceptanceData)`: oeffentliche Mutation (ohne Auth), aktualisiert offer_json mit Vertragsdaten und setzt Status auf `accepted`
 
 **Test:**
 - Build kompiliert ohne Fehler
-- Nicht-Member sieht Demo-Modus statt Sperrseite
-- Lock-Icons und Demo-Badges korrekt angezeigt
+- Oeffentliche Seite zeigt Vertragsakzeptanz fuer gesendete Angebote
+- Nach Annahme wechselt Status auf `accepted`
+- Zahlungslink wird sofort sichtbar
 
 ---
 
-## Step 21 -- Freischaltungslogik nach Zahlung (Webhook)
+## Step 27 -- RLS-Policy fuer oeffentliche Vertragsannahme
 
-**Ziel:** Nach erfolgreicher Zahlung: Offer-Status auf `paid`, Member + Membership aktivieren.
+**Ziel:** Die oeffentliche Angebotsseite muss den Offer-Status von `sent`/`viewed` auf `accepted` aendern koennen, ohne dass der Benutzer eingeloggt ist.
 
-**Aenderung: `supabase/functions/webhook-payment/index.ts`**
-- Nach Zeile 269 (Offer-Update):
-  1. Status auf `paid` setzen (statt `viewed`)
-  2. Offer-JSON lesen um `offer_mode` zu ermitteln
-  3. Lead-Email nachschlagen, User-Account finden
-  4. Member-Record erstellen/aktivieren
-  5. Membership erstellen: `rocket_performance` -> `premium`, `performance` -> `growth`
+**DB-Migration:**
+- Neue RLS-Policy auf `offers`: `Public can accept via token` (UPDATE, Permissive: No)
+  - Using: `public_token IS NOT NULL AND status IN ('sent', 'viewed')`
+  - Beschraenkt auf Status-Aenderung auf `accepted` und `offer_json`-Update
 
 **Test:**
-- Edge Function deployed ohne Fehler
-- TypeScript-Kompilierung sauber
-- Webhook-Logik validiert (offer_mode Mapping korrekt)
+- Migration erfolgreich
+- Oeffentliche Annahme funktioniert ohne Auth-Fehler
+- Nur Status `sent`/`viewed` -> `accepted` moeglich
 
 ---
 
-## Step 22 -- Auth-Routing und Kunden-Dashboard
+## Step 28 -- Angebotstyp "Variable" (Kurzangebot)
 
-**Ziel:** Kunden werden nach Login zu Vertraegen geleitet, Dashboard zeigt Quick-Links.
+**Ziel:** Neuer Angebotstyp fuer kleinere Auftraege, die sofort gezahlt werden koennen. Enthalt: Kurztext mit erwarteter Leistung, voraussichtlichem Fertigstellungszeitpunkt, geschaetzten Kosten, und Hinweis auf Mehrkosten.
 
-**Aenderung: `src/pages/Auth.tsx`**
-- Nach Login: Rolle pruefen, wenn `kunde` -> `/app/contracts` statt `/app`
+**Aenderung: `src/types/offers.ts`**
+- `OfferMode` erweitern: `'performance' | 'rocket_performance' | 'variable'`
+- Neues Interface `VariableOfferData` in `OfferContent`:
+  - `expected_service: string` (Erwartete Leistung)
+  - `estimated_completion: string` (Voraussichtlicher Zeitpunkt)
+  - `estimated_cost_cents: number` (Geschaetzte Kosten)
+  - `additional_cost_note: string` (Hinweis auf Mehrkosten)
+  - `progress_percent: number` (0-100)
+  - `progress_updates: ProgressUpdate[]` (Dokumentation)
+- Neues Interface `ProgressUpdate`:
+  - `date: string`, `text: string`, `author: string`, `published: boolean`
+- Labels und Colors fuer `variable` ergaenzen
 
-**Aenderung: `src/pages/app/Dashboard.tsx`**
-- `renderKundeDashboard()` erweitern:
-  - Quick-Link-Karten: "Meine Vertraege" (`/app/contracts`) und "Kurse" (`/app/courses`)
-  - Demo-Hinweis wenn kein aktives Membership
+**Aenderung: `src/lib/offer-modules.ts`**
+- `PROGRAM_MIN_PRICES` um `variable: 0` (kein Mindestpreis)
+- `PROGRAM_LABELS` um `variable: 'Variables Angebot'`
+- `REQUIRED_MODULES` um `variable: []` (keine Pflichtbausteine)
+
+**Aenderung: `src/lib/legal-templates.ts`**
+- AGB-Ergaenzung: Neuer Paragraph zu Mehrkosten bei variablen Angeboten
+- `generateServiceDescription` um Variable-Modus erweitern
 
 **Test:**
 - Build kompiliert ohne Fehler
-- Kunden-Dashboard zeigt Quick-Links
-- Auth-Routing funktioniert (Kunde -> /app/contracts)
+- Typen korrekt, keine TypeScript-Fehler
 
 ---
 
-## Step 23 -- CreateOfferDialog Gesamtueberarbeitung (Wizard)
+## Step 29 -- CreateOfferDialog: Variables Angebot erstellen
 
-**Ziel:** 5-Schritt-Wizard mit Bedarfsermittlung, Programmauswahl, Bausteinen, Zahlung und Zusammenfassung.
+**Ziel:** Im Wizard kann der Mitarbeiter "Variables Angebot" als drittes Programm waehlen. Es oeffnet sich ein vereinfachter Flow.
+
+**Aenderung: `src/components/offers/ProgramThumbnail.tsx`**
+- Dritte Karte: "Variables Angebot" mit FileEdit-Icon, grauer/gruener Stil, "Kein Mindestbetrag", Stichpunkte (Kurzauftrag, Sofortzahlung, Fortschrittsverfolgung)
 
 **Aenderung: `src/components/offers/CreateOfferDialog.tsx`**
-- Kompletter Umbau als Wizard mit 5 Tabs/Steps:
-  1. **Bedarfsermittlung**: PainPointDiscovery eingebettet (ueberspringbar)
-  2. **Programmauswahl**: ProgramThumbnails + Laufzeit + Mindestpreis-Hinweis
-  3. **Bausteine und Positionen**: Modul-Checkboxen (Pflicht gesperrt, Abhaengigkeiten validiert) + Line-Items mit Euro-Eingabe
-  4. **Zahlung**: Einmalzahlung/3 Raten/6 Raten + Zahlungsanbieter (Stripe/CopeCart)
-  5. **Zusammenfassung**: OfferPreview mit PainPointRadar, Mindestpreis-Validierung, Speichern
-- Preis-Eingabe in Euro (interne Umrechnung in Cent)
-- Mindestpreis-Validierung vor Speichern (3.000 EUR / 7.000 EUR)
-- Discovery-Daten und selected_modules in offer_json speichern
+- Wenn `offerMode === 'variable'`: Wizard springt direkt von Programmauswahl (Step 1) zu einem vereinfachten Step:
+  - "Erwartete Leistung" (Textarea)
+  - "Voraussichtlicher Fertigstellungszeitpunkt" (Datepicker oder Text)
+  - "Geschaetzte Kosten" (Euro-Eingabe)
+  - "Hinweis auf Mehrkosten" (vorausgefuellter Text, editierbar)
+  - Dann direkt zu Zahlung und Zusammenfassung
+- Kein Bedarfsermittlung-Step, keine Bausteine fuer Variable
+- Mindestpreis-Validierung wird fuer Variable uebersprungen
 
 **Test:**
 - Build kompiliert ohne Fehler
-- Wizard-Navigation funktioniert (vor/zurueck)
-- Pflichtbausteine korrekt gesperrt
-- Mindestpreis-Validierung blockiert bei zu niedrigem Preis
-- Angebot wird korrekt in DB gespeichert
+- "Variables Angebot" waehlbar in Programmauswahl
+- Vereinfachter Flow funktioniert (Lead -> Programm -> Leistung -> Zahlung -> Speichern)
+- Normaler Flow fuer Performance/Rocket weiterhin funktional
 
 ---
 
-## Step 24 -- Barrel-Exporte und Build-Pruefung
+## Step 30 -- Oeffentliche Seite: Variables Angebot mit Sofortzahlung
+
+**Ziel:** Auf der oeffentlichen Seite sieht der Kunde bei variablen Angeboten: Leistungsbeschreibung, Zeitpunkt, Kosten, Mehrkosten-Hinweis und einen sofortigen "Jetzt bezahlen"-Button (ohne Annahme-Schritt).
+
+**Aenderung: `src/pages/Offer.tsx`**
+- Erkennung ob `offer_mode === 'variable'`
+- Variables Layout: Kompakte Darstellung mit Kurztext-Feldern statt vollem OfferPreview
+- Kein ContractAcceptance-Schritt (da Kurzauftrag)
+- Sofortzahlung: "Jetzt bezahlen"-Button direkt sichtbar wenn `payment_unlocked`
+- Fortschrittsleiste (Progress) anzeigen wenn `progress_percent` gesetzt
+
+**Aenderung: `src/components/offers/OfferPreview.tsx`**
+- Fallunterscheidung: Wenn `offer_mode === 'variable'`, zeige kompaktes Kurzformat:
+  - Erwartete Leistung, Zeitpunkt, Kosten, Mehrkosten-Hinweis
+
+**Test:**
+- Build kompiliert ohne Fehler
+- Variables Angebot zeigt kompaktes Layout auf oeffentlicher Seite
+- Sofortzahlung-Button sichtbar wenn freigeschaltet
+- Fortschrittsleiste rendert korrekt
+
+---
+
+## Step 31 -- Kundenportal: Fortschrittsleiste fuer variable Angebote
+
+**Ziel:** Im Kundenportal (`/app/contracts`) sehen Kunden bei variablen Angeboten eine Fortschrittsleiste und veroeffentlichte Updates.
+
+**Aenderung: `src/pages/app/MyContracts.tsx`**
+- Fuer variable Angebote: Fortschrittsbalken (0-100%) anzeigen
+- Liste der veroeffentlichten `progress_updates` (nur `published: true`)
+- Status-Mapping: "In Bearbeitung" / "Abgeschlossen"
+
+**Test:**
+- Build kompiliert ohne Fehler
+- Fortschrittsbalken und Updates korrekt angezeigt im Kundenportal
+- Nur veroeffentlichte Updates sichtbar
+
+---
+
+## Step 32 -- Interne Dokumentation und Fortschritts-Management
+
+**Ziel:** Mitarbeiter koennen im OfferDetail bei variablen Angeboten Fortschritts-Updates erfassen und per Knopfdruck veroeffentlichen.
+
+**Neue Datei: `src/components/offers/ProgressTracker.tsx`**
+- Fortschritts-Slider (0-100%)
+- Update-Eingabefeld (Text + Datum)
+- Liste aller Updates mit "Veroeffentlichen"-Toggle
+- "Aktualisieren"-Button speichert in offer_json
+- Props: `offer`, `onUpdate`
+
+**Aenderung: `src/pages/app/OfferDetail.tsx`**
+- Wenn `offer_mode === 'variable'`: ProgressTracker-Bereich anzeigen
+- "Fortschritt aktualisieren"-Funktion nutzt `updateOffer` Mutation um offer_json zu aktualisieren
+
+**Aenderung: `src/hooks/useOffers.ts`**
+- `updateOffer` akzeptiert bereits `offer_json`-Updates (bereits implementiert)
+
+**Test:**
+- Build kompiliert ohne Fehler
+- Fortschritt aktualisierbar im OfferDetail
+- Veroeffentlichung per Toggle funktioniert
+- Kunde sieht nur veroeffentlichte Updates
+
+---
+
+## Step 33 -- Barrel-Exporte und Build-Pruefung
 
 **Aenderung: `src/components/offers/index.ts`**
-- Alle neuen Exporte pruefen und ergaenzen
+- Neue Exporte: `ContractAcceptance`, `SignaturePad`, `ProgressTracker`
 
 **Test:**
 - TypeScript-Kompilierung: 0 Fehler
-- Alle neuen Komponenten importierbar
-- Angebotserstellung End-to-End: Discovery -> Programm -> Bausteine -> Zahlung -> Speichern
-- OfferPreview mit Radar-Chart
-- Kunden-Dashboard Quick-Links
-- Demo-Kursbereich
-- Webhook payment_unlocked Logik
+- Standard-Angebotsflow: Erstellen -> Pruefung -> Genehmigung -> Senden -> Kunde sieht -> Annehmen -> Zahlungslink oeffnet sich
+- Variables Angebot: Erstellen -> Senden -> Kunde sieht Kurztext -> Sofort bezahlen
+- Fortschrittsdokumentation: Mitarbeiter aktualisiert -> Veroeffentlicht -> Kunde sieht im Portal
+- RLS-Policy validiert: Oeffentliche Annahme funktioniert ohne Auth
 
 ---
 
 ## Technische Details
 
-- **PainPointRadar** nutzt Recharts (bereits installiert) -- RadarChart, PolarGrid, PolarAngleAxis
-- **Demo-Modus** ist rein Frontend-Logik, keine DB-Aenderungen noetig
-- **Webhook-Update** nutzt bestehenden Service-Role-Key fuer Member/Membership-Erstellung
-- **Wizard** ersetzt den bestehenden CreateOfferDialog komplett, behaelt aber die bestehende Lead-Auswahl und Notizen-Logik
-- **Mindestpreise** werden client-seitig validiert (UX) und im Webhook nochmal geprueft
-- **Pain-Point Mapping** als Konstante in offer-modules.ts, erweiterbar
+- **ContractAcceptance** ist eine eigenstaendige Komponente die in Offer.tsx eingebettet wird
+- **SignaturePad** nutzt reines HTML Canvas ohne externe Abhaengigkeiten
+- **acceptOffer** nutzt die bestehende `public_token`-Logik und die RLS-Policy fuer oeffentliche Token
+- **Variable Angebote** nutzen dieselbe `offers`-Tabelle, unterscheiden sich durch `offer_mode === 'variable'` und `variable_offer_data` in `offer_json`
+- **ProgressTracker** speichert alles in `offer_json.variable_offer_data.progress_updates`, keine neue DB-Tabelle noetig
+- **Mehrkosten-AGB** wird als zusaetzlicher Paragraph in die bestehenden AGBs eingefuegt
+- **Sofortzahlung** bei variablen Angeboten: Kein Annahme-Schritt, Zahlungslink direkt sichtbar wenn `payment_unlocked`
 - Jeder Step endet mit Build-Check und Funktionstest bevor der naechste beginnt
 
