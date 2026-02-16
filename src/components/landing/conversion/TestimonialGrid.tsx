@@ -3,25 +3,26 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const testimonials = [
   {
-    name: "Thomas M.",
-    company: "Handwerksbetrieb, München",
+    name: "René Schreiner",
+    company: "AS Gärten GmbH, Hennef",
     quote: "20 Stunden pro Woche eingespart – Angebote, Nachfassen und Planung laufen jetzt automatisch.",
     badge: "20h/Woche gespart",
-    initials: "TM",
+    initials: "RS",
+    link: "https://as-gaerten-gmbh.de",
   },
   {
-    name: "Sandra K.",
-    company: "Zahnarztpraxis, Hamburg",
-    quote: "Verwaltungsaufwand halbiert. Mein Team konzentriert sich endlich wieder auf die Patienten.",
+    name: "Markus L.",
+    company: "Elektrobetrieb, Köln",
+    quote: "Verwaltungsaufwand halbiert. Mein Team konzentriert sich endlich wieder auf die Kunden.",
     badge: "-50% Verwaltung",
-    initials: "SK",
+    initials: "ML",
   },
   {
-    name: "Michael R.",
-    company: "Immobilienmakler, Berlin",
+    name: "Julia W.",
+    company: "Physiotherapie-Praxis, Koblenz",
     quote: "ROI von 12x in den ersten 90 Tagen. Prozesse, die früher Tage dauerten, erledigt die KI in Minuten.",
     badge: "12x ROI",
-    initials: "MR",
+    initials: "JW",
   },
 ];
 
@@ -50,7 +51,13 @@ export const TestimonialGrid = () => {
                 </Avatar>
                 <div>
                   <p className="font-semibold text-foreground">{t.name}</p>
-                  <p className="text-sm text-muted-foreground">{t.company}</p>
+                  {"link" in t && t.link ? (
+                    <a href={t.link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                      {t.company}
+                    </a>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{t.company}</p>
+                  )}
                 </div>
               </div>
               <p className="text-foreground mb-4 italic">"{t.quote}"</p>
