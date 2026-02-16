@@ -119,6 +119,10 @@ Datum:
 // =============================================
 
 export function generateServiceDescription(mode: OfferMode, selectedModuleIds: string[]): string {
+  if (mode === 'variable') {
+    return `LEISTUNGSBESCHREIBUNG\nVariables Angebot – Einzelleistung\n\nDie konkrete Leistung, der voraussichtliche Fertigstellungszeitpunkt und die geschätzten Kosten ergeben sich aus dem Angebot.\n\nHinweis: Bei variablen Angeboten können die tatsächlichen Kosten vom Kostenvoranschlag abweichen. Sollte sich während der Umsetzung herausstellen, dass der geschätzte Aufwand überschritten wird, werden Sie vorab informiert und eine Freigabe eingeholt.\n\nKRS Immobilien GmbH\nWesterwaldstr. 146, 53773 Hennef`;
+  }
+
   const modeLabel = mode === 'performance' ? 'Performance' : 'Rocket Performance';
   const selectedModules = OFFER_MODULES.filter(m => selectedModuleIds.includes(m.id));
 
@@ -139,7 +143,7 @@ export function generateServiceDescription(mode: OfferMode, selectedModuleIds: s
     text += `${i + 1}. ${mod.label}\n`;
     text += `   ${mod.description}\n`;
     text += `   Deliverables:\n`;
-    mod.deliverables[mode].forEach(d => {
+    mod.deliverables[mode as 'performance' | 'rocket_performance'].forEach(d => {
       text += `   • ${d}\n`;
     });
     text += '\n';
@@ -150,3 +154,20 @@ export function generateServiceDescription(mode: OfferMode, selectedModuleIds: s
 
   return text;
 }
+
+// =============================================
+// VARIABLE OFFER AGB ADDENDUM
+// =============================================
+
+export const VARIABLE_OFFER_AGB_ADDENDUM = `
+§ 11 Besondere Bestimmungen für variable Angebote (Kostenvoranschläge)
+
+(1) Bei variablen Angeboten handelt es sich um Kostenvoranschläge im Sinne des § 632 Abs. 2 BGB. Die angegebenen Kosten sind geschätzte Werte und können je nach tatsächlichem Aufwand abweichen.
+
+(2) Sollte sich während der Leistungserbringung abzeichnen, dass die geschätzten Kosten um mehr als 15% überschritten werden, wird der Anbieter den Kunden unverzüglich informieren und eine Freigabe für die Mehrkosten einholen.
+
+(3) Ohne ausdrückliche Freigabe des Kunden werden keine Mehrkosten über 15% der ursprünglichen Schätzung berechnet.
+
+(4) Der Kunde kann den Auftrag jederzeit kündigen. In diesem Fall sind die bis dahin erbrachten Leistungen zu vergüten.
+
+(5) Der Fortschritt der Leistungserbringung wird dokumentiert und dem Kunden im Portal zugänglich gemacht.`;

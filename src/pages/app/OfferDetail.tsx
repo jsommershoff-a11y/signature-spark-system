@@ -4,21 +4,48 @@ import { useAuth } from '@/contexts/AuthContext';
 import { OfferPreview } from '@/components/offers/OfferPreview';
 import { OfferStatusBadge } from '@/components/offers/OfferStatusBadge';
 import { PaymentUnlockButton } from '@/components/offers/PaymentUnlockButton';
+import { PainPointRadar } from '@/components/offers/PainPointRadar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Check, Send, Copy, ExternalLink, User } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import {
+  ArrowLeft, Check, Send, Copy, ExternalLink, User,
+  FileText, Eye, CreditCard, CheckCircle2, Clock, PenLine,
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { OfferStatus } from '@/types/offers';
+import { cn } from '@/lib/utils';
+
+// =============================================
+// Workflow Steps
+// =============================================
+
+const WORKFLOW_STEPS: { status: OfferStatus; label: string; icon: React.ReactNode }[] = [
+  { status: 'draft', label: 'Entwurf', icon: <FileText className="h-4 w-4" /> },
+  { status: 'pending_review', label: 'Prüfung', icon: <Clock className="h-4 w-4" /> },
+  { status: 'approved', label: 'Genehmigt', icon: <Check className="h-4 w-4" /> },
+  { status: 'sent', label: 'Gesendet', icon: <Send className="h-4 w-4" /> },
+  { status: 'viewed', label: 'Angesehen', icon: <Eye className="h-4 w-4" /> },
+  { status: 'accepted', label: 'Angenommen', icon: <CheckCircle2 className="h-4 w-4" /> },
+  { status: 'paid', label: 'Bezahlt', icon: <CreditCard className="h-4 w-4" /> },
+];
+
+function getStepIndex(status: OfferStatus): number {
+  const idx = WORKFLOW_STEPS.findIndex(s => s.status === status);
+  return idx >= 0 ? idx : 0;
+}
 
 export default function OfferDetail() {
   const { offerId } = useParams<{ offerId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { hasMinRole } = useAuth();
-  const { offers, isLoading, approveOffer, sendOffer, unlockPayment } = useOffers();
+  const { offers, isLoading, approveOffer, sendOffer, unlockPayment, submitForReview } = useOffers();
 
   const offer = offers.find((o) => o.id === offerId);
 
+  const canSubmitForReview = hasMinRole('mitarbeiter');
   const canApprove = hasMinRole('teamleiter');
   const canSend = hasMinRole('mitarbeiter');
   const canUnlockPayment = hasMinRole('teamleiter');
@@ -62,6 +89,9 @@ export default function OfferDetail() {
     );
   }
 
+  const currentStepIndex = getStepIndex(offer.status);
+  const offerJson = offer.offer_json;
+
   return (
     <div className="space-y-6">
       {/* Back + Header */}
@@ -72,7 +102,7 @@ export default function OfferDetail() {
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight">
-              {offer.offer_json?.title || 'Angebot'}
+              {offerJson?.title || 'Angebot'}
             </h1>
             <OfferStatusBadge status={offer.status} />
           </div>
@@ -85,8 +115,57 @@ export default function OfferDetail() {
         </div>
       </div>
 
+      {/* Workflow Status Bar */}
+      <Card>
+        <CardContent className="py-4">
+          <div className="flex items-center gap-1">
+            {WORKFLOW_STEPS.map((ws, i) => {
+              const isCompleted = i < currentStepIndex;
+              const isCurrent = i === currentStepIndex;
+              const isExpired = offer.status === 'expired';
+
+              return (
+                <div key={ws.status} className="flex items-center gap-1 flex-1">
+                  <div className={cn(
+                    'flex items-center justify-center h-8 w-8 rounded-full shrink-0 transition-colors',
+                    isCompleted
+                      ? 'bg-primary text-primary-foreground'
+                      : isCurrent && !isExpired
+                        ? 'bg-primary text-primary-foreground ring-2 ring-primary/30'
+                        : 'bg-muted text-muted-foreground'
+                  )}>
+                    {isCompleted ? <Check className="h-4 w-4" /> : ws.icon}
+                  </div>
+                  <span className={cn(
+                    'text-xs truncate hidden lg:block',
+                    isCurrent ? 'font-semibold' : 'text-muted-foreground'
+                  )}>
+                    {ws.label}
+                  </span>
+                  {i < WORKFLOW_STEPS.length - 1 && (
+                    <div className={cn(
+                      'h-px flex-1 ml-1',
+                      isCompleted ? 'bg-primary' : 'bg-border'
+                    )} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Action Bar */}
       <div className="flex flex-wrap gap-3">
+        {/* Submit for review */}
+        {canSubmitForReview && offer.status === 'draft' && (
+          <Button onClick={() => submitForReview(offer.id)}>
+            <Clock className="h-4 w-4 mr-2" />
+            Zur Prüfung einreichen
+          </Button>
+        )}
+
+        {/* Approve */}
         {canApprove && offer.status === 'pending_review' && (
           <Button onClick={() => approveOffer(offer.id)}>
             <Check className="h-4 w-4 mr-2" />
@@ -94,6 +173,7 @@ export default function OfferDetail() {
           </Button>
         )}
 
+        {/* Send */}
         {canSend && offer.status === 'approved' && (
           <Button onClick={() => sendOffer(offer.id)}>
             <Send className="h-4 w-4 mr-2" />
@@ -101,13 +181,15 @@ export default function OfferDetail() {
           </Button>
         )}
 
-        {canUnlockPayment && (offer.status === 'sent' || offer.status === 'viewed') && (
+        {/* Unlock payment — only after accepted */}
+        {canUnlockPayment && offer.status === 'accepted' && (
           <PaymentUnlockButton
             isUnlocked={offer.payment_unlocked}
             onUnlock={async () => { await unlockPayment(offer.id); }}
           />
         )}
 
+        {/* Public link actions */}
         {publicUrl && (
           <>
             <Button variant="outline" onClick={copyPublicLink}>
@@ -133,8 +215,57 @@ export default function OfferDetail() {
         )}
       </div>
 
+      {/* Pain-Point Radar (if discovery data exists) */}
+      {offerJson?.discovery_data && (
+        <PainPointRadar
+          discoveryData={offerJson.discovery_data}
+          selectedModules={offerJson.selected_modules}
+          offerMode={offerJson.offer_mode}
+        />
+      )}
+
       {/* Offer Preview */}
-      {offer.offer_json && <OfferPreview content={offer.offer_json} />}
+      {offerJson && <OfferPreview content={offerJson} />}
+
+      {/* Contract Details (if accepted/signed) */}
+      {offerJson?.contract_accepted && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <PenLine className="h-4 w-4" />
+              Vertragsdetails
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Unterzeichnet von</p>
+                <p className="font-medium">{offerJson.signer_name || '—'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Unterzeichnet am</p>
+                <p className="font-medium">
+                  {offerJson.contract_accepted_at
+                    ? new Date(offerJson.contract_accepted_at).toLocaleString('de-DE')
+                    : '—'}
+                </p>
+              </div>
+            </div>
+            {offerJson.signature_data && (
+              <div>
+                <p className="text-muted-foreground text-sm mb-2">Unterschrift</p>
+                <div className="bg-muted/50 rounded-lg p-4 inline-block">
+                  <img
+                    src={offerJson.signature_data}
+                    alt="Unterschrift"
+                    className="max-h-20"
+                  />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Notes */}
       {offer.notes && (

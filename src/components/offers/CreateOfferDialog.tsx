@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOffers } from '@/hooks/useOffers';
 import { calculateOfferTotals, formatCents, formatEuro } from '@/types/offers';
-import type { OfferLineItem, OfferContent, DiscoveryData, OfferMode } from '@/types/offers';
+import type { OfferLineItem, OfferContent, DiscoveryData, OfferMode, VariableOfferData } from '@/types/offers';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
@@ -27,7 +27,7 @@ import {
   validateOfferPrice, validateModuleSelection, checkModuleDependencies,
   PROGRAM_MIN_PRICES, PROGRAM_LABELS, generateIntroText,
 } from '@/lib/offer-modules';
-import { generateServiceDescription, DEFAULT_AGB, DEFAULT_WITHDRAWAL_POLICY } from '@/lib/legal-templates';
+import { generateServiceDescription, DEFAULT_AGB, DEFAULT_WITHDRAWAL_POLICY, VARIABLE_OFFER_AGB_ADDENDUM } from '@/lib/legal-templates';
 
 // =============================================
 // Types
@@ -53,14 +53,6 @@ interface CreateOfferDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const STEPS = [
-  'Bedarfsermittlung',
-  'Programmauswahl',
-  'Bausteine & Positionen',
-  'Zahlung',
-  'Zusammenfassung',
-] as const;
-
 // =============================================
 // Component
 // =============================================
@@ -79,7 +71,7 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
   const [offerMode, setOfferMode] = useState<OfferMode>('performance');
   const [durationMonths, setDurationMonths] = useState(6);
 
-  // Step 2: Modules + Line Items
+  // Step 2: Modules + Line Items (standard) OR Variable data
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [lineItems, setLineItems] = useState<LineItemInput[]>([
     { name: '', description: '', quantity: 1, unit_price_euro: 0 },
@@ -88,16 +80,37 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
   const [discountReason, setDiscountReason] = useState('');
   const [taxRate, setTaxRate] = useState(19);
 
+  // Variable offer fields
+  const [expectedService, setExpectedService] = useState('');
+  const [estimatedCompletion, setEstimatedCompletion] = useState('');
+  const [estimatedCostEuro, setEstimatedCostEuro] = useState(0);
+  const [additionalCostNote, setAdditionalCostNote] = useState(
+    'Sollte sich während der Umsetzung herausstellen, dass der geschätzte Aufwand überschritten wird, werden Sie vorab informiert und eine Freigabe eingeholt. Ohne Ihre Zustimmung entstehen keine Mehrkosten über 15% der ursprünglichen Schätzung.'
+  );
+
   // Step 3: Payment
   const [paymentType, setPaymentType] = useState<'one_time' | 'installments'>('one_time');
   const [installments, setInstallments] = useState(3);
   const [paymentProvider, setPaymentProvider] = useState<'stripe' | 'copecart'>('stripe');
 
-  // Step 4: Notes
+  // Notes
   const [notes, setNotes] = useState('');
 
   // Validation
   const [priceError, setPriceError] = useState('');
+
+  const isVariable = offerMode === 'variable';
+
+  // Dynamic steps based on mode
+  const getSteps = () => {
+    if (isVariable) {
+      return ['Programmauswahl', 'Leistung & Kosten', 'Zahlung', 'Zusammenfassung'] as const;
+    }
+    return ['Bedarfsermittlung', 'Programmauswahl', 'Bausteine & Positionen', 'Zahlung', 'Zusammenfassung'] as const;
+  };
+
+  const STEPS = getSteps();
+  const maxStep = STEPS.length - 1;
 
   // ---- Load leads ----
   useEffect(() => {
@@ -130,15 +143,27 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
       setPaymentProvider('stripe');
       setNotes('');
       setPriceError('');
+      setExpectedService('');
+      setEstimatedCompletion('');
+      setEstimatedCostEuro(0);
+      setAdditionalCostNote(
+        'Sollte sich während der Umsetzung herausstellen, dass der geschätzte Aufwand überschritten wird, werden Sie vorab informiert und eine Freigabe eingeholt. Ohne Ihre Zustimmung entstehen keine Mehrkosten über 15% der ursprünglichen Schätzung.'
+      );
     }
   }, [open]);
 
   // ---- Init required modules when mode changes ----
   useEffect(() => {
-    setSelectedModules(REQUIRED_MODULES[offerMode]);
+    if (!isVariable) {
+      setSelectedModules(REQUIRED_MODULES[offerMode]);
+    }
+    // Reset step when switching modes
+    if (isVariable && step > 0) {
+      setStep(0);
+    }
   }, [offerMode]);
 
-  // ---- Computed totals ----
+  // ---- Computed totals (standard mode) ----
   const computedLineItems: OfferLineItem[] = lineItems.map(item => ({
     name: item.name,
     description: item.description || undefined,
@@ -148,15 +173,21 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
   }));
 
   const discountCents = Math.round(discountEuro * 100);
-  const totals = calculateOfferTotals(computedLineItems, discountCents, taxRate);
+  const totals = isVariable
+    ? { subtotal: Math.round(estimatedCostEuro * 100), tax: Math.round(estimatedCostEuro * 100 * taxRate / 100), total: Math.round(estimatedCostEuro * 100 * (1 + taxRate / 100)) }
+    : calculateOfferTotals(computedLineItems, discountCents, taxRate);
   const minPrice = PROGRAM_MIN_PRICES[offerMode];
   const minPriceEuro = minPrice / 100;
 
   // ---- Validate price ----
   useEffect(() => {
+    if (isVariable) {
+      setPriceError('');
+      return;
+    }
     const validation = validateOfferPrice(offerMode, totals.total);
     setPriceError(validation.valid ? '' : validation.message || '');
-  }, [totals.total, offerMode]);
+  }, [totals.total, offerMode, isVariable]);
 
   // ---- Helpers ----
   const selectedLead = leads.find(l => l.id === selectedLeadId);
@@ -170,16 +201,22 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
 
   const toggleModule = (moduleId: string) => {
     const required = REQUIRED_MODULES[offerMode];
-    if (required.includes(moduleId)) return; // Can't deselect required
-
+    if (required.includes(moduleId)) return;
     setSelectedModules(prev =>
-      prev.includes(moduleId)
-        ? prev.filter(id => id !== moduleId)
-        : [...prev, moduleId]
+      prev.includes(moduleId) ? prev.filter(id => id !== moduleId) : [...prev, moduleId]
     );
   };
 
   const canProceed = (): boolean => {
+    if (isVariable) {
+      switch (step) {
+        case 0: return !!selectedLeadId && !!offerMode;
+        case 1: return !!expectedService && estimatedCostEuro > 0;
+        case 2: return true;
+        case 3: return true;
+        default: return true;
+      }
+    }
     switch (step) {
       case 0: return !!selectedLeadId;
       case 1: return !!offerMode;
@@ -196,8 +233,51 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
       ? `${selectedLead.first_name} ${selectedLead.last_name || ''}`.trim()
       : '';
 
-    const serviceDesc = generateServiceDescription(offerMode, selectedModules);
+    if (isVariable) {
+      const variableData: VariableOfferData = {
+        expected_service: expectedService,
+        estimated_completion: estimatedCompletion,
+        estimated_cost_cents: Math.round(estimatedCostEuro * 100),
+        additional_cost_note: additionalCostNote,
+        progress_percent: 0,
+        progress_updates: [],
+      };
 
+      const defaultDate = new Date();
+      defaultDate.setDate(defaultDate.getDate() + 14);
+
+      return {
+        title: 'Variables Angebot',
+        subtitle: expectedService.substring(0, 60),
+        valid_until: defaultDate.toISOString().split('T')[0],
+        offer_mode: 'variable',
+        customer: {
+          name: customerName,
+          company: selectedLead?.company || undefined,
+          email: selectedLead?.email || '',
+        },
+        intro_text: generateIntroText('variable', customerName),
+        line_items: [{
+          name: expectedService.substring(0, 80),
+          description: expectedService,
+          quantity: 1,
+          unit_price_cents: Math.round(estimatedCostEuro * 100),
+          total_cents: Math.round(estimatedCostEuro * 100),
+        }],
+        subtotal_cents: Math.round(estimatedCostEuro * 100),
+        tax_rate: taxRate,
+        tax_cents: Math.round(estimatedCostEuro * 100 * taxRate / 100),
+        total_cents: Math.round(estimatedCostEuro * 100 * (1 + taxRate / 100)),
+        payment_terms: { type: paymentType, installments: paymentType === 'installments' ? installments : undefined },
+        payment_provider_choice: paymentProvider,
+        service_description: generateServiceDescription('variable', []),
+        terms_and_conditions: DEFAULT_AGB + VARIABLE_OFFER_AGB_ADDENDUM,
+        withdrawal_policy: DEFAULT_WITHDRAWAL_POLICY,
+        variable_offer_data: variableData,
+      };
+    }
+
+    const serviceDesc = generateServiceDescription(offerMode, selectedModules);
     const defaultDate = new Date();
     defaultDate.setDate(defaultDate.getDate() + 30);
 
@@ -234,12 +314,14 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
   }, [
     selectedLead, offerMode, durationMonths, selectedModules, computedLineItems,
     totals, discountCents, discountReason, taxRate, paymentType, installments,
-    paymentProvider, discoveryData,
+    paymentProvider, discoveryData, isVariable, expectedService, estimatedCompletion,
+    estimatedCostEuro, additionalCostNote,
   ]);
 
   // ---- Submit ----
   const handleSubmit = async () => {
-    if (priceError || !selectedLeadId) return;
+    if (!isVariable && priceError) return;
+    if (!selectedLeadId) return;
 
     await createOffer({
       lead_id: selectedLeadId,
@@ -251,10 +333,10 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
   };
 
   // =============================================
-  // RENDER STEPS
+  // RENDER: Lead + Program selection (shared first step for variable)
   // =============================================
 
-  const renderStep0 = () => (
+  const renderLeadAndProgramStep = () => (
     <div className="space-y-6">
       {/* Lead Selection */}
       <div className="space-y-2">
@@ -284,7 +366,83 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
 
       <Separator />
 
-      {/* Pain Point Discovery (optional) */}
+      <div>
+        <h3 className="text-sm font-medium mb-3">Programmauswahl</h3>
+        <div className="grid grid-cols-3 gap-3">
+          <ProgramThumbnail
+            mode="performance"
+            selected={offerMode === 'performance'}
+            onSelect={() => setOfferMode('performance')}
+          />
+          <ProgramThumbnail
+            mode="rocket_performance"
+            selected={offerMode === 'rocket_performance'}
+            onSelect={() => setOfferMode('rocket_performance')}
+          />
+          <ProgramThumbnail
+            mode="variable"
+            selected={offerMode === 'variable'}
+            onSelect={() => setOfferMode('variable')}
+          />
+        </div>
+      </div>
+
+      {!isVariable && (
+        <>
+          <div className="space-y-2">
+            <Label>Laufzeit (Monate)</Label>
+            <Select value={String(durationMonths)} onValueChange={v => setDurationMonths(Number(v))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">3 Monate</SelectItem>
+                <SelectItem value="6">6 Monate</SelectItem>
+                <SelectItem value="9">9 Monate</SelectItem>
+                <SelectItem value="12">12 Monate</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Mindestpreis: <span className="font-medium">{formatEuro(minPriceEuro)}</span> netto
+          </p>
+        </>
+      )}
+    </div>
+  );
+
+  // =============================================
+  // RENDER: Standard steps
+  // =============================================
+
+  const renderStandardStep0 = () => (
+    <div className="space-y-6">
+      {/* Lead Selection */}
+      <div className="space-y-2">
+        <Label>Lead auswählen *</Label>
+        <Select onValueChange={setSelectedLeadId} value={selectedLeadId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Lead auswählen..." />
+          </SelectTrigger>
+          <SelectContent>
+            <div className="p-2">
+              <Input
+                placeholder="Suchen..."
+                value={leadSearch}
+                onChange={e => setLeadSearch(e.target.value)}
+                className="mb-2"
+              />
+            </div>
+            {filteredLeads.map(lead => (
+              <SelectItem key={lead.id} value={lead.id}>
+                {lead.first_name} {lead.last_name || ''}{' '}
+                {lead.company ? `(${lead.company})` : ''}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Separator />
+
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-medium">Bedarfsermittlung</h3>
@@ -298,51 +456,42 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
     </div>
   );
 
-  const renderStep1 = () => (
+  const renderStandardStep1 = () => (
     <div className="space-y-6">
       <div>
         <h3 className="text-sm font-medium mb-3">Programmauswahl</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <ProgramThumbnail
-            mode="performance"
-            selected={offerMode === 'performance'}
-            onSelect={() => setOfferMode('performance')}
-          />
-          <ProgramThumbnail
-            mode="rocket_performance"
-            selected={offerMode === 'rocket_performance'}
-            onSelect={() => setOfferMode('rocket_performance')}
-          />
+        <div className="grid grid-cols-3 gap-3">
+          <ProgramThumbnail mode="performance" selected={offerMode === 'performance'} onSelect={() => setOfferMode('performance')} />
+          <ProgramThumbnail mode="rocket_performance" selected={offerMode === 'rocket_performance'} onSelect={() => setOfferMode('rocket_performance')} />
+          <ProgramThumbnail mode="variable" selected={offerMode === 'variable'} onSelect={() => setOfferMode('variable')} />
         </div>
       </div>
-
-      <div className="space-y-2">
-        <Label>Laufzeit (Monate)</Label>
-        <Select value={String(durationMonths)} onValueChange={v => setDurationMonths(Number(v))}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="3">3 Monate</SelectItem>
-            <SelectItem value="6">6 Monate</SelectItem>
-            <SelectItem value="9">9 Monate</SelectItem>
-            <SelectItem value="12">12 Monate</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <p className="text-sm text-muted-foreground">
-        Mindestpreis: <span className="font-medium">{formatEuro(minPriceEuro)}</span> netto
-      </p>
+      {!isVariable && (
+        <>
+          <div className="space-y-2">
+            <Label>Laufzeit (Monate)</Label>
+            <Select value={String(durationMonths)} onValueChange={v => setDurationMonths(Number(v))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">3 Monate</SelectItem>
+                <SelectItem value="6">6 Monate</SelectItem>
+                <SelectItem value="9">9 Monate</SelectItem>
+                <SelectItem value="12">12 Monate</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Mindestpreis: <span className="font-medium">{formatEuro(minPriceEuro)}</span> netto
+          </p>
+        </>
+      )}
     </div>
   );
 
-  const renderStep2 = () => {
+  const renderStandardStep2 = () => {
     const requiredModules = REQUIRED_MODULES[offerMode];
-
     return (
       <div className="space-y-6">
-        {/* Module Selection */}
         <div>
           <h3 className="text-sm font-medium mb-3">Bausteine</h3>
           <div className="grid grid-cols-2 gap-2">
@@ -351,32 +500,16 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
               const isSelected = selectedModules.includes(mod.id);
               const deps = checkModuleDependencies(mod.id, selectedModules);
               const isDisabled = isRequired || !deps.satisfied;
-
               return (
-                <div
-                  key={mod.id}
-                  className={`flex items-start gap-2 p-3 rounded-lg border text-sm ${
-                    isSelected ? 'border-primary/50 bg-primary/5' : 'border-border'
-                  }`}
-                >
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => toggleModule(mod.id)}
-                    disabled={isDisabled}
-                  />
+                <div key={mod.id} className={`flex items-start gap-2 p-3 rounded-lg border text-sm ${isSelected ? 'border-primary/50 bg-primary/5' : 'border-border'}`}>
+                  <Checkbox checked={isSelected} onCheckedChange={() => toggleModule(mod.id)} disabled={isDisabled} />
                   <div className="min-w-0">
                     <p className="font-medium leading-tight">
                       {mod.label}
-                      {isRequired && (
-                        <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">Pflicht</Badge>
-                      )}
+                      {isRequired && <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">Pflicht</Badge>}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">{mod.description}</p>
-                    {!deps.satisfied && (
-                      <p className="text-xs text-destructive mt-0.5">
-                        Benötigt: {deps.requires.join(', ')}
-                      </p>
-                    )}
+                    {!deps.satisfied && <p className="text-xs text-destructive mt-0.5">Benötigt: {deps.requires.join(', ')}</p>}
                   </div>
                 </div>
               );
@@ -386,82 +519,31 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
 
         <Separator />
 
-        {/* Line Items (Euro input) */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium">Positionen</h3>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setLineItems(prev => [...prev, { name: '', description: '', quantity: 1, unit_price_euro: 0 }])
-              }
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Position
+            <Button type="button" variant="outline" size="sm" onClick={() => setLineItems(prev => [...prev, { name: '', description: '', quantity: 1, unit_price_euro: 0 }])}>
+              <Plus className="h-4 w-4 mr-1" /> Position
             </Button>
           </div>
-
           <div className="space-y-3">
             {lineItems.map((item, index) => (
               <div key={index} className="border rounded-lg p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Position {index + 1}</span>
                   {lineItems.length > 1 && (
-                    <Button
-                      type="button" variant="ghost" size="icon" className="h-6 w-6"
-                      onClick={() => setLineItems(prev => prev.filter((_, i) => i !== index))}
-                    >
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => setLineItems(prev => prev.filter((_, i) => i !== index))}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   )}
                 </div>
-                <Input
-                  placeholder="Bezeichnung"
-                  value={item.name}
-                  onChange={e => {
-                    const updated = [...lineItems];
-                    updated[index] = { ...updated[index], name: e.target.value };
-                    setLineItems(updated);
-                  }}
-                />
-                <Input
-                  placeholder="Beschreibung (optional)"
-                  value={item.description}
-                  onChange={e => {
-                    const updated = [...lineItems];
-                    updated[index] = { ...updated[index], description: e.target.value };
-                    setLineItems(updated);
-                  }}
-                />
+                <Input placeholder="Bezeichnung" value={item.name} onChange={e => { const u = [...lineItems]; u[index] = { ...u[index], name: e.target.value }; setLineItems(u); }} />
+                <Input placeholder="Beschreibung (optional)" value={item.description} onChange={e => { const u = [...lineItems]; u[index] = { ...u[index], description: e.target.value }; setLineItems(u); }} />
                 <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-xs">Menge</Label>
-                    <Input
-                      type="number" min={1} value={item.quantity}
-                      onChange={e => {
-                        const updated = [...lineItems];
-                        updated[index] = { ...updated[index], quantity: Number(e.target.value) || 1 };
-                        setLineItems(updated);
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Einzelpreis (€)</Label>
-                    <Input
-                      type="number" min={0} step="0.01" value={item.unit_price_euro}
-                      onChange={e => {
-                        const updated = [...lineItems];
-                        updated[index] = { ...updated[index], unit_price_euro: Number(e.target.value) || 0 };
-                        setLineItems(updated);
-                      }}
-                    />
-                  </div>
+                  <div><Label className="text-xs">Menge</Label><Input type="number" min={1} value={item.quantity} onChange={e => { const u = [...lineItems]; u[index] = { ...u[index], quantity: Number(e.target.value) || 1 }; setLineItems(u); }} /></div>
+                  <div><Label className="text-xs">Einzelpreis (€)</Label><Input type="number" min={0} step="0.01" value={item.unit_price_euro} onChange={e => { const u = [...lineItems]; u[index] = { ...u[index], unit_price_euro: Number(e.target.value) || 0 }; setLineItems(u); }} /></div>
                 </div>
-                <p className="text-xs text-muted-foreground text-right">
-                  Gesamt: {formatEuro(item.quantity * item.unit_price_euro)}
-                </p>
+                <p className="text-xs text-muted-foreground text-right">Gesamt: {formatEuro(item.quantity * item.unit_price_euro)}</p>
               </div>
             ))}
           </div>
@@ -469,79 +551,119 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
 
         <Separator />
 
-        {/* Discount + Tax */}
         <div className="grid grid-cols-3 gap-3">
-          <div>
-            <Label className="text-xs">Rabatt (€)</Label>
-            <Input type="number" min={0} step="0.01" value={discountEuro}
-              onChange={e => setDiscountEuro(Number(e.target.value) || 0)} />
-          </div>
-          <div>
-            <Label className="text-xs">Rabattgrund</Label>
-            <Input placeholder="z.B. Frühbucher" value={discountReason}
-              onChange={e => setDiscountReason(e.target.value)} />
-          </div>
-          <div>
-            <Label className="text-xs">MwSt (%)</Label>
-            <Input type="number" min={0} max={100} value={taxRate}
-              onChange={e => setTaxRate(Number(e.target.value) || 19)} />
-          </div>
+          <div><Label className="text-xs">Rabatt (€)</Label><Input type="number" min={0} step="0.01" value={discountEuro} onChange={e => setDiscountEuro(Number(e.target.value) || 0)} /></div>
+          <div><Label className="text-xs">Rabattgrund</Label><Input placeholder="z.B. Frühbucher" value={discountReason} onChange={e => setDiscountReason(e.target.value)} /></div>
+          <div><Label className="text-xs">MwSt (%)</Label><Input type="number" min={0} max={100} value={taxRate} onChange={e => setTaxRate(Number(e.target.value) || 19)} /></div>
         </div>
 
-        {/* Totals */}
         <div className="bg-muted/50 rounded-lg p-4 space-y-1 text-sm">
-          <div className="flex justify-between">
-            <span>Zwischensumme:</span>
-            <span>{formatCents(totals.subtotal)}</span>
-          </div>
-          {discountCents > 0 && (
-            <div className="flex justify-between text-primary">
-              <span>Rabatt:</span>
-              <span>-{formatCents(discountCents)}</span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span>MwSt ({taxRate}%):</span>
-            <span>{formatCents(totals.tax)}</span>
-          </div>
+          <div className="flex justify-between"><span>Zwischensumme:</span><span>{formatCents(totals.subtotal)}</span></div>
+          {discountCents > 0 && <div className="flex justify-between text-primary"><span>Rabatt:</span><span>-{formatCents(discountCents)}</span></div>}
+          <div className="flex justify-between"><span>MwSt ({taxRate}%):</span><span>{formatCents(totals.tax)}</span></div>
           <Separator className="my-2" />
-          <div className="flex justify-between font-bold">
-            <span>Gesamt:</span>
-            <span>{formatCents(totals.total)}</span>
-          </div>
-          {priceError && (
-            <div className="flex items-center gap-2 text-destructive mt-2">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-xs">{priceError}</span>
-            </div>
-          )}
+          <div className="flex justify-between font-bold"><span>Gesamt:</span><span>{formatCents(totals.total)}</span></div>
+          {priceError && <div className="flex items-center gap-2 text-destructive mt-2"><AlertCircle className="h-4 w-4" /><span className="text-xs">{priceError}</span></div>}
         </div>
       </div>
     );
   };
 
-  const renderStep3 = () => (
+  // =============================================
+  // RENDER: Variable-specific step
+  // =============================================
+
+  const renderVariableServiceStep = () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label>Erwartete Leistung *</Label>
+        <Textarea
+          placeholder="Beschreiben Sie die zu erbringende Leistung..."
+          rows={4}
+          value={expectedService}
+          onChange={e => setExpectedService(e.target.value)}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Voraussichtlicher Fertigstellungszeitpunkt</Label>
+        <Input
+          placeholder="z.B. 2 Wochen nach Auftragserteilung"
+          value={estimatedCompletion}
+          onChange={e => setEstimatedCompletion(e.target.value)}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Geschätzte Kosten (€ netto) *</Label>
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            value={estimatedCostEuro}
+            onChange={e => setEstimatedCostEuro(Number(e.target.value) || 0)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>MwSt (%)</Label>
+          <Input
+            type="number"
+            min={0}
+            max={100}
+            value={taxRate}
+            onChange={e => setTaxRate(Number(e.target.value) || 19)}
+          />
+        </div>
+      </div>
+
+      {estimatedCostEuro > 0 && (
+        <div className="bg-muted/50 rounded-lg p-4 space-y-1 text-sm">
+          <div className="flex justify-between"><span>Netto:</span><span>{formatEuro(estimatedCostEuro)}</span></div>
+          <div className="flex justify-between"><span>MwSt ({taxRate}%):</span><span>{formatEuro(estimatedCostEuro * taxRate / 100)}</span></div>
+          <Separator className="my-2" />
+          <div className="flex justify-between font-bold"><span>Brutto:</span><span>{formatEuro(estimatedCostEuro * (1 + taxRate / 100))}</span></div>
+        </div>
+      )}
+
+      <Separator />
+
+      <div className="space-y-2">
+        <Label>Hinweis auf Mehrkosten</Label>
+        <Textarea
+          rows={3}
+          value={additionalCostNote}
+          onChange={e => setAdditionalCostNote(e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground">
+          Dieser Hinweis wird dem Kunden im Angebot angezeigt und ist Teil der AGB.
+        </p>
+      </div>
+    </div>
+  );
+
+  // =============================================
+  // RENDER: Payment step (shared)
+  // =============================================
+
+  const renderPaymentStep = () => (
     <div className="space-y-6">
       <div className="space-y-2">
         <Label>Zahlungsweise</Label>
         <Select value={paymentType} onValueChange={v => setPaymentType(v as 'one_time' | 'installments')}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="one_time">Einmalzahlung</SelectItem>
-            <SelectItem value="installments">Ratenzahlung</SelectItem>
+            {!isVariable && <SelectItem value="installments">Ratenzahlung</SelectItem>}
           </SelectContent>
         </Select>
       </div>
 
-      {paymentType === 'installments' && (
+      {paymentType === 'installments' && !isVariable && (
         <div className="space-y-2">
           <Label>Anzahl Raten</Label>
           <Select value={String(installments)} onValueChange={v => setInstallments(Number(v))}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="3">3 Raten</SelectItem>
               <SelectItem value="6">6 Raten</SelectItem>
@@ -555,9 +677,7 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
       <div className="space-y-2">
         <Label>Zahlungsanbieter</Label>
         <Select value={paymentProvider} onValueChange={v => setPaymentProvider(v as 'stripe' | 'copecart')}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="stripe">Stripe</SelectItem>
             <SelectItem value="copecart">CopeCart</SelectItem>
@@ -569,17 +689,16 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
 
       <div className="space-y-2">
         <Label>Interne Notizen</Label>
-        <Textarea
-          placeholder="Interne Anmerkungen..."
-          rows={3}
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-        />
+        <Textarea placeholder="Interne Anmerkungen..." rows={3} value={notes} onChange={e => setNotes(e.target.value)} />
       </div>
     </div>
   );
 
-  const renderStep4 = () => {
+  // =============================================
+  // RENDER: Summary step (shared)
+  // =============================================
+
+  const renderSummaryStep = () => {
     const content = buildOfferContent() as OfferContent;
     return (
       <div className="space-y-4">
@@ -594,13 +713,27 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
     );
   };
 
+  // =============================================
+  // RENDER: Current step dispatch
+  // =============================================
+
   const renderCurrentStep = () => {
+    if (isVariable) {
+      switch (step) {
+        case 0: return renderLeadAndProgramStep();
+        case 1: return renderVariableServiceStep();
+        case 2: return renderPaymentStep();
+        case 3: return renderSummaryStep();
+        default: return null;
+      }
+    }
+    // Standard flow
     switch (step) {
-      case 0: return renderStep0();
-      case 1: return renderStep1();
-      case 2: return renderStep2();
-      case 3: return renderStep3();
-      case 4: return renderStep4();
+      case 0: return renderStandardStep0();
+      case 1: return renderStandardStep1();
+      case 2: return renderStandardStep2();
+      case 3: return renderPaymentStep();
+      case 4: return renderSummaryStep();
       default: return null;
     }
   };
@@ -610,7 +743,6 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Neues Angebot erstellen</DialogTitle>
-          {/* Progress */}
           <div className="flex items-center gap-1 mt-2">
             {STEPS.map((label, i) => (
               <div key={label} className="flex items-center gap-1 flex-1">
@@ -638,19 +770,15 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
           <div>
             {step > 0 && (
               <Button type="button" variant="outline" onClick={() => setStep(s => s - 1)}>
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Zurück
+                <ChevronLeft className="h-4 w-4 mr-1" /> Zurück
               </Button>
             )}
           </div>
           <div className="flex gap-2">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Abbrechen
-            </Button>
-            {step < STEPS.length - 1 ? (
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+            {step < maxStep ? (
               <Button type="button" onClick={() => setStep(s => s + 1)} disabled={!canProceed()}>
-                Weiter
-                <ChevronRight className="h-4 w-4 ml-1" />
+                Weiter <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
               <Button type="button" onClick={handleSubmit} disabled={isCreating || !!priceError}>

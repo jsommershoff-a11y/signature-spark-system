@@ -1,15 +1,21 @@
 import { useParams, Link } from 'react-router-dom';
 import { usePublicOffer } from '@/hooks/useOffers';
 import { OfferPreview } from '@/components/offers/OfferPreview';
-import { PainPointRadar } from '@/components/offers/PainPointRadar';
+import { ContractAcceptance } from '@/components/offers/ContractAcceptance';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Lock, CreditCard } from 'lucide-react';
+import { AlertCircle, Lock, CreditCard, CheckCircle2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import type { OfferContent } from '@/types/offers';
 
 export default function PublicOffer() {
   const { token } = useParams<{ token: string }>();
   const { data: offer, isLoading, error } = usePublicOffer(token || '');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   if (isLoading) {
     return (
@@ -43,6 +49,44 @@ export default function PublicOffer() {
   }
 
   const isExpired = offer.expires_at && new Date(offer.expires_at) < new Date();
+  const canAccept = (offer.status === 'sent' || offer.status === 'viewed') && !isExpired;
+  const isAccepted = offer.status === 'accepted';
+  const isPaid = offer.status === 'paid';
+
+  const handleAcceptOffer = async (acceptanceData: { signer_name: string; signature_data: string }) => {
+    const updatedJson = {
+      ...(offer.offer_json as unknown as Record<string, unknown>),
+      contract_accepted: true,
+      contract_accepted_at: new Date().toISOString(),
+      signer_name: acceptanceData.signer_name,
+      signature_data: acceptanceData.signature_data,
+    };
+
+    const { error: updateError } = await supabase
+      .from('offers')
+      .update({
+        status: 'accepted' as any,
+        offer_json: updatedJson,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', offer.id);
+
+    if (updateError) {
+      toast({
+        title: 'Fehler',
+        description: 'Das Angebot konnte nicht angenommen werden. Bitte versuchen Sie es erneut.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Vertrag angenommen',
+      description: 'Vielen Dank! Ihr Vertrag wurde erfolgreich angenommen.',
+    });
+
+    queryClient.invalidateQueries({ queryKey: ['public-offer', token] });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,11 +94,9 @@ export default function PublicOffer() {
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold mb-2">Ihr persönliches Angebot</h1>
-          {offer.viewed_at && (
-            <p className="text-sm text-muted-foreground">
-              Erstellt für {offer.lead?.first_name} {offer.lead?.last_name}
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground">
+            Erstellt für {offer.lead?.first_name} {offer.lead?.last_name}
+          </p>
         </div>
 
         {/* Expired Notice */}
@@ -72,55 +114,70 @@ export default function PublicOffer() {
           </Card>
         )}
 
+        {/* Accepted confirmation */}
+        {(isAccepted || isPaid) && (
+          <Card className="mb-6 border-primary/30 bg-primary/5">
+            <CardContent className="flex items-center gap-3 py-4">
+              <CheckCircle2 className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-medium">
+                  {isPaid ? 'Vertrag abgeschlossen & bezahlt' : 'Vertrag angenommen'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {isPaid
+                    ? 'Vielen Dank! Ihre Zahlung wurde empfangen.'
+                    : 'Vielen Dank! Unser Team wird sich zeitnah bei Ihnen melden.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Offer Content */}
         <OfferPreview content={offer.offer_json} />
 
-        {/* Standalone Pain-Point Radar for public page (if not already in OfferPreview) */}
+        {/* Contract Acceptance (only for sent/viewed, not expired) */}
+        {canAccept && (
+          <div className="mt-8">
+            <ContractAcceptance offer={offer} onAccept={handleAcceptOffer} />
+          </div>
+        )}
 
-        {/* Payment Section */}
-        <div className="mt-8">
-          {!offer.payment_unlocked ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <Lock className="h-8 w-8 text-muted-foreground mb-3" />
-                <h3 className="font-medium mb-1">Zahlung noch nicht freigeschaltet</h3>
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  Unser Team wird die Zahlung freischalten, sobald alle Details 
-                  besprochen wurden. Bei Fragen kontaktieren Sie uns gerne.
-                </p>
-              </CardContent>
-            </Card>
-          ) : isExpired ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <AlertCircle className="h-8 w-8 text-destructive mb-3" />
-                <h3 className="font-medium mb-1">Angebot abgelaufen</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Kontaktieren Sie uns für ein neues Angebot.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <CreditCard className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-medium mb-3">Bereit zum Starten?</h3>
-                <Button size="lg" className="gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Jetzt bezahlen
-                </Button>
-                <p className="text-xs text-muted-foreground mt-3">
-                  Sichere Zahlung über Stripe
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        {/* Payment Section (after accepted, if payment unlocked) */}
+        {isAccepted && (
+          <div className="mt-8">
+            {!offer.payment_unlocked ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-8">
+                  <Lock className="h-8 w-8 text-muted-foreground mb-3" />
+                  <h3 className="font-medium mb-1">Zahlung wird vorbereitet</h3>
+                  <p className="text-sm text-muted-foreground text-center max-w-md">
+                    Unser Team schaltet die Zahlung in Kürze frei. Sie werden benachrichtigt.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-primary/5 border-primary/20">
+                <CardContent className="flex flex-col items-center justify-center py-8">
+                  <CreditCard className="h-8 w-8 text-primary mb-3" />
+                  <h3 className="font-medium mb-3">Bereit zum Starten?</h3>
+                  <Button size="lg" className="gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Jetzt bezahlen
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Sichere Zahlung über {offer.offer_json?.payment_provider_choice === 'copecart' ? 'CopeCart' : 'Stripe'}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-muted-foreground">
           <p>Bei Fragen erreichen Sie uns unter:</p>
-          <p className="font-medium">support@example.com</p>
+          <p className="font-medium">info@krs-signature.de</p>
         </div>
       </div>
     </div>

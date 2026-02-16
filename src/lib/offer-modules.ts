@@ -7,18 +7,21 @@ import type { OfferMode, CompanyInfo } from '@/types/offers';
 // =============================================
 
 export const PROGRAM_MIN_PRICES: Record<OfferMode, number> = {
-  performance: 300000,        // 3.000 EUR in Cent
-  rocket_performance: 700000, // 7.000 EUR in Cent
+  performance: 300000,
+  rocket_performance: 700000,
+  variable: 0,
 };
 
 export const PROGRAM_LABELS: Record<OfferMode, string> = {
   performance: 'Performance',
   rocket_performance: 'Rocket Performance',
+  variable: 'Variables Angebot',
 };
 
 export const PROGRAM_DESCRIPTIONS: Record<OfferMode, string> = {
   performance: 'Strukturierter Systemaufbau – wir bauen gemeinsam mit Ihnen.',
   rocket_performance: 'Premium-Betreuung – vollständiger Aufbau mit maximaler Unterstützung.',
+  variable: 'Flexibles Kurzangebot für einzelne Aufgaben und Projekte.',
 };
 
 // =============================================
@@ -135,6 +138,7 @@ export const OFFER_MODULES: ModuleDefinition[] = [
 export const REQUIRED_MODULES: Record<OfferMode, string[]> = {
   performance: ['vertriebsstruktur', 'crm_setup', 'followup', 'kpi_dashboard'],
   rocket_performance: ['diagnose', 'vertriebsstruktur', 'crm_setup', 'kpi_dashboard'],
+  variable: [],
 };
 
 export const MODULE_DEPENDENCIES: Record<string, string[]> = {
@@ -182,9 +186,10 @@ export function checkModuleDependencies(moduleId: string, selectedModules: strin
 }
 
 export function getDeliverablesForMode(mode: OfferMode, selectedModules: string[]): string[] {
+  if (mode === 'variable') return [];
   return OFFER_MODULES
     .filter(m => selectedModules.includes(m.id))
-    .flatMap(m => m.deliverables[mode]);
+    .flatMap(m => m.deliverables[mode as 'performance' | 'rocket_performance']);
 }
 
 export function getModuleById(id: string): ModuleDefinition | undefined {
@@ -227,6 +232,9 @@ export const PAIN_POINT_SOLUTION_TEXTS: Record<string, string> = {
 };
 
 export function generateIntroText(mode: OfferMode, customerName: string): string {
+  if (mode === 'variable') {
+    return `Sehr geehrte/r ${customerName},\n\nanbei erhalten Sie unser Angebot für die nachfolgend beschriebene Leistung.`;
+  }
   if (mode === 'performance') {
     return `Sehr geehrte/r ${customerName},\n\nwie besprochen erhalten Sie hier unser Angebot für KRS Signature – Performance. Ein strukturierter Eingriff in Ihr Unternehmen zur Herstellung von Kontrolle, Planbarkeit und Entlastung.`;
   }
