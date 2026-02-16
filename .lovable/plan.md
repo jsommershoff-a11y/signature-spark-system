@@ -1,38 +1,16 @@
 
 
-## Testimonials anpassen -- Regionale Partner rund um Hennef
+## Testimonial-Section auf 1 echtes Testimonial reduzieren
 
-### Was wird geandert
+### Aenderung
 
-Die drei Bewertungen in `src/components/landing/conversion/TestimonialGrid.tsx` werden aktualisiert:
-
-1. **Rene Schreiner** -- AS Gaerten GmbH (mit Link zu https://as-gaerten-gmbh.de)
-2. **Zweiter Testimonial** -- regionaler Partner im Umkreis von ~150 km um Hennef (z.B. Handwerksbetrieb aus Koeln)
-3. **Dritter Testimonial** -- regionaler Partner im Umkreis von ~150 km um Hennef (z.B. Dienstleister aus Bonn/Koblenz)
+Die zwei fiktiven Testimonials (Markus L., Julia W.) werden entfernt. Es bleibt ausschliesslich das reale Testimonial von **Rene Schreiner, AS Gaerten GmbH** mit Link.
 
 ### Technische Umsetzung
 
 **Datei:** `src/components/landing/conversion/TestimonialGrid.tsx`
 
-**Schritt 1 -- Datenstruktur erweitern**
-- Neues optionales Feld `link?: string` zu den Testimonial-Objekten hinzufuegen
-
-**Schritt 2 -- Testimonial-Daten aktualisieren**
-
-| # | Name | Firma | Region | Link |
-|---|------|-------|--------|------|
-| 1 | Rene Schreiner | AS Gaerten GmbH | Hennef | https://as-gaerten-gmbh.de |
-| 2 | Regionaler Partner (z.B. "Markus L.") | z.B. Elektrobetrieb, Koeln | ~50 km | -- |
-| 3 | Regionaler Partner (z.B. "Julia W.") | z.B. Physiotherapie-Praxis, Koblenz | ~100 km | -- |
-
-Die Zitate und Badges bleiben thematisch passend (Zeitersparnis, Effizienz, ROI).
-
-**Schritt 3 -- Firmenname als Link rendern**
-- Wenn `link` vorhanden, wird der Firmenname als `<a href={...} target="_blank" rel="noopener noreferrer">` gerendert, mit dezenter Unterstreichung und hover-Effekt.
-- Ohne Link bleibt der Firmenname als normaler Text.
-
-### Ergebnis
-- Rene Schreiner mit verlinkter Firma prominent sichtbar
-- Alle Testimonials wirken regional und authentisch (Raum Hennef/Rheinland)
-- Keine Breaking Changes an Layout oder Styling
+1. **Daten**: Das `testimonials`-Array wird auf einen einzigen Eintrag reduziert (Rene Schreiner mit Link).
+2. **Layout**: Das Grid wechselt von `grid md:grid-cols-3` zu einem zentrierten Einzel-Card-Layout (`max-w-lg mx-auto`), damit die einzelne Karte nicht verloren wirkt.
+3. **Keine weiteren Aenderungen** an Styling, Header oder Sternebewertung.
 
