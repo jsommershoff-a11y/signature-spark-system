@@ -219,6 +219,21 @@ export function useOffers(leadId?: string) {
         .single();
 
       if (error) throw error;
+
+      // Fire-and-forget email notification
+      supabase.functions
+        .invoke('send-offer-email', { body: { offer_id: offerId } })
+        .then(({ error: emailError }) => {
+          if (emailError) {
+            console.warn('Email sending failed:', emailError);
+            toast({
+              title: 'Hinweis',
+              description: 'Angebot gesendet, aber E-Mail-Benachrichtigung fehlgeschlagen.',
+              variant: 'destructive',
+            });
+          }
+        });
+
       return data;
     },
     onSuccess: () => {

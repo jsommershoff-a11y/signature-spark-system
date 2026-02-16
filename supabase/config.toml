@@ -27,3 +27,6 @@ verify_jwt = false
 [functions.channel_event_ingest]
 verify_jwt = false
 
+[functions.send-offer-email]
+verify_jwt = false
+

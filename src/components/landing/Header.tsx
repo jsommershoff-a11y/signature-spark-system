@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, LogIn, Menu } from "lucide-react";
 import logoSignature from "@/assets/logo-krs-signature.png";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,6 +73,13 @@ export const Header = () => {
                 Analysegespräch sichern
               </Button>
             </Link>
+
+            <Link to="/auth">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <LogIn className="w-4 h-4" />
+                Anmelden
+              </Button>
+            </Link>
           </nav>
 
           {/* Mobile Navigation (unter md) */}
@@ -116,6 +123,16 @@ export const Header = () => {
                   className="py-2 text-lg font-medium hover:text-primary transition-colors"
                 >
                   Qualifizierung
+                </Link>
+
+                {/* Anmelden Link */}
+                <Link
+                  to="/auth"
+                  onClick={() => setIsOpen(false)}
+                  className="py-2 text-lg font-medium hover:text-primary transition-colors flex items-center gap-2"
+                >
+                  <LogIn className="w-5 h-5" />
+                  Anmelden
                 </Link>
 
                 {/* CTA Button */}
