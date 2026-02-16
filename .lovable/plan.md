@@ -1,56 +1,38 @@
 
 
-# Step 41 -- Pricing-Section: 3 Pakete, Value-First Darstellung, VIP mit Schulungs-Fokus
+## Testimonials anpassen -- Regionale Partner rund um Hennef
 
-## Zusammenfassung
+### Was wird geandert
 
-Die Pricing-Section wird von 2 auf 3 Pakete erweitert, Preise werden angepasst, und die Darstellung wird auf "Value-First" umgestellt (erst Wert zeigen, dann Investition). Im VIP-Paket wird statt "unbegrenzte Prozesse" der Fokus auf Befaehigung gelegt: Du bzw. ein Mitarbeiter lernt, die KI-Prozesse selbst zu steuern.
+Die drei Bewertungen in `src/components/landing/conversion/TestimonialGrid.tsx` werden aktualisiert:
 
----
+1. **Rene Schreiner** -- AS Gaerten GmbH (mit Link zu https://as-gaerten-gmbh.de)
+2. **Zweiter Testimonial** -- regionaler Partner im Umkreis von ~150 km um Hennef (z.B. Handwerksbetrieb aus Koeln)
+3. **Dritter Testimonial** -- regionaler Partner im Umkreis von ~150 km um Hennef (z.B. Dienstleister aus Bonn/Koblenz)
 
-## Neue Paketstruktur
+### Technische Umsetzung
 
-| Paket | Investition | Wert | Badge |
-|---|---|---|---|
-| KI-Prozess-Kickstart | 998 EUR | 2.500+ EUR | -- |
-| KI-Komplettpaket | 2.998 EUR | 8.000+ EUR | BELIEBTESTE WAHL |
-| KI-VIP Done-for-You | 9.998 EUR | 25.000+ EUR | MAXIMALER IMPACT |
+**Datei:** `src/components/landing/conversion/TestimonialGrid.tsx`
 
-### VIP-Paket Features (angepasst -- Schulung statt "unbegrenzt")
-- Alles aus dem Komplettpaket
-- Komplettes KI-Setup fuer Ihr Unternehmen
-- Sie oder ein Mitarbeiter werden zum KI-Prozess-Experten ausgebildet
-- Dediziertes Experten-Team an Ihrer Seite
-- 90-Tage intensive 1:1 Betreuung
-- Quartalsweise Strategie-Optimierung
-- Direkter Draht zum Geschaeftsfuehrer
-- Premium-Support mit 4h Reaktionszeit
-- 100% Erfolgs-Garantie
+**Schritt 1 -- Datenstruktur erweitern**
+- Neues optionales Feld `link?: string` zu den Testimonial-Objekten hinzufuegen
 
----
+**Schritt 2 -- Testimonial-Daten aktualisieren**
 
-## Value-First Preisdarstellung (pro Karte)
+| # | Name | Firma | Region | Link |
+|---|------|-------|--------|------|
+| 1 | Rene Schreiner | AS Gaerten GmbH | Hennef | https://as-gaerten-gmbh.de |
+| 2 | Regionaler Partner (z.B. "Markus L.") | z.B. Elektrobetrieb, Koeln | ~50 km | -- |
+| 3 | Regionaler Partner (z.B. "Julia W.") | z.B. Physiotherapie-Praxis, Koblenz | ~100 km | -- |
 
-Jede Karte zeigt:
-1. **Paketname**
-2. **"Gesamtwert der Leistungen:"** z.B. 8.000+ EUR (als Anker)
-3. **"Ihre Investition:"** z.B. 2.998 EUR (hervorgehoben)
-4. **"Sie sparen ueber X EUR"** (Ersparnis explizit benannt)
-5. Feature-Liste
-6. CTA-Button
+Die Zitate und Badges bleiben thematisch passend (Zeitersparnis, Effizienz, ROI).
 
----
+**Schritt 3 -- Firmenname als Link rendern**
+- Wenn `link` vorhanden, wird der Firmenname als `<a href={...} target="_blank" rel="noopener noreferrer">` gerendert, mit dezenter Unterstreichung und hover-Effekt.
+- Ohne Link bleibt der Firmenname als normaler Text.
 
-## Technische Aenderungen
-
-### Datei: `src/components/landing/conversion/PricingSection.tsx`
-
-1. **Datenstruktur**: Felder `valuePrice` und `savings` pro Plan hinzufuegen
-2. **3. Paket**: VIP Done-for-You mit Schulungs-Features einfuegen
-3. **Grid**: Von `md:grid-cols-2` auf `lg:grid-cols-3` aendern, `max-w-4xl` auf `max-w-6xl`
-4. **Preisbereich**: Umbauen auf Value-First-Layout (Wert oben, Investition darunter, Ersparnis-Badge)
-5. **Subtitle**: "Drei Stufen. Ein Ziel: Mehr Effizienz, weniger Aufwand."
-6. **VIP-Button**: Separater Stil (z.B. gold/accent) fuer Premiumwirkung
-
-### Keine weiteren Dateien betroffen
+### Ergebnis
+- Rene Schreiner mit verlinkter Firma prominent sichtbar
+- Alle Testimonials wirken regional und authentisch (Raum Hennef/Rheinland)
+- Keine Breaking Changes an Layout oder Styling
 
