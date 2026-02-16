@@ -4,6 +4,7 @@ const plans = [
   {
     name: "KI-Prozess-Kickstart",
     price: "998",
+    installment: "oder 3× 349 €/Monat",
     valuePrice: "2.500+",
     savings: "1.500",
     badge: null,
@@ -19,6 +20,7 @@ const plans = [
   {
     name: "KI-Komplettpaket",
     price: "2.998",
+    installment: "oder 3× 1.049 €/Monat",
     valuePrice: "8.000+",
     savings: "5.000",
     badge: "BELIEBTESTE WAHL",
@@ -36,6 +38,7 @@ const plans = [
   {
     name: "KI-VIP Done-for-You",
     price: "9.998",
+    installment: "oder 6× 1.749 €/Monat",
     valuePrice: "25.000+",
     savings: "15.000",
     badge: "MAXIMALER IMPACT",
@@ -111,6 +114,7 @@ export const PricingSection = ({ onCtaClick }: { onCtaClick: () => void }) => {
                   <div className="text-4xl font-bold text-foreground">
                     {plan.price} <span className="text-lg">€</span>
                   </div>
+                  <p className="text-sm text-muted-foreground mt-1">{plan.installment}</p>
                 </div>
                 <div className="inline-block bg-primary/10 text-primary text-sm font-semibold px-3 py-1 rounded-full">
                   Sie sparen über {plan.savings} €
