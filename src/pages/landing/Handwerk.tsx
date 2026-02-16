@@ -55,10 +55,10 @@ const Handwerk = () => {
       <Hero
         headline="Volle Auftragsbücher – aber der Betrieb frisst dich auf?"
         problem="Ihr Problem ist nicht Arbeit. Ihr Problem ist fehlende Struktur."
-        solution="KRS Signature baut ein System, das den Betrieb führt – nicht Sie allein."
+        solution="KI-gestützte Prozesse führen den Betrieb – nicht Sie allein."
         subline=""
         badge="Nur für Unternehmer ab 100.000 € Umsatz"
-        ctaText="Kostenloses Analysegespräch sichern"
+        ctaText="Jetzt KI-Potenzial aufdecken"
         onCtaClick={goToQualifizierung}
       />
 
@@ -74,9 +74,9 @@ const Handwerk = () => {
       <StructogramUSPSection />
 
       <FinalCTA
-        headline="Bereit für Struktur statt Chaos?"
-        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie dein Betrieb ohne dich läuft."
-        ctaText="Jetzt Analysegespräch sichern"
+        headline="Bereit für KI-gestützte Effizienz?"
+        subline="Sichere dir jetzt deine kostenlose KI-Potenzialanalyse und erfahre, wie KI deine Betriebsprozesse automatisiert."
+        ctaText="Kostenlose KI-Potenzialanalyse sichern"
         onCtaClick={goToQualifizierung}
       />
     </PublicLayout>

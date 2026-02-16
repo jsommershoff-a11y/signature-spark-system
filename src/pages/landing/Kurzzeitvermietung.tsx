@@ -55,10 +55,10 @@ const Kurzzeitvermietung = () => {
       <Hero
         headline="Mehr Einheiten = mehr Stress?"
         problem="Skalierung ohne Prozesse ist Chaos."
-        solution="Automatisierung ist Voraussetzung – kein Luxus."
+        solution="KI-Automatisierung macht Wachstum möglich."
         subline=""
         badge="Nur für Betreiber ab 100.000 € Umsatz"
-        ctaText="Kostenloses Analysegespräch sichern"
+        ctaText="Jetzt KI-Potenzial aufdecken"
         onCtaClick={goToQualifizierung}
       />
 
@@ -74,9 +74,9 @@ const Kurzzeitvermietung = () => {
       <StructogramUSPSection />
 
       <FinalCTA
-        headline="Bereit für Struktur statt Chaos?"
-        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie dein Vermietungs-Business automatisiert wächst."
-        ctaText="Jetzt Analysegespräch sichern"
+        headline="Bereit für KI-gestützte Effizienz?"
+        subline="Sichere dir jetzt deine kostenlose KI-Potenzialanalyse und erfahre, wie KI dein Vermietungs-Business automatisiert."
+        ctaText="Kostenlose KI-Potenzialanalyse sichern"
         onCtaClick={goToQualifizierung}
       />
     </PublicLayout>
