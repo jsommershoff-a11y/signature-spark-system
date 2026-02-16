@@ -55,10 +55,10 @@ const Dienstleister = () => {
       <Hero
         headline="Wenn Umsatz von Ihnen abhängt, ist es kein Unternehmen."
         problem="Jeder Monat neu. Jeder Abschluss hängt an Ihnen."
-        solution="KRS Signature macht Vertrieb reproduzierbar."
+        solution="KI-Systeme machen Ihre Prozesse reproduzierbar."
         subline=""
         badge="Nur für Unternehmen ab 100.000 € Umsatz"
-        ctaText="Kostenloses Analysegespräch sichern"
+        ctaText="Jetzt KI-Potenzial aufdecken"
         onCtaClick={goToQualifizierung}
       />
 
@@ -74,9 +74,9 @@ const Dienstleister = () => {
       <StructogramUSPSection />
 
       <FinalCTA
-        headline="Bereit für Struktur statt Chaos?"
-        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie dein Vertrieb reproduzierbar wird."
-        ctaText="Jetzt Analysegespräch sichern"
+        headline="Bereit für KI-gestützte Effizienz?"
+        subline="Sichere dir jetzt deine kostenlose KI-Potenzialanalyse und erfahre, wie KI deine Prozesse automatisiert."
+        ctaText="Kostenlose KI-Potenzialanalyse sichern"
         onCtaClick={goToQualifizierung}
       />
     </PublicLayout>

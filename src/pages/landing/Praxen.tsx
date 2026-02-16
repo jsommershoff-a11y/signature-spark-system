@@ -55,10 +55,10 @@ const Praxen = () => {
       <Hero
         headline="Ihre Praxis läuft – aber nicht planbar?"
         problem="Medizinisch stark. Unternehmerisch ungeführt."
-        solution="Mehr Patienten lösen kein Chaos. Systeme schon."
+        solution="KI-Systeme schaffen Struktur, die Sie entlastet."
         subline=""
         badge="Nur für Praxisinhaber ab 100.000 € Umsatz"
-        ctaText="Kostenloses Analysegespräch sichern"
+        ctaText="Jetzt KI-Potenzial aufdecken"
         onCtaClick={goToQualifizierung}
       />
 
@@ -74,9 +74,9 @@ const Praxen = () => {
       <StructogramUSPSection />
 
       <FinalCTA
-        headline="Bereit für Struktur statt Chaos?"
-        subline="Sichere dir jetzt dein kostenloses Analysegespräch und erfahre, wie deine Praxis planbar wird."
-        ctaText="Jetzt Analysegespräch sichern"
+        headline="Bereit für KI-gestützte Effizienz?"
+        subline="Sichere dir jetzt deine kostenlose KI-Potenzialanalyse und erfahre, wie KI deine Praxisprozesse automatisiert."
+        ctaText="Kostenlose KI-Potenzialanalyse sichern"
         onCtaClick={goToQualifizierung}
       />
     </PublicLayout>
