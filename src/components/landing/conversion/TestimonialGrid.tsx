@@ -10,20 +10,6 @@ const testimonials = [
     initials: "RS",
     link: "https://as-gaerten-gmbh.de",
   },
-  {
-    name: "Markus L.",
-    company: "Elektrobetrieb, Köln",
-    quote: "Verwaltungsaufwand halbiert. Mein Team konzentriert sich endlich wieder auf die Kunden.",
-    badge: "-50% Verwaltung",
-    initials: "ML",
-  },
-  {
-    name: "Julia W.",
-    company: "Physiotherapie-Praxis, Koblenz",
-    quote: "ROI von 12x in den ersten 90 Tagen. Prozesse, die früher Tage dauerten, erledigt die KI in Minuten.",
-    badge: "12x ROI",
-    initials: "JW",
-  },
 ];
 
 export const TestimonialGrid = () => {
@@ -42,7 +28,7 @@ export const TestimonialGrid = () => {
           <p className="text-muted-foreground">4.9 von 5 Sternen · Über 150 Unternehmer vertrauen uns</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="max-w-lg mx-auto">
           {testimonials.map((t, i) => (
             <div key={i} className="bg-card rounded-2xl border border-border/40 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-4">
