@@ -1,127 +1,152 @@
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { PublicLayout } from "@/components/landing/PublicLayout";
-import { 
-  TargetAudienceSection, 
-  RootCauseSection, 
-  SystemPhasesSection, 
-  StructogramUSPSection,
-  FinalCTA 
-} from "@/components/landing";
-import { landingTokens } from "@/styles/landing-tokens";
-import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
+import { Footer } from "@/components/landing/Footer";
+import { FAQSection } from "@/components/landing/FAQSection";
+import {
+  StickyConversionHeader,
+  CountdownBanner,
+  ProblemAmplifier,
+  SolutionSection,
+  TestimonialGrid,
+  PricingSection,
+  GuaranteeSection,
+  ExitIntentPopup,
+} from "@/components/landing/conversion";
+
+const faqItems = [
+  {
+    question: "Funktioniert das auch in meiner Branche?",
+    answer: "Ja. Unser System ist branchenübergreifend erprobt – von Handwerk über Praxen bis zu Dienstleistern und Immobilien. Wir passen die Strategie individuell an Ihr Geschäftsmodell an.",
+  },
+  {
+    question: "Wie schnell sehe ich Ergebnisse?",
+    answer: "Die meisten Kunden sehen erste Ergebnisse innerhalb von 14–30 Tagen. Messbare Steigerungen der Anfragen sind typischerweise nach 60–90 Tagen dokumentiert.",
+  },
+  {
+    question: "Was passiert, wenn es nicht funktioniert?",
+    answer: "Dann greift unsere 100% Erfolgs-Garantie. Wenn Sie nach 90 Tagen nicht mindestens 30% mehr qualifizierte Anfragen erhalten, arbeiten wir kostenlos weiter.",
+  },
+  {
+    question: "Muss ich selbst etwas tun?",
+    answer: "Minimal. Wir übernehmen Setup, Optimierung und laufende Betreuung. Sie investieren ca. 30 Minuten pro Woche für ein kurzes Status-Update.",
+  },
+  {
+    question: "Ist das nicht zu teuer für ein kleines Unternehmen?",
+    answer: "Die Frage ist: Was kostet es Sie, KEINE neuen Kunden zu gewinnen? Ein einziger zusätzlicher Auftrag deckt die Investition meist mehrfach.",
+  },
+];
 
 const MasterHome = () => {
   const navigate = useNavigate();
-
-  const handleCTAClick = () => {
-    navigate("/qualifizierung");
-  };
+  const handleCTAClick = () => navigate("/qualifizierung");
 
   return (
-    <PublicLayout>
-      {/* HERO Section */}
-      <section className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-background via-muted to-background relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-primary-light/5 rounded-full blur-3xl" />
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <StickyConversionHeader onCtaClick={handleCTAClick} />
 
-        <div className={`${landingTokens.container} py-20 relative z-10`}>
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Umsatz Badge */}
-            <span className={`${landingTokens.badgeAccent} mb-8`}>
-              Nur für Unternehmer ab 100.000 € Jahresumsatz
-            </span>
+      <main className="flex-1 pt-14">
+        {/* HERO */}
+        <section className="min-h-[85vh] flex items-center justify-center bg-gradient-to-br from-background via-muted to-background relative overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-primary-light/5 rounded-full blur-3xl" />
+          </div>
+          <div className="max-w-6xl mx-auto px-4 py-20 relative z-10">
+            <div className="max-w-4xl mx-auto text-center">
+              <p className="text-destructive font-semibold text-sm md:text-base mb-6 tracking-wide uppercase">
+                ⚠️ Achtung: Begrenzt auf 3 Unternehmen pro Monat
+              </p>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight text-foreground mb-6">
+                Jeden Tag verlieren Sie Kunden<br className="hidden md:block" /> an Ihre Konkurrenz
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
+                Während Sie diesen Text lesen, gewinnen Ihre Wettbewerber mit KI-gestützten Systemen
+                die Kunden, die eigentlich <strong className="text-foreground">Ihnen</strong> gehören.
+              </p>
+              <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-10">
+                In den nächsten 3 Minuten zeigen wir Ihnen, wie Sie das ändern – mit einem bewährten System,
+                das bereits über 150 Unternehmern geholfen hat.
+              </p>
 
-            {/* Headline */}
-            <h1 className={`${landingTokens.headline.h1} text-foreground mb-8`}>
-              Struktur schlägt Talent.
-              <br />
-              Systeme schlagen Chaos.
-            </h1>
+              <button
+                onClick={handleCTAClick}
+                className="bg-primary hover:bg-primary-deep text-primary-foreground font-bold text-lg md:text-xl px-10 py-5 rounded-xl shadow-lg hover:shadow-[0_0_25px_hsl(30,90%,55%,0.4)] transition-all duration-300 mb-6"
+              >
+                Ja, ich will mehr Kunden! →
+              </button>
 
-            {/* Subtext */}
-            <p className={`${landingTokens.text.body} max-w-3xl mx-auto mb-10`}>
-              KRS Signature ist kein Kurs, kein Coaching und keine Agentur.
-              Es ist ein strukturierter Eingriff in Unternehmen,
-              die bereits Umsatz machen – aber operativ blockieren.
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <span>4.9/5 · Über 150 zufriedene Unternehmer</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* COUNTDOWN BANNER */}
+        <CountdownBanner />
+
+        {/* PROBLEM */}
+        <ProblemAmplifier />
+
+        {/* SOLUTION */}
+        <SolutionSection onCtaClick={handleCTAClick} />
+
+        {/* TESTIMONIALS */}
+        <TestimonialGrid />
+
+        {/* PRICING */}
+        <PricingSection onCtaClick={handleCTAClick} />
+
+        {/* GUARANTEE */}
+        <GuaranteeSection />
+
+        {/* FAQ */}
+        <FAQSection
+          headline="Häufige Fragen – ehrlich beantwortet"
+          items={faqItems}
+        />
+
+        {/* FINAL CTA */}
+        <section className="py-20 md:py-28">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+              Sie haben zwei Möglichkeiten
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6 mb-10 text-left">
+              <div className="bg-muted/50 rounded-2xl p-6 border border-border/40">
+                <p className="font-bold text-foreground mb-2">Option 1: Nichts tun</p>
+                <p className="text-muted-foreground">
+                  Weiter hoffen, dass irgendwann mehr Kunden kommen. Zusehen, wie die Konkurrenz vorbeizieht.
+                </p>
+              </div>
+              <div className="bg-primary/5 rounded-2xl p-6 border-2 border-primary/30">
+                <p className="font-bold text-foreground mb-2">Option 2: Jetzt handeln</p>
+                <p className="text-muted-foreground">
+                  Ein System installieren, das planbar Neukunden generiert. Ab heute. Mit Garantie.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleCTAClick}
+              className="bg-primary hover:bg-primary-deep text-primary-foreground font-bold text-lg md:text-xl px-10 py-5 rounded-xl shadow-lg hover:shadow-[0_0_25px_hsl(30,90%,55%,0.4)] transition-all duration-300"
+            >
+              Kostenlose Systemanalyse sichern →
+            </button>
+            <p className="text-sm text-muted-foreground mt-4">
+              ✓ 100% kostenlos · ✓ Unverbindlich · ✓ In 2 Minuten erledigt
             </p>
-
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button onClick={handleCTAClick} className={landingTokens.ctaPrimary}>
-                Kostenlose Systemanalyse sichern
-              </Button>
-              <Link to="/qualifizierung" className={landingTokens.ctaSecondary}>
-                Passt das überhaupt zu mir?
-              </Link>
-            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* VALUE CARDS Section */}
-      <section className={`${landingTokens.sectionPadding} bg-muted/30`}>
-        <div className={landingTokens.container}>
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Card 1 */}
-            <div className={landingTokens.card}>
-              <h3 className={`${landingTokens.headline.h3} text-foreground mb-3`}>
-                Vertrieb planbar machen
-              </h3>
-              <p className={landingTokens.text.body}>
-                Lead → Gespräch → Entscheidung → Abschluss.
-                Ohne Zufall. Ohne Chaos.
-              </p>
-            </div>
-
-            {/* Card 2 */}
-            <div className={landingTokens.card}>
-              <h3 className={`${landingTokens.headline.h3} text-foreground mb-3`}>
-                Unternehmer entlasten
-              </h3>
-              <p className={landingTokens.text.body}>
-                Prozesse, CRM und Follow-ups laufen als System –
-                nicht im Kopf des Inhabers.
-              </p>
-            </div>
-
-            {/* Card 3 */}
-            <div className={landingTokens.card}>
-              <h3 className={`${landingTokens.headline.h3} text-foreground mb-3`}>
-                KI als Steuerungshebel
-              </h3>
-              <p className={landingTokens.text.body}>
-                KI ersetzt keine Führung –
-                sie verstärkt Struktur und Kontrolle.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TARGET AUDIENCE Section */}
-      <TargetAudienceSection />
-
-      {/* ROOT CAUSE Section */}
-      <RootCauseSection />
-
-      {/* SYSTEM PHASES Section */}
-      <SystemPhasesSection />
-
-      {/* STRUCTOGRAM USP Section */}
-      <StructogramUSPSection />
-
-      {/* FINAL CTA Section */}
-      <FinalCTA
-        headline="Bereit für Struktur statt Chaos?"
-        subline="Sichere dir jetzt deine kostenlose Systemanalyse. Wir zeigen dir, wo dein Unternehmen blockiert – und wie du es löst."
-        ctaText="Jetzt Systemanalyse sichern"
-        onCtaClick={handleCTAClick}
-      />
-    </PublicLayout>
+      <Footer />
+      <ExitIntentPopup />
+    </div>
   );
 };
 
