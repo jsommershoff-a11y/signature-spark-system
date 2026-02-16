@@ -28,7 +28,7 @@ export function useMyContracts() {
           crm_leads (id, first_name, last_name, email, company)
         `)
         .eq('lead_id', member.lead_id)
-        .in('status', ['sent', 'viewed'] as const)
+        .in('status', ['sent', 'viewed', 'accepted', 'paid'] as const)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
