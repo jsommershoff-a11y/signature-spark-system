@@ -1449,6 +1449,21 @@ export type Database = {
         Returns: number
       }
       can_view_profile: { Args: { _profile_id: string }; Returns: boolean }
+      get_customers: {
+        Args: never
+        Returns: {
+          assigned_staff_name: string
+          assigned_to: string
+          company: string
+          created_at: string
+          email: string
+          first_name: string
+          full_name: string
+          id: string
+          last_name: string
+          phone: string
+        }[]
+      }
       get_team_member_ids: { Args: { _user_id: string }; Returns: string[] }
       get_user_profile_id: { Args: { _user_id: string }; Returns: string }
       get_user_team_id: { Args: { _user_id: string }; Returns: string }
