@@ -22,9 +22,12 @@ import {
 } from '@/components/ui/select';
 import { useTasks } from '@/hooks/useTasks';
 import { useCalls } from '@/hooks/useCalls';
+import { useOffers } from '@/hooks/useOffers';
 import { TaskCard } from './TaskCard';
 import { CallList } from '@/components/calls/CallList';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
+import { CreateOfferDialog } from '@/components/offers/CreateOfferDialog';
+import { OfferStatusBadge } from '@/components/offers/OfferStatusBadge';
 import { ActivityFeed } from '@/components/activities/ActivityFeed';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -37,6 +40,7 @@ import {
   SOURCE_TYPE_LABELS,
 } from '@/types/crm';
 import { Call, CreateCallInput } from '@/types/calls';
+import { formatCents } from '@/types/offers';
 import { 
   User, 
   Building2, 
@@ -48,6 +52,7 @@ import {
   Save,
   Loader2,
   Plus,
+  FileText,
 } from 'lucide-react';
 
 interface LeadDetailModalProps {
@@ -70,9 +75,11 @@ export function LeadDetailModal({
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
+  const [createOfferOpen, setCreateOfferOpen] = useState(false);
 
   const { tasks, updateTask } = useTasks({ lead_id: lead?.id });
   const { calls, loading: callsLoading, createCall } = useCalls({ lead_id: lead?.id });
+  const { offers, isLoading: offersLoading } = useOffers(lead?.id);
 
   useEffect(() => {
     if (lead) {
@@ -161,10 +168,13 @@ export function LeadDetailModal({
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="mt-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="calls">
               Calls {calls.length > 0 && `(${calls.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="offers">
+              Angebote {offers.length > 0 && `(${offers.length})`}
             </TabsTrigger>
             <TabsTrigger value="activities">
               Aktivitäten {tasks.length > 0 && `(${tasks.length})`}
@@ -349,6 +359,60 @@ export function LeadDetailModal({
             </div>
           </TabsContent>
 
+          <TabsContent value="offers" className="mt-4">
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Button onClick={() => setCreateOfferOpen(true)} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Neues Angebot
+                </Button>
+              </div>
+              {offersLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : offers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Noch keine Angebote für diesen Lead</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {offers.map((offer) => (
+                    <button
+                      key={offer.id}
+                      className="w-full flex items-center justify-between rounded-lg border p-3 text-left hover:bg-muted/50 transition-colors"
+                      onClick={() => {
+                        onOpenChange(false);
+                        window.location.href = `/app/offers/${offer.id}`;
+                      }}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {offer.offer_json?.title || 'Angebot'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(offer.created_at).toLocaleDateString('de-DE')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        {offer.offer_json?.total_cents != null && (
+                          <span className="text-sm font-medium">
+                            {formatCents(offer.offer_json.total_cents)}
+                          </span>
+                        )}
+                        <OfferStatusBadge status={offer.status} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
           <TabsContent value="activities" className="mt-4">
             <div className="space-y-4">
               {tasks.length > 0 && (
@@ -407,6 +471,10 @@ export function LeadDetailModal({
           leadId={lead.id}
           leadName={`${lead.first_name} ${lead.last_name || ''}`}
           onSchedule={handleScheduleCall}
+        />
+        <CreateOfferDialog
+          open={createOfferOpen}
+          onOpenChange={setCreateOfferOpen}
         />
       </DialogContent>
     </Dialog>
