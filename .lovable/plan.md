@@ -1,166 +1,93 @@
 
 
-## Neue "Ziele"-Seite mit Fortschrittsbalken und Teil-Zielen
+## Reports-Dashboard: Vollstaendiges Reporting mit Diagrammen und Export
 
 ### Uebersicht
 
-Es wird eine neue Seite `/app/goals` erstellt, auf der Teamleiter und hoehere Rollen Ziele fuer Mitarbeiter und Teams erstellen, verfolgen und in Teil-Ziele herunterbrechen koennen. Dazu werden zwei neue Datenbanktabellen, ein Hook, mehrere UI-Komponenten und eine neue Route angelegt.
+Die Platzhalter-Seite `/app/reports` wird durch ein vollstaendiges Reporting-Dashboard mit vier Berichts-Sektionen ersetzt. Alle Daten kommen aus bestehenden Supabase-Tabellen -- keine DB-Aenderungen noetig.
 
-### Datenbank-Design
+### Architektur
 
-Da keine eigenstaendige `teams`-Tabelle existiert (Teams werden ueber `profiles.team_id` als Verweis auf den Teamleiter abgebildet), wird `team_id` als Verweis auf ein Teamleiter-Profil gestaltet.
+**Neuer Hook:** `src/hooks/useReportsData.ts`
+- Vier React-Query-Abfragen fuer die Berichtsdaten:
+  1. **Umsatz/Pipeline**: `orders` (paid, amount_cents nach Monat) + `pipeline_items` (Stage-Verteilung)
+  2. **Team-Performance**: `profiles` (Mitarbeiter) JOIN `crm_leads` (Anzahl), `calls` (Anzahl), `orders` (Umsatz) -- aggregiert pro Mitarbeiter
+  3. **Lead-Konvertierung**: `pipeline_items` gruppiert nach Stage, berechnet als Trichter (new_lead -> won)
+  4. **Kundenaktivitaet**: `activities` gruppiert nach Typ und Woche/Monat
 
-**Tabelle `goals`:**
-
-| Spalte | Typ | Beschreibung |
-|--------|-----|--------------|
-| id | uuid (PK) | Primaerschluessel |
-| user_id | uuid (FK profiles.id) | Zugewiesener Mitarbeiter (nullable) |
-| team_id | uuid (FK profiles.id) | Team (Teamleiter-Profil, nullable) |
-| title | text | Ziel-Titel |
-| description | text | Optionale Beschreibung |
-| target_amount | integer | Zielwert |
-| current_amount | integer | Aktueller Fortschritt |
-| start_date | date | Startdatum |
-| end_date | date | Enddatum |
-| status | text | 'active', 'completed', 'cancelled' |
-| created_by | uuid (FK profiles.id) | Ersteller |
-| created_at | timestamptz | Erstellungszeitpunkt |
-| updated_at | timestamptz | Letzte Aenderung |
-
-**Tabelle `goal_milestones` (Teil-Ziele / To-Do-Liste):**
-
-| Spalte | Typ | Beschreibung |
-|--------|-----|--------------|
-| id | uuid (PK) | Primaerschluessel |
-| goal_id | uuid (FK goals.id) | Eltern-Ziel |
-| title | text | Titel des Teil-Ziels |
-| is_completed | boolean | Erledigt-Status |
-| sort_order | integer | Reihenfolge |
-| completed_at | timestamptz | Abschlusszeitpunkt |
-| created_at | timestamptz | Erstellungszeitpunkt |
-
-**RLS-Policies:**
-- Teamleiter+ koennen Ziele erstellen, lesen und aktualisieren
-- Mitarbeiter sehen nur ihre eigenen zugewiesenen Ziele
-- Kunden haben keinen Zugriff
-- Admin kann alles loeschen
+**Export-Utility:** `src/lib/report-export.ts`
+- `exportToCSV(data, filename)`: Konvertiert Array-Daten in CSV und loest Download aus
+- `exportToPDF(elementId, filename)`: Nutzt `window.print()` mit CSS `@media print` fuer PDF-Export (keine zusaetzliche Bibliothek noetig)
 
 ### Neue Dateien
 
-1. **`src/pages/app/Goals.tsx`** - Hauptseite mit Tabs (Aktiv / Abgeschlossen), Fortschrittsbalken-Karten, Erstellen-Button
-2. **`src/hooks/useGoals.ts`** - Supabase-Hook fuer CRUD auf `goals` und `goal_milestones`
-3. **`src/components/goals/GoalCard.tsx`** - Karte mit Progress-Balken, Prozentanzeige, Zeitraum, zugewiesener Person
-4. **`src/components/goals/CreateGoalDialog.tsx`** - Formular: Titel, Beschreibung, Zielwert, Zeitraum, Zuweisung (Mitarbeiter oder Team)
-5. **`src/components/goals/GoalDetailModal.tsx`** - Detail-Ansicht mit Teil-Ziele-Liste (hinzufuegen, abhaken, loeschen)
-6. **`src/components/goals/MilestoneList.tsx`** - Checkliste der Teil-Ziele mit Fortschrittsindikator
+1. **`src/hooks/useReportsData.ts`** -- Daten-Hook mit 4 Queries
+2. **`src/lib/report-export.ts`** -- CSV-/PDF-Export-Hilfsfunktionen
+3. **`src/components/reports/RevenueChart.tsx`** -- Balkendiagramm (Recharts BarChart) fuer monatlichen Umsatz + Pipeline-Verteilung als Tortendiagramm
+4. **`src/components/reports/TeamPerformanceTable.tsx`** -- Tabelle mit Spalten: Mitarbeiter, Leads, Calls, Abschluesse, Umsatz
+5. **`src/components/reports/ConversionFunnel.tsx`** -- Trichter-Visualisierung der Pipeline-Stages (Recharts BarChart horizontal oder gestapelte Balken)
+6. **`src/components/reports/ActivityChart.tsx`** -- Linien-/Flaechendiagramm der Aktivitaeten nach Typ ueber Zeit
 
 ### Bestehende Dateien (Aenderungen)
 
-1. **`src/App.tsx`** - Neue Route `/app/goals` mit `requireMinRole="mitarbeiter"`
-2. **`src/components/app/AppSidebar.tsx`** - Neuer Nav-Eintrag "Ziele" mit Target-Icon, `minRole: 'mitarbeiter'`
+1. **`src/pages/app/Reports.tsx`** -- Kompletter Umbau: Tabs fuer die 4 Berichtskategorien, jede mit Export-Buttons (CSV/PDF)
 
-### UI-Design
+### UI-Aufbau der Reports-Seite
 
-Jede Ziel-Karte zeigt:
-- Titel und optionale Beschreibung
-- Fortschrittsbalken (current_amount / target_amount als Prozent)
-- Zeitraum (Start- bis Enddatum)
-- Zugewiesene Person oder Team
-- Anzahl erledigter Teil-Ziele / Gesamt
-
-Die Detail-Ansicht enthaelt:
-- Editierbare Felder fuer current_amount
-- Checkliste der Teil-Ziele mit Inline-Hinzufuegen
-- Status-Aenderung (aktiv / abgeschlossen / abgebrochen)
+```text
++--------------------------------------------------+
+| Reports                                          |
+| Analysen und Berichte         [Zeitraum-Filter]  |
++--------------------------------------------------+
+| [Umsatz] [Team] [Konvertierung] [Aktivitaet]    |
++--------------------------------------------------+
+|                                                  |
+|  +-- Card: Umsatz-Entwicklung ----------------+ |
+|  | [CSV] [PDF]                     BarChart    | |
+|  +--------------------------------------------+ |
+|                                                  |
+|  +-- Card: Pipeline-Verteilung ---------------+ |
+|  | [CSV] [PDF]                     PieChart    | |
+|  +--------------------------------------------+ |
++--------------------------------------------------+
+```
 
 ### Technische Details
 
-**SQL-Migration:**
+**Recharts-Komponenten** (bereits installiert):
+- `BarChart` + `Bar` fuer Umsatz und Trichter
+- `PieChart` + `Pie` fuer Pipeline-Verteilung
+- `LineChart` + `Line` fuer Aktivitaetsverlauf
+- `ChartContainer` aus `src/components/ui/chart.tsx` fuer konsistentes Styling
 
+**CSV-Export:**
 ```text
--- goals table
-CREATE TABLE goals (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  team_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  title text NOT NULL,
-  description text,
-  target_amount integer NOT NULL DEFAULT 100,
-  current_amount integer NOT NULL DEFAULT 0,
-  start_date date NOT NULL DEFAULT CURRENT_DATE,
-  end_date date NOT NULL,
-  status text NOT NULL DEFAULT 'active',
-  created_by uuid REFERENCES profiles(id),
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-ALTER TABLE goals ENABLE ROW LEVEL SECURITY;
-
--- goal_milestones table
-CREATE TABLE goal_milestones (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  goal_id uuid NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
-  title text NOT NULL,
-  is_completed boolean NOT NULL DEFAULT false,
-  sort_order integer NOT NULL DEFAULT 0,
-  completed_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
-ALTER TABLE goal_milestones ENABLE ROW LEVEL SECURITY;
-
--- RLS for goals
-CREATE POLICY "Staff can read own goals" ON goals
-  FOR SELECT USING (
-    has_min_role(auth.uid(), 'mitarbeiter') AND
-    (user_id = get_user_profile_id(auth.uid()) OR
-     created_by = get_user_profile_id(auth.uid()))
-  );
-
-CREATE POLICY "Teamleiter can read team goals" ON goals
-  FOR SELECT USING (
-    has_min_role(auth.uid(), 'teamleiter')
-  );
-
-CREATE POLICY "Teamleiter can insert goals" ON goals
-  FOR INSERT WITH CHECK (
-    has_min_role(auth.uid(), 'teamleiter')
-  );
-
-CREATE POLICY "Teamleiter can update goals" ON goals
-  FOR UPDATE USING (
-    has_min_role(auth.uid(), 'teamleiter')
-  );
-
-CREATE POLICY "Admin can delete goals" ON goals
-  FOR DELETE USING (
-    has_role(auth.uid(), 'admin')
-  );
-
--- RLS for milestones (inherits from goal access)
-CREATE POLICY "Staff can read milestones" ON goal_milestones
-  FOR SELECT USING (
-    goal_id IN (SELECT id FROM goals)
-  );
-
-CREATE POLICY "Staff can manage milestones" ON goal_milestones
-  FOR ALL USING (
-    has_min_role(auth.uid(), 'mitarbeiter') AND
-    goal_id IN (SELECT id FROM goals)
-  );
-
--- updated_at trigger
-CREATE TRIGGER goals_updated_at
-  BEFORE UPDATE ON goals
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+function exportToCSV(rows: Record<string, unknown>[], filename: string) {
+  // Header aus Object.keys, Werte als Zeilen
+  // Blob mit text/csv, automatischer Download
+}
 ```
 
-**Routing (App.tsx):**
-- Neue Route: `<Route path="goals" element={<ProtectedRoute requireMinRole="mitarbeiter"><Goals /></ProtectedRoute>} />`
+**PDF-Export:**
+```text
+function exportToPDF(title: string) {
+  // window.print() mit @media print CSS
+  // Blendet Sidebar/Header aus, zeigt nur Report-Inhalt
+}
+```
 
-**Sidebar (AppSidebar.tsx):**
-- Neuer Eintrag: `{ label: 'Ziele', href: '/app/goals', icon: Target, minRole: 'mitarbeiter' }` nach "Aufgaben"
+**Datenabfragen (useReportsData.ts):**
+
+- Umsatz: `orders` WHERE status='paid', GROUP BY Monat (client-side Aggregation)
+- Team-KPIs: `profiles` mit Rolle 'mitarbeiter', gezaehlt ueber `crm_leads.owner_user_id`, `calls.conducted_by`, `orders` via Lead-Zuordnung
+- Konvertierung: `pipeline_items` alle Stages zaehlen, als Trichter sortiert
+- Aktivitaet: `activities` GROUP BY type + Woche (client-side)
+
+**Zeitraum-Filter:**
+- Select-Dropdown: Letzte 7 Tage, 30 Tage, 90 Tage, 12 Monate
+- Wird an alle Queries als Parameter weitergegeben
+
+### Keine Datenbank-Aenderungen
+
+Alle benoetigten Daten existieren bereits in den Tabellen `orders`, `pipeline_items`, `crm_leads`, `calls`, `activities` und `profiles`. Die RLS-Policies stellen sicher, dass nur berechtigte Nutzer (Geschaeftsfuehrung/Admin) vollstaendige Reports sehen.
 
