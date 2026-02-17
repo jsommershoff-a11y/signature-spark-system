@@ -25,6 +25,8 @@ import { useCalls } from '@/hooks/useCalls';
 import { TaskCard } from './TaskCard';
 import { CallList } from '@/components/calls/CallList';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
+import { ActivityFeed } from '@/components/activities/ActivityFeed';
+import { Separator } from '@/components/ui/separator';
 import {
   CrmLead,
   UpdateLeadInput,
@@ -349,20 +351,22 @@ export function LeadDetailModal({
 
           <TabsContent value="activities" className="mt-4">
             <div className="space-y-4">
-              {tasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  Keine Aktivitäten für diesen Lead
-                </p>
-              ) : (
-                tasks.map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onComplete={handleTaskComplete}
-                    onReopen={handleTaskReopen}
-                  />
-                ))
+              {tasks.length > 0 && (
+                <>
+                  <h4 className="text-sm font-medium text-muted-foreground">Tasks</h4>
+                  {tasks.map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onComplete={handleTaskComplete}
+                      onReopen={handleTaskReopen}
+                    />
+                  ))}
+                  <Separator />
+                </>
               )}
+              <h4 className="text-sm font-medium text-muted-foreground">Aktivitäten-Feed</h4>
+              <ActivityFeed leadId={lead.id} />
             </div>
           </TabsContent>
 
