@@ -16,6 +16,7 @@ import {
   FileText,
   UserCheck,
   ScrollText,
+  Target,
 } from 'lucide-react';
 
 interface NavItem {
@@ -90,6 +91,12 @@ const navItems: NavItem[] = [
     label: 'Aufgaben', 
     href: '/app/tasks', 
     icon: CheckSquare 
+  },
+  {
+    label: 'Ziele',
+    href: '/app/goals',
+    icon: Target,
+    minRole: 'mitarbeiter',
   },
   { 
     label: 'Reports', 

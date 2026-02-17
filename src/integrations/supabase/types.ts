@@ -719,6 +719,114 @@ export type Database = {
           },
         ]
       }
+      goal_milestones: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          goal_id: string
+          id: string
+          is_completed: boolean
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          goal_id: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          goal_id?: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_milestones_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          current_amount: number
+          description: string | null
+          end_date: string
+          id: string
+          start_date: string
+          status: string
+          target_amount: number
+          team_id: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          current_amount?: number
+          description?: string | null
+          end_date: string
+          id?: string
+          start_date?: string
+          status?: string
+          target_amount?: number
+          team_id?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          current_amount?: number
+          description?: string | null
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: string
+          target_amount?: number
+          team_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null

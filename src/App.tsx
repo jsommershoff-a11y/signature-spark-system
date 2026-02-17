@@ -38,6 +38,7 @@ import CallDetail from "./pages/app/CallDetail";
 import Offers from "./pages/app/Offers";
 import OfferDetail from "./pages/app/OfferDetail";
 import MyContracts from "./pages/app/MyContracts";
+import Goals from "./pages/app/Goals";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +109,11 @@ const App = () => (
               <Route path="offers/:offerId" element={
                 <ProtectedRoute requireMinRole="mitarbeiter">
                   <OfferDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="goals" element={
+                <ProtectedRoute requireMinRole="mitarbeiter">
+                  <Goals />
                 </ProtectedRoute>
               } />
               <Route path="courses" element={<Courses />} />
