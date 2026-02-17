@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          content: string
+          created_at: string
+          customer_id: string | null
+          id: string
+          lead_id: string | null
+          metadata: Json | null
+          type: Database["public"]["Enums"]["activity_type"]
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          type: Database["public"]["Enums"]["activity_type"]
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          type?: Database["public"]["Enums"]["activity_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_analyses: {
         Row: {
           analysis_json: Json
@@ -1483,6 +1531,7 @@ export type Database = {
       }
     }
     Enums: {
+      activity_type: "anruf" | "email" | "meeting" | "notiz" | "fehler"
       app_role:
         | "admin"
         | "moderator"
@@ -1668,6 +1717,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_type: ["anruf", "email", "meeting", "notiz", "fehler"],
       app_role: [
         "admin",
         "moderator",

@@ -15,6 +15,39 @@ const VALID_EVENT_TYPES = {
   phone: ['missed', 'voicemail', 'answered', 'failed'],
 } as const;
 
+// Channel -> activity_type mapping
+const CHANNEL_TO_ACTIVITY_TYPE: Record<string, string> = {
+  email: 'email',
+  whatsapp: 'notiz',
+  phone: 'anruf',
+};
+
+// Generate human-readable content for activity log
+function generateActivityContent(channel: string, eventType: string): string {
+  const labels: Record<string, Record<string, string>> = {
+    email: {
+      opened: 'E-Mail geöffnet',
+      clicked: 'E-Mail-Link geklickt',
+      bounced: 'E-Mail bounced',
+      delivered: 'E-Mail zugestellt',
+      unsubscribed: 'E-Mail abgemeldet',
+    },
+    whatsapp: {
+      replied: 'WhatsApp-Antwort erhalten',
+      read: 'WhatsApp-Nachricht gelesen',
+      delivered: 'WhatsApp-Nachricht zugestellt',
+      failed: 'WhatsApp-Nachricht fehlgeschlagen',
+    },
+    phone: {
+      missed: 'Verpasster Anruf',
+      voicemail: 'Voicemail hinterlassen',
+      answered: 'Anruf angenommen',
+      failed: 'Anruf fehlgeschlagen',
+    },
+  };
+  return labels[channel]?.[eventType] ?? `${channel}/${eventType}`;
+}
+
 // Input validation schema
 const inputSchema = z.object({
   channel: z.enum(VALID_CHANNELS),
@@ -44,6 +77,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     
     let isAuthorized = false;
+    let authenticatedUserId: string | null = null;
     
     // Check API key first (for external integrations)
     if (apiKey && requestApiKey === apiKey) {
@@ -71,6 +105,7 @@ serve(async (req) => {
         
         if (roles && roles.length > 0) {
           isAuthorized = true;
+          authenticatedUserId = claims.user.id;
           console.log('Authorized via user token:', claims.user.id);
         }
       }
@@ -182,6 +217,32 @@ serve(async (req) => {
         break;
     }
 
+    // Persist activity record
+    const activityUserId = authenticatedUserId
+      ? await getProfileId(supabase, authenticatedUserId)
+      : (lead.owner_user_id ?? null);
+
+    if (activityUserId) {
+      const { error: activityError } = await supabase
+        .from('activities')
+        .insert({
+          lead_id: lead.id,
+          user_id: activityUserId,
+          type: CHANNEL_TO_ACTIVITY_TYPE[channel] ?? 'notiz',
+          content: generateActivityContent(channel, event_type),
+          metadata: {
+            source: 'channel_api',
+            channel,
+            event_type,
+            ...sanitizedPayload,
+          },
+        });
+
+      if (activityError) {
+        console.error('Failed to insert activity:', activityError.message);
+      }
+    }
+
     // Check if we should trigger a followup plan
     const shouldTriggerFollowup = await checkFollowupTrigger(supabase, lead.id, channel, event_type);
 
@@ -209,6 +270,18 @@ serve(async (req) => {
   }
 });
 
+async function getProfileId(
+  supabase: ReturnType<typeof createClient>,
+  userId: string
+): Promise<string | null> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+  return data?.id ?? null;
+}
+
 async function processEmailEvent(
   supabase: ReturnType<typeof createClient>,
   lead: { id: string; owner_user_id?: string },
@@ -218,7 +291,6 @@ async function processEmailEvent(
   switch (eventType) {
     case 'opened':
     case 'clicked':
-      // Increase urgency on pipeline item
       await supabase
         .from('pipeline_items')
         .update({
@@ -228,8 +300,7 @@ async function processEmailEvent(
         .eq('lead_id', lead.id);
       break;
 
-    case 'bounced':
-      // Add note to lead
+    case 'bounced': {
       const { data: currentLead } = await supabase
         .from('crm_leads')
         .select('notes')
@@ -247,6 +318,7 @@ async function processEmailEvent(
         })
         .eq('id', lead.id);
       break;
+    }
   }
 }
 
@@ -258,7 +330,6 @@ async function processWhatsAppEvent(
 ) {
   switch (eventType) {
     case 'replied':
-      // Create urgent task
       if (lead.owner_user_id) {
         const message = typeof payload?.message === 'string' 
           ? payload.message.slice(0, 200) 
@@ -273,13 +344,12 @@ async function processWhatsAppEvent(
             title: 'WhatsApp-Antwort bearbeiten',
             description: `Lead hat auf WhatsApp geantwortet: ${message}`,
             status: 'open',
-            due_at: new Date().toISOString(), // Immediate
+            due_at: new Date().toISOString(),
           });
       }
       break;
 
     case 'read':
-      // Update urgency
       await supabase
         .from('pipeline_items')
         .update({ 
@@ -297,7 +367,6 @@ async function processPhoneEvent(
   eventType: string,
   _payload: Record<string, unknown>
 ) {
-  // Log call events
   if (eventType === 'missed' || eventType === 'voicemail') {
     if (lead.owner_user_id) {
       await supabase
@@ -308,7 +377,7 @@ async function processPhoneEvent(
           type: 'call',
           title: eventType === 'missed' ? 'Verpassten Anruf zurückrufen' : 'Voicemail bearbeiten',
           status: 'open',
-          due_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours
+          due_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
         });
     }
   }
@@ -320,7 +389,6 @@ async function checkFollowupTrigger(
   channel: string,
   eventType: string
 ): Promise<boolean> {
-  // Define trigger conditions
   const triggerEvents = [
     { channel: 'email', event: 'clicked' },
     { channel: 'whatsapp', event: 'replied' },
@@ -332,7 +400,6 @@ async function checkFollowupTrigger(
   );
 
   if (shouldTrigger) {
-    // Check if there's no pending followup plan
     const { data: existingPlan } = await supabase
       .from('followup_plans')
       .select('id')
@@ -341,7 +408,6 @@ async function checkFollowupTrigger(
       .single();
 
     if (!existingPlan) {
-      // Trigger new followup plan generation via Edge Function
       console.log(`Would trigger followup plan for lead ${leadId}`);
       return true;
     }
