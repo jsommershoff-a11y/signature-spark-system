@@ -1,93 +1,83 @@
 
 
-## Reports-Dashboard: Vollstaendiges Reporting mit Diagrammen und Export
+## Edge Function: `log-email` -- E-Mail-Dokumentations-API fuer Manus.ai
 
-### Uebersicht
+### Zweck
 
-Die Platzhalter-Seite `/app/reports` wird durch ein vollstaendiges Reporting-Dashboard mit vier Berichts-Sektionen ersetzt. Alle Daten kommen aus bestehenden Supabase-Tabellen -- keine DB-Aenderungen noetig.
+Eine neue Edge Function, die Manus.ai (oder jedes andere externe Tool) per REST-API aufrufen kann, um gesendete/empfangene E-Mails als Aktivitaeten in der CRM-Datenbank zu protokollieren. Die E-Mails werden als `activity`-Eintraege (Typ `email`) gespeichert und sind sofort im Activity-Feed des jeweiligen Leads sichtbar.
 
-### Architektur
+### Authentifizierung
 
-**Neuer Hook:** `src/hooks/useReportsData.ts`
-- Vier React-Query-Abfragen fuer die Berichtsdaten:
-  1. **Umsatz/Pipeline**: `orders` (paid, amount_cents nach Monat) + `pipeline_items` (Stage-Verteilung)
-  2. **Team-Performance**: `profiles` (Mitarbeiter) JOIN `crm_leads` (Anzahl), `calls` (Anzahl), `orders` (Umsatz) -- aggregiert pro Mitarbeiter
-  3. **Lead-Konvertierung**: `pipeline_items` gruppiert nach Stage, berechnet als Trichter (new_lead -> won)
-  4. **Kundenaktivitaet**: `activities` gruppiert nach Typ und Woche/Monat
+Verwendet den bereits vorhandenen Secret **`CHANNEL_INGEST_API_KEY`** als API-Key im Header `x-api-key`. Kein neuer Secret noetig.
 
-**Export-Utility:** `src/lib/report-export.ts`
-- `exportToCSV(data, filename)`: Konvertiert Array-Daten in CSV und loest Download aus
-- `exportToPDF(elementId, filename)`: Nutzt `window.print()` mit CSS `@media print` fuer PDF-Export (keine zusaetzliche Bibliothek noetig)
+### API-Spezifikation
 
-### Neue Dateien
+**Endpoint:** `POST /functions/v1/log-email`
 
-1. **`src/hooks/useReportsData.ts`** -- Daten-Hook mit 4 Queries
-2. **`src/lib/report-export.ts`** -- CSV-/PDF-Export-Hilfsfunktionen
-3. **`src/components/reports/RevenueChart.tsx`** -- Balkendiagramm (Recharts BarChart) fuer monatlichen Umsatz + Pipeline-Verteilung als Tortendiagramm
-4. **`src/components/reports/TeamPerformanceTable.tsx`** -- Tabelle mit Spalten: Mitarbeiter, Leads, Calls, Abschluesse, Umsatz
-5. **`src/components/reports/ConversionFunnel.tsx`** -- Trichter-Visualisierung der Pipeline-Stages (Recharts BarChart horizontal oder gestapelte Balken)
-6. **`src/components/reports/ActivityChart.tsx`** -- Linien-/Flaechendiagramm der Aktivitaeten nach Typ ueber Zeit
+**Header:**
+- `x-api-key: <CHANNEL_INGEST_API_KEY>`
+- `Content-Type: application/json`
 
-### Bestehende Dateien (Aenderungen)
+**Request Body:**
 
-1. **`src/pages/app/Reports.tsx`** -- Kompletter Umbau: Tabs fuer die 4 Berichtskategorien, jede mit Export-Buttons (CSV/PDF)
+| Feld | Typ | Pflicht | Beschreibung |
+|------|-----|---------|--------------|
+| `lead_email` | string (E-Mail) | Ja* | E-Mail-Adresse des Leads |
+| `lead_id` | string (UUID) | Ja* | Alternativ: Lead-ID direkt |
+| `subject` | string (max 500) | Ja | Betreff der E-Mail |
+| `body` | string (max 5000) | Nein | E-Mail-Inhalt (Zusammenfassung) |
+| `direction` | `"inbound"` oder `"outbound"` | Ja | Richtung der E-Mail |
+| `sent_at` | string (ISO 8601) | Nein | Zeitpunkt (Default: jetzt) |
 
-### UI-Aufbau der Reports-Seite
+*Mindestens eines von `lead_email` oder `lead_id` muss angegeben werden.
+
+**Erfolgs-Antwort (200):**
+```text
+{
+  "success": true,
+  "activity_id": "uuid",
+  "lead_id": "uuid"
+}
+```
+
+**Fehler-Antworten:** 401 (kein/falscher API-Key), 400 (Validierungsfehler), 404 (Lead nicht gefunden)
+
+### Beispiel-Aufruf fuer Manus.ai
 
 ```text
-+--------------------------------------------------+
-| Reports                                          |
-| Analysen und Berichte         [Zeitraum-Filter]  |
-+--------------------------------------------------+
-| [Umsatz] [Team] [Konvertierung] [Aktivitaet]    |
-+--------------------------------------------------+
-|                                                  |
-|  +-- Card: Umsatz-Entwicklung ----------------+ |
-|  | [CSV] [PDF]                     BarChart    | |
-|  +--------------------------------------------+ |
-|                                                  |
-|  +-- Card: Pipeline-Verteilung ---------------+ |
-|  | [CSV] [PDF]                     PieChart    | |
-|  +--------------------------------------------+ |
-+--------------------------------------------------+
+POST https://onbxoflsgrwdszjltnge.supabase.co/functions/v1/log-email
+Headers:
+  x-api-key: <dein_api_key>
+  Content-Type: application/json
+
+Body:
+{
+  "lead_email": "kunde@example.com",
+  "subject": "Angebot fuer Beratung",
+  "body": "Sehr geehrter Herr Mueller, anbei unser Angebot...",
+  "direction": "outbound"
+}
 ```
 
 ### Technische Details
 
-**Recharts-Komponenten** (bereits installiert):
-- `BarChart` + `Bar` fuer Umsatz und Trichter
-- `PieChart` + `Pie` fuer Pipeline-Verteilung
-- `LineChart` + `Line` fuer Aktivitaetsverlauf
-- `ChartContainer` aus `src/components/ui/chart.tsx` fuer konsistentes Styling
+**Neue Datei:** `supabase/functions/log-email/index.ts`
 
-**CSV-Export:**
+- Nutzt Zod fuer Input-Validierung (gleiches Muster wie `channel_event_ingest`)
+- Authentifizierung via `x-api-key` Header gegen `CHANNEL_INGEST_API_KEY`
+- Lead-Lookup per `lead_id` oder `lead_email` aus `crm_leads`
+- Schreibt in `activities`-Tabelle mit `type: 'email'` und `user_id` des Lead-Owners
+- Speichert Subject, Body, Direction und Zeitstempel in `metadata`
+- Content-Feld zeigt menschenlesbare Zusammenfassung: z.B. "Ausgehende E-Mail: Angebot fuer Beratung"
+- CORS-Headers fuer Kompatibilitaet
+
+**Config-Eintrag (`supabase/config.toml`):**
 ```text
-function exportToCSV(rows: Record<string, unknown>[], filename: string) {
-  // Header aus Object.keys, Werte als Zeilen
-  // Blob mit text/csv, automatischer Download
-}
+[functions.log-email]
+verify_jwt = false
 ```
-
-**PDF-Export:**
-```text
-function exportToPDF(title: string) {
-  // window.print() mit @media print CSS
-  // Blendet Sidebar/Header aus, zeigt nur Report-Inhalt
-}
-```
-
-**Datenabfragen (useReportsData.ts):**
-
-- Umsatz: `orders` WHERE status='paid', GROUP BY Monat (client-side Aggregation)
-- Team-KPIs: `profiles` mit Rolle 'mitarbeiter', gezaehlt ueber `crm_leads.owner_user_id`, `calls.conducted_by`, `orders` via Lead-Zuordnung
-- Konvertierung: `pipeline_items` alle Stages zaehlen, als Trichter sortiert
-- Aktivitaet: `activities` GROUP BY type + Woche (client-side)
-
-**Zeitraum-Filter:**
-- Select-Dropdown: Letzte 7 Tage, 30 Tage, 90 Tage, 12 Monate
-- Wird an alle Queries als Parameter weitergegeben
 
 ### Keine Datenbank-Aenderungen
 
-Alle benoetigten Daten existieren bereits in den Tabellen `orders`, `pipeline_items`, `crm_leads`, `calls`, `activities` und `profiles`. Die RLS-Policies stellen sicher, dass nur berechtigte Nutzer (Geschaeftsfuehrung/Admin) vollstaendige Reports sehen.
+Die E-Mails werden in der bestehenden `activities`-Tabelle als Typ `email` gespeichert. Keine Migration noetig.
 
