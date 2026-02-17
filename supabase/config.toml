@@ -36,3 +36,6 @@ verify_jwt = false
 [functions.import-leads]
 verify_jwt = false
 
+[functions.log-email]
+verify_jwt = false
+
