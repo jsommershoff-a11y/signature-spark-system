@@ -1,17 +1,21 @@
 
 
-## Bild von Rene Schreiner zum Testimonial hinzufuegen
+## Testimonial-Foto prominent neben dem Zitat anzeigen
 
-### Aenderungen
+### Aenderung
 
-1. **Bild kopieren**: `user-uploads://EDE4D34A-69D3-4AD1-8CB7-AB48D8EE2E33_4_5005_c.jpeg` nach `src/assets/testimonial-rene-schreiner.jpeg`
+**`src/components/landing/conversion/TestimonialGrid.tsx`**: Das Layout wird von einem einfachen Card-Layout zu einem zweispaltigen Layout umgebaut:
 
-2. **`src/components/landing/conversion/TestimonialGrid.tsx`**: 
-   - Bild importieren: `import renePhoto from "@/assets/testimonial-rene-schreiner.jpeg"`
-   - Im `testimonials`-Array ein neues Feld `image` ergaenzen
-   - Den `AvatarFallback` durch ein `AvatarImage` mit dem Foto ersetzen (Fallback bleibt als Rueckfall bestehen)
+- **Links**: Das Foto von Rene Schreiner gross und prominent (z.B. 200x200px, abgerundet) angezeigt
+- **Rechts**: Name, Firma, Zitat und Badge wie bisher
+- Auf Mobile stapeln sich Bild (zentriert) und Text untereinander
+- Der kleine Avatar entfaellt, stattdessen wird das Bild als eigenstaendiges, grosses Element dargestellt
 
-### Ergebnis
+### Technische Umsetzung
 
-Das Testimonial von Rene Schreiner zeigt sein Foto im Avatar-Kreis statt nur der Initialen "RS". Bei Ladefehler werden weiterhin die Initialen angezeigt.
+- Card-Inhalt wird zu `flex flex-col md:flex-row items-center gap-6`
+- Linke Spalte: `<img>` mit `w-40 h-40 md:w-48 md:h-48 rounded-2xl object-cover shadow-md`
+- Rechte Spalte: Name, Firma-Link, Zitat, Badge
+- Container-Breite wird auf `max-w-2xl` erweitert fuer das breitere Layout
+- Kein neuer Import noetig, das bestehende `renePhoto` wird weiterverwendet
 
