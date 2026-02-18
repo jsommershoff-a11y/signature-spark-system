@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import renePhoto from "@/assets/testimonial-rene-schreiner.jpeg";
 
 const testimonials = [
   {
@@ -8,6 +9,7 @@ const testimonials = [
     quote: "Neue Website, eigenes CRM, Planungs-, Mitarbeiter- und Kundenportal – alles aus einer Hand implementiert. Dazu über 40 Bewerbungen generiert und neue Mitarbeiter gewonnen. Die gesamten Prozesse wurden extrem erleichtert. Der Value ist ehrlich gesagt unmessbar.",
     badge: "40+ Bewerbungen generiert",
     initials: "RS",
+    image: renePhoto,
     link: "https://as-gaerten-gmbh.de",
   },
 ];
@@ -33,6 +35,7 @@ export const TestimonialGrid = () => {
             <div key={i} className="bg-card rounded-2xl border border-border/40 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-4">
                 <Avatar className="h-12 w-12">
+                  {t.image && <AvatarImage src={t.image} alt={t.name} />}
                   <AvatarFallback className="bg-primary/10 text-primary font-bold">{t.initials}</AvatarFallback>
                 </Avatar>
                 <div>
