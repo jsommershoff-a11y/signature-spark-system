@@ -70,14 +70,22 @@ Deno.serve(async (req) => {
     }
 
     // Parse body
-    const { offer_id } = await req.json();
-    if (!offer_id) {
+    let parsedBody: unknown;
+    try {
+      parsedBody = await req.json();
+    } catch {
       return new Response(
-        JSON.stringify({ error: "offer_id is required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Invalid JSON payload" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const offer_id = (parsedBody as Record<string, unknown>)?.offer_id;
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!offer_id || typeof offer_id !== 'string' || !UUID_REGEX.test(offer_id)) {
+      return new Response(
+        JSON.stringify({ error: "Valid offer_id (UUID) is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

@@ -88,9 +88,24 @@ serve(async (req) => {
       );
     }
 
+    // Sanitize PII from email body before storage
+    function sanitizePII(text: string): string {
+      return text
+        // Credit card numbers
+        .replace(/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g, '[REDACTED_CC]')
+        // IBAN
+        .replace(/\b[A-Z]{2}\d{2}[\s]?[\dA-Z]{4}[\s]?[\dA-Z]{4}[\s]?[\dA-Z]{4}[\s]?[\dA-Z]{0,4}[\s]?[\dA-Z]{0,2}\b/g, '[REDACTED_IBAN]')
+        // German tax IDs
+        .replace(/\b\d{2,3}\/\d{3}\/\d{4,5}\b/g, '[REDACTED_TAX_ID]')
+        // Password patterns
+        .replace(/(?:password|passwort|kennwort|pwd)[\s]*[:=]\s*\S+/gi, '[REDACTED_PASSWORD]');
+    }
+
     // Build activity
     const dirLabel = direction === 'outbound' ? 'Ausgehende' : 'Eingehende';
     const content = `${dirLabel} E-Mail: ${subject}`;
+
+    const sanitizedBody = body ? sanitizePII(body.slice(0, 5000)) : undefined;
 
     const activityUserId = lead.owner_user_id;
     if (!activityUserId) {
@@ -111,7 +126,7 @@ serve(async (req) => {
           source: 'manus_api',
           direction,
           subject,
-          ...(body ? { body: body.slice(0, 5000) } : {}),
+          ...(sanitizedBody ? { body: sanitizedBody } : {}),
           sent_at: sent_at || new Date().toISOString(),
         },
       })
