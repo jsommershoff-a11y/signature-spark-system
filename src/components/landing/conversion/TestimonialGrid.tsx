@@ -30,29 +30,30 @@ export const TestimonialGrid = () => {
           <p className="text-muted-foreground">4.9 von 5 Sternen · Über 150 Unternehmer vertrauen uns</p>
         </div>
 
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-2xl mx-auto">
           {testimonials.map((t, i) => (
-            <div key={i} className="bg-card rounded-2xl border border-border/40 p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-4">
-                <Avatar className="h-12 w-12">
-                  {t.image && <AvatarImage src={t.image} alt={t.name} />}
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold">{t.initials}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold text-foreground">{t.name}</p>
-                  {"link" in t && t.link ? (
-                    <a href={t.link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                      {t.company}
-                    </a>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">{t.company}</p>
-                  )}
-                </div>
+            <div key={i} className="bg-card rounded-2xl border border-border/40 p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row items-center gap-6">
+              {t.image && (
+                <img
+                  src={t.image}
+                  alt={t.name}
+                  className="w-40 h-40 md:w-48 md:h-48 rounded-2xl object-cover shadow-md flex-shrink-0"
+                />
+              )}
+              <div className="text-center md:text-left">
+                <p className="font-semibold text-foreground text-lg">{t.name}</p>
+                {"link" in t && t.link ? (
+                  <a href={t.link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                    {t.company}
+                  </a>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t.company}</p>
+                )}
+                <p className="text-foreground mt-4 italic">"{t.quote}"</p>
+                <span className="inline-block bg-primary/10 text-primary font-bold text-sm px-3 py-1 rounded-full mt-4">
+                  {t.badge}
+                </span>
               </div>
-              <p className="text-foreground mb-4 italic">"{t.quote}"</p>
-              <span className="inline-block bg-primary/10 text-primary font-bold text-sm px-3 py-1 rounded-full">
-                {t.badge}
-              </span>
             </div>
           ))}
         </div>
