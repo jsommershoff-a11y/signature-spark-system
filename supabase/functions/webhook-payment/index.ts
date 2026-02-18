@@ -90,6 +90,39 @@ async function verifyStripeSignature(
   }
 }
 
+// Verify CopeCart webhook signature (HMAC-SHA256 of payload with shared secret)
+async function verifyCopeCartSignature(
+  payload: string,
+  signature: string | null,
+  secret: string
+): Promise<boolean> {
+  if (!signature || !secret) return false;
+  
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const expectedSig = await crypto.subtle.sign(
+      'HMAC',
+      key,
+      encoder.encode(payload)
+    );
+    const expectedHex = Array.from(new Uint8Array(expectedSig))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    
+    return signature === expectedHex;
+  } catch (error) {
+    console.error('CopeCart signature verification error:', error);
+    return false;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -100,11 +133,13 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+    const copecartWebhookSecret = Deno.env.get('COPECART_WEBHOOK_SECRET');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get raw body for signature verification
     const rawBody = await req.text();
     const stripeSignature = req.headers.get('stripe-signature');
+    const copecartSignature = req.headers.get('x-copecart-signature');
     
     // Parse and validate JSON
     let parsedBody: unknown;
@@ -123,6 +158,9 @@ serve(async (req) => {
       'type' in parsedBody && typeof (parsedBody as Record<string, unknown>).type === 'string' &&
       ((parsedBody as Record<string, unknown>).type as string).startsWith('checkout.session');
     
+    const isCopeCartEvent = typeof parsedBody === 'object' && parsedBody !== null &&
+      ('event_type' in parsedBody || 'order_data' in parsedBody);
+
     if (isStripeEvent && stripeWebhookSecret) {
       const isValidSignature = await verifyStripeSignature(rawBody, stripeSignature, stripeWebhookSecret);
       if (!isValidSignature) {
@@ -133,6 +171,23 @@ serve(async (req) => {
         );
       }
       console.log('Stripe signature verified');
+    } else if (isCopeCartEvent) {
+      if (!copecartWebhookSecret) {
+        console.error('COPECART_WEBHOOK_SECRET not configured, rejecting CopeCart webhook');
+        return new Response(
+          JSON.stringify({ error: 'Webhook secret not configured' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const isValidSignature = await verifyCopeCartSignature(rawBody, copecartSignature, copecartWebhookSecret);
+      if (!isValidSignature) {
+        console.error('Invalid CopeCart signature');
+        return new Response(
+          JSON.stringify({ error: 'Invalid signature' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.log('CopeCart signature verified');
     }
 
     // Validate payload schema
