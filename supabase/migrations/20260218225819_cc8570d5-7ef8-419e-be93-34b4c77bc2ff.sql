@@ -1,0 +1,62 @@
+
+-- 1. goals erweitern (nur neue Spalten)
+ALTER TABLE goals
+  ADD COLUMN IF NOT EXISTS horizon text NOT NULL DEFAULT 'YEAR',
+  ADD COLUMN IF NOT EXISTS target_amount_cents integer,
+  ADD COLUMN IF NOT EXISTS target_value numeric,
+  ADD COLUMN IF NOT EXISTS unit text,
+  ADD COLUMN IF NOT EXISTS reward_title text,
+  ADD COLUMN IF NOT EXISTS reward_image_url text,
+  ADD COLUMN IF NOT EXISTS reward_amount_cents integer;
+
+-- horizon CHECK constraint
+ALTER TABLE goals
+  ADD CONSTRAINT goals_horizon_check
+  CHECK (horizon IN ('YEAR', 'HALF_YEAR', 'MONTH'));
+
+-- 2. goal_progress Tabelle
+CREATE TABLE goal_progress (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  goal_id uuid NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+  period_start date NOT NULL,
+  period_end date NOT NULL,
+  period_type text NOT NULL CHECK (period_type IN ('DAY','WEEK','MONTH')),
+  actual_value numeric NOT NULL DEFAULT 0,
+  actual_amount_cents integer NOT NULL DEFAULT 0,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+CREATE UNIQUE INDEX goal_progress_unique
+  ON goal_progress (goal_id, period_start, period_type);
+
+-- 3. updated_at Trigger fuer goal_progress
+CREATE TRIGGER goal_progress_updated_at
+  BEFORE UPDATE ON goal_progress
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- 4. RLS fuer goal_progress
+ALTER TABLE goal_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Staff can read own goal progress" ON goal_progress
+  FOR SELECT USING (
+    has_min_role(auth.uid(), 'mitarbeiter') AND
+    goal_id IN (
+      SELECT id FROM goals
+      WHERE user_id = get_user_profile_id(auth.uid())
+        OR created_by = get_user_profile_id(auth.uid())
+    )
+  );
+
+CREATE POLICY "Teamleiter can read all goal progress" ON goal_progress
+  FOR SELECT USING (has_min_role(auth.uid(), 'teamleiter'));
+
+CREATE POLICY "Teamleiter can insert goal progress" ON goal_progress
+  FOR INSERT WITH CHECK (has_min_role(auth.uid(), 'teamleiter'));
+
+CREATE POLICY "Teamleiter can update goal progress" ON goal_progress
+  FOR UPDATE USING (has_min_role(auth.uid(), 'teamleiter'));
+
+CREATE POLICY "Admin can delete goal progress" ON goal_progress
+  FOR DELETE USING (has_role(auth.uid(), 'admin'));

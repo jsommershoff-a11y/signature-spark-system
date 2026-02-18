@@ -757,6 +757,50 @@ export type Database = {
           },
         ]
       }
+      goal_progress: {
+        Row: {
+          actual_amount_cents: number
+          actual_value: number
+          created_at: string | null
+          goal_id: string
+          id: string
+          period_end: string
+          period_start: string
+          period_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          actual_amount_cents?: number
+          actual_value?: number
+          created_at?: string | null
+          goal_id: string
+          id?: string
+          period_end: string
+          period_start: string
+          period_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          actual_amount_cents?: number
+          actual_value?: number
+          created_at?: string | null
+          goal_id?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_progress_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           created_at: string
@@ -764,12 +808,19 @@ export type Database = {
           current_amount: number
           description: string | null
           end_date: string
+          horizon: string
           id: string
+          reward_amount_cents: number | null
+          reward_image_url: string | null
+          reward_title: string | null
           start_date: string
           status: string
           target_amount: number
+          target_amount_cents: number | null
+          target_value: number | null
           team_id: string | null
           title: string
+          unit: string | null
           updated_at: string
           user_id: string | null
         }
@@ -779,12 +830,19 @@ export type Database = {
           current_amount?: number
           description?: string | null
           end_date: string
+          horizon?: string
           id?: string
+          reward_amount_cents?: number | null
+          reward_image_url?: string | null
+          reward_title?: string | null
           start_date?: string
           status?: string
           target_amount?: number
+          target_amount_cents?: number | null
+          target_value?: number | null
           team_id?: string | null
           title: string
+          unit?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -794,12 +852,19 @@ export type Database = {
           current_amount?: number
           description?: string | null
           end_date?: string
+          horizon?: string
           id?: string
+          reward_amount_cents?: number | null
+          reward_image_url?: string | null
+          reward_title?: string | null
           start_date?: string
           status?: string
           target_amount?: number
+          target_amount_cents?: number | null
+          target_value?: number | null
           team_id?: string | null
           title?: string
+          unit?: string | null
           updated_at?: string
           user_id?: string | null
         }
