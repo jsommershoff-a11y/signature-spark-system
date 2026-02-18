@@ -21,6 +21,7 @@ import {
   FollowupApprovalsWidget,
   CustomerAvatarWidget
 } from '@/components/dashboard';
+import GoalsMotivationPanel from '@/components/dashboard/GoalsMotivationPanel';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function Dashboard() {
@@ -170,6 +171,9 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Goals Motivation Panel */}
+      <GoalsMotivationPanel />
+
       {/* Widgets Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <CallQueueWidget />
@@ -239,6 +243,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Goals Motivation Panel */}
+      <GoalsMotivationPanel />
 
       {/* Widgets Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
