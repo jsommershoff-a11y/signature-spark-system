@@ -26,8 +26,8 @@ const horizonLabels: Record<GoalHorizon, string> = {
 
 export function GoalDetailModal({ goal, open, onOpenChange }: GoalDetailModalProps) {
   const { updateGoal, useMilestones, useGoalProgress, createMilestone, toggleMilestone, deleteMilestone, upsertGoalProgress } = useGoals();
-  const { data: milestones = [] } = goal ? useMilestones(goal.id) : { data: [] };
-  const { data: progressEntries = [] } = goal ? useGoalProgress(goal.id) : { data: [] };
+  const { data: milestones = [] } = useMilestones(goal?.id ?? '');
+  const { data: progressEntries = [] } = useGoalProgress(goal?.id ?? '');
   const [currentAmount, setCurrentAmount] = useState<number | null>(null);
   const [showProgressForm, setShowProgressForm] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
