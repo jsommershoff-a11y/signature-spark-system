@@ -13,7 +13,7 @@ export function AppLayout() {
       <ViewAsBanner />
       
       {/* Header */}
-      <header className="h-16 border-b border-border bg-card flex items-center justify-between px-4 lg:px-6">
+      <header className="h-16 border-b border-primary-deep/30 bg-gradient-to-r from-primary-deep via-primary to-primary-light flex items-center justify-between px-4 lg:px-6 shadow-md">
         <Link to="/app" className="flex items-center gap-2">
           <img src={logoSignature} alt="KRS Signature" className="h-8" />
         </Link>

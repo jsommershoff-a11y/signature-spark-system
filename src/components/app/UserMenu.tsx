@@ -50,10 +50,10 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-primary-foreground/20">
+          <Avatar className="h-10 w-10 ring-2 ring-primary-foreground/40">
             <AvatarImage src={profile?.avatar_url || undefined} alt={getDisplayName()} />
-            <AvatarFallback>{getInitials()}</AvatarFallback>
+            <AvatarFallback className="bg-primary-deep text-primary-foreground font-bold">{getInitials()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

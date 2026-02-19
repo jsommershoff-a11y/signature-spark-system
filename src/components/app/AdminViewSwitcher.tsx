@@ -35,9 +35,12 @@ export function AdminViewSwitcher() {
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button 
-                variant={isViewingAs ? "secondary" : "outline"} 
+                variant={isViewingAs ? "secondary" : "ghost"} 
                 size="sm" 
-                className="gap-2"
+                className={isViewingAs 
+                  ? "gap-2 bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 border border-primary-foreground/30" 
+                  : "gap-2 text-primary-foreground hover:bg-primary-foreground/20"
+                }
               >
                 <Eye className="h-4 w-4" />
                 <span className="hidden sm:inline">Ansicht:</span>
