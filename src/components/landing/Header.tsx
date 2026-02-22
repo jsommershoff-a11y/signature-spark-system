@@ -35,7 +35,7 @@ export const Header = () => {
   const [branchesOpen, setBranchesOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary-deep via-primary to-primary-light shadow-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -50,7 +50,7 @@ export const Header = () => {
           {/* Desktop Navigation (md und größer) */}
           <nav className="hidden md:flex items-center gap-6">
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors font-medium">
+              <DropdownMenuTrigger className="flex items-center gap-1 text-primary-foreground hover:text-primary-foreground/80 transition-colors font-medium">
                 Branchen
                 <ChevronDown className="w-4 h-4" />
               </DropdownMenuTrigger>
@@ -68,14 +68,14 @@ export const Header = () => {
             <Link to="/qualifizierung">
               <Button 
                 size="sm" 
-                className="bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary"
+                className="bg-white text-primary-deep hover:bg-white/90 font-semibold shadow-md"
               >
                 Analysegespräch sichern
               </Button>
             </Link>
 
             <Link to="/auth">
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-primary-foreground hover:bg-primary-foreground/20">
                 <LogIn className="w-4 h-4" />
                 Anmelden
               </Button>
@@ -85,7 +85,7 @@ export const Header = () => {
           {/* Mobile Navigation (unter md) */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Menü öffnen</span>
               </Button>
