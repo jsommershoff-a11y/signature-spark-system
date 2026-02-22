@@ -24,7 +24,7 @@ export const Footer = () => {
               />
             </Link>
             <p className="text-muted text-sm">
-              Die Plattform + persönliches Sparring für echte Unternehmer.
+              Ganzheitliche Unternehmensberatung – aus der Praxis, für die Praxis.
             </p>
           </div>
           
@@ -52,7 +52,7 @@ export const Footer = () => {
                 to="/qualifizierung" 
                 className="text-muted hover:text-primary-foreground transition-colors text-sm"
               >
-                Analysegespräch sichern
+                Potenzial-Analyse buchen
               </Link>
               <a 
                 href="https://krsimmobilien.de/impressum"
