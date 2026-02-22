@@ -1,37 +1,65 @@
 
 
-## Logo-Austausch: Altes Logo raus, neues KRS Signature Logo rein
+## Fehler im Angebotsbereich beheben
 
-### Ausgangslage
+### Identifizierte Probleme
 
-Aktuell werden zwei verschiedene Logo-Dateien im Projekt verwendet:
-- `src/assets/logo-krs-signature.png` (Landing-Seiten: Header, Footer, StickyConversionHeader)
-- `src/assets/logo-signature.png` (App-Bereich: AppLayout, Auth-Seite)
+**1. React Ref-Warnung: "Function components cannot be given refs"**
 
-### Aenderungen
+Zwei Console-Errors erscheinen beim Laden der Offers-Seite:
+- `CreateOfferDialog` wird von der Offers-Seite als Komponente gerendert. Radix `Dialog` versucht intern, einen Ref an das Kind-Element weiterzugeben, aber `CreateOfferDialog` ist eine einfache Funktionskomponente ohne `forwardRef`.
+- Innerhalb von `CreateOfferDialog` tritt dasselbe Problem auf: `Dialog` versucht einen Ref an sein Kind zu geben.
 
-**Step 01 — Neue Logo-Datei ins Projekt kopieren**
+**2. Angebote ohne zugeordneten Lead werden nicht angezeigt**
 
-Die hochaufgeloeste Version `KRS_Signature_Universal_HighRes_1080x1080.png` wird als `src/assets/krs-logo.png` ins Projekt kopiert. Nur eine einzige Datei fuer alle Verwendungszwecke.
+Die Supabase-Query in `useOffers` verwendet `crm_leads!inner(...)`. Das `!inner`-Keyword bedeutet: Nur Angebote MIT einem existierenden Lead werden zurueckgegeben. Falls ein Lead geloescht wurde, verschwinden alle zugehoerigen Angebote aus der Liste — ohne Fehlermeldung.
 
-**Step 02 — Alle Imports auf das neue Logo umstellen**
+### Loesung
 
-Folgende 5 Dateien werden aktualisiert (nur die Import-Zeile aendern):
+**Step 01 — CreateOfferDialog mit forwardRef umschliessen**
 
-| Datei | Alter Import | Neuer Import |
-|---|---|---|
-| `src/components/landing/Header.tsx` | `logo-krs-signature.png` | `krs-logo.png` |
-| `src/components/landing/Footer.tsx` | `logo-krs-signature.png` | `krs-logo.png` |
-| `src/components/landing/conversion/StickyConversionHeader.tsx` | `logo-krs-signature.png` | `krs-logo.png` |
-| `src/components/app/AppLayout.tsx` | `logo-signature.png` | `krs-logo.png` |
-| `src/pages/Auth.tsx` | `logo-signature.png` | `krs-logo.png` |
+Datei: `src/components/offers/CreateOfferDialog.tsx`
 
-**Step 03 — Alte Logo-Dateien loeschen**
+Die Komponente wird mit `React.forwardRef` gewrappt, damit Radix Dialog den Ref korrekt weiterleiten kann. Die Export-Signatur bleibt gleich.
 
-- `src/assets/logo-krs-signature.png` entfernen
-- `src/assets/logo-signature.png` entfernen
+Aenderung:
+```typescript
+// Vorher:
+export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps) {
 
-### Hinweis
+// Nachher:
+import { forwardRef } from 'react';
 
-Das neue Logo hat einen orangefarbenen Hintergrund, der auf den orangefarbenen Headern nahtlos verschmilzt. Auf der Auth-Seite (heller Hintergrund) wird das quadratische Logo mit dem Orange-Hintergrund als markantes Branding-Element wirken.
+export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogProps>(
+  function CreateOfferDialog({ open, onOpenChange }, ref) {
+    // ... bestehender Code bleibt identisch
+  }
+);
+```
+
+**Step 02 — Inner Join durch Left Join ersetzen**
+
+Datei: `src/hooks/useOffers.ts`
+
+Das `!inner` in der Query wird entfernt, damit auch Angebote ohne zugeordneten Lead angezeigt werden (z.B. wenn ein Lead geloescht wurde). Der Code, der `item.crm_leads` mapped, wird mit einem Fallback abgesichert.
+
+Aenderung:
+```typescript
+// Vorher:
+crm_leads!inner (id, first_name, last_name, email, company)
+
+// Nachher:
+crm_leads (id, first_name, last_name, email, company)
+```
+
+Und im Mapping:
+```typescript
+lead: item.crm_leads || null,
+```
+
+### Ergebnis
+
+- Keine Console-Errors mehr auf der Angebots-Seite
+- Angebote bleiben sichtbar, auch wenn der zugehoerige Lead geloescht wurde
+- Keine Aenderung an der Datenbankstruktur noetig (nur Frontend-Code)
 
