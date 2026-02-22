@@ -1,33 +1,32 @@
 
 
-## Header-Redesign: Durchgehendes KRS-Orange mit prominentem CTA
+## Header-Farbe auf exaktes Logo-Orange anpassen
 
 ### Problem
 
-Der aktuelle Landing-Header (`StickyConversionHeader`) hat einen hellen/transparenten Hintergrund (`bg-background/90`). Das Logo "schwebt" auf hellem Grund, der CTA-Button ist klein und unauffaellig. Es fehlt die markante KRS-Orange-Identitaet, die bereits im App-Header umgesetzt ist.
+Der Header-Gradient spannt sich von dunklem Braun-Orange (`primary-deep`, HSL 25 85% 45%) bis hellem Gelb-Orange (`primary-light`, HSL 35 95% 65%). Das ergibt einen breiten Farbverlauf, der nicht dem einheitlichen Orange des KRS-Logos entspricht.
 
 ### Loesung
 
-Den Landing-Header analog zum App-Header mit einem durchgehenden Orange-Gradient gestalten. Schriftfarben und CTA auf den dunklen Hintergrund anpassen.
+Den Header-Gradient deutlich enger um den Logo-Orange-Ton (`--primary`, HSL 30 90% 55%) zentrieren. Der Gradient bleibt bestehen fuer Tiefe, aber alle drei Stufen liegen nah beieinander, sodass das Gesamtbild einheitlich orange wirkt — wie das Logo.
 
 ### Aenderungen
 
-**1. `src/components/landing/conversion/StickyConversionHeader.tsx`** (MasterHome Header)
+**1. `src/index.css`** — Landing-Token-Werte anpassen (Light + Dark Mode)
 
-- Hintergrund: `bg-gradient-to-r from-primary-deep via-primary to-primary-light` mit `shadow-md` (wie App-Header)
-- Border entfernen (nicht noetig bei durchgehendem Farbhintergrund)
-- Login-Button: `text-primary-foreground` mit `hover:bg-primary-foreground/20` (weiss auf Orange)
-- CTA-Button: Weisser Button mit orangener Schrift (`bg-white text-primary-deep hover:bg-white/90`) — damit er sich klar vom orangenen Hintergrund abhebt und sofort ins Auge faellt
-- Hoehe leicht erhoehen auf `h-16` fuer mehr Praesenz
+Die Custom-Tokens werden naeher an den Primary-Ton gerueckt:
 
-**2. `src/components/landing/Header.tsx`** (Branchen-Seiten Header)
+- `--primary-deep`: von `25 85% 45%` auf `28 88% 48%` (weniger braun, naeher am Logo-Orange)
+- `--primary-light`: von `35 95% 65%` auf `32 92% 60%` (weniger gelb, naeher am Logo-Orange)
+- `--gradient-start` und `--gradient-end` analog anpassen
 
-- Gleiche Anpassung: Orange-Gradient-Hintergrund
-- Branchen-Dropdown-Trigger: `text-primary-foreground` statt `text-muted-foreground`
-- Login-Button: `text-primary-foreground border-primary-foreground/30`
-- CTA-Button: Weiss auf Orange (`bg-white text-primary-deep`)
-- Mobile Hamburger-Icon: `text-primary-foreground`
+Damit wird der Gradient im Header nur noch ein subtiler Helligkeitsunterschied innerhalb desselben Orange-Tons — kein sichtbarer Farbwechsel mehr von Braun nach Gelb.
+
+**2. Betroffene Header-Komponenten**
+
+`StickyConversionHeader.tsx`, `Header.tsx` und `AppLayout.tsx` nutzen alle `from-primary-deep via-primary to-primary-light`. Durch die Token-Anpassung in CSS aendern sich alle drei Header automatisch — keine Code-Aenderung in den Komponenten noetig.
 
 ### Ergebnis
 
-Beide Landing-Header bekommen den gleichen durchgehenden KRS-Orange-Look wie der App-Header — mit einem weissen CTA-Button, der sich klar abhebt und sofort auffaellt.
+Alle Header (Landing + App) zeigen ein einheitliches, sattes Orange, das dem Logo-Farbton entspricht. Der subtile Gradient sorgt weiterhin fuer visuelle Tiefe, ohne den Farbton zu verfaelschen.
+
