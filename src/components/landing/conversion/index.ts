@@ -2,6 +2,7 @@ export { CountdownBanner } from "./CountdownBanner";
 export { ProblemAmplifier } from "./ProblemAmplifier";
 export { SolutionSection } from "./SolutionSection";
 export { TestimonialGrid } from "./TestimonialGrid";
+export { ResultsShowcase } from "./ResultsShowcase";
 export { PricingSection } from "./PricingSection";
 export { GuaranteeSection } from "./GuaranteeSection";
 export { ExitIntentPopup } from "./ExitIntentPopup";
