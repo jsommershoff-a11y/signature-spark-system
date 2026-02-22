@@ -34,11 +34,11 @@ export const ResultsShowcase = () => {
               className="rounded-2xl border border-border/40 bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col md:flex-row"
             >
               {/* Screenshot */}
-              <div className="md:w-1/2 relative">
+              <div className="md:w-1/2 relative bg-muted">
                 <img
                   src={r.image}
                   alt={`Ergebnis für ${r.company}`}
-                  className="w-full h-64 md:h-full object-cover"
+                  className="w-full min-h-[300px] md:min-h-[400px] object-contain"
                 />
               </div>
 
