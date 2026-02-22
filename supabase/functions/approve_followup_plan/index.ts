@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const inputSchema = z.object({
+  plan_id: z.string().regex(UUID_REGEX, 'Invalid plan_id format'),
+  approve: z.boolean(),
+  reason: z.string().max(500).optional(),
+});
 
 // Approve or reject a followup plan
 serve(async (req) => {
@@ -15,33 +24,74 @@ serve(async (req) => {
   try {
     // Verify JWT
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
+        JSON.stringify({ error: 'Authorization required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get user from JWT
+    // Validate token via getClaims
+    const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
+    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
+
+    if (claimsError || !claimsData?.claims?.sub) {
       return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
+        JSON.stringify({ error: 'Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const userId = claimsData.claims.sub;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check role - require at least teamleiter
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .in('role', ['admin', 'geschaeftsfuehrung', 'teamleiter']);
+
+    if (!roles || roles.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient permissions. Teamleiter or higher required.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse and validate input
+    let rawInput: unknown;
+    try {
+      rawInput = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON payload' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const parseResult = inputSchema.safeParse(rawInput);
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input: ' + parseResult.error.issues[0]?.message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { plan_id, approve, reason } = parseResult.data;
 
     // Get user's profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     if (!profile) {
@@ -51,16 +101,7 @@ serve(async (req) => {
       );
     }
 
-    const { plan_id, approve, reason } = await req.json();
-
-    if (!plan_id) {
-      return new Response(
-        JSON.stringify({ error: 'plan_id is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`${approve ? 'Approving' : 'Rejecting'} plan ${plan_id} by user ${user.id}`);
+    console.log(`${approve ? 'Approving' : 'Rejecting'} plan ${plan_id} by user ${userId}`);
 
     // Get the plan
     const { data: plan, error: planError } = await supabase
@@ -69,7 +110,12 @@ serve(async (req) => {
       .eq('id', plan_id)
       .single();
 
-    if (planError) throw planError;
+    if (planError || !plan) {
+      return new Response(
+        JSON.stringify({ error: 'Plan not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (plan.status !== 'pending') {
       return new Response(
@@ -94,7 +140,6 @@ serve(async (req) => {
       // Create tasks/calls from steps
       for (const step of plan.steps || []) {
         if (step.step_type === 'call') {
-          // Create a scheduled call
           await supabase
             .from('calls')
             .insert({
@@ -103,10 +148,9 @@ serve(async (req) => {
               call_type: 'phone',
               scheduled_at: step.scheduled_at,
               status: 'scheduled',
-              notes: step.content_json?.content || 'Automatisch geplant',
+              notes: (typeof step.content_json?.content === 'string' ? step.content_json.content : 'Automatisch geplant').slice(0, 500),
             });
         } else if (step.step_type === 'task') {
-          // Create a task
           const { data: lead } = await supabase
             .from('crm_leads')
             .select('owner_user_id')
@@ -120,13 +164,12 @@ serve(async (req) => {
                 assigned_user_id: lead.owner_user_id,
                 lead_id: plan.lead_id,
                 type: 'followup',
-                title: step.content_json?.content || 'Followup-Aufgabe',
+                title: (typeof step.content_json?.content === 'string' ? step.content_json.content : 'Followup-Aufgabe').slice(0, 100),
                 status: 'open',
                 due_at: step.scheduled_at,
               });
           }
         }
-        // Email/WhatsApp steps would typically be handled by n8n automation
       }
 
       console.log(`Plan ${plan_id} approved, created ${plan.steps?.length || 0} items`);
@@ -168,7 +211,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Approve followup plan error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
