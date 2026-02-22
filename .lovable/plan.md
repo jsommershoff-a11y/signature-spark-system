@@ -1,20 +1,33 @@
 
 
-## Fix: Bild-Darstellung in der Kundenberichte-Section
+## Header-Redesign: Durchgehendes KRS-Orange mit prominentem CTA
 
 ### Problem
 
-Das Bild wird mit `object-cover` und fester Hoehe angezeigt, wodurch es stark beschnitten wird. Es ist nur ein kleiner Ausschnitt (Firmenname-Text) sichtbar statt des gesamten Ergebnis-Screenshots.
+Der aktuelle Landing-Header (`StickyConversionHeader`) hat einen hellen/transparenten Hintergrund (`bg-background/90`). Das Logo "schwebt" auf hellem Grund, der CTA-Button ist klein und unauffaellig. Es fehlt die markante KRS-Orange-Identitaet, die bereits im App-Header umgesetzt ist.
 
 ### Loesung
 
-In `src/components/landing/conversion/ResultsShowcase.tsx`:
+Den Landing-Header analog zum App-Header mit einem durchgehenden Orange-Gradient gestalten. Schriftfarben und CTA auf den dunklen Hintergrund anpassen.
 
-1. **`object-cover` durch `object-contain` ersetzen** — damit das gesamte Bild sichtbar bleibt, ohne abgeschnitten zu werden
-2. **Hintergrundfarbe fuer den Bildbereich hinzufuegen** (`bg-muted`) — damit bei `object-contain` kein leerer weisser Raum entsteht, sondern ein dezenter Hintergrund
-3. **Mindesthoehe anpassen** — `h-64 md:h-full` durch `min-h-[300px] md:min-h-[400px]` ersetzen, damit das Bild genug Platz bekommt
+### Aenderungen
 
-### Betroffene Datei
+**1. `src/components/landing/conversion/StickyConversionHeader.tsx`** (MasterHome Header)
 
-`src/components/landing/conversion/ResultsShowcase.tsx` — nur die `<img>` und deren Container-`<div>` werden angepasst (2 Zeilen).
+- Hintergrund: `bg-gradient-to-r from-primary-deep via-primary to-primary-light` mit `shadow-md` (wie App-Header)
+- Border entfernen (nicht noetig bei durchgehendem Farbhintergrund)
+- Login-Button: `text-primary-foreground` mit `hover:bg-primary-foreground/20` (weiss auf Orange)
+- CTA-Button: Weisser Button mit orangener Schrift (`bg-white text-primary-deep hover:bg-white/90`) — damit er sich klar vom orangenen Hintergrund abhebt und sofort ins Auge faellt
+- Hoehe leicht erhoehen auf `h-16` fuer mehr Praesenz
 
+**2. `src/components/landing/Header.tsx`** (Branchen-Seiten Header)
+
+- Gleiche Anpassung: Orange-Gradient-Hintergrund
+- Branchen-Dropdown-Trigger: `text-primary-foreground` statt `text-muted-foreground`
+- Login-Button: `text-primary-foreground border-primary-foreground/30`
+- CTA-Button: Weiss auf Orange (`bg-white text-primary-deep`)
+- Mobile Hamburger-Icon: `text-primary-foreground`
+
+### Ergebnis
+
+Beide Landing-Header bekommen den gleichen durchgehenden KRS-Orange-Look wie der App-Header — mit einem weissen CTA-Button, der sich klar abhebt und sofort auffaellt.
