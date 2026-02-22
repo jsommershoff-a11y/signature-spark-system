@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -12,19 +12,13 @@ import type {
 } from '@/types/calls';
 
 export function useCalls(filters?: CallFilters) {
-  const [calls, setCalls] = useState<Call[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
   const { profile } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchCalls = useCallback(async () => {
-    if (!profile) return;
-    
-    setLoading(true);
-    setError(null);
-
-    try {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['calls', filters],
+    queryFn: async () => {
       let query = supabase
         .from('calls')
         .select(`
@@ -34,7 +28,6 @@ export function useCalls(filters?: CallFilters) {
         `)
         .order('scheduled_at', { ascending: false, nullsFirst: false });
 
-      // Apply filters
       if (filters?.lead_id) {
         query = query.eq('lead_id', filters.lead_id);
       }
@@ -51,29 +44,22 @@ export function useCalls(filters?: CallFilters) {
         query = query.lte('scheduled_at', filters.to_date);
       }
 
-      const { data, error: fetchError } = await query;
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data as Call[]) || [];
+    },
+    enabled: !!profile,
+  });
 
-      if (fetchError) throw fetchError;
-      setCalls(data as Call[] || []);
-    } catch (err) {
-      setError(err as Error);
-      console.error('Error fetching calls:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [profile, filters?.lead_id, filters?.status, filters?.conducted_by, filters?.from_date, filters?.to_date]);
+  const calls = data ?? [];
 
-  useEffect(() => {
-    fetchCalls();
-  }, [fetchCalls]);
-
-  const createCall = async (data: CreateCallInput): Promise<Call | null> => {
+  const createCall = async (input: CreateCallInput): Promise<Call | null> => {
     try {
       const { data: newCall, error } = await supabase
         .from('calls')
         .insert({
-          ...data,
-          conducted_by: data.conducted_by || profile?.id,
+          ...input,
+          conducted_by: input.conducted_by || profile?.id,
         })
         .select(`
           *,
@@ -84,7 +70,7 @@ export function useCalls(filters?: CallFilters) {
 
       if (error) throw error;
 
-      setCalls(prev => [newCall as Call, ...prev]);
+      queryClient.invalidateQueries({ queryKey: ['calls'] });
       toast({
         title: 'Call geplant',
         description: 'Der Call wurde erfolgreich angelegt.',
@@ -101,9 +87,9 @@ export function useCalls(filters?: CallFilters) {
     }
   };
 
-  const updateCall = async (data: UpdateCallInput): Promise<Call | null> => {
+  const updateCall = async (input: UpdateCallInput): Promise<Call | null> => {
     try {
-      const { id, ...updateData } = data;
+      const { id, ...updateData } = input;
       const { data: updatedCall, error } = await supabase
         .from('calls')
         .update(updateData)
@@ -117,7 +103,7 @@ export function useCalls(filters?: CallFilters) {
 
       if (error) throw error;
 
-      setCalls(prev => prev.map(c => c.id === id ? updatedCall as Call : c));
+      queryClient.invalidateQueries({ queryKey: ['calls'] });
       return updatedCall as Call;
     } catch (err) {
       console.error('Error updating call:', err);
@@ -162,7 +148,7 @@ export function useCalls(filters?: CallFilters) {
 
       if (error) throw error;
 
-      setCalls(prev => prev.filter(c => c.id !== callId));
+      queryClient.invalidateQueries({ queryKey: ['calls'] });
       toast({
         title: 'Call gelöscht',
         description: 'Der Call wurde erfolgreich gelöscht.',
@@ -181,9 +167,9 @@ export function useCalls(filters?: CallFilters) {
 
   return {
     calls,
-    loading,
-    error,
-    refetch: fetchCalls,
+    loading: isLoading,
+    error: error as Error | null,
+    refetch,
     createCall,
     updateCall,
     startCall,
@@ -192,87 +178,67 @@ export function useCalls(filters?: CallFilters) {
   };
 }
 
-// Hook for single call with full details
 export function useCallDetail(callId: string | undefined) {
-  const [call, setCall] = useState<Call | null>(null);
-  const [transcript, setTranscript] = useState<Transcript | null>(null);
-  const [analysis, setAnalysis] = useState<AiAnalysis | null>(null);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchCallDetail = useCallback(async () => {
-    if (!callId) {
-      setLoading(false);
-      return;
-    }
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['call-detail', callId],
+    queryFn: async () => {
+      const [callResult, transcriptResult, analysisResult] = await Promise.all([
+        supabase
+          .from('calls')
+          .select(`
+            *,
+            lead:crm_leads(id, first_name, last_name, email, company, phone),
+            conductor:profiles!calls_conducted_by_fkey(id, first_name, last_name, full_name)
+          `)
+          .eq('id', callId!)
+          .single(),
+        supabase
+          .from('transcripts')
+          .select('*')
+          .eq('call_id', callId!)
+          .maybeSingle(),
+        supabase
+          .from('ai_analyses')
+          .select('*')
+          .eq('call_id', callId!)
+          .order('created_at', { ascending: false })
+          .maybeSingle(),
+      ]);
 
-    setLoading(true);
-    try {
-      // Fetch call with related data
-      const { data: callData, error: callError } = await supabase
-        .from('calls')
-        .select(`
-          *,
-          lead:crm_leads(id, first_name, last_name, email, company, phone),
-          conductor:profiles!calls_conducted_by_fkey(id, first_name, last_name, full_name)
-        `)
-        .eq('id', callId)
-        .single();
+      if (callResult.error) throw callResult.error;
 
-      if (callError) throw callError;
-      setCall(callData as Call);
+      const transcript = transcriptResult.data
+        ? {
+            ...transcriptResult.data,
+            segments: transcriptResult.data.segments as unknown as import('@/types/calls').TranscriptSegment[] | undefined,
+          } as Transcript
+        : null;
 
-      // Fetch transcript
-      const { data: transcriptData } = await supabase
-        .from('transcripts')
-        .select('*')
-        .eq('call_id', callId)
-        .maybeSingle();
-
-      if (transcriptData) {
-        setTranscript({
-          ...transcriptData,
-          segments: transcriptData.segments as unknown as import('@/types/calls').TranscriptSegment[] | undefined,
-        } as Transcript);
-      } else {
-        setTranscript(null);
-      }
-
-      // Fetch analysis
-      const { data: analysisData } = await supabase
-        .from('ai_analyses')
-        .select('*')
-        .eq('call_id', callId)
-        .order('created_at', { ascending: false })
-        .maybeSingle();
-
-      // Type assertion for analysis_json
-      if (analysisData) {
-        setAnalysis(analysisData as unknown as AiAnalysis);
-      } else {
-        setAnalysis(null);
-      }
-    } catch (err) {
-      console.error('Error fetching call detail:', err);
-      toast({
-        title: 'Fehler',
-        description: 'Call-Details konnten nicht geladen werden.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [callId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    fetchCallDetail();
-  }, [fetchCallDetail]);
+      return {
+        call: callResult.data as Call,
+        transcript,
+        analysis: analysisResult.data as unknown as AiAnalysis | null,
+      };
+    },
+    enabled: !!callId,
+    meta: {
+      onError: () => {
+        toast({
+          title: 'Fehler',
+          description: 'Call-Details konnten nicht geladen werden.',
+          variant: 'destructive',
+        });
+      },
+    },
+  });
 
   return {
-    call,
-    transcript,
-    analysis,
-    loading,
-    refetch: fetchCallDetail,
+    call: data?.call ?? null,
+    transcript: data?.transcript ?? null,
+    analysis: data?.analysis ?? null,
+    loading: isLoading,
+    refetch,
   };
 }

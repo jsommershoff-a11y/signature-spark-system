@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { 
@@ -11,14 +11,12 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 export function useLeads(filters?: LeadFilters) {
-  const [leads, setLeads] = useState<CrmLead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchLeads = useCallback(async () => {
-    try {
-      setLoading(true);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['leads', filters],
+    queryFn: async () => {
       let query = supabase
         .from('crm_leads')
         .select(`
@@ -28,7 +26,6 @@ export function useLeads(filters?: LeadFilters) {
         `)
         .order('created_at', { ascending: false });
 
-      // Apply filters
       if (filters?.status) {
         query = query.eq('status', filters.status);
       }
@@ -41,48 +38,27 @@ export function useLeads(filters?: LeadFilters) {
       if (filters?.search) {
         query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,company.ilike.%${filters.search}%`);
       }
-      if (filters?.stage) {
-        // Filter by pipeline stage - we need to filter in memory after the join
-        const { data, error } = await query;
-        if (error) throw error;
-        
-        const filteredData = (data || []).filter(lead => 
-          lead.pipeline_item?.[0]?.stage === filters.stage
-        );
-        
-        setLeads(filteredData.map(lead => ({
-          ...lead,
-          pipeline_item: lead.pipeline_item?.[0] || null
-        })) as CrmLead[]);
-        return;
-      }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      setLeads((data || []).map(lead => ({
+      let results = (data || []).map(lead => ({
         ...lead,
         pipeline_item: lead.pipeline_item?.[0] || null
-      })) as CrmLead[]);
-    } catch (err) {
-      setError(err as Error);
-      toast({
-        title: 'Fehler beim Laden der Leads',
-        description: (err as Error).message,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
+      })) as CrmLead[];
 
-  useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
+      if (filters?.stage) {
+        results = results.filter(lead => 
+          (lead as any).pipeline_item?.stage === filters.stage
+        );
+      }
+
+      return results;
+    },
+  });
 
   const createLead = async (input: CreateLeadInput): Promise<CrmLead | null> => {
     try {
-      // Convert to database-compatible format
       const dbInput = {
         ...input,
         icp_fit_reason: input.icp_fit_reason as Json | undefined,
@@ -105,7 +81,7 @@ export function useLeads(filters?: LeadFilters) {
         pipeline_item: data.pipeline_item?.[0] || null
       } as CrmLead;
 
-      setLeads(prev => [newLead, ...prev]);
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
       
       toast({
         title: 'Lead erstellt',
@@ -126,7 +102,6 @@ export function useLeads(filters?: LeadFilters) {
   const updateLead = async (input: UpdateLeadInput): Promise<CrmLead | null> => {
     try {
       const { id, ...updates } = input;
-      // Convert to database-compatible format
       const dbUpdates = {
         ...updates,
         icp_fit_reason: updates.icp_fit_reason as Json | undefined,
@@ -150,9 +125,7 @@ export function useLeads(filters?: LeadFilters) {
         pipeline_item: data.pipeline_item?.[0] || null
       } as CrmLead;
 
-      setLeads(prev => prev.map(lead => 
-        lead.id === id ? updatedLead : lead
-      ));
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
 
       toast({
         title: 'Lead aktualisiert',
@@ -179,7 +152,7 @@ export function useLeads(filters?: LeadFilters) {
 
       if (error) throw error;
 
-      setLeads(prev => prev.filter(lead => lead.id !== id));
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
 
       toast({
         title: 'Lead gelöscht',
@@ -206,7 +179,7 @@ export function useLeads(filters?: LeadFilters) {
 
       if (error) throw error;
 
-      await fetchLeads();
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
 
       toast({
         title: 'Lead zugewiesen',
@@ -236,7 +209,8 @@ export function useLeads(filters?: LeadFilters) {
 
       if (error) throw error;
 
-      await fetchLeads();
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['pipeline'] });
 
       toast({
         title: 'Pipeline aktualisiert',
@@ -255,10 +229,10 @@ export function useLeads(filters?: LeadFilters) {
   };
 
   return {
-    leads,
-    loading,
-    error,
-    refetch: fetchLeads,
+    leads: data ?? [],
+    loading: isLoading,
+    error: error as Error | null,
+    refetch,
     createLead,
     updateLead,
     deleteLead,

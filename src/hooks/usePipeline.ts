@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PipelineItem, PipelineStage, CrmLead } from '@/types/crm';
 import { useToast } from '@/hooks/use-toast';
@@ -11,16 +12,25 @@ export interface PipelineData {
   [key: string]: PipelineItemWithLead[];
 }
 
-export function usePipeline() {
-  const [pipelineItems, setPipelineItems] = useState<PipelineItemWithLead[]>([]);
-  const [pipelineByStage, setPipelineByStage] = useState<PipelineData>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const { toast } = useToast();
+const STAGES: PipelineStage[] = [
+  'new_lead',
+  'setter_call_scheduled',
+  'setter_call_done',
+  'analysis_ready',
+  'offer_draft',
+  'offer_sent',
+  'payment_unlocked',
+  'won',
+  'lost'
+];
 
-  const fetchPipeline = useCallback(async () => {
-    try {
-      setLoading(true);
+export function usePipeline() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: pipelineItems = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['pipeline'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('pipeline_items')
         .select(`
@@ -34,49 +44,22 @@ export function usePipeline() {
 
       if (error) throw error;
 
-      const items = (data || []).map(item => ({
+      return (data || []).map(item => ({
         ...item,
         lead: item.lead as CrmLead
       })) as PipelineItemWithLead[];
+    },
+  });
 
-      setPipelineItems(items);
+  const pipelineByStage = useMemo(() => {
+    const byStage: PipelineData = {};
+    STAGES.forEach(stage => {
+      byStage[stage] = pipelineItems.filter(item => item.stage === stage);
+    });
+    return byStage;
+  }, [pipelineItems]);
 
-      // Group by stage
-      const byStage: PipelineData = {};
-      const stages: PipelineStage[] = [
-        'new_lead',
-        'setter_call_scheduled',
-        'setter_call_done',
-        'analysis_ready',
-        'offer_draft',
-        'offer_sent',
-        'payment_unlocked',
-        'won',
-        'lost'
-      ];
-
-      stages.forEach(stage => {
-        byStage[stage] = items.filter(item => item.stage === stage);
-      });
-
-      setPipelineByStage(byStage);
-    } catch (err) {
-      setError(err as Error);
-      toast({
-        title: 'Fehler beim Laden der Pipeline',
-        description: (err as Error).message,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    fetchPipeline();
-  }, [fetchPipeline]);
-
-  // Realtime: auto-refresh on pipeline_items changes
+  // Realtime subscription
   useEffect(() => {
     const channel = supabase
       .channel('pipeline-realtime')
@@ -84,7 +67,7 @@ export function usePipeline() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'pipeline_items' },
         () => {
-          fetchPipeline();
+          queryClient.invalidateQueries({ queryKey: ['pipeline'] });
         }
       )
       .subscribe();
@@ -92,7 +75,7 @@ export function usePipeline() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchPipeline]);
+  }, [queryClient]);
 
   const moveToStage = async (itemId: string, newStage: PipelineStage): Promise<boolean> => {
     try {
@@ -106,40 +89,8 @@ export function usePipeline() {
 
       if (error) throw error;
 
-      // Optimistically update local state
-      setPipelineItems(prev => 
-        prev.map(item => 
-          item.id === itemId 
-            ? { ...item, stage: newStage, stage_updated_at: new Date().toISOString() }
-            : item
-        )
-      );
-
-      // Re-group by stage
-      const updatedItems = pipelineItems.map(item => 
-        item.id === itemId 
-          ? { ...item, stage: newStage }
-          : item
-      );
-
-      const byStage: PipelineData = {};
-      const stages: PipelineStage[] = [
-        'new_lead',
-        'setter_call_scheduled',
-        'setter_call_done',
-        'analysis_ready',
-        'offer_draft',
-        'offer_sent',
-        'payment_unlocked',
-        'won',
-        'lost'
-      ];
-
-      stages.forEach(stage => {
-        byStage[stage] = updatedItems.filter(item => item.stage === stage);
-      });
-
-      setPipelineByStage(byStage);
+      queryClient.invalidateQueries({ queryKey: ['pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
 
       toast({
         title: 'Pipeline aktualisiert',
@@ -166,7 +117,7 @@ export function usePipeline() {
 
       if (error) throw error;
 
-      await fetchPipeline();
+      queryClient.invalidateQueries({ queryKey: ['pipeline'] });
 
       return true;
     } catch (err) {
@@ -184,16 +135,15 @@ export function usePipeline() {
   };
 
   const getTotalValue = (stage: PipelineStage): number => {
-    // This would calculate monetary value if we had that field
     return getStageCount(stage);
   };
 
   return {
     pipelineItems,
     pipelineByStage,
-    loading,
-    error,
-    refetch: fetchPipeline,
+    loading: isLoading,
+    error: error as Error | null,
+    refetch,
     moveToStage,
     updatePriority,
     getStageCount,
