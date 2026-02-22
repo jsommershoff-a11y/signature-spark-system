@@ -1,45 +1,41 @@
 
-
-## Pipeline automatisch aktualisieren bei neuen Leads
+## Endlos-Fehlerschleife beheben: `toast` aus useCallback-Dependencies entfernen
 
 ### Problem
 
-Der Datenbank-Trigger `create_pipeline_item_for_lead` erstellt bereits automatisch ein `pipeline_item` mit Stage `new_lead`, wenn ein neuer `crm_lead` eingefuegt wird. Die Pipeline-UI zeigt diese neuen Eintraege aber erst nach manuellem Seitenreload an, weil `usePipeline` keine Realtime-Subscription hat.
+Der `useToast`-Hook erzeugt bei jedem State-Update eine neue Referenz fuer `toast`. Da `toast` in der Dependency-Liste von `useCallback` steht (z.B. in `fetchTasks`, `fetchPipeline`, etc.), wird die Fetch-Funktion bei jedem Render neu erstellt. Das loest den zugehoerigen `useEffect` erneut aus, was einen neuen Fetch startet, der wiederum den State aendert -- eine Endlosschleife.
+
+Wenn der Fetch fehlschlaegt (z.B. durch Netzwerk-Timeout), erscheint die rote Fehlermeldung "Fehler beim Laden der Aufgaben" hunderte Male pro Minute.
 
 ### Loesung
 
-**Step 01 — Realtime-Subscription in usePipeline hinzufuegen**
+`toast` aus den `useCallback`-Dependency-Arrays entfernen. `toast` ist eine stabile Funktion (Modul-Level-Singleton), die nicht in Dependencies gehoert. Der ESLint-Kommentar `// eslint-disable-next-line react-hooks/exhaustive-deps` wird hinzugefuegt, um die Warnung zu unterdruecken.
 
-Datei: `src/hooks/usePipeline.ts`
+### Betroffene Dateien
 
-Ein zweiter `useEffect` wird hinzugefuegt, der eine Supabase Realtime-Subscription auf die Tabelle `pipeline_items` erstellt. Bei jeder Aenderung (INSERT, UPDATE, DELETE) wird `fetchPipeline()` erneut aufgerufen.
+**Step 01 -- src/hooks/useTasks.ts (Zeile 60)**
+- Aendern: `}, [filters, toast]);`
+- Zu: `}, [filters]); // eslint-disable-line react-hooks/exhaustive-deps`
 
-```typescript
-useEffect(() => {
-  const channel = supabase
-    .channel('pipeline-realtime')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'pipeline_items' },
-      () => {
-        fetchPipeline();
-      }
-    )
-    .subscribe();
+**Step 02 -- src/hooks/useLeads.ts (Zeile 77)**
+- Aendern: `}, [filters, toast]);`
+- Zu: `}, [filters]); // eslint-disable-line react-hooks/exhaustive-deps`
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, [fetchPipeline]);
-```
+**Step 03 -- src/hooks/usePipeline.ts (Zeile 73)**
+- Aendern: `}, [toast]);`
+- Zu: `}, []); // eslint-disable-line react-hooks/exhaustive-deps`
+
+**Step 04 -- src/hooks/useCalls.ts (Zeile 265)**
+- Aendern: `}, [callId, toast]);`
+- Zu: `}, [callId]); // eslint-disable-line react-hooks/exhaustive-deps`
+
+**Step 05 -- src/hooks/useAnalysis.ts (Zeile 89)**
+- Aendern: `}, [fetchAnalysis, toast]);`
+- Zu: `}, [fetchAnalysis]); // eslint-disable-line react-hooks/exhaustive-deps`
 
 ### Ergebnis
 
-- Neue Leads erscheinen sofort in der Pipeline-Spalte "Neuer Lead"
-- Verschiebungen durch andere Nutzer werden ebenfalls live angezeigt
-- Automatische Stage-Aenderungen (z.B. durch Analyse-Trigger) erscheinen sofort
-- Keine Datenbankaenderungen noetig — nur eine Codeaenderung in einer Datei
-
-### Voraussetzung
-
-Supabase Realtime muss fuer die Tabelle `pipeline_items` aktiviert sein. Falls nicht, wird eine kurze Migration zum Aktivieren benoetigt (`ALTER PUBLICATION supabase_realtime ADD TABLE pipeline_items`).
+- Keine Endlosschleifen mehr bei Fetch-Fehlern
+- Keine wiederholten roten Fehlermeldungen
+- Daten werden nur einmal beim Mount geladen (bzw. wenn sich echte Filter aendern)
+- Keine funktionalen Aenderungen -- nur Stabilisierung der Render-Zyklen
