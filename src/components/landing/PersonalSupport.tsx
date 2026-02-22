@@ -1,5 +1,5 @@
 import { CTAButton } from "./CTAButton";
-import founderPortrait from "@/assets/founder-portrait.jpeg";
+import founderPortrait from "@/assets/founder-personal.jpeg";
 
 interface PersonalSupportProps {
   headline: string;

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Play, Star } from "lucide-react";
-import founderPortrait from "@/assets/founder-portrait.jpeg";
+import founderPortrait from "@/assets/founder-hero.jpeg";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
