@@ -1,65 +1,45 @@
 
 
-## Fehler im Angebotsbereich beheben
+## Pipeline automatisch aktualisieren bei neuen Leads
 
-### Identifizierte Probleme
+### Problem
 
-**1. React Ref-Warnung: "Function components cannot be given refs"**
-
-Zwei Console-Errors erscheinen beim Laden der Offers-Seite:
-- `CreateOfferDialog` wird von der Offers-Seite als Komponente gerendert. Radix `Dialog` versucht intern, einen Ref an das Kind-Element weiterzugeben, aber `CreateOfferDialog` ist eine einfache Funktionskomponente ohne `forwardRef`.
-- Innerhalb von `CreateOfferDialog` tritt dasselbe Problem auf: `Dialog` versucht einen Ref an sein Kind zu geben.
-
-**2. Angebote ohne zugeordneten Lead werden nicht angezeigt**
-
-Die Supabase-Query in `useOffers` verwendet `crm_leads!inner(...)`. Das `!inner`-Keyword bedeutet: Nur Angebote MIT einem existierenden Lead werden zurueckgegeben. Falls ein Lead geloescht wurde, verschwinden alle zugehoerigen Angebote aus der Liste — ohne Fehlermeldung.
+Der Datenbank-Trigger `create_pipeline_item_for_lead` erstellt bereits automatisch ein `pipeline_item` mit Stage `new_lead`, wenn ein neuer `crm_lead` eingefuegt wird. Die Pipeline-UI zeigt diese neuen Eintraege aber erst nach manuellem Seitenreload an, weil `usePipeline` keine Realtime-Subscription hat.
 
 ### Loesung
 
-**Step 01 — CreateOfferDialog mit forwardRef umschliessen**
+**Step 01 — Realtime-Subscription in usePipeline hinzufuegen**
 
-Datei: `src/components/offers/CreateOfferDialog.tsx`
+Datei: `src/hooks/usePipeline.ts`
 
-Die Komponente wird mit `React.forwardRef` gewrappt, damit Radix Dialog den Ref korrekt weiterleiten kann. Die Export-Signatur bleibt gleich.
+Ein zweiter `useEffect` wird hinzugefuegt, der eine Supabase Realtime-Subscription auf die Tabelle `pipeline_items` erstellt. Bei jeder Aenderung (INSERT, UPDATE, DELETE) wird `fetchPipeline()` erneut aufgerufen.
 
-Aenderung:
 ```typescript
-// Vorher:
-export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps) {
+useEffect(() => {
+  const channel = supabase
+    .channel('pipeline-realtime')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'pipeline_items' },
+      () => {
+        fetchPipeline();
+      }
+    )
+    .subscribe();
 
-// Nachher:
-import { forwardRef } from 'react';
-
-export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogProps>(
-  function CreateOfferDialog({ open, onOpenChange }, ref) {
-    // ... bestehender Code bleibt identisch
-  }
-);
-```
-
-**Step 02 — Inner Join durch Left Join ersetzen**
-
-Datei: `src/hooks/useOffers.ts`
-
-Das `!inner` in der Query wird entfernt, damit auch Angebote ohne zugeordneten Lead angezeigt werden (z.B. wenn ein Lead geloescht wurde). Der Code, der `item.crm_leads` mapped, wird mit einem Fallback abgesichert.
-
-Aenderung:
-```typescript
-// Vorher:
-crm_leads!inner (id, first_name, last_name, email, company)
-
-// Nachher:
-crm_leads (id, first_name, last_name, email, company)
-```
-
-Und im Mapping:
-```typescript
-lead: item.crm_leads || null,
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [fetchPipeline]);
 ```
 
 ### Ergebnis
 
-- Keine Console-Errors mehr auf der Angebots-Seite
-- Angebote bleiben sichtbar, auch wenn der zugehoerige Lead geloescht wurde
-- Keine Aenderung an der Datenbankstruktur noetig (nur Frontend-Code)
+- Neue Leads erscheinen sofort in der Pipeline-Spalte "Neuer Lead"
+- Verschiebungen durch andere Nutzer werden ebenfalls live angezeigt
+- Automatische Stage-Aenderungen (z.B. durch Analyse-Trigger) erscheinen sofort
+- Keine Datenbankaenderungen noetig — nur eine Codeaenderung in einer Datei
 
+### Voraussetzung
+
+Supabase Realtime muss fuer die Tabelle `pipeline_items` aktiviert sein. Falls nicht, wird eine kurze Migration zum Aktivieren benoetigt (`ALTER PUBLICATION supabase_realtime ADD TABLE pipeline_items`).
