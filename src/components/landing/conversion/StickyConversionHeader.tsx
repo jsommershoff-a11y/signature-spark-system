@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
-import logoSignature from "@/assets/logo-krs-signature.png";
+import logoSignature from "@/assets/krs-logo.png";
 import { Button } from "@/components/ui/button";
 
 export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void }) => {

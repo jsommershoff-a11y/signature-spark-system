@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logoSignature from "@/assets/logo-krs-signature.png";
+import logoSignature from "@/assets/krs-logo.png";
 
 const branches = [
   { title: "Handwerk", path: "/handwerk" },
