@@ -76,6 +76,24 @@ export function usePipeline() {
     fetchPipeline();
   }, [fetchPipeline]);
 
+  // Realtime: auto-refresh on pipeline_items changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('pipeline-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pipeline_items' },
+        () => {
+          fetchPipeline();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchPipeline]);
+
   const moveToStage = async (itemId: string, newStage: PipelineStage): Promise<boolean> => {
     try {
       const { error } = await supabase
