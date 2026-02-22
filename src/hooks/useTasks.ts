@@ -57,7 +57,7 @@ export function useTasks(filters?: TaskFilters) {
     } finally {
       setLoading(false);
     }
-  }, [filters, toast]);
+  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchTasks();
