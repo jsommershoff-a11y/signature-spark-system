@@ -15,7 +15,7 @@ export function useOffers(leadId?: string) {
         .from('offers')
         .select(`
           *,
-          crm_leads!inner (
+          crm_leads (
             id,
             first_name,
             last_name,
@@ -47,7 +47,7 @@ export function useOffers(leadId?: string) {
       return (data || []).map((item) => ({
         ...item,
         offer_json: item.offer_json as unknown as OfferContent,
-        lead: item.crm_leads,
+        lead: item.crm_leads || null,
       })) as unknown as Offer[];
     },
   });

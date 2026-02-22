@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, forwardRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOffers } from '@/hooks/useOffers';
 import { calculateOfferTotals, formatCents, formatEuro } from '@/types/offers';
@@ -57,7 +57,7 @@ interface CreateOfferDialogProps {
 // Component
 // =============================================
 
-export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps) {
+export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogProps>(function CreateOfferDialog({ open, onOpenChange }, _ref) {
   const { createOffer, isCreating } = useOffers();
   const [step, setStep] = useState(0);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -791,4 +791,4 @@ export function CreateOfferDialog({ open, onOpenChange }: CreateOfferDialogProps
       </DialogContent>
     </Dialog>
   );
-}
+});
