@@ -5,15 +5,15 @@ import { Button } from "@/components/ui/button";
 
 export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border/50">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary-deep via-primary to-primary-light shadow-md">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center">
             <img src={logoSignature} alt="KRS Signature" className="h-10 w-auto" />
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/auth">
-              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-primary-foreground hover:bg-primary-foreground/20">
                 <LogIn className="w-4 h-4" />
                 <span className="hidden sm:inline">Login</span>
               </Button>
@@ -21,7 +21,7 @@ export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void 
             <Button
               onClick={onCtaClick}
               size="sm"
-              className="bg-primary hover:bg-primary-deep text-primary-foreground font-semibold shadow-md"
+              className="bg-white text-primary-deep hover:bg-white/90 font-semibold shadow-md"
             >
               Jetzt Potenzial aufdecken!
             </Button>
