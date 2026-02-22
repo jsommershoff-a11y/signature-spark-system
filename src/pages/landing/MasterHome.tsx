@@ -8,6 +8,7 @@ import {
   ProblemAmplifier,
   SolutionSection,
   TestimonialGrid,
+  ResultsShowcase,
   PricingSection,
   GuaranteeSection,
   ExitIntentPopup,
@@ -98,6 +99,9 @@ const MasterHome = () => {
 
         {/* TESTIMONIALS */}
         <TestimonialGrid />
+
+        {/* KUNDENBERICHTE / ERGEBNISSE */}
+        <ResultsShowcase />
 
         {/* PRICING */}
         <PricingSection onCtaClick={handleCTAClick} />
