@@ -18,7 +18,7 @@ All colors MUST be HSL.
     --popover-foreground: 222 47% 11%;
 
     /* Primary = Brand Orange */
-    --primary: 30 90% 55%;
+    --primary: 23 92% 54%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 214 32% 91%;
@@ -28,7 +28,7 @@ All colors MUST be HSL.
     --muted-foreground: 215 16% 47%;
 
     /* Accent = Light Orange */
-    --accent: 35 95% 65%;
+    --accent: 23 92% 61%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -36,31 +36,31 @@ All colors MUST be HSL.
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 30 90% 55%;
+    --ring: 23 92% 54%;
 
     --radius: 0.75rem;
 
     /* Custom landing page tokens (Orange-Palette) */
-    --primary-deep: 28 88% 48%;
-    --primary-dark: 20 70% 30%;
-    --primary-light: 32 92% 60%;
-    --gradient-start: 28 88% 48%;
-    --gradient-end: 32 92% 60%;
+    --primary-deep: 23 92% 47%;
+    --primary-dark: 23 70% 30%;
+    --primary-light: 23 92% 61%;
+    --gradient-start: 23 92% 47%;
+    --gradient-end: 23 92% 61%;
 
     /* Brand Colors from Logo */
-    --brand-orange: 30 90% 55%;
+    --brand-orange: 23 92% 54%;
     --brand-cream: 35 25% 75%;
     --brand-brown: 20 30% 35%;
     --brand-charcoal: 20 20% 25%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 30 90% 55%;
+    --sidebar-primary: 23 92% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 35 95% 65%;
+    --sidebar-ring: 23 92% 54%;
   }
 
   .dark {
@@ -74,8 +74,8 @@ All colors MUST be HSL.
     --popover-foreground: 210 40% 98%;
 
     /* Primary = Light Orange for dark mode */
-    --primary: 35 95% 65%;
-    --primary-foreground: 20 70% 10%;
+    --primary: 23 92% 61%;
+    --primary-foreground: 23 70% 10%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -84,37 +84,37 @@ All colors MUST be HSL.
     --muted-foreground: 215 20% 65%;
 
     /* Accent = Light Orange */
-    --accent: 35 95% 65%;
-    --accent-foreground: 20 70% 10%;
+    --accent: 23 92% 61%;
+    --accent-foreground: 23 70% 10%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 35 95% 65%;
+    --ring: 23 92% 54%;
 
     /* Custom landing page tokens (Orange-Palette) */
-    --primary-deep: 28 88% 48%;
-    --primary-dark: 20 70% 30%;
-    --primary-light: 32 92% 60%;
-    --gradient-start: 28 88% 48%;
-    --gradient-end: 32 92% 60%;
+    --primary-deep: 23 92% 47%;
+    --primary-dark: 23 70% 30%;
+    --primary-light: 23 92% 61%;
+    --gradient-start: 23 92% 47%;
+    --gradient-end: 23 92% 61%;
 
     /* Brand Colors from Logo */
-    --brand-orange: 30 90% 55%;
+    --brand-orange: 23 92% 54%;
     --brand-cream: 35 25% 75%;
     --brand-brown: 20 30% 35%;
     --brand-charcoal: 20 20% 25%;
 
     --sidebar-background: 226 71% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 35 95% 65%;
+    --sidebar-primary: 23 92% 61%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 35 95% 65%;
+    --sidebar-ring: 23 92% 54%;
   }
 }
 
