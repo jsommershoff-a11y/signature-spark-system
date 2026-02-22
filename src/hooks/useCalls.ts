@@ -262,7 +262,7 @@ export function useCallDetail(callId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [callId, toast]);
+  }, [callId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchCallDetail();

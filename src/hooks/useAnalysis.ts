@@ -86,7 +86,7 @@ export function useAnalysis() {
     } finally {
       setAnalyzing(false);
     }
-  }, [fetchAnalysis, toast]);
+  }, [fetchAnalysis]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     analyzing,

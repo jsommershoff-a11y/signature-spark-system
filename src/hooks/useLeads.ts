@@ -74,7 +74,7 @@ export function useLeads(filters?: LeadFilters) {
     } finally {
       setLoading(false);
     }
-  }, [filters, toast]);
+  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchLeads();

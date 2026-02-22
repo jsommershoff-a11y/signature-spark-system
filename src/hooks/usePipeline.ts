@@ -70,7 +70,7 @@ export function usePipeline() {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchPipeline();
