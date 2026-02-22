@@ -1,4 +1,4 @@
-import founderPortrait from "@/assets/founder-portrait.jpeg";
+import founderPortrait from "@/assets/founder-about.jpeg";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 export const AboutFounderSection = () => {
