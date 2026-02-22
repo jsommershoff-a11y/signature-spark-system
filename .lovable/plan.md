@@ -1,34 +1,37 @@
 
 
-## Header-Farbe auf exakten Farbcode #f6711f anpassen
+## Logo-Austausch: Altes Logo raus, neues KRS Signature Logo rein
 
-### Farbumrechnung
+### Ausgangslage
 
-Hex `#f6711f` = HSL `23 92% 54%`
+Aktuell werden zwei verschiedene Logo-Dateien im Projekt verwendet:
+- `src/assets/logo-krs-signature.png` (Landing-Seiten: Header, Footer, StickyConversionHeader)
+- `src/assets/logo-signature.png` (App-Bereich: AppLayout, Auth-Seite)
 
-### Aenderungen in `src/index.css` (Light + Dark Mode)
+### Aenderungen
 
-Folgende Tokens werden auf den exakten Logo-Farbton zentriert:
+**Step 01 — Neue Logo-Datei ins Projekt kopieren**
 
-| Token | Aktuell | Neu |
+Die hochaufgeloeste Version `KRS_Signature_Universal_HighRes_1080x1080.png` wird als `src/assets/krs-logo.png` ins Projekt kopiert. Nur eine einzige Datei fuer alle Verwendungszwecke.
+
+**Step 02 — Alle Imports auf das neue Logo umstellen**
+
+Folgende 5 Dateien werden aktualisiert (nur die Import-Zeile aendern):
+
+| Datei | Alter Import | Neuer Import |
 |---|---|---|
-| `--primary` | `30 90% 55%` | `23 92% 54%` |
-| `--primary-deep` | `28 88% 48%` | `23 92% 47%` |
-| `--primary-light` | `32 92% 60%` | `23 92% 61%` |
-| `--gradient-start` | `28 88% 48%` | `23 92% 47%` |
-| `--gradient-end` | `32 92% 60%` | `23 92% 61%` |
-| `--brand-orange` | `30 90% 55%` | `23 92% 54%` |
-| `--ring` | `30 90% 55%` | `23 92% 54%` |
-| `--sidebar-primary` | `30 90% 55%` | `23 92% 54%` |
+| `src/components/landing/Header.tsx` | `logo-krs-signature.png` | `krs-logo.png` |
+| `src/components/landing/Footer.tsx` | `logo-krs-signature.png` | `krs-logo.png` |
+| `src/components/landing/conversion/StickyConversionHeader.tsx` | `logo-krs-signature.png` | `krs-logo.png` |
+| `src/components/app/AppLayout.tsx` | `logo-signature.png` | `krs-logo.png` |
+| `src/pages/Auth.tsx` | `logo-signature.png` | `krs-logo.png` |
 
-Der Farbton (Hue 23) und die Saettigung (92%) bleiben bei allen Stufen identisch — nur die Helligkeit variiert leicht (47% / 54% / 61%) fuer den subtilen Gradient-Effekt.
+**Step 03 — Alte Logo-Dateien loeschen**
 
-### Betroffene Bereiche (automatisch)
+- `src/assets/logo-krs-signature.png` entfernen
+- `src/assets/logo-signature.png` entfernen
 
-- Landing-Header (`StickyConversionHeader`, `Header`)
-- App-Header (`AppLayout`)
-- CTA-Buttons, Badges, Links
-- Sidebar-Highlights
+### Hinweis
 
-Keine Komponenten-Dateien muessen geaendert werden — alles laeuft ueber die CSS-Variablen.
+Das neue Logo hat einen orangefarbenen Hintergrund, der auf den orangefarbenen Headern nahtlos verschmilzt. Auf der Auth-Seite (heller Hintergrund) wird das quadratische Logo mit dem Orange-Hintergrund als markantes Branding-Element wirken.
 
