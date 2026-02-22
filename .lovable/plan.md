@@ -1,134 +1,45 @@
 
 
-## Refaktorierung: useState+useCallback Hooks zu React Query
+## 3 neue Gruender-Fotos einsetzen
 
 ### Zusammenfassung
 
-Die vier manuellen Daten-Hooks (`useLeads`, `useTasks`, `usePipeline`, `useCalls`/`useCallDetail`) werden auf `@tanstack/react-query` (`useQuery` + `useMutation`) migriert. Das eliminiert manuelles State-Management, bietet automatisches Caching, Background-Refetching, und verhindert die toast-Endlosschleifen-Problematik dauerhaft.
+Die 3 hochgeladenen Bilder ersetzen das bisherige einzelne `founder-portrait.jpeg` an den 3 Stellen, wo es aktuell verwendet wird. Jedes Bild wird gezielt der passenden Sektion zugeordnet.
 
-`useAnalysis` wird NICHT migriert -- es ist kein Daten-Lade-Hook sondern bietet imperative Funktionen (fetchAnalysis, regenerateAnalysis).
+### Bildzuordnung
 
-### Vorteile der Migration
+| Bild | Dateiname | Einsatzort | Begruendung |
+|------|-----------|------------|-------------|
+| Bild 2 (Hotel/Lounge, professionell) | `founder-hero.jpeg` | **HeroSection.tsx** -- Hintergrund + Video-Thumbnail | Professionelles Setting, dunkler Hintergrund passt zum Hero-Overlay |
+| Bild 3 (Buero, Strickjacke + Hemd) | `founder-about.jpeg` | **AboutFounderSection.tsx** -- Gruender-Portrait | Business-casual im Buero-Setting, strahlt Kompetenz und Nahbarkeit aus |
+| Bild 1 (Couch, Buch, entspannt) | `founder-personal.jpeg` | **PersonalSupport.tsx** -- Persoenliches Sparring | Lockeres, nahbares Setting -- passt zum "Partner auf Augenhoehe"-Thema |
 
-- Automatisches Caching und Deduplication (gleiche Query wird nur einmal gefeuert)
-- Background Refetching bei Window-Focus
-- Stale-While-Revalidate Pattern
-- Kein manuelles useState/useEffect/useCallback mehr
-- Cache-Invalidierung nach Mutationen statt manuellem State-Update
-- Konsistenz mit bestehenden react-query Hooks (useCustomers, useOffers, useCourses)
+### Schritte
 
-### API-Kompatibilitaet
+#### Step 01 -- Bilder in src/assets kopieren
 
-Die Return-Signatur jedes Hooks bleibt identisch, damit keine Consumer-Dateien geaendert werden muessen:
+3 neue Dateien anlegen:
+- `src/assets/founder-hero.jpeg` (aus Bild 2)
+- `src/assets/founder-about.jpeg` (aus Bild 3)
+- `src/assets/founder-personal.jpeg` (aus Bild 1)
 
-- `loading` bleibt `loading` (gemappt von `isLoading`)
-- `error` bleibt `Error | null`
-- `refetch` bleibt verfuegbar
-- Mutations-Funktionen (create, update, delete) behalten ihre Signatur
-- Exportierte Interfaces (`PipelineItemWithLead`, `PipelineData`) bleiben identisch
+Das alte `src/assets/founder-portrait.jpeg` bleibt bestehen (koennte von Branchen-Landingpages referenziert werden).
 
-### Betroffene Dateien (nur Hooks, keine Consumer-Aenderungen)
+#### Step 02 -- HeroSection.tsx aktualisieren
 
----
+Import aendern: `founder-portrait.jpeg` wird zu `founder-hero.jpeg`
 
-#### Step 01 -- src/hooks/useLeads.ts
+#### Step 03 -- AboutFounderSection.tsx aktualisieren
 
-**Aenderung:** Komplett auf `useQuery` + `useMutation` umschreiben.
+Import aendern: `founder-portrait.jpeg` wird zu `founder-about.jpeg`
 
-- `useQuery` mit `queryKey: ['leads', filters]` fuer die Datenladung
-- Filter-Logik bleibt in `queryFn`
-- `createLead`, `updateLead`, `deleteLead`, `assignLead`, `updatePipelineStage` werden zu lokalen async Funktionen die nach Erfolg `queryClient.invalidateQueries({ queryKey: ['leads'] })` aufrufen
-- Toast-Aufrufe bleiben in den Mutations-Funktionen (try/catch)
-- Return-Objekt: `{ leads, loading, error, refetch, createLead, updateLead, deleteLead, assignLead, updatePipelineStage }`
+#### Step 04 -- PersonalSupport.tsx aktualisieren
 
----
+Import aendern: `founder-portrait.jpeg` wird zu `founder-personal.jpeg`
 
-#### Step 02 -- src/hooks/useTasks.ts
+### Keine weiteren Aenderungen noetig
 
-**Aenderung:** Komplett auf `useQuery` + lokale Mutations-Funktionen umschreiben.
+- Kein Layout- oder CSS-Umbau
+- Keine neuen Dependencies
+- Consumer-Dateien (MasterHome, Branchen-Pages) bleiben unveraendert
 
-- `useQuery` mit `queryKey: ['tasks', filters]`
-- `openTasks`, `doneTasks`, `blockedTasks` werden mit `useMemo` aus `data` abgeleitet
-- `createTask`, `updateTask`, `completeTask`, `reopenTask`, `deleteTask` invalidieren den Cache nach Erfolg
-- Return-Objekt bleibt identisch
-
----
-
-#### Step 03 -- src/hooks/usePipeline.ts
-
-**Aenderung:** Komplett auf `useQuery` umschreiben.
-
-- `useQuery` mit `queryKey: ['pipeline']`
-- `pipelineByStage` wird mit `useMemo` aus den rohen Items abgeleitet (Gruppierung nach Stage)
-- Realtime-Subscription bleibt bestehen, ruft `queryClient.invalidateQueries({ queryKey: ['pipeline'] })` auf statt `fetchPipeline()`
-- `moveToStage` und `updatePriority` invalidieren den Cache nach Erfolg
-- Exportierte Interfaces bleiben identisch
-- `getStageCount` und `getTotalValue` bleiben als Hilfsfunktionen
-
----
-
-#### Step 04 -- src/hooks/useCalls.ts (useCalls + useCallDetail)
-
-**Aenderung:** Beide Hooks auf `useQuery` umschreiben.
-
-**useCalls:**
-- `useQuery` mit `queryKey: ['calls', filters]`, enabled wenn `profile` vorhanden
-- `createCall`, `updateCall`, `startCall`, `endCall`, `deleteCall` bleiben als async Funktionen mit Cache-Invalidierung
-- Return-Objekt bleibt identisch
-
-**useCallDetail:**
-- `useQuery` mit `queryKey: ['call-detail', callId]`, enabled wenn `callId` definiert
-- Laedt Call, Transcript und Analysis in einer queryFn (3 parallele Requests)
-- Return: `{ call, transcript, analysis, loading, refetch }`
-
----
-
-### Technisches Muster (fuer alle Hooks gleich)
-
-```text
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-function useXxx(filters) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['xxx', filters],
-    queryFn: async () => {
-      // Supabase fetch logic (unchanged)
-    },
-  });
-
-  const createXxx = async (input) => {
-    try {
-      // Supabase insert
-      queryClient.invalidateQueries({ queryKey: ['xxx'] });
-      toast({ title: 'Erfolg' });
-    } catch (err) {
-      toast({ title: 'Fehler', variant: 'destructive' });
-    }
-  };
-
-  return {
-    items: data ?? [],
-    loading: isLoading,
-    error: error as Error | null,
-    refetch,
-    createXxx,
-  };
-}
-```
-
-### Was NICHT geaendert wird
-
-- Keine Consumer-Dateien (Pages, Components) -- die Return-API bleibt stabil
-- `useAnalysis.ts` -- kein Daten-Lade-Hook
-- `useCustomers.ts`, `useOffers.ts`, `useCourses.ts` -- nutzen bereits react-query
-- Keine neuen Dependencies -- `@tanstack/react-query` ist bereits installiert
-
-### Reihenfolge und Validierung
-
-Jeder Step wird einzeln implementiert und validiert:
-- Build muss fehlerfrei sein
-- TypeScript-Kompilierung muss sauber sein
-- Bestehende Funktionalitaet darf nicht brechen
