@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import logoSignature from '@/assets/logo-signature.png';
+import logoSignature from '@/assets/krs-logo.png';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);

@@ -3,7 +3,7 @@ import { AppSidebar } from './AppSidebar';
 import { UserMenu } from './UserMenu';
 import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { ViewAsBanner } from './ViewAsBanner';
-import logoSignature from '@/assets/logo-signature.png';
+import logoSignature from '@/assets/krs-logo.png';
 import { Link } from 'react-router-dom';
 
 export function AppLayout() {
