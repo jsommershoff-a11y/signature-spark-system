@@ -32,11 +32,11 @@ export const ExitIntentPopup = () => {
             <Gift className="w-6 h-6 text-primary" />
           </div>
           <DialogTitle className="text-center text-2xl">
-            Warten Sie – Bonus-Angebot!
+            Warte – bevor du gehst!
           </DialogTitle>
           <DialogDescription className="text-center text-base mt-2">
-            Nur jetzt: Sichern Sie sich eine <strong className="text-foreground">kostenlose KI-Potenzialanalyse</strong> im Wert von 598 €.
-            Wir zeigen Ihnen genau, wo Ihr Unternehmen Zeit und Geld verschwendet.
+            Sichere dir jetzt eine <strong className="text-foreground">kostenlose Potenzial-Analyse</strong> deines Unternehmens.
+            Wir zeigen dir genau, welche Hebel dein Wachstum aktuell bremsen.
           </DialogDescription>
         </DialogHeader>
         <button
@@ -46,7 +46,7 @@ export const ExitIntentPopup = () => {
           }}
           className="w-full bg-primary hover:bg-primary-deep text-primary-foreground font-semibold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all mt-2"
         >
-          Kostenlose KI-Potenzialanalyse sichern →
+          Kostenlose Potenzial-Analyse sichern →
         </button>
         <p className="text-xs text-muted-foreground text-center">
           100% kostenlos · Unverbindlich · Kein Risiko

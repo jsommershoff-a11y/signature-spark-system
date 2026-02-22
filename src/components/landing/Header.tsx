@@ -70,7 +70,7 @@ export const Header = () => {
                 size="sm" 
                 className="bg-white text-primary-deep hover:bg-white/90 font-semibold shadow-md"
               >
-                Analysegespräch sichern
+                Potenzial-Analyse buchen
               </Button>
             </Link>
 
@@ -145,7 +145,7 @@ export const Header = () => {
                     size="lg" 
                     className="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary"
                   >
-                    Analysegespräch sichern
+                    Potenzial-Analyse buchen
                   </Button>
                 </Link>
               </nav>
