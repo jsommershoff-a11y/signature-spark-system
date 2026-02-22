@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
   },
   // Strip console.log/console.error in production builds to prevent info leakage
   esbuild: {
