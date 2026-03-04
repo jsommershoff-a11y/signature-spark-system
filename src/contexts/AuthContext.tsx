@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { AppRole, getHighestRole, hasMinRole as checkMinRole } from '@/lib/roles';
+import { useQueryClient } from '@tanstack/react-query';
 
 const VIEW_AS_STORAGE_KEY = 'admin_viewAsRole';
 const VIEW_AS_START_KEY = 'admin_viewAsStartTime';
@@ -55,6 +56,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -128,6 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Defer Supabase calls with setTimeout to prevent deadlock
         if (currentSession?.user) {
           setTimeout(async () => {
+            // Invalidate all queries to ensure fresh data for the new session
+            queryClient.invalidateQueries();
             const profileData = await fetchProfile(currentSession.user.id);
             if (profileData) setProfile(profileData);
             const rolesData = await fetchRoles(currentSession.user.id);
@@ -137,6 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setProfile(null);
           setRoles([]);
+          // Clear all cached data when user logs out
+          queryClient.clear();
           setIsLoading(false);
         }
       }
@@ -194,6 +200,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    // Clear all React Query cache before signing out
+    queryClient.clear();
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
