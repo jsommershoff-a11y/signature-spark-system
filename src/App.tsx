@@ -134,7 +134,7 @@ const App = () => (
                   <SocialMedia />
                 </ProtectedRoute>
               } />
-              <Route path="email" element={
+              <Route path="email-kampagnen" element={
                 <ProtectedRoute requireMinRole="mitarbeiter">
                   <EmailCampaigns />
                 </ProtectedRoute>

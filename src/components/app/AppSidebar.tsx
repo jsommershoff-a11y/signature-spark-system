@@ -107,8 +107,8 @@ const navItems: NavItem[] = [
     minRole: 'mitarbeiter',
   },
   {
-    label: 'Email',
-    href: '/app/email',
+    label: 'Email Kampagnen',
+    href: '/app/email-kampagnen',
     icon: Mail,
     minRole: 'mitarbeiter',
   },
