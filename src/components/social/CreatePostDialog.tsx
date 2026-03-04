@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { useSocialPosts } from '@/hooks/useSocialPosts';
-import { PLATFORM_LABELS, CONTENT_TYPE_LABELS, STATUS_LABELS } from '@/types/social';
+import { PLATFORM_LABELS, CONTENT_TYPE_LABELS, STATUS_LABELS, PLATFORM_ICONS } from '@/types/social';
 import type { SocialPlatform, SocialContentType, SocialPostStatus } from '@/types/social';
 
 interface Props {
@@ -46,19 +46,35 @@ export function CreatePostDialog({ defaultDate, prefill, trigger }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Neuer Post</Button>}
+        {trigger || (
+          <Button size="sm" className="bg-module-green hover:bg-module-green-dark text-module-green-foreground shadow-sm">
+            <Plus className="h-4 w-4 mr-1" /> Neuer Post
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Neuen Post erstellen</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-module-green/10 flex items-center justify-center">
+              <Plus className="h-4 w-4 text-module-green" />
+            </div>
+            Neuen Post erstellen
+          </DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div><Label>Titel</Label><Input value={title} onChange={e => setTitle(e.target.value)} required /></div>
+          <div>
+            <Label>Titel *</Label>
+            <Input value={title} onChange={e => setTitle(e.target.value)} required placeholder="Was ist das Thema?" />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Plattform</Label>
               <Select value={platform} onValueChange={v => setPlatform(v as SocialPlatform)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(PLATFORM_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                  {Object.entries(PLATFORM_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{PLATFORM_ICONS[k as SocialPlatform]} {v}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -83,11 +99,11 @@ export function CreatePostDialog({ defaultDate, prefill, trigger }: Props) {
               </Select>
             </div>
             <div>
-              <Label>Datum</Label>
+              <Label>Geplant für</Label>
               <Input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} />
             </div>
           </div>
-          <Button type="submit" className="w-full" disabled={createPost.isPending}>
+          <Button type="submit" className="w-full bg-module-green hover:bg-module-green-dark text-module-green-foreground" disabled={createPost.isPending}>
             {createPost.isPending ? 'Erstelle...' : 'Post erstellen'}
           </Button>
         </form>

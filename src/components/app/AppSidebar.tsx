@@ -102,7 +102,7 @@ const navItems: NavItem[] = [
   },
   {
     label: 'Social Media',
-    href: '/app/social',
+    href: '/app/social-media',
     icon: Share2,
     minRole: 'mitarbeiter',
   },
