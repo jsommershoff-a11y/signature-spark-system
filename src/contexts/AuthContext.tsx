@@ -42,7 +42,7 @@ interface AuthContextType {
   hasRole: (role: AppRole) => boolean;
   hasMinRole: (minRole: AppRole) => boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string; phone?: string }) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   // Admin View-As Feature
@@ -178,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (
     email: string, 
     password: string, 
-    metadata?: { first_name?: string; last_name?: string }
+    metadata?: { first_name?: string; last_name?: string; phone?: string }
   ) => {
     const redirectUrl = `${window.location.origin}/app`;
     
@@ -190,6 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data: {
           first_name: metadata?.first_name,
           last_name: metadata?.last_name,
+          phone: metadata?.phone,
           full_name: metadata?.first_name && metadata?.last_name 
             ? `${metadata.first_name} ${metadata.last_name}` 
             : undefined,

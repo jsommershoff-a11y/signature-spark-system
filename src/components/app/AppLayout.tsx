@@ -3,12 +3,16 @@ import { AppSidebar } from './AppSidebar';
 import { UserMenu } from './UserMenu';
 import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { ViewAsBanner } from './ViewAsBanner';
+import { ProfileCompletionDialog } from './ProfileCompletionDialog';
 import logoSignature from '@/assets/krs-logo.png';
 import { Link } from 'react-router-dom';
 
 export function AppLayout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Profile Completion Dialog */}
+      <ProfileCompletionDialog />
+      
       {/* View-As Banner (only visible when admin is viewing as another role) */}
       <ViewAsBanner />
       
