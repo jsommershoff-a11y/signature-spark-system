@@ -1,5 +1,5 @@
-export type SocialPlatform = 'instagram' | 'tiktok' | 'linkedin' | 'facebook' | 'youtube' | 'x';
-export type SocialContentType = 'post' | 'reel' | 'story' | 'carousel' | 'video' | 'newsletter_teaser';
+export type SocialPlatform = 'instagram' | 'tiktok' | 'linkedin' | 'facebook';
+export type SocialContentType = 'post' | 'reel' | 'story' | 'carousel';
 export type SocialPostStatus = 'idee' | 'produktion' | 'geplant' | 'veroeffentlicht';
 export type LibraryItemType = 'hook' | 'template' | 'hashtag' | 'story';
 
@@ -48,8 +48,13 @@ export const PLATFORM_LABELS: Record<SocialPlatform, string> = {
   tiktok: 'TikTok',
   linkedin: 'LinkedIn',
   facebook: 'Facebook',
-  youtube: 'YouTube',
-  x: 'X',
+};
+
+export const PLATFORM_ICONS: Record<SocialPlatform, string> = {
+  instagram: '📸',
+  tiktok: '🎵',
+  linkedin: '💼',
+  facebook: '📘',
 };
 
 export const CONTENT_TYPE_LABELS: Record<SocialContentType, string> = {
@@ -57,20 +62,25 @@ export const CONTENT_TYPE_LABELS: Record<SocialContentType, string> = {
   reel: 'Reel',
   story: 'Story',
   carousel: 'Carousel',
-  video: 'Video',
-  newsletter_teaser: 'Newsletter-Teaser',
 };
 
 export const STATUS_LABELS: Record<SocialPostStatus, string> = {
   idee: 'Idee',
-  produktion: 'Produktion',
+  produktion: 'In Produktion',
   geplant: 'Geplant',
   veroeffentlicht: 'Veröffentlicht',
 };
 
 export const STATUS_COLORS: Record<SocialPostStatus, string> = {
   idee: 'bg-muted text-muted-foreground',
-  produktion: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  geplant: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  veroeffentlicht: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  produktion: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+  geplant: 'bg-module-green-muted text-module-green-muted-foreground',
+  veroeffentlicht: 'bg-module-green text-module-green-foreground',
+};
+
+export const STATUS_DOT_COLORS: Record<SocialPostStatus, string> = {
+  idee: 'bg-muted-foreground',
+  produktion: 'bg-amber-500',
+  geplant: 'bg-module-green-light',
+  veroeffentlicht: 'bg-module-green',
 };

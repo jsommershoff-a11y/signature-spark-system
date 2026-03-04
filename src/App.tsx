@@ -129,7 +129,7 @@ const App = () => (
                   <Goals />
                 </ProtectedRoute>
               } />
-              <Route path="social" element={
+              <Route path="social-media" element={
                 <ProtectedRoute requireMinRole="mitarbeiter">
                   <SocialMedia />
                 </ProtectedRoute>

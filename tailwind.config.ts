@@ -66,6 +66,14 @@ export default {
           brown: "hsl(var(--brand-brown))",
           charcoal: "hsl(var(--brand-charcoal))",
         },
+        "module-green": {
+          DEFAULT: "hsl(var(--module-green))",
+          light: "hsl(var(--module-green-light))",
+          dark: "hsl(var(--module-green-dark))",
+          foreground: "hsl(var(--module-green-foreground))",
+          muted: "hsl(var(--module-green-muted))",
+          "muted-foreground": "hsl(var(--module-green-muted-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

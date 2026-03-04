@@ -53,6 +53,14 @@ All colors MUST be HSL.
     --brand-brown: 20 30% 35%;
     --brand-charcoal: 20 20% 25%;
 
+    /* Module accent: Dark Green */
+    --module-green: 152 60% 28%;
+    --module-green-light: 152 45% 42%;
+    --module-green-dark: 152 65% 20%;
+    --module-green-foreground: 0 0% 100%;
+    --module-green-muted: 152 30% 94%;
+    --module-green-muted-foreground: 152 40% 30%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 23 92% 54%;
@@ -106,6 +114,14 @@ All colors MUST be HSL.
     --brand-cream: 35 25% 75%;
     --brand-brown: 20 30% 35%;
     --brand-charcoal: 20 20% 25%;
+
+    /* Module accent: Dark Green (dark mode) */
+    --module-green: 152 50% 45%;
+    --module-green-light: 152 40% 55%;
+    --module-green-dark: 152 55% 30%;
+    --module-green-foreground: 0 0% 100%;
+    --module-green-muted: 152 25% 18%;
+    --module-green-muted-foreground: 152 30% 65%;
 
     --sidebar-background: 226 71% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;

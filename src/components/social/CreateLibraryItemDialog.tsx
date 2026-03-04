@@ -5,15 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { Plus, BookmarkPlus } from 'lucide-react';
 import { useSocialLibrary } from '@/hooks/useSocialLibrary';
 import type { LibraryItemType } from '@/types/social';
 
 const TYPE_LABELS: Record<LibraryItemType, string> = {
-  hook: 'Hook',
-  template: 'Template',
-  hashtag: 'Hashtag-Set',
-  story: 'Story Script',
+  hook: '🪝 Hook',
+  template: '📝 Template',
+  hashtag: '#️⃣ Hashtag-Set',
+  story: '🎬 Story Script',
 };
 
 export function CreateLibraryItemDialog() {
@@ -39,10 +39,19 @@ export function CreateLibraryItemDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Neuer Eintrag</Button>
+        <Button size="sm" className="bg-module-green hover:bg-module-green-dark text-module-green-foreground">
+          <Plus className="h-4 w-4 mr-1" /> Neuer Eintrag
+        </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Bibliothek-Eintrag erstellen</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-module-green/10 flex items-center justify-center">
+              <BookmarkPlus className="h-4 w-4 text-module-green" />
+            </div>
+            Bibliothek-Eintrag erstellen
+          </DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>Typ</Label>
@@ -51,10 +60,21 @@ export function CreateLibraryItemDialog() {
               <SelectContent>{Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div><Label>Titel</Label><Input value={title} onChange={e => setTitle(e.target.value)} required /></div>
-          <div><Label>Inhalt</Label><Textarea rows={4} value={content} onChange={e => setContent(e.target.value)} /></div>
-          <div><Label>Tags (kommagetrennt)</Label><Input value={tags} onChange={e => setTags(e.target.value)} placeholder="z.B. handwerk, marketing" /></div>
-          <Button type="submit" className="w-full" disabled={createItem.isPending}>Erstellen</Button>
+          <div>
+            <Label>Titel *</Label>
+            <Input value={title} onChange={e => setTitle(e.target.value)} required placeholder="Beschreibender Titel" />
+          </div>
+          <div>
+            <Label>Inhalt</Label>
+            <Textarea rows={4} value={content} onChange={e => setContent(e.target.value)} placeholder="Der eigentliche Content..." />
+          </div>
+          <div>
+            <Label>Tags (kommagetrennt)</Label>
+            <Input value={tags} onChange={e => setTags(e.target.value)} placeholder="z.B. handwerk, marketing, recruiting" />
+          </div>
+          <Button type="submit" className="w-full bg-module-green hover:bg-module-green-dark text-module-green-foreground" disabled={createItem.isPending}>
+            {createItem.isPending ? 'Erstelle...' : 'Eintrag speichern'}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
