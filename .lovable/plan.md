@@ -1,45 +1,55 @@
 
 
-## 3 neue Gruender-Fotos einsetzen
+# Plan: Password Reset, Registration Cleanup, Profile Completion & Privacy
 
-### Zusammenfassung
+## Overview
 
-Die 3 hochgeladenen Bilder ersetzen das bisherige einzelne `founder-portrait.jpeg` an den 3 Stellen, wo es aktuell verwendet wird. Jedes Bild wird gezielt der passenden Sektion zugeordnet.
+Four sequential changes to the auth flow, processed step by step.
 
-### Bildzuordnung
+---
 
-| Bild | Dateiname | Einsatzort | Begruendung |
-|------|-----------|------------|-------------|
-| Bild 2 (Hotel/Lounge, professionell) | `founder-hero.jpeg` | **HeroSection.tsx** -- Hintergrund + Video-Thumbnail | Professionelles Setting, dunkler Hintergrund passt zum Hero-Overlay |
-| Bild 3 (Buero, Strickjacke + Hemd) | `founder-about.jpeg` | **AboutFounderSection.tsx** -- Gruender-Portrait | Business-casual im Buero-Setting, strahlt Kompetenz und Nahbarkeit aus |
-| Bild 1 (Couch, Buch, entspannt) | `founder-personal.jpeg` | **PersonalSupport.tsx** -- Persoenliches Sparring | Lockeres, nahbares Setting -- passt zum "Partner auf Augenhoehe"-Thema |
+## Step 01 — Password Reset Flow
 
-### Schritte
+**What:** Add "Passwort vergessen?" link on login form + create `/reset-password` page.
 
-#### Step 01 -- Bilder in src/assets kopieren
+- **Auth.tsx**: Add a "Passwort vergessen?" button below the login form that triggers `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' })`
+- **New file `src/pages/ResetPassword.tsx`**: Page that detects `type=recovery` in URL hash, shows a "new password" form, calls `supabase.auth.updateUser({ password })`. Shows success toast and redirects to `/auth`.
+- **App.tsx**: Add public route `/reset-password` pointing to the new page.
 
-3 neue Dateien anlegen:
-- `src/assets/founder-hero.jpeg` (aus Bild 2)
-- `src/assets/founder-about.jpeg` (aus Bild 3)
-- `src/assets/founder-personal.jpeg` (aus Bild 1)
+---
 
-Das alte `src/assets/founder-portrait.jpeg` bleibt bestehen (koennte von Branchen-Landingpages referenziert werden).
+## Step 02 — Registration: Add Phone, Remove Unnecessary Fields
 
-#### Step 02 -- HeroSection.tsx aktualisieren
+**What:** Add phone number field to registration. Keep only: Vorname, Nachname, E-Mail, Telefon, Passwort. Add privacy checkbox.
 
-Import aendern: `founder-portrait.jpeg` wird zu `founder-hero.jpeg`
+- **Auth.tsx**: Add phone state, add phone input field, add Datenschutz checkbox with link to external privacy policy (krsimmobilien.de). Pass phone to signUp metadata.
+- **AuthContext.tsx**: Extend `signUp` metadata to include `phone`. Update `handle_new_user` trigger if needed (phone is already on profiles table and populated from metadata — need to verify trigger).
+- **Database migration**: Update `handle_new_user()` trigger to also save phone from `raw_user_meta_data->>'phone'`.
 
-#### Step 03 -- AboutFounderSection.tsx aktualisieren
+---
 
-Import aendern: `founder-portrait.jpeg` wird zu `founder-about.jpeg`
+## Step 03 — Profile Completion Popup After Login
 
-#### Step 04 -- PersonalSupport.tsx aktualisieren
+**What:** After login, if profile is missing key fields (company, etc.), show a dialog prompting the user to complete their data.
 
-Import aendern: `founder-portrait.jpeg` wird zu `founder-personal.jpeg`
+- **New file `src/components/app/ProfileCompletionDialog.tsx`**: A dialog that checks if `profile.company` is null/empty. If so, shows a form asking for: Firma/Unternehmen, Branche, Position/Rolle, Standort. On submit, updates the profiles table.
+- **Database migration**: Add columns `position` and `location` to profiles table (if not already present — `company` already exists).
+- **AppLayout.tsx**: Import and render `<ProfileCompletionDialog />` so it appears on first app load when profile is incomplete.
 
-### Keine weiteren Aenderungen noetig
+---
 
-- Kein Layout- oder CSS-Umbau
-- Keine neuen Dependencies
-- Consumer-Dateien (MasterHome, Branchen-Pages) bleiben unveraendert
+## Step 04 — Privacy Policy Integration
+
+**What:** Ensure registration requires explicit privacy consent.
+
+- Already handled in Step 02 (Datenschutz checkbox). The checkbox links to the external privacy policy at krsimmobilien.de (per existing project convention). Registration button is disabled until checkbox is checked.
+
+---
+
+## Technical Details
+
+- Password reset uses Supabase built-in `resetPasswordForEmail` — no edge function needed.
+- The profile completion dialog only shows once per session (track via sessionStorage or check profile fields).
+- All new profile fields use nullable columns to avoid breaking existing users.
+- The `handle_new_user` trigger update requires a database migration.
 
