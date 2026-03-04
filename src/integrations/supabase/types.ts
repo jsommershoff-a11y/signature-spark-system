@@ -615,6 +615,304 @@ export type Database = {
         }
         Relationships: []
       }
+      email_broadcasts: {
+        Row: {
+          body_html: string | null
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          scheduled_at: string | null
+          segment_filter: Json | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template_id: string | null
+          total_recipients: number | null
+          updated_at: string
+        }
+        Insert: {
+          body_html?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          scheduled_at?: string | null
+          segment_filter?: Json | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_id?: string | null
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          scheduled_at?: string | null
+          segment_filter?: Json | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_id?: string | null
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_broadcasts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_broadcasts_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          message_id: string
+          metadata: Json | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          message_id: string
+          metadata?: Json | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          message_id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_events_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "email_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_messages: {
+        Row: {
+          body_html: string
+          broadcast_id: string | null
+          created_at: string
+          enrollment_id: string | null
+          id: string
+          lead_id: string
+          message_type: string
+          resend_message_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template_id: string | null
+        }
+        Insert: {
+          body_html: string
+          broadcast_id?: string | null
+          created_at?: string
+          enrollment_id?: string | null
+          id?: string
+          lead_id: string
+          message_type?: string
+          resend_message_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_id?: string | null
+        }
+        Update: {
+          body_html?: string
+          broadcast_id?: string | null
+          created_at?: string
+          enrollment_id?: string | null
+          id?: string
+          lead_id?: string
+          message_type?: string
+          resend_message_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_messages_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "lead_sequence_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_messages_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sequence_steps: {
+        Row: {
+          conditions: Json | null
+          created_at: string
+          delay_minutes: number | null
+          id: string
+          sequence_id: string
+          step_order: number
+          subject_override: string | null
+          template_id: string | null
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string
+          delay_minutes?: number | null
+          id?: string
+          sequence_id: string
+          step_order: number
+          subject_override?: string | null
+          template_id?: string | null
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string
+          delay_minutes?: number | null
+          id?: string
+          sequence_id?: string
+          step_order?: number
+          subject_override?: string | null
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sequence_steps_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sequences: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_preset: boolean | null
+          name: string
+          status: string
+          trigger_config: Json | null
+          trigger_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_preset?: boolean | null
+          name: string
+          status?: string
+          trigger_config?: Json | null
+          trigger_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_preset?: boolean | null
+          name?: string
+          status?: string
+          trigger_config?: Json | null
+          trigger_type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sequences_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          body_html: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+          variables: string[] | null
+        }
+        Insert: {
+          body_html?: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string
+          variables?: string[] | null
+        }
+        Update: {
+          body_html?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+          variables?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       followup_plans: {
         Row: {
           approved_at: string | null
@@ -924,6 +1222,57 @@ export type Database = {
           token?: string
         }
         Relationships: []
+      }
+      lead_sequence_enrollments: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_step: number | null
+          enrolled_at: string | null
+          id: string
+          lead_id: string
+          sequence_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number | null
+          enrolled_at?: string | null
+          id?: string
+          lead_id: string
+          sequence_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number | null
+          enrolled_at?: string | null
+          id?: string
+          lead_id?: string
+          sequence_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_sequence_enrollments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_sequence_enrollments_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leads: {
         Row: {
@@ -1564,6 +1913,157 @@ export type Database = {
           {
             foreignKeyName: "profiles_team_id_fkey"
             columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_library_items: {
+        Row: {
+          content: string | null
+          created_at: string
+          created_by: string
+          id: string
+          industry: string | null
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          industry?: string | null
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          industry?: string | null
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_library_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_posts: {
+        Row: {
+          assets: Json | null
+          assigned_to: string | null
+          caption: string | null
+          content_type: string
+          created_at: string
+          created_by: string
+          hook: string | null
+          id: string
+          metrics: Json | null
+          notes: string | null
+          platform: string
+          scheduled_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assets?: Json | null
+          assigned_to?: string | null
+          caption?: string | null
+          content_type: string
+          created_at?: string
+          created_by: string
+          hook?: string | null
+          id?: string
+          metrics?: Json | null
+          notes?: string | null
+          platform: string
+          scheduled_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assets?: Json | null
+          assigned_to?: string | null
+          caption?: string | null
+          content_type?: string
+          created_at?: string
+          created_by?: string
+          hook?: string | null
+          id?: string
+          metrics?: Json | null
+          notes?: string | null
+          platform?: string
+          scheduled_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_posts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_strategy_settings: {
+        Row: {
+          content_pillars: Json | null
+          created_at: string
+          id: string
+          kpi_targets: Json | null
+          posting_frequency: Json | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content_pillars?: Json | null
+          created_at?: string
+          id?: string
+          kpi_targets?: Json | null
+          posting_frequency?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content_pillars?: Json | null
+          created_at?: string
+          id?: string
+          kpi_targets?: Json | null
+          posting_frequency?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_strategy_settings_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

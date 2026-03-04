@@ -17,6 +17,8 @@ import {
   UserCheck,
   ScrollText,
   Target,
+  Share2,
+  Mail,
 } from 'lucide-react';
 
 interface NavItem {
@@ -96,6 +98,18 @@ const navItems: NavItem[] = [
     label: 'Ziele',
     href: '/app/goals',
     icon: Target,
+    minRole: 'mitarbeiter',
+  },
+  {
+    label: 'Social Media',
+    href: '/app/social',
+    icon: Share2,
+    minRole: 'mitarbeiter',
+  },
+  {
+    label: 'Email',
+    href: '/app/email',
+    icon: Mail,
     minRole: 'mitarbeiter',
   },
   { 

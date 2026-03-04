@@ -39,3 +39,15 @@ verify_jwt = false
 [functions.log-email]
 verify_jwt = false
 
+[functions.generate-social-content]
+verify_jwt = false
+
+[functions.send-campaign-email]
+verify_jwt = false
+
+[functions.email-tracker]
+verify_jwt = false
+
+[functions.process-email-queue]
+verify_jwt = false
+
