@@ -10,6 +10,23 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // --- Internal-only authentication ---
+    // This function must only be called by process-email-queue (server-side).
+    // Validate via CRON_SECRET header or service_role JWT.
+    const internalSecret = Deno.env.get("CRON_SECRET");
+    const authHeader = req.headers.get("Authorization");
+    const cronHeader = req.headers.get("x-cron-secret");
+
+    const isServiceRole = authHeader?.includes(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "__none__");
+    const isCronAuth = internalSecret && cronHeader === internalSecret;
+
+    if (!isServiceRole && !isCronAuth) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { message_id, to_email, subject, body_html, enrollment_id, lead_id } = await req.json();
     
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
