@@ -173,6 +173,8 @@ serve(async (req) => {
           to_email: lead.email,
           subject,
           body_html: body,
+          enrollment_id: msg.enrollment_id || null,
+          lead_id: msg.lead_id,
         }),
       });
 
