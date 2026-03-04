@@ -40,7 +40,16 @@ import OfferDetail from "./pages/app/OfferDetail";
 import MyContracts from "./pages/app/MyContracts";
 import Goals from "./pages/app/Goals";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2, // 2 minutes
+      gcTime: 1000 * 60 * 5,    // 5 minutes garbage collection
+      refetchOnWindowFocus: true,
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
