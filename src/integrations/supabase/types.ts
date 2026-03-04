@@ -720,6 +720,7 @@ export type Database = {
           lead_id: string
           message_type: string
           resend_message_id: string | null
+          scheduled_at: string | null
           sent_at: string | null
           status: string
           subject: string
@@ -734,6 +735,7 @@ export type Database = {
           lead_id: string
           message_type?: string
           resend_message_id?: string | null
+          scheduled_at?: string | null
           sent_at?: string | null
           status?: string
           subject: string
@@ -748,6 +750,7 @@ export type Database = {
           lead_id?: string
           message_type?: string
           resend_message_id?: string | null
+          scheduled_at?: string | null
           sent_at?: string | null
           status?: string
           subject?: string
