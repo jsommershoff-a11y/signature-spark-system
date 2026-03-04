@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import logoSignature from '@/assets/krs-logo.png';
@@ -16,6 +18,9 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   
   const { signIn, signUp, isAuthenticated, isLoading: authLoading, effectiveRole } = useAuth();
   const navigate = useNavigate();
@@ -26,7 +31,6 @@ export default function Auth() {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      // Redirect customers to contracts page
       if (effectiveRole === 'kunde') {
         navigate('/app/contracts', { replace: true });
       } else {
@@ -59,6 +63,37 @@ export default function Auth() {
     setIsLoading(false);
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        variant: 'destructive',
+        title: 'E-Mail erforderlich',
+        description: 'Bitte gib deine E-Mail-Adresse ein, um dein Passwort zurückzusetzen.',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Fehler',
+        description: error.message,
+      });
+    } else {
+      toast({
+        title: 'E-Mail gesendet',
+        description: 'Prüfe dein Postfach für den Link zum Zurücksetzen deines Passworts.',
+      });
+      setShowForgotPassword(false);
+    }
+    setIsLoading(false);
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -72,8 +107,22 @@ export default function Auth() {
       setIsLoading(false);
       return;
     }
+
+    if (!privacyAccepted) {
+      toast({
+        variant: 'destructive',
+        title: 'Datenschutz',
+        description: 'Bitte akzeptiere die Datenschutzerklärung.',
+      });
+      setIsLoading(false);
+      return;
+    }
     
-    const { error } = await signUp(email, password, { first_name: firstName, last_name: lastName });
+    const { error } = await signUp(email, password, {
+      first_name: firstName,
+      last_name: lastName,
+      phone,
+    });
     
     if (error) {
       let message = error.message;
@@ -149,7 +198,7 @@ export default function Auth() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
+                  {isLoading && !showForgotPassword ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Wird angemeldet...
@@ -157,6 +206,15 @@ export default function Auth() {
                   ) : (
                     'Anmelden'
                   )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="w-full text-sm text-muted-foreground"
+                  onClick={handleForgotPassword}
+                  disabled={isLoading}
+                >
+                  Passwort vergessen?
                 </Button>
               </form>
             </TabsContent>
@@ -172,6 +230,7 @@ export default function Auth() {
                       placeholder="Max"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
+                      required
                       disabled={isLoading}
                     />
                   </div>
@@ -183,6 +242,7 @@ export default function Auth() {
                       placeholder="Mustermann"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      required
                       disabled={isLoading}
                     />
                   </div>
@@ -200,6 +260,17 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="phone-register">Telefon</Label>
+                  <Input
+                    id="phone-register"
+                    type="tel"
+                    placeholder="+49 123 456789"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="password-register">Passwort</Label>
                   <Input
                     id="password-register"
@@ -212,7 +283,26 @@ export default function Auth() {
                     disabled={isLoading}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="privacy"
+                    checked={privacyAccepted}
+                    onCheckedChange={(checked) => setPrivacyAccepted(checked === true)}
+                    disabled={isLoading}
+                  />
+                  <label htmlFor="privacy" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                    Ich akzeptiere die{' '}
+                    <a
+                      href="https://krsimmobilien.de/datenschutz"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline text-primary hover:text-primary/80"
+                    >
+                      Datenschutzerklärung
+                    </a>
+                  </label>
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading || !privacyAccepted}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

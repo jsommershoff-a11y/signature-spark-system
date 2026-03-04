@@ -17,6 +17,7 @@ import Kurzzeitvermietung from "./pages/landing/Kurzzeitvermietung";
 import Qualifizierung from "./pages/landing/Qualifizierung";
 import Thanks from "./pages/landing/Thanks";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PublicOffer from "./pages/Offer";
 
@@ -71,6 +72,7 @@ const App = () => (
             
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* Protected app routes */}
             <Route path="/app" element={
