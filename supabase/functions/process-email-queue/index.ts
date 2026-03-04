@@ -24,16 +24,124 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get queued messages
+    // ========================================
+    // PART A — Generate queued emails from active enrollments
+    // ========================================
+    let generated = 0;
+
+    const { data: enrollments, error: enrollErr } = await supabase
+      .from("lead_sequence_enrollments")
+      .select("*, email_sequences!inner(status)")
+      .eq("status", "active")
+      .eq("email_sequences.status", "active");
+
+    if (enrollErr) {
+      console.error("Error fetching enrollments:", enrollErr);
+    }
+
+    if (enrollments && enrollments.length > 0) {
+      for (const enrollment of enrollments) {
+        const nextStepOrder = (enrollment.current_step || 0) + 1;
+
+        // Get the next step for this sequence
+        const { data: step, error: stepErr } = await supabase
+          .from("email_sequence_steps")
+          .select("*, email_templates(*)")
+          .eq("sequence_id", enrollment.sequence_id)
+          .eq("step_order", nextStepOrder)
+          .single();
+
+        if (stepErr || !step) {
+          // No more steps → mark enrollment as completed
+          if (enrollment.current_step > 0) {
+            await supabase
+              .from("lead_sequence_enrollments")
+              .update({ status: "completed", completed_at: new Date().toISOString() })
+              .eq("id", enrollment.id);
+          }
+          continue;
+        }
+
+        // Calculate scheduled_at based on enrolled_at + delay_minutes
+        const enrolledAt = new Date(enrollment.enrolled_at || enrollment.created_at);
+        const delayMs = (step.delay_minutes || 0) * 60 * 1000;
+        const scheduledAt = new Date(enrolledAt.getTime() + delayMs);
+
+        // Only generate if scheduled time has passed
+        if (scheduledAt > new Date()) continue;
+
+        // Check if message already exists for this enrollment + step
+        const { data: existing } = await supabase
+          .from("email_messages")
+          .select("id")
+          .eq("enrollment_id", enrollment.id)
+          .eq("template_id", step.template_id)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          // Already generated, advance step and continue
+          await supabase
+            .from("lead_sequence_enrollments")
+            .update({ current_step: nextStepOrder })
+            .eq("id", enrollment.id);
+          continue;
+        }
+
+        // Get template content (fallback to subject_override)
+        const template = step.email_templates;
+        const subject = template?.subject || step.subject_override || "Kein Betreff";
+        const bodyHtml = template?.body_html || "<p>Kein Inhalt</p>";
+
+        // Insert queued email message
+        const { error: insertErr } = await supabase
+          .from("email_messages")
+          .insert({
+            enrollment_id: enrollment.id,
+            template_id: step.template_id,
+            lead_id: enrollment.lead_id,
+            subject,
+            body_html: bodyHtml,
+            status: "queued",
+            scheduled_at: scheduledAt.toISOString(),
+            message_type: "sequence",
+          });
+
+        if (!insertErr) {
+          generated++;
+          // Advance current_step
+          const { data: totalSteps } = await supabase
+            .from("email_sequence_steps")
+            .select("id")
+            .eq("sequence_id", enrollment.sequence_id);
+
+          const isLastStep = nextStepOrder >= (totalSteps?.length || 0);
+
+          await supabase
+            .from("lead_sequence_enrollments")
+            .update({
+              current_step: nextStepOrder,
+              ...(isLastStep
+                ? { status: "completed", completed_at: new Date().toISOString() }
+                : {}),
+            })
+            .eq("id", enrollment.id);
+        }
+      }
+    }
+
+    // ========================================
+    // PART B — Send queued emails where scheduled_at <= now
+    // ========================================
     const { data: queuedMessages, error: fetchError } = await supabase
       .from("email_messages")
       .select("*, crm_leads!email_messages_lead_id_fkey(email, first_name, last_name, company)")
       .eq("status", "queued")
+      .lte("scheduled_at", new Date().toISOString())
       .limit(50);
 
     if (fetchError) throw fetchError;
     if (!queuedMessages || queuedMessages.length === 0) {
-      return new Response(JSON.stringify({ processed: 0 }), {
+      return new Response(JSON.stringify({ generated, processed: 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -71,7 +179,7 @@ serve(async (req) => {
       if (sendRes.ok) processed++;
     }
 
-    return new Response(JSON.stringify({ processed, total: queuedMessages.length }), {
+    return new Response(JSON.stringify({ generated, processed, total_queued: queuedMessages.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
