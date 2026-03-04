@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { message_id, to_email, subject, body_html } = await req.json();
+    const { message_id, to_email, subject, body_html, enrollment_id, lead_id } = await req.json();
     
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
@@ -21,27 +21,56 @@ serve(async (req) => {
 
     // Add tracking pixel
     const trackingPixelUrl = `${supabaseUrl}/functions/v1/email-tracker?mid=${message_id}&event=opened`;
-    const htmlWithTracking = body_html + `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none" />`;
+    let htmlWithTracking = body_html + `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none" />`;
+
+    // Add unsubscribe link for sequence emails
+    if (enrollment_id || lead_id) {
+      const unsubParams = new URLSearchParams();
+      if (enrollment_id) unsubParams.set("eid", enrollment_id);
+      if (lead_id) unsubParams.set("lid", lead_id);
+      const unsubscribeUrl = `${supabaseUrl}/functions/v1/email-unsubscribe?${unsubParams.toString()}`;
+      
+      htmlWithTracking += `
+        <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e5e5;text-align:center;font-size:12px;color:#999;">
+          <p>Du möchtest keine weiteren E-Mails erhalten?<br>
+          <a href="${unsubscribeUrl}" style="color:#16613b;text-decoration:underline;">Hier abmelden</a></p>
+        </div>`;
+    }
 
     // Send via Resend
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    };
+
+    const resendBody: Record<string, unknown> = {
+      from: "KRS Signature <info@krs-signature.de>",
+      to: [to_email],
+      subject,
+      html: htmlWithTracking,
+    };
+
+    // Add List-Unsubscribe header for email clients
+    if (enrollment_id || lead_id) {
+      const unsubParams = new URLSearchParams();
+      if (enrollment_id) unsubParams.set("eid", enrollment_id);
+      if (lead_id) unsubParams.set("lid", lead_id);
+      const unsubscribeUrl = `${supabaseUrl}/functions/v1/email-unsubscribe?${unsubParams.toString()}`;
+      resendBody.headers = {
+        "List-Unsubscribe": `<${unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      };
+    }
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "KRS Signature <info@krs-signature.de>",
-        to: [to_email],
-        subject,
-        html: htmlWithTracking,
-      }),
+      headers,
+      body: JSON.stringify(resendBody),
     });
 
     const resData = await res.json();
     
     if (!res.ok) {
-      // Update message status to failed
       await supabase.from("email_messages").update({ status: "failed" }).eq("id", message_id);
       throw new Error(resData.message || "Resend error");
     }
