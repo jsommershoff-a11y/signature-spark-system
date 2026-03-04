@@ -1,265 +1,79 @@
 
 
-# Plan: Social Media + Email Kampagnen Module (Phase A)
+# Plan: Email Automation Engine — Auto-Enrollment Triggers + Queue Enhancement + Seed Data
 
-## Overview
+## Current State
 
-Two new main modules added to the sidebar, accessible for `mitarbeiter` and above. Full database schema, RLS, hooks, pages, and components. KI Content Generator uses Lovable AI Gateway. Email sending uses existing Resend integration.
-
-Due to the scale, Phase A is split into sequential implementation steps. Phase B (Stripe/Offer Landing) and Phase C (Zipgate/Franchise) are tracked as future tickets.
-
----
-
-## Database Schema (single migration)
-
-### Social Media Tables
-
-```text
-social_posts
-├── id uuid PK
-├── title text NOT NULL
-├── platform text NOT NULL (instagram, tiktok, linkedin, facebook, youtube, x)
-├── content_type text NOT NULL (post, reel, story, carousel, video, newsletter_teaser)
-├── scheduled_at timestamptz
-├── status text DEFAULT 'idee' (idee, produktion, geplant, veroeffentlicht)
-├── hook text
-├── caption text
-├── assets jsonb DEFAULT '[]'
-├── notes text
-├── metrics jsonb DEFAULT '{}'
-├── assigned_to uuid → profiles(id)
-├── created_by uuid → profiles(id) NOT NULL
-├── created_at / updated_at
-
-social_library_items
-├── id uuid PK
-├── type text NOT NULL (hook, template, hashtag, story)
-├── title text NOT NULL
-├── content text
-├── tags text[] DEFAULT '{}'
-├── industry text
-├── created_by uuid → profiles(id) NOT NULL
-├── created_at / updated_at
-
-social_strategy_settings
-├── id uuid PK
-├── posting_frequency jsonb DEFAULT '{}'
-├── content_pillars jsonb DEFAULT '[]'
-├── kpi_targets jsonb DEFAULT '{}'
-├── updated_by uuid → profiles(id)
-├── created_at / updated_at
-```
-
-### Email Campaign Tables
-
-```text
-email_templates
-├── id uuid PK
-├── name text NOT NULL
-├── subject text NOT NULL
-├── body_html text NOT NULL
-├── variables text[] DEFAULT '{}'
-├── created_by uuid → profiles(id) NOT NULL
-├── created_at / updated_at
-
-email_sequences
-├── id uuid PK
-├── name text NOT NULL
-├── description text
-├── trigger_type text (lead_registered, offer_created, offer_not_accepted, product_purchased)
-├── trigger_config jsonb DEFAULT '{}'
-├── status text DEFAULT 'draft' (draft, active, paused, archived)
-├── is_preset boolean DEFAULT false
-├── created_by uuid → profiles(id) NOT NULL
-├── created_at / updated_at
-
-email_sequence_steps
-├── id uuid PK
-├── sequence_id uuid → email_sequences(id) ON DELETE CASCADE
-├── step_order integer NOT NULL
-├── delay_minutes integer DEFAULT 0
-├── template_id uuid → email_templates(id)
-├── subject_override text
-├── conditions jsonb
-├── created_at
-
-lead_sequence_enrollments
-├── id uuid PK
-├── lead_id uuid → crm_leads(id) NOT NULL
-├── sequence_id uuid → email_sequences(id) NOT NULL
-├── status text DEFAULT 'active' (active, paused, completed, unsubscribed)
-├── current_step integer DEFAULT 0
-├── enrolled_at timestamptz DEFAULT now()
-├── completed_at timestamptz
-├── created_at / updated_at
-
-email_messages
-├── id uuid PK
-├── enrollment_id uuid → lead_sequence_enrollments(id) (nullable for broadcasts)
-├── template_id uuid → email_templates(id)
-├── lead_id uuid → crm_leads(id) NOT NULL
-├── subject text NOT NULL
-├── body_html text NOT NULL
-├── status text DEFAULT 'queued' (queued, sent, delivered, failed, bounced)
-├── sent_at timestamptz
-├── message_type text DEFAULT 'sequence' (sequence, broadcast)
-├── broadcast_id uuid (nullable)
-├── resend_message_id text
-├── created_at
-
-email_events
-├── id uuid PK
-├── message_id uuid → email_messages(id) NOT NULL
-├── event_type text NOT NULL (delivered, opened, clicked, bounced, unsubscribed)
-├── metadata jsonb DEFAULT '{}'
-├── created_at
-
-email_broadcasts
-├── id uuid PK
-├── name text NOT NULL
-├── template_id uuid → email_templates(id)
-├── subject text NOT NULL
-├── body_html text
-├── segment_filter jsonb DEFAULT '{}'
-├── status text DEFAULT 'draft' (draft, scheduled, sending, sent)
-├── scheduled_at timestamptz
-├── sent_at timestamptz
-├── total_recipients integer DEFAULT 0
-├── created_by uuid → profiles(id) NOT NULL
-├── created_at / updated_at
-```
-
-### RLS Pattern
-
-All tables: `has_min_role(auth.uid(), 'mitarbeiter')` for SELECT/INSERT/UPDATE. Admin for DELETE. Same pattern as existing CRM tables.
+- **Tables exist**: `email_sequences`, `email_sequence_steps`, `lead_sequence_enrollments`, `email_messages`
+- **2 preset sequences** already seeded: "Freebie Follow-up" (4 steps) and "Kunden Onboarding" (3 steps), both in `draft` status
+- **No triggers** exist for auto-enrollment
+- **No email templates** exist yet — steps use `subject_override` but no `template_id`
+- **`offers` and `orders` tables** exist with `lead_id` columns
+- **Missing**: "Angebot Follow-up" sequence
 
 ---
 
-## Step 01 — Social Media: Calendar + CRUD + List
+## Step 01 — Database Migration: Triggers + Functions
 
-**Files created:**
-- `src/types/social.ts` — TypeScript types
-- `src/hooks/useSocialPosts.ts` — React Query CRUD hook
-- `src/pages/app/SocialMedia.tsx` — Main page with Tabs (Kalender, Liste, Bibliothek, Generator, Einstellungen)
-- `src/components/social/CalendarView.tsx` — Month/week calendar grid with status pills
-- `src/components/social/ListView.tsx` — Table view with filters (platform, status, period, owner)
-- `src/components/social/CreatePostDialog.tsx` — Quick-add modal (title, platform, date, status)
-- `src/components/social/PostDetailModal.tsx` — Full edit view with all fields + metrics
+Create 3 SECURITY DEFINER functions + 3 triggers:
 
-**Routing:** `/app/social` in `App.tsx`, sidebar entry with `Share2` icon, `minRole: 'mitarbeiter'`.
+**Function `enroll_lead_in_sequences(lead_id, trigger_type)`**
+- Shared logic: finds all `email_sequences` where `status = 'active'` and `trigger_type` matches
+- Inserts into `lead_sequence_enrollments` with `status = 'active'`, `current_step = 0`
+- Uses `ON CONFLICT DO NOTHING` to prevent duplicate enrollments
 
----
+**Trigger 1**: `AFTER INSERT ON crm_leads` → calls enroll with `'lead_registered'`
 
-## Step 02 — Social Media: Content Library
+**Trigger 2**: `AFTER INSERT ON offers` → calls enroll with `'offer_created'` using `NEW.lead_id`
 
-**Files created:**
-- `src/hooks/useSocialLibrary.ts` — CRUD for library items
-- `src/components/social/LibraryTab.tsx` — Tab content with category sub-tabs (Hooks, Templates, Hashtags, Story Scripts)
-- `src/components/social/LibraryItemCard.tsx` — Card with "In Post ubernehmen" button
-- `src/components/social/CreateLibraryItemDialog.tsx` — Create/edit dialog
+**Trigger 3**: `AFTER UPDATE ON orders` → when `NEW.status = 'paid' AND OLD.status != 'paid'` → calls enroll with `'product_purchased'` using `NEW.lead_id`
 
 ---
 
-## Step 03 — Social Media: AI Content Generator
+## Step 02 — Seed Data: Missing Sequence + Templates
 
-**Files created:**
-- `supabase/functions/generate-social-content/index.ts` — Edge function calling Lovable AI Gateway with structured tool-calling output (hook variants, caption, hashtags, story script, posting time)
-- `src/components/social/GeneratorTab.tsx` — Form with platform, content type, goal, topic, tonality, CTA inputs. Output display with "Als Post planen" and "In Bibliothek speichern" buttons.
+Using the insert tool (not migration):
 
-**Config:** Add `[functions.generate-social-content]` with `verify_jwt = false` to `config.toml`.
+1. **Create 10 email templates** (one per step across all 3 sequences):
+   - `freebie_welcome`, `freebie_value`, `upsell_offer`, `last_call`
+   - `offer_reminder`, `trust_case`, `last_chance`
+   - `portal_access`, `system_setup`, `support_invite`
+   - Each with placeholder `body_html` using `{{first_name}}` and `{{company}}` variables
 
----
+2. **Insert "Angebot Follow-up" sequence** with `trigger_type = 'offer_created'`, 3 steps (1440/4320/7200 min delays)
 
-## Step 04 — Social Media: Strategy Settings
+3. **Link existing steps** to their templates via `UPDATE email_sequence_steps SET template_id = ...`
 
-**Files created:**
-- `src/hooks/useSocialStrategy.ts` — Read/upsert singleton
-- `src/components/social/SettingsTab.tsx` — Posting frequency per platform, content pillars editor, KPI targets
-
----
-
-## Step 05 — Email Campaigns: Templates
-
-**Files created:**
-- `src/types/email.ts` — TypeScript types for all email entities
-- `src/hooks/useEmailTemplates.ts` — CRUD hook
-- `src/pages/app/EmailCampaigns.tsx` — Main page with Tabs (Sequenzen, Broadcasts, Templates, Analytics)
-- `src/components/email/TemplateList.tsx` — List with preview
-- `src/components/email/TemplateEditor.tsx` — Editor with variable support, live preview
-- `src/components/email/TemplateSendTest.tsx` — Test send to admin email
-
-**Routing:** `/app/email` in `App.tsx`, sidebar entry with `Mail` icon, `minRole: 'mitarbeiter'`.
+4. **Activate all 3 sequences**: `UPDATE email_sequences SET status = 'active'`
 
 ---
 
-## Step 06 — Email Campaigns: Sequences + Steps
+## Step 03 — Enhance `process-email-queue` Edge Function
 
-**Files created:**
-- `src/hooks/useEmailSequences.ts` — CRUD for sequences + steps
-- `src/components/email/SequenceList.tsx` — List with status badges
-- `src/components/email/SequenceEditor.tsx` — Visual step builder (delay, template, conditions)
-- `src/components/email/SequenceEnrollments.tsx` — View enrolled leads
+Extend the function to do two things:
 
-**Preset sequences** inserted via migration:
-1. Freebie Follow-up (0/1/3/7 days) → Upsell 499EUR
-2. Angebot Follow-up (1/3/5 days) → Reminder + Trust
-3. Kunden Onboarding (after purchase) → Portal activation
+**Part A — Generate queued emails from enrollments**:
+- Query `lead_sequence_enrollments` where `status = 'active'`
+- For each enrollment, find the next step (`current_step + 1`)
+- Check if an `email_message` already exists for this enrollment + step
+- If not, calculate `scheduled_at = enrolled_at + step.delay_minutes`
+- If `scheduled_at <= now()`, create the message from the step's template (or `subject_override`)
+- Update enrollment's `current_step`; if last step → set `status = 'completed'`
 
----
-
-## Step 07 — Email Campaigns: Sending Engine
-
-**Files created:**
-- `supabase/functions/send-campaign-email/index.ts` — Edge function that sends via Resend (from `info@krs-signature.de`), logs to `email_messages`, creates tracking pixel URL and link wrapping
-- `supabase/functions/email-tracker/index.ts` — Public endpoint for open pixel + click tracking, writes to `email_events`
-- `supabase/functions/process-email-queue/index.ts` — Cron-like function that processes queued emails from `email_messages` where status='queued' and scheduled time has passed
-
-**Config:** All three functions added to `config.toml` with `verify_jwt = false`.
+**Part B — Send queued emails** (existing logic, enhanced):
+- Query `email_messages` where `status = 'queued'` AND `scheduled_at <= now()`
+- Send via `send-campaign-email` (existing)
+- Variable replacement (existing)
 
 ---
 
-## Step 08 — Email Campaigns: Broadcasts
+## Files Changed
 
-**Files created:**
-- `src/hooks/useEmailBroadcasts.ts` — CRUD hook
-- `src/components/email/BroadcastEditor.tsx` — Segment selection (all leads, by status/stage, customers), template or ad-hoc content, schedule or send now
+| File | Change |
+|------|--------|
+| New migration SQL | 1 function + 3 triggers |
+| Seed data (insert tool) | 10 templates, 1 sequence + 3 steps, link template_ids, activate |
+| `supabase/functions/process-email-queue/index.ts` | Add enrollment processing logic before send loop |
 
----
-
-## Step 09 — Email Campaigns: Analytics Dashboard
-
-**Files created:**
-- `src/hooks/useEmailAnalytics.ts` — Aggregation queries for open/click/conversion rates
-- `src/components/email/AnalyticsTab.tsx` — Charts (recharts) for Open Rate, Click Rate, Conversion Rate, Top Sequences, Top Templates, Bounce/Unsubscribe
-
----
-
-## Step 10 — Auto-Enrollment Triggers
-
-**Database triggers** (migration):
-- After INSERT on `crm_leads` → enroll in active sequences with `trigger_type = 'lead_registered'`
-- After INSERT on `offers` → enroll lead in `trigger_type = 'offer_created'`
-- After UPDATE on `orders` (status → 'paid') → enroll in `trigger_type = 'product_purchased'`
-
-A scheduled check for "offer not accepted after X days" handled by `process-email-queue` function.
-
----
-
-## Technical Notes
-
-- All hooks follow the existing `useQuery`/`useQueryClient` pattern from `useLeads.ts`.
-- UI uses existing shadcn components (Card, Tabs, Table, Dialog, Select, Calendar, Badge).
-- Brand orange as primary accent (existing theme), status pills use semantic colors.
-- Tables that reference `profiles(id)` use `get_user_profile_id(auth.uid())` in RLS.
-- AI generator uses tool-calling for structured JSON output (no streaming needed for this use case).
-- Email sending uses `info@krs-signature.de` as sender via Resend.
-- The `types.ts` file auto-updates after migration; all new tables accessed via `.from('table_name')` with type assertions.
-
----
-
-## Not in This Phase
-
-- Phase B: Stripe Payment for offers, offer landing page improvements
-- Phase C: Zipgate call integration, franchise/partner blueprint
-- These will be addressed as separate follow-up tickets after Phase A is stable.
+No UI changes. No new dependencies.
 
