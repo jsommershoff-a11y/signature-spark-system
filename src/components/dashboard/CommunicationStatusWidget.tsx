@@ -12,7 +12,7 @@ interface Props {
 export function CommunicationStatusWidget({ todayCalls, isLoading }: Props) {
   const total = todayCalls.length;
   const completed = todayCalls.filter(c => c.status === 'completed').length;
-  const missed = todayCalls.filter(c => c.status === 'missed' || c.status === 'no_answer').length;
+  const missed = todayCalls.filter(c => c.status === 'failed').length;
   const pending = total - completed - missed;
 
   return (
