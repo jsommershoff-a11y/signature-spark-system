@@ -23,6 +23,7 @@ const contactSchema = z.object({
   email: z.string().trim().email("Bitte gib eine gültige E-Mail-Adresse ein").max(255, "E-Mail darf maximal 255 Zeichen haben"),
   phone: z.string().trim().max(30, "Telefonnummer darf maximal 30 Zeichen haben").optional().or(z.literal("")),
   message: z.string().trim().max(1000, "Nachricht darf maximal 1000 Zeichen haben").optional().or(z.literal("")),
+  privacyAccepted: z.literal(true, { errorMap: () => ({ message: "Bitte akzeptiere die Datenschutzerklärung." }) }),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
