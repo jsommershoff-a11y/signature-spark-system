@@ -256,7 +256,7 @@ serve(async (req) => {
             const { error: activityError } = await supabase.from("activities").insert({
               lead_id: hangupLeadId,
               user_id: ownerId,
-              type: "call",
+              type: "anruf",
               content: `${dirLabel} Sipgate-Anruf beendet${durationSeconds ? ` (${Math.floor(durationSeconds / 60)}:${String(durationSeconds % 60).padStart(2, "0")})` : ""} — ${eventData.cause === "normalClearing" ? "Normal beendet" : eventData.cause || "Unbekannt"}`,
               metadata: {
                 source: "sipgate_webhook",
