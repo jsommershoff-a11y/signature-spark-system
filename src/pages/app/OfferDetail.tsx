@@ -219,76 +219,83 @@ export default function OfferDetail() {
       </Card>
 
       {/* Action Bar */}
-      <div className="flex flex-wrap gap-3">
-        {/* Sales Guide Toggle */}
-        <Button
-          variant={showGuide ? 'default' : 'outline'}
-          onClick={() => setShowGuide(!showGuide)}
-        >
-          <MessageSquare className="h-4 w-4 mr-2" />
-          {showGuide ? 'Leitfaden ausblenden' : 'Gesprächsleitfaden'}
-        </Button>
-
-        {/* Submit for review */}
-        {canSubmitForReview && offer.status === 'draft' && (
-          <Button onClick={() => submitForReview(offer.id)}>
-            <Clock className="h-4 w-4 mr-2" />
-            Zur Prüfung einreichen
+      <div className="space-y-3">
+        {/* Primary Actions */}
+        <div className="flex flex-wrap gap-2">
+          {/* Sales Guide Toggle */}
+          <Button
+            variant={showGuide ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setShowGuide(!showGuide)}
+            className="md:size-default"
+          >
+            <MessageSquare className="h-4 w-4 mr-1.5" />
+            <span className="hidden xs:inline">{showGuide ? 'Leitfaden ausblenden' : 'Gesprächsleitfaden'}</span>
+            <span className="xs:hidden">{showGuide ? 'Ausblenden' : 'Leitfaden'}</span>
           </Button>
-        )}
 
-        {/* Approve */}
-        {canApprove && offer.status === 'pending_review' && (
-          <Button onClick={() => approveOffer(offer.id)}>
-            <Check className="h-4 w-4 mr-2" />
-            Genehmigen
-          </Button>
-        )}
+          {/* Submit for review */}
+          {canSubmitForReview && offer.status === 'draft' && (
+            <Button size="sm" onClick={() => submitForReview(offer.id)}>
+              <Clock className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">Zur Prüfung einreichen</span>
+              <span className="sm:hidden">Einreichen</span>
+            </Button>
+          )}
 
-        {/* Send */}
-        {canSend && offer.status === 'approved' && (
-          <Button onClick={() => sendOffer(offer.id)}>
-            <Send className="h-4 w-4 mr-2" />
-            Senden
-          </Button>
-        )}
+          {/* Approve */}
+          {canApprove && offer.status === 'pending_review' && (
+            <Button size="sm" onClick={() => approveOffer(offer.id)}>
+              <Check className="h-4 w-4 mr-1.5" />
+              Genehmigen
+            </Button>
+          )}
 
-        {/* Unlock payment — only after accepted */}
-        {canUnlockPayment && offer.status === 'accepted' && (
-          <PaymentUnlockButton
-            isUnlocked={offer.payment_unlocked}
-            onUnlock={async () => { await unlockPayment(offer.id); }}
-          />
-        )}
+          {/* Send */}
+          {canSend && offer.status === 'approved' && (
+            <Button size="sm" onClick={() => sendOffer(offer.id)}>
+              <Send className="h-4 w-4 mr-1.5" />
+              Senden
+            </Button>
+          )}
+
+          {/* Unlock payment — only after accepted */}
+          {canUnlockPayment && offer.status === 'accepted' && (
+            <PaymentUnlockButton
+              isUnlocked={offer.payment_unlocked}
+              onUnlock={async () => { await unlockPayment(offer.id); }}
+            />
+          )}
+        </div>
 
         {/* Sharing Actions */}
-        <div className="flex gap-2 ml-auto">
-          {/* PDF Download */}
-          <Button variant="outline" onClick={handleDownloadPDF} disabled={pdfLoading}>
-            <Download className="h-4 w-4 mr-2" />
-            {pdfLoading ? 'Wird erstellt...' : 'PDF'}
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={pdfLoading}>
+            <Download className="h-4 w-4 mr-1.5" />
+            {pdfLoading ? 'Erstellen...' : 'PDF'}
           </Button>
 
-          {/* Public link actions */}
           {publicUrl && (
             <>
-              <Button variant="outline" onClick={copyPublicLink}>
-                <Copy className="h-4 w-4 mr-2" />
-                Link kopieren
+              <Button variant="outline" size="sm" onClick={copyPublicLink}>
+                <Copy className="h-4 w-4 mr-1.5" />
+                <span className="hidden sm:inline">Link kopieren</span>
+                <span className="sm:hidden">Link</span>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Landing Page
+                  <ExternalLink className="h-4 w-4 mr-1.5" />
+                  <span className="hidden sm:inline">Landing Page</span>
+                  <span className="sm:hidden">Seite</span>
                 </a>
               </Button>
             </>
           )}
 
           {offer.lead && (
-            <Button variant="outline" asChild>
+            <Button variant="outline" size="sm" asChild>
               <Link to="/app/leads">
-                <User className="h-4 w-4 mr-2" />
+                <User className="h-4 w-4 mr-1.5" />
                 Lead
               </Link>
             </Button>
