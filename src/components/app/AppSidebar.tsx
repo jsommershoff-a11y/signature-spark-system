@@ -74,7 +74,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
   return (
     <aside className="w-64 bg-card border-r border-border h-full flex flex-col">
-      <nav className="flex-1 p-3 md:p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-3 md:p-4 space-y-0.5 overflow-y-auto overscroll-contain">
         {filteredNavItems.map((item) => (
           <NavLink
             key={item.href}
@@ -83,10 +83,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             onClick={onNavigate}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-lg text-sm font-medium transition-colors touch-manipulation',
+                'min-h-[44px] md:min-h-0',
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground active:bg-accent/80'
               )
             }
           >
