@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, X, Minimize2, Maximize2, User, Building2, Clock, FileText, ExternalLink, UserPlus, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useIncomingCall, type CallPopupStatus } from '@/hooks/useIncomingCall';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 function formatDuration(seconds: number): string {
@@ -44,44 +44,51 @@ const STATUS_LABELS: Record<CallPopupStatus, string> = {
 export function IncomingCallPopup() {
   const { callData, minimized, dismiss, toggleMinimize } = useIncomingCall();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const handleSaveNote = useCallback(async () => {
+    if (!note.trim() || !callData?.leadId) return;
+    setSaving(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .single();
+      if (profile) {
+        await supabase.from('activities').insert({
+          lead_id: callData.leadId,
+          user_id: profile.id,
+          type: 'notiz' as any,
+          content: note.trim(),
+          metadata: { source: 'incoming_call_popup', call_id: callData.callId },
+        });
+        toast.success('Notiz gespeichert');
+        setNote('');
+        setShowNote(false);
+      }
+    } catch {
+      toast.error('Fehler beim Speichern');
+    } finally {
+      setSaving(false);
+    }
+  }, [note, callData?.leadId, callData?.callId]);
 
   if (!callData) return null;
 
   const displayName = callData.leadName || callData.phoneNumber || 'Unbekannt';
 
-  const handleSaveNote = async () => {
-    if (!note.trim() || !callData.leadId) return;
-    setSaving(true);
-    try {
-      const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', (await supabase.auth.getUser()).data.user?.id || '').single();
-      if (profile) {
-        await supabase.from('activities').insert({
-          lead_id: callData.leadId,
-          user_id: profile.id,
-          type: 'note' as any,
-          content: note.trim(),
-          metadata: { source: 'incoming_call_popup', call_id: callData.callId },
-        });
-        toast({ title: 'Notiz gespeichert' });
-        setNote('');
-        setShowNote(false);
-      }
-    } catch {
-      toast({ title: 'Fehler beim Speichern', variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
   // Minimized pill
   if (minimized) {
     return (
-      <div className="fixed bottom-4 right-4 md:right-6 z-50 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-4 py-2 shadow-lg cursor-pointer animate-in slide-in-from-bottom-4"
-           onClick={toggleMinimize}>
+      <div
+        className="fixed bottom-4 right-4 md:right-6 z-50 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-4 py-2 shadow-lg cursor-pointer animate-in slide-in-from-bottom-4"
+        onClick={toggleMinimize}
+      >
         <StatusIndicator status={callData.status} />
         {callData.isUnknownContact && <AlertCircle className="h-3.5 w-3.5 text-amber-300" />}
         <Phone className="h-4 w-4" />
@@ -205,7 +212,7 @@ export function IncomingCallPopup() {
           size="sm"
           variant="outline"
           className="flex-1 text-xs"
-          onClick={() => { navigate(`/app/calls`); dismiss(); }}
+          onClick={() => { navigate('/app/calls'); dismiss(); }}
         >
           <Phone className="h-3.5 w-3.5 mr-1" />
           Call öffnen
@@ -215,7 +222,7 @@ export function IncomingCallPopup() {
             size="sm"
             variant="outline"
             className="flex-1 text-xs"
-            onClick={() => { navigate(`/app/crm`); dismiss(); }}
+            onClick={() => { navigate('/app/crm'); dismiss(); }}
           >
             <ExternalLink className="h-3.5 w-3.5 mr-1" />
             Lead öffnen
