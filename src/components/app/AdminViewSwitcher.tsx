@@ -1,5 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { AppRole, ROLE_LABELS } from '@/lib/roles';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
