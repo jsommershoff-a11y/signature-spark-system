@@ -9,6 +9,7 @@ import {
   CALL_TYPE_LABELS,
   CALL_STATUS_COLORS 
 } from '@/types/calls';
+import { ClickToCallButton } from './ClickToCallButton';
 import { 
   Phone, 
   Video, 
