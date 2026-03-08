@@ -419,6 +419,40 @@ const Qualifizierung = () => {
                       />
                     </div>
                     
+                    {/* DSGVO Checkbox */}
+                    <FormField
+                      control={form.control}
+                      name="privacyAccepted"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-start space-x-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value === true}
+                                onCheckedChange={(checked) => field.onChange(checked === true ? true : undefined)}
+                              />
+                            </FormControl>
+                            <label
+                              className="text-sm text-muted-foreground leading-tight cursor-pointer"
+                              onClick={() => field.onChange(field.value === true ? undefined : true)}
+                            >
+                              Ich akzeptiere die{" "}
+                              <a
+                                href="https://krsimmobilien.de/datenschutz"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-primary hover:text-primary/80"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Datenschutzerklärung
+                              </a>{" "}*
+                            </label>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <Button 
                       type="submit" 
                       className="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary"
