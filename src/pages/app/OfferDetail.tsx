@@ -339,7 +339,7 @@ export default function OfferDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Unterzeichnet von</p>
                 <p className="font-medium">{offerJson.signer_name || '—'}</p>
