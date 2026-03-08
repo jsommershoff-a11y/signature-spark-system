@@ -37,15 +37,17 @@ export function AdminViewSwitcher() {
               <Button 
                 variant={isViewingAs ? "secondary" : "ghost"} 
                 size="sm" 
-                className={isViewingAs 
-                  ? "gap-2 bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 border border-primary-foreground/30" 
-                  : "gap-2 text-primary-foreground hover:bg-primary-foreground/20"
-                }
+                className={cn(
+                  "gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3",
+                  isViewingAs 
+                    ? "bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 border border-primary-foreground/30" 
+                    : "text-primary-foreground hover:bg-primary-foreground/20"
+                )}
               >
-                <Eye className="h-4 w-4" />
-                <span className="hidden sm:inline">Ansicht:</span>
-                <span className="font-medium">{currentLabel}</span>
-                <ChevronDown className="h-3 w-3" />
+                <Eye className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
+                <span className="hidden md:inline">Ansicht:</span>
+                <span className="font-medium truncate max-w-[60px] md:max-w-none">{currentLabel}</span>
+                <ChevronDown className="h-3 w-3 flex-shrink-0" />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>

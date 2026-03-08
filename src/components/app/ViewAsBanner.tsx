@@ -46,18 +46,18 @@ export function ViewAsBanner() {
   if (!isViewingAs || !effectiveRole) return null;
 
   return (
-    <div className="bg-primary/10 border-b border-primary/20 px-4 py-2">
-      <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
-        <div className="flex items-center gap-2 text-sm">
-          <Eye className="h-4 w-4 text-primary" />
-          <span>
-            Du siehst die App als{' '}
+    <div className="bg-primary/10 border-b border-primary/20 px-3 md:px-4 py-2">
+      <div className="flex items-center justify-between max-w-screen-2xl mx-auto gap-2">
+        <div className="flex items-center gap-2 text-xs md:text-sm min-w-0">
+          <Eye className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary flex-shrink-0" />
+          <span className="truncate">
+            Ansicht als{' '}
             <strong className="text-primary">{ROLE_LABELS[effectiveRole]}</strong>
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {remainingMinutes !== null && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
               {remainingMinutes} Min.
             </span>
@@ -66,10 +66,10 @@ export function ViewAsBanner() {
             variant="ghost"
             size="sm"
             onClick={() => setViewAsRole(null)}
-            className="h-7 gap-1 text-muted-foreground hover:text-foreground"
+            className="h-7 gap-1 text-muted-foreground hover:text-foreground text-xs px-2"
           >
             <X className="h-3 w-3" />
-            Beenden
+            <span className="hidden sm:inline">Beenden</span>
           </Button>
         </div>
       </div>
