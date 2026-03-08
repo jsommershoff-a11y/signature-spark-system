@@ -44,6 +44,7 @@ const qualifizierungSchema = z.object({
   }),
   motivation: z.string().trim().min(50, "Bitte mindestens 2-3 Sätze schreiben (min. 50 Zeichen)").max(2000, "Maximal 2000 Zeichen"),
   entscheidungsstil: z.enum(["red", "green", "blue"]).optional(),
+  privacyAccepted: z.literal(true, { errorMap: () => ({ message: "Bitte akzeptiere die Datenschutzerklärung." }) }),
 });
 
 type QualifizierungFormData = z.infer<typeof qualifizierungSchema>;
