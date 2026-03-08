@@ -24,7 +24,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-import type { LearningModule, LearningLesson, PathLevel } from '@/types/lms';
+import type { LearningModule, LearningLesson, PathLevel, CoursePriceTier } from '@/types/lms';
+import { PriceTierBadge } from './PriceTierBadge';
 
 const LESSON_ICONS = {
   video: Play,
