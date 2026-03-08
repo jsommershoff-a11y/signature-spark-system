@@ -139,6 +139,38 @@ serve(async (req) => {
                 sipgate_call_id: callId,
               },
             });
+
+            // Auto-create follow-up task if none exists
+            const { data: existingTask } = await supabase
+              .from("crm_tasks")
+              .select("id")
+              .eq("lead_id", leadMatch.id)
+              .eq("status", "open")
+              .eq("type", "follow_up")
+              .maybeSingle();
+
+            if (!existingTask) {
+              const tomorrow = new Date();
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              tomorrow.setHours(9, 0, 0, 0);
+
+              await supabase.from("crm_tasks").insert({
+                title: "Follow-up nach Telefonat",
+                description: `Automatisch erstellt nach ${dirLabel.toLowerCase()}m Sipgate-Anruf.`,
+                lead_id: leadMatch.id,
+                assigned_user_id: leadMatch.owner_user_id,
+                type: "follow_up",
+                status: "open",
+                due_at: tomorrow.toISOString(),
+                meta: {
+                  auto_generated: true,
+                  source: "sipgate_webhook",
+                  call_id: existingCall.id,
+                  sipgate_call_id: callId,
+                },
+              });
+              console.log(`Auto follow-up task created for lead ${leadMatch.id}`);
+            }
           }
         }
       }

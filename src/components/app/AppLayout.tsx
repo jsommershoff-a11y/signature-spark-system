@@ -5,6 +5,7 @@ import { UserMenu } from './UserMenu';
 import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { ViewAsBanner } from './ViewAsBanner';
 import { ProfileCompletionDialog } from './ProfileCompletionDialog';
+import { IncomingCallPopup } from '@/components/calls/IncomingCallPopup';
 import logoSignature from '@/assets/krs-logo.png';
 import { Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
@@ -18,6 +19,7 @@ export function AppLayout() {
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       <ProfileCompletionDialog />
       <ViewAsBanner />
+      <IncomingCallPopup />
       
       {/* Header */}
       <header className="h-14 md:h-16 border-b border-primary-deep/30 bg-gradient-to-r from-primary-deep via-primary to-primary-light flex items-center justify-between px-3 md:px-6 shadow-md flex-shrink-0">
