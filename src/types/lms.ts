@@ -1,6 +1,7 @@
 // Learning Management System Types
 
 export type PathLevel = 'starter' | 'fortgeschritten' | 'experte';
+export type CoursePriceTier = 'freebie' | 'low_budget' | 'mid_range' | 'high_class';
 
 export interface LearningPath {
   id: string;
