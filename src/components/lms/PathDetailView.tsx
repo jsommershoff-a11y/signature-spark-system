@@ -1,8 +1,8 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useLearningPaths } from '@/hooks/useLearningPaths';
-import { LevelBadge } from './LevelBadge';
+import { PriceTierBadge } from './PriceTierBadge';
 import { ProgressRing } from './ProgressRing';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -18,17 +18,14 @@ import {
   Megaphone,
   TrendingUp,
   Workflow,
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { LearningCourse, PathLevel } from '@/types/lms';
-import { PATH_LEVEL_CONFIG, TOPIC_COLORS } from '@/types/lms';
+import type { LearningCourse, CoursePriceTier } from '@/types/lms';
+import { PRICE_TIER_CONFIG, TOPIC_COLORS } from '@/types/lms';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  MessageSquare,
-  Megaphone,
-  TrendingUp,
-  Workflow,
-  BookOpen,
+  MessageSquare, Megaphone, TrendingUp, Workflow, BookOpen,
 };
 
 export function PathDetailView() {
@@ -61,22 +58,17 @@ export function PathDetailView() {
   const gradient = TOPIC_COLORS[path.color] || TOPIC_COLORS.orange;
   const courses = path.courses || [];
 
-  // Group courses by level
-  const byLevel = (['starter', 'fortgeschritten', 'experte'] as PathLevel[]).map((level) => ({
-    level,
-    config: PATH_LEVEL_CONFIG[level],
-    courses: courses.filter((c) => (c.path_level || 'starter') === level),
+  // Group courses by price tier
+  const tiers: CoursePriceTier[] = ['freebie', 'low_budget', 'mid_range', 'high_class'];
+  const byTier = tiers.map((tier) => ({
+    tier,
+    config: PRICE_TIER_CONFIG[tier],
+    courses: courses.filter((c) => (c.price_tier || 'freebie') === tier),
   }));
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Back button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate('/app/academy')}
-        className="gap-2"
-      >
+      <Button variant="ghost" size="sm" onClick={() => navigate('/app/academy')} className="gap-2">
         <ArrowLeft className="h-4 w-4" />
         Zurück zur Academy
       </Button>
@@ -85,23 +77,16 @@ export function PathDetailView() {
       <div className="relative overflow-hidden rounded-2xl border border-border/50 p-6 md:p-8">
         <div className={cn('absolute inset-0 opacity-5 bg-gradient-to-br', gradient)} />
         <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className={cn(
-            'p-4 rounded-2xl bg-gradient-to-br shadow-lg text-white',
-            gradient,
-          )}>
+          <div className={cn('p-4 rounded-2xl bg-gradient-to-br shadow-lg text-white', gradient)}>
             <Icon className="h-8 w-8" />
           </div>
           <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-bold">{path.name}</h1>
             {path.description && (
-              <p className="text-muted-foreground mt-2 text-base max-w-xl">
-                {path.description}
-              </p>
+              <p className="text-muted-foreground mt-2 text-base max-w-xl">{path.description}</p>
             )}
             <div className="flex items-center gap-4 mt-4">
-              <Badge variant="secondary">
-                {courses.length} Kurse
-              </Badge>
+              <Badge variant="secondary">{courses.length} Kurse</Badge>
               <Badge variant="secondary">
                 {courses.reduce((s, c) => s + (c.total_lessons || 0), 0)} Lektionen
               </Badge>
@@ -111,71 +96,46 @@ export function PathDetailView() {
         </div>
       </div>
 
-      {/* Level Sections */}
-      <div className="space-y-6">
-        {byLevel.map(({ level, config, courses: levelCourses }, levelIdx) => {
-          const prevLevelComplete = levelIdx === 0 ||
-            byLevel[levelIdx - 1].courses.every((c) => (c.progress_percent || 0) >= 80);
+      {/* Tier Sections */}
+      <div className="space-y-8">
+        {byTier.map(({ tier, config, courses: tierCourses }, tierIdx) => (
+          <section key={tier} className="space-y-3">
+            {/* Tier Header */}
+            <div className="flex items-center gap-3">
+              <PriceTierBadge tier={tier} size="md" showPrice />
+              <span className="text-sm text-muted-foreground">{config.sublabel}</span>
+            </div>
 
-          return (
-            <section key={level} className="space-y-3">
-              {/* Level Header */}
-              <div className="flex items-center gap-3">
-                <LevelBadge level={level} size="md" />
-                <span className="text-sm text-muted-foreground">{config.sublabel}</span>
-                {!prevLevelComplete && levelIdx > 0 && (
-                  <Badge variant="outline" className="ml-auto gap-1 text-muted-foreground">
-                    <Lock className="h-3 w-3" />
-                    Schließe vorheriges Level ab
-                  </Badge>
-                )}
+            {tierCourses.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="py-6 text-center text-muted-foreground text-sm">
+                  Kurse für diese Stufe werden bald hinzugefügt.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {tierCourses.map((course) => (
+                  <CourseRow key={course.id} course={course} gradient={gradient} />
+                ))}
               </div>
+            )}
 
-              {/* Course Cards */}
-              {levelCourses.length === 0 ? (
-                <Card className="border-dashed">
-                  <CardContent className="py-8 text-center text-muted-foreground">
-                    Kurse für dieses Level werden bald hinzugefügt.
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-3">
-                  {levelCourses.map((course) => (
-                    <CourseRow
-                      key={course.id}
-                      course={course}
-                      isLocked={course.is_locked || false}
-                      gradient={gradient}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Connector line between levels */}
-              {levelIdx < byLevel.length - 1 && (
-                <div className="flex justify-center py-2">
-                  <div className="w-px h-8 bg-border" />
-                </div>
-              )}
-            </section>
-          );
-        })}
+            {tierIdx < byTier.length - 1 && (
+              <div className="flex justify-center py-2">
+                <div className="w-px h-8 bg-border" />
+              </div>
+            )}
+          </section>
+        ))}
       </div>
     </div>
   );
 }
 
-function CourseRow({
-  course,
-  isLocked,
-  gradient,
-}: {
-  course: LearningCourse;
-  isLocked: boolean;
-  gradient: string;
-}) {
+function CourseRow({ course, gradient }: { course: LearningCourse; gradient: string }) {
   const progress = course.progress_percent || 0;
   const isComplete = progress >= 100;
+  const isLocked = course.is_locked || false;
 
   const content = (
     <Card
@@ -188,7 +148,6 @@ function CourseRow({
     >
       <CardContent className="p-4 md:p-5">
         <div className="flex items-center gap-4">
-          {/* Status Icon */}
           <div className="flex-shrink-0">
             {isLocked ? (
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
@@ -205,13 +164,17 @@ function CourseRow({
             )}
           </div>
 
-          {/* Content */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold">{course.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold">{course.name}</h3>
+              {course.includes_done_for_you && (
+                <Badge variant="outline" className="gap-1 text-xs bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400">
+                  <Star className="h-3 w-3" /> Done-for-You
+                </Badge>
+              )}
+            </div>
             {course.description && (
-              <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
-                {course.description}
-              </p>
+              <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{course.description}</p>
             )}
             <div className="flex items-center gap-3 mt-2">
               <span className="text-xs text-muted-foreground">
@@ -224,10 +187,7 @@ function CourseRow({
             </div>
           </div>
 
-          {/* Arrow */}
-          {!isLocked && (
-            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-          )}
+          {!isLocked && <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />}
         </div>
       </CardContent>
     </Card>
@@ -235,9 +195,5 @@ function CourseRow({
 
   if (isLocked) return content;
 
-  return (
-    <Link to={`/app/academy/course/${course.id}`}>
-      {content}
-    </Link>
-  );
+  return <Link to={`/app/academy/course/${course.id}`}>{content}</Link>;
 }
