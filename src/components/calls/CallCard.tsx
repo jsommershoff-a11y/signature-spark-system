@@ -154,7 +154,7 @@ export function CallCard({ call, onView, onStart, onEnd, compact = false }: Call
               )}
             </div>
             
-            {/* Type badge */}
+            {/* Type badge + Click-to-Call */}
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline" className="text-xs">
                 {CALL_TYPE_LABELS[call.call_type]}
@@ -164,6 +164,16 @@ export function CallCard({ call, onView, onStart, onEnd, compact = false }: Call
                 <Badge variant="secondary" className="text-xs">
                   KI-Analyse verfügbar
                 </Badge>
+              )}
+
+              {call.lead?.phone && call.status === 'scheduled' && (
+                <ClickToCallButton
+                  phoneNumber={call.lead.phone}
+                  leadId={call.lead_id}
+                  leadName={`${call.lead.first_name || ''} ${call.lead.last_name || ''}`.trim()}
+                  size="sm"
+                  variant="ghost"
+                />
               )}
             </div>
             
