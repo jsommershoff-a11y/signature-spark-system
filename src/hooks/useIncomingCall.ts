@@ -17,11 +17,13 @@ export interface IncomingCallData {
   startedAt: string;
   durationSeconds: number;
   recordingUrl: string | null;
+  isUnknownContact: boolean;
+  callReached: boolean | null;
 }
 
 interface CallRow {
   id: string;
-  lead_id: string;
+  lead_id: string | null;
   status: string;
   provider: string;
   meta: Record<string, unknown> | null;
@@ -37,6 +39,8 @@ export function useIncomingCall() {
   const [minimized, setMinimized] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track processed call IDs to prevent duplicate popups
+  const processedCallIds = useRef<Set<string>>(new Set());
 
   const dismiss = useCallback(() => {
     setCallData(null);
@@ -78,7 +82,18 @@ export function useIncomingCall() {
     if (direction !== 'INCOMING') return;
     if (row.status !== 'in_progress') return;
 
+    // Prevent duplicate popups for same call
+    if (processedCallIds.current.has(row.id)) return;
+    processedCallIds.current.add(row.id);
+
+    // Clean up old processed IDs (keep last 20)
+    if (processedCallIds.current.size > 20) {
+      const ids = Array.from(processedCallIds.current);
+      processedCallIds.current = new Set(ids.slice(-20));
+    }
+
     const phoneNumber = (meta?.source as string) || '';
+    const isUnknownContact = !row.lead_id;
     let leadDetails = { leadName: null as string | null, leadCompany: null as string | null, leadStatus: null as string | null, lastActivity: null as string | null };
 
     if (row.lead_id) {
@@ -95,6 +110,8 @@ export function useIncomingCall() {
       startedAt: row.started_at || new Date().toISOString(),
       durationSeconds: 0,
       recordingUrl: null,
+      isUnknownContact,
+      callReached: null,
     };
 
     setCallData(newCallData);
@@ -124,11 +141,14 @@ export function useIncomingCall() {
           setMinimized(false);
         }, 30000);
 
+        const meta = row.meta as Record<string, unknown> | null;
+
         return {
           ...prev,
           status: 'ended',
           durationSeconds: row.duration_seconds ?? prev.durationSeconds,
           recordingUrl: row.recording_url || prev.recordingUrl,
+          callReached: (meta?.call_reached as boolean) ?? (row.status === 'completed'),
         };
       }
 
