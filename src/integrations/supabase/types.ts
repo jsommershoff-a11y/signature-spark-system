@@ -263,7 +263,7 @@ export type Database = {
           ended_at: string | null
           external_id: string | null
           id: string
-          lead_id: string
+          lead_id: string | null
           meta: Json | null
           notes: string | null
           provider: Database["public"]["Enums"]["call_provider"] | null
@@ -282,7 +282,7 @@ export type Database = {
           ended_at?: string | null
           external_id?: string | null
           id?: string
-          lead_id: string
+          lead_id?: string | null
           meta?: Json | null
           notes?: string | null
           provider?: Database["public"]["Enums"]["call_provider"] | null
@@ -301,7 +301,7 @@ export type Database = {
           ended_at?: string | null
           external_id?: string | null
           id?: string
-          lead_id?: string
+          lead_id?: string | null
           meta?: Json | null
           notes?: string | null
           provider?: Database["public"]["Enums"]["call_provider"] | null
