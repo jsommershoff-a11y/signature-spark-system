@@ -5,6 +5,7 @@ import { UserMenu } from './UserMenu';
 import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { ViewAsBanner } from './ViewAsBanner';
 import { ProfileCompletionDialog } from './ProfileCompletionDialog';
+import { IncomingCallPopup } from '@/components/calls/IncomingCallPopup';
 import logoSignature from '@/assets/krs-logo.png';
 import { Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
