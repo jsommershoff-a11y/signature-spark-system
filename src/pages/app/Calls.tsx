@@ -109,6 +109,9 @@ export default function Calls() {
         </Card>
       </div>
 
+      {/* Sipgate Integration */}
+      {showSipgate && <SipgatePanel />}
+
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
