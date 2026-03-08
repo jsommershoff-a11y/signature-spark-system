@@ -29,6 +29,7 @@ import Pipeline from "./pages/app/Pipeline";
 import Customers from "./pages/app/Customers";
 import Tasks from "./pages/app/Tasks";
 import Courses from "./pages/app/Courses";
+import Academy from "./pages/app/Academy";
 import Members from "./pages/app/Members";
 import Reports from "./pages/app/Reports";
 import Settings from "./pages/app/Settings";
