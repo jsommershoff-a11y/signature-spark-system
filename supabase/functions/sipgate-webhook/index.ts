@@ -299,7 +299,7 @@ serve(async (req) => {
                   description: `Automatisch erstellt nach ${dirLabel.toLowerCase()}m Sipgate-Anruf.`,
                   lead_id: hangupLeadId,
                   assigned_user_id: ownerId,
-                  type: "follow_up",
+                  type: "followup",
                   status: "open",
                   due_at: tomorrow.toISOString(),
                   meta: {
