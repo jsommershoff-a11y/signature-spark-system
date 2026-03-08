@@ -158,19 +158,19 @@ export default function OfferDetail() {
   return (
     <div className="space-y-6">
       {/* Back + Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/app/offers')}>
+      <div className="flex items-start gap-3">
+        <Button variant="ghost" size="icon" className="shrink-0 mt-0.5" onClick={() => navigate('/app/offers')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight truncate">
               {offerJson?.title || 'Angebot'}
             </h1>
             <OfferStatusBadge status={offer.status} />
           </div>
           {offer.lead && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground truncate">
               {offer.lead.first_name} {offer.lead.last_name}
               {offer.lead.company ? ` · ${offer.lead.company}` : ''}
             </p>
