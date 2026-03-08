@@ -383,7 +383,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          learning_path_id: string | null
           name: string
+          path_level: Database["public"]["Enums"]["learning_path_level"] | null
           published: boolean | null
           published_at: string | null
           required_product:
@@ -398,7 +400,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          learning_path_id?: string | null
           name: string
+          path_level?: Database["public"]["Enums"]["learning_path_level"] | null
           published?: boolean | null
           published_at?: string | null
           required_product?:
@@ -413,7 +417,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          learning_path_id?: string | null
           name?: string
+          path_level?: Database["public"]["Enums"]["learning_path_level"] | null
           published?: boolean | null
           published_at?: string | null
           required_product?:
@@ -424,7 +430,15 @@ export type Database = {
           updated_at?: string | null
           version?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_learning_path_id_fkey"
+            columns: ["learning_path_id"]
+            isOneToOne: false
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_leads: {
         Row: {
@@ -1325,6 +1339,39 @@ export type Database = {
           phone?: string | null
           qualification_score?: number | null
           source?: string
+        }
+        Relationships: []
+      }
+      learning_paths: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2247,6 +2294,7 @@ export type Database = {
         | "outbound_manual"
         | "partner"
       lead_status: "new" | "qualified" | "unqualified"
+      learning_path_level: "starter" | "fortgeschritten" | "experte"
       lesson_type: "video" | "task" | "worksheet" | "quiz"
       member_status: "active" | "paused" | "churned"
       membership_product: "starter" | "growth" | "premium"
@@ -2436,6 +2484,7 @@ export const Constants = {
         "partner",
       ],
       lead_status: ["new", "qualified", "unqualified"],
+      learning_path_level: ["starter", "fortgeschritten", "experte"],
       lesson_type: ["video", "task", "worksheet", "quiz"],
       member_status: ["active", "paused", "churned"],
       membership_product: ["starter", "growth", "premium"],
