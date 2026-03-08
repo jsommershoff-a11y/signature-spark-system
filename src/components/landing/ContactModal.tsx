@@ -45,6 +45,7 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
       email: "",
       phone: "",
       message: "",
+      privacyAccepted: undefined as unknown as true,
     },
   });
 
