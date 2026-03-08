@@ -54,17 +54,13 @@ export function LearningPathCard({ path }: LearningPathCardProps) {
             </div>
           </div>
 
-          {/* Level Badges */}
+          {/* Price Tier Badges */}
           <div className="flex flex-wrap gap-1.5">
-            {(['starter', 'fortgeschritten', 'experte'] as const).map(level => {
-              const hasLevel = levels.includes(level);
+            {(['freebie', 'low_budget', 'mid_range', 'high_class'] as const).map(tier => {
+              const hasTier = tiers.includes(tier);
+              if (!hasTier) return null;
               return (
-                <LevelBadge
-                  key={level}
-                  level={level}
-                  size="sm"
-                  showLabel
-                />
+                <PriceTierBadge key={tier} tier={tier} size="sm" />
               );
             })}
           </div>

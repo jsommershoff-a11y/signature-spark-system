@@ -5,3 +5,4 @@ export { LessonPlayerView } from './LessonPlayerView';
 export { LearningPathCard } from './LearningPathCard';
 export { ProgressRing } from './ProgressRing';
 export { LevelBadge } from './LevelBadge';
+export { PriceTierBadge } from './PriceTierBadge';
