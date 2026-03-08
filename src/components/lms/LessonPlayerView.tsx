@@ -1,0 +1,296 @@
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useLearningPaths } from '@/hooks/useLearningPaths';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Play,
+  CheckSquare,
+  FileText,
+  HelpCircle,
+  Loader2,
+  ExternalLink,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+
+const LESSON_ICONS = {
+  video: Play,
+  task: CheckSquare,
+  worksheet: FileText,
+  quiz: HelpCircle,
+};
+
+export function LessonPlayerView() {
+  const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { memberId } = useLearningPaths();
+
+  // Fetch lesson
+  const lessonQuery = useQuery({
+    queryKey: ['lesson', lessonId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('id', lessonId!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!lessonId,
+  });
+
+  // Fetch course structure for navigation
+  const courseQuery = useQuery({
+    queryKey: ['course-nav', courseId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('courses')
+        .select(`*, modules(*, lessons(*))`)
+        .eq('id', courseId!)
+        .single();
+      if (error) throw error;
+
+      const allLessons = ((data.modules as Record<string, unknown>[]) || [])
+        .sort((a, b) => ((a.sort_order as number) || 0) - ((b.sort_order as number) || 0))
+        .flatMap((m) =>
+          ((m.lessons as Record<string, unknown>[]) || [])
+            .sort((a, b) => ((a.sort_order as number) || 0) - ((b.sort_order as number) || 0))
+        );
+
+      return { course: data, allLessons };
+    },
+    enabled: !!courseId,
+  });
+
+  // Fetch progress
+  const progressQuery = useQuery({
+    queryKey: ['lesson-progress', memberId, lessonId],
+    queryFn: async () => {
+      if (!memberId) return null;
+      const { data } = await supabase
+        .from('lesson_progress')
+        .select('*')
+        .eq('member_id', memberId)
+        .eq('lesson_id', lessonId!)
+        .single();
+      return data;
+    },
+    enabled: !!memberId && !!lessonId,
+  });
+
+  // Mark complete mutation
+  const completeMutation = useMutation({
+    mutationFn: async () => {
+      if (!memberId || !lessonId) throw new Error('Missing data');
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('lesson_progress')
+        .upsert({
+          member_id: memberId,
+          lesson_id: lessonId,
+          status: 'completed' as const,
+          progress_percent: 100,
+          completed_at: now,
+          last_seen_at: now,
+        }, { onConflict: 'member_id,lesson_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Lektion abgeschlossen! 🎉');
+      queryClient.invalidateQueries({ queryKey: ['lesson-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['learning-paths'] });
+      queryClient.invalidateQueries({ queryKey: ['course-detail'] });
+    },
+  });
+
+  const lesson = lessonQuery.data;
+  const allLessons = courseQuery.data?.allLessons || [];
+  const currentIdx = allLessons.findIndex((l: Record<string, unknown>) => l.id === lessonId);
+  const prevLesson = currentIdx > 0 ? allLessons[currentIdx - 1] : null;
+  const nextLesson = currentIdx < allLessons.length - 1 ? allLessons[currentIdx + 1] : null;
+  const isCompleted = progressQuery.data?.status === 'completed';
+
+  if (lessonQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!lesson) {
+    return (
+      <div className="text-center py-16 space-y-4">
+        <h2 className="text-xl font-semibold">Lektion nicht gefunden</h2>
+        <Button variant="outline" onClick={() => navigate(`/app/academy/course/${courseId}`)}>
+          <ArrowLeft className="h-4 w-4 mr-2" /> Zurück zum Kurs
+        </Button>
+      </div>
+    );
+  }
+
+  const Icon = LESSON_ICONS[lesson.lesson_type as keyof typeof LESSON_ICONS] || Play;
+  const meta = (lesson.meta || {}) as Record<string, unknown>;
+
+  return (
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(`/app/academy/course/${courseId}`)}
+          className="gap-1.5"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Kursübersicht
+        </Button>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {currentIdx >= 0 && (
+            <span>{currentIdx + 1} / {allLessons.length}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Lesson Content */}
+      <Card className="overflow-hidden">
+        {/* Video / Content Area */}
+        {lesson.lesson_type === 'video' && lesson.content_ref && (
+          <div className="aspect-video bg-foreground/5 flex items-center justify-center">
+            {lesson.content_ref.includes('youtube') || lesson.content_ref.includes('vimeo') ? (
+              <iframe
+                src={lesson.content_ref}
+                className="w-full h-full"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+            ) : (
+              <div className="text-center space-y-3">
+                <Play className="h-16 w-16 text-muted-foreground/30 mx-auto" />
+                <p className="text-muted-foreground">Video wird geladen...</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Icon className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-xl">{lesson.name}</CardTitle>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="secondary" className="text-xs">
+                  {lesson.lesson_type === 'video' ? 'Video' :
+                   lesson.lesson_type === 'task' ? 'Aufgabe' :
+                   lesson.lesson_type === 'worksheet' ? 'Arbeitsblatt' : 'Quiz'}
+                </Badge>
+                {lesson.duration_seconds && (
+                  <span className="text-xs text-muted-foreground">
+                    {Math.floor(lesson.duration_seconds / 60)} Min.
+                  </span>
+                )}
+                {isCompleted && (
+                  <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Abgeschlossen
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* Description */}
+          {lesson.description && (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <p>{lesson.description}</p>
+            </div>
+          )}
+
+          {/* Task / Worksheet content */}
+          {(lesson.lesson_type === 'task' || lesson.lesson_type === 'worksheet') && (
+            <Card className="bg-muted/30 border-dashed">
+              <CardContent className="py-6 text-center space-y-3">
+                <Icon className="h-10 w-10 text-primary/50 mx-auto" />
+                <p className="text-muted-foreground">
+                  {lesson.lesson_type === 'task'
+                    ? 'Bearbeite die Aufgabe und markiere sie als abgeschlossen.'
+                    : 'Lade das Arbeitsblatt herunter und fülle es aus.'}
+                </p>
+                {lesson.content_ref && (
+                  <Button variant="outline" asChild>
+                    <a href={lesson.content_ref} target="_blank" rel="noopener noreferrer" className="gap-2">
+                      <ExternalLink className="h-4 w-4" />
+                      {lesson.lesson_type === 'task' ? 'Aufgabe öffnen' : 'Arbeitsblatt herunterladen'}
+                    </a>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Complete Button */}
+          {memberId && !isCompleted && (
+            <Button
+              onClick={() => completeMutation.mutate()}
+              disabled={completeMutation.isPending}
+              className="w-full gap-2"
+              size="lg"
+            >
+              {completeMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4" />
+              )}
+              Als abgeschlossen markieren
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        {prevLesson ? (
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/app/academy/course/${courseId}/lesson/${(prevLesson as Record<string, unknown>).id}`)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Vorherige Lektion
+          </Button>
+        ) : (
+          <div />
+        )}
+        {nextLesson ? (
+          <Button
+            onClick={() => navigate(`/app/academy/course/${courseId}/lesson/${(nextLesson as Record<string, unknown>).id}`)}
+            className="gap-2"
+          >
+            Nächste Lektion
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/app/academy/course/${courseId}`)}
+            className="gap-2"
+          >
+            Zurück zum Kurs
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
