@@ -24,7 +24,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-import type { LearningModule, LearningLesson, PathLevel } from '@/types/lms';
+import type { LearningModule, LearningLesson, PathLevel, CoursePriceTier } from '@/types/lms';
+import { PriceTierBadge } from './PriceTierBadge';
 
 const LESSON_ICONS = {
   video: Play,
@@ -144,6 +145,9 @@ export function CourseDetailView() {
         <ProgressRing progress={progress} size={80} strokeWidth={6} />
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
+            {courseData.price_tier && (
+              <PriceTierBadge tier={courseData.price_tier as CoursePriceTier} size="sm" showPrice />
+            )}
             {courseData.path_level && (
               <LevelBadge level={courseData.path_level as PathLevel} size="sm" />
             )}

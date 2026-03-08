@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProgressRing } from './ProgressRing';
-import { LevelBadge } from './LevelBadge';
+import { PriceTierBadge } from './PriceTierBadge';
 import { MessageSquare, Megaphone, TrendingUp, Workflow, BookOpen, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { LearningPath } from '@/types/lms';
+import type { LearningPath, CoursePriceTier } from '@/types/lms';
 import { TOPIC_COLORS } from '@/types/lms';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -24,7 +24,7 @@ export function LearningPathCard({ path }: LearningPathCardProps) {
   const Icon = ICON_MAP[path.icon] || BookOpen;
   const gradient = TOPIC_COLORS[path.color] || TOPIC_COLORS.orange;
   const courses = path.courses || [];
-  const levels = courses.map(c => c.path_level || 'starter');
+  const tiers = [...new Set(courses.map(c => c.price_tier || 'freebie'))] as CoursePriceTier[];
 
   return (
     <Link to={`/app/academy/${path.id}`}>
@@ -54,17 +54,13 @@ export function LearningPathCard({ path }: LearningPathCardProps) {
             </div>
           </div>
 
-          {/* Level Badges */}
+          {/* Price Tier Badges */}
           <div className="flex flex-wrap gap-1.5">
-            {(['starter', 'fortgeschritten', 'experte'] as const).map(level => {
-              const hasLevel = levels.includes(level);
+            {(['freebie', 'low_budget', 'mid_range', 'high_class'] as const).map(tier => {
+              const hasTier = tiers.includes(tier);
+              if (!hasTier) return null;
               return (
-                <LevelBadge
-                  key={level}
-                  level={level}
-                  size="sm"
-                  showLabel
-                />
+                <PriceTierBadge key={tier} tier={tier} size="sm" />
               );
             })}
           </div>

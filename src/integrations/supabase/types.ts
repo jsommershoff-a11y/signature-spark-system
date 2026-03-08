@@ -383,9 +383,12 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          includes_done_for_you: boolean | null
           learning_path_id: string | null
           name: string
           path_level: Database["public"]["Enums"]["learning_path_level"] | null
+          price_cents: number | null
+          price_tier: Database["public"]["Enums"]["course_price_tier"] | null
           published: boolean | null
           published_at: string | null
           required_product:
@@ -400,9 +403,12 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          includes_done_for_you?: boolean | null
           learning_path_id?: string | null
           name: string
           path_level?: Database["public"]["Enums"]["learning_path_level"] | null
+          price_cents?: number | null
+          price_tier?: Database["public"]["Enums"]["course_price_tier"] | null
           published?: boolean | null
           published_at?: string | null
           required_product?:
@@ -417,9 +423,12 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          includes_done_for_you?: boolean | null
           learning_path_id?: string | null
           name?: string
           path_level?: Database["public"]["Enums"]["learning_path_level"] | null
+          price_cents?: number | null
+          price_tier?: Database["public"]["Enums"]["course_price_tier"] | null
           published?: boolean | null
           published_at?: string | null
           required_product?:
@@ -2285,6 +2294,7 @@ export type Database = {
         | "analyzed"
         | "failed"
       call_type: "phone" | "zoom" | "teams" | "other"
+      course_price_tier: "freebie" | "low_budget" | "mid_range" | "high_class"
       lead_discovered_by: "daily_ai" | "manual" | "inbound"
       lead_source_type:
         | "inbound_paid"
@@ -2474,6 +2484,7 @@ export const Constants = {
         "failed",
       ],
       call_type: ["phone", "zoom", "teams", "other"],
+      course_price_tier: ["freebie", "low_budget", "mid_range", "high_class"],
       lead_discovered_by: ["daily_ai", "manual", "inbound"],
       lead_source_type: [
         "inbound_paid",

@@ -1,6 +1,7 @@
 // Learning Management System Types
 
 export type PathLevel = 'starter' | 'fortgeschritten' | 'experte';
+export type CoursePriceTier = 'freebie' | 'low_budget' | 'mid_range' | 'high_class';
 
 export interface LearningPath {
   id: string;
@@ -26,6 +27,9 @@ export interface LearningCourse {
   thumbnail_url?: string;
   learning_path_id?: string;
   path_level?: PathLevel;
+  price_tier?: CoursePriceTier;
+  price_cents?: number;
+  includes_done_for_you?: boolean;
   sort_order: number;
   published: boolean;
   // Joined
@@ -95,6 +99,58 @@ export const PATH_LEVEL_CONFIG: Record<PathLevel, {
     borderColor: 'border-amber-200 dark:border-amber-800',
     icon: 'Crown',
     order: 3,
+  },
+};
+
+export const PRICE_TIER_CONFIG: Record<CoursePriceTier, {
+  label: string;
+  sublabel: string;
+  price: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  icon: string;
+  order: number;
+}> = {
+  freebie: {
+    label: 'Freebie',
+    sublabel: 'Kostenlos starten',
+    price: 'Kostenlos',
+    color: 'text-emerald-700 dark:text-emerald-400',
+    bgColor: 'bg-emerald-50 dark:bg-emerald-950/30',
+    borderColor: 'border-emerald-200 dark:border-emerald-800',
+    icon: 'Gift',
+    order: 1,
+  },
+  low_budget: {
+    label: 'Starter',
+    sublabel: 'Einstieg zum kleinen Preis',
+    price: '499 €',
+    color: 'text-blue-700 dark:text-blue-400',
+    bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+    borderColor: 'border-blue-200 dark:border-blue-800',
+    icon: 'Zap',
+    order: 2,
+  },
+  mid_range: {
+    label: 'Professional',
+    sublabel: 'Für ambitionierte Unternehmer',
+    price: '5.000 €',
+    color: 'text-violet-700 dark:text-violet-400',
+    bgColor: 'bg-violet-50 dark:bg-violet-950/30',
+    borderColor: 'border-violet-200 dark:border-violet-800',
+    icon: 'Rocket',
+    order: 3,
+  },
+  high_class: {
+    label: 'VIP Done-for-You',
+    sublabel: 'Wir machen alles für dich',
+    price: '12.000 €',
+    color: 'text-amber-700 dark:text-amber-400',
+    bgColor: 'bg-amber-50 dark:bg-amber-950/30',
+    borderColor: 'border-amber-200 dark:border-amber-800',
+    icon: 'Crown',
+    order: 4,
   },
 };
 
