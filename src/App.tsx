@@ -141,6 +141,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="courses" element={<Courses />} />
+              <Route path="academy/*" element={<Academy />} />
               <Route path="contracts" element={<MyContracts />} />
               <Route path="members" element={
                 <ProtectedRoute requireMinRole="mitarbeiter">
