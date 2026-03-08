@@ -145,6 +145,9 @@ export function CourseDetailView() {
         <ProgressRing progress={progress} size={80} strokeWidth={6} />
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
+            {courseData.price_tier && (
+              <PriceTierBadge tier={courseData.price_tier as CoursePriceTier} size="sm" showPrice />
+            )}
             {courseData.path_level && (
               <LevelBadge level={courseData.path_level as PathLevel} size="sm" />
             )}
