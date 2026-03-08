@@ -98,13 +98,10 @@ serve(async (req) => {
     if (normalizedRemote) {
       const suffix = phoneMatchSuffix(normalizedRemote);
 
-      // Query leads matching by phone suffix (last 8 digits)
-      // This handles format differences between stored and incoming numbers
+      // Use DB function that strips non-digits before matching
+      // This handles spaces, dashes, parentheses in stored phone numbers
       const { data: leadMatches, error: matchError } = await supabase
-        .from("crm_leads")
-        .select("id, owner_user_id, phone, status, first_name, last_name")
-        .or(`phone.ilike.%${suffix}%`)
-        .limit(5);
+        .rpc("match_lead_by_phone", { search_suffix: suffix });
 
       if (matchError) {
         console.error(`[${requestId}] Lead matching query failed:`, matchError.message);
