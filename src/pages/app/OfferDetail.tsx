@@ -180,34 +180,34 @@ export default function OfferDetail() {
 
       {/* Workflow Status Bar */}
       <Card>
-        <CardContent className="py-4">
-          <div className="flex items-center gap-1">
+        <CardContent className="py-3 md:py-4 overflow-x-auto">
+          <div className="flex items-center gap-0.5 md:gap-1 min-w-[280px]">
             {WORKFLOW_STEPS.map((ws, i) => {
               const isCompleted = i < currentStepIndex;
               const isCurrent = i === currentStepIndex;
               const isExpired = offer.status === 'expired';
 
               return (
-                <div key={ws.status} className="flex items-center gap-1 flex-1">
+                <div key={ws.status} className="flex items-center gap-0.5 md:gap-1 flex-1">
                   <div className={cn(
-                    'flex items-center justify-center h-8 w-8 rounded-full shrink-0 transition-colors',
+                    'flex items-center justify-center h-6 w-6 md:h-8 md:w-8 rounded-full shrink-0 transition-colors',
                     isCompleted
                       ? 'bg-primary text-primary-foreground'
                       : isCurrent && !isExpired
                         ? 'bg-primary text-primary-foreground ring-2 ring-primary/30'
                         : 'bg-muted text-muted-foreground'
                   )}>
-                    {isCompleted ? <Check className="h-4 w-4" /> : ws.icon}
+                    {isCompleted ? <Check className="h-3 w-3 md:h-4 md:w-4" /> : React.cloneElement(ws.icon as React.ReactElement, { className: 'h-3 w-3 md:h-4 md:w-4' })}
                   </div>
                   <span className={cn(
-                    'text-xs truncate hidden lg:block',
+                    'text-[10px] md:text-xs truncate hidden sm:block',
                     isCurrent ? 'font-semibold' : 'text-muted-foreground'
                   )}>
                     {ws.label}
                   </span>
                   {i < WORKFLOW_STEPS.length - 1 && (
                     <div className={cn(
-                      'h-px flex-1 ml-1',
+                      'h-px flex-1 ml-0.5 md:ml-1',
                       isCompleted ? 'bg-primary' : 'bg-border'
                     )} />
                   )}
