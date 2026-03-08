@@ -33,8 +33,6 @@ export interface PipelineStats {
   count: number;
 }
 
-export type DashboardDataReturn = ReturnType<typeof useDashboardData>;
-
 export function useDashboardData() {
   // Top Leads nach Purchase Readiness
   const topLeadsQuery = useQuery({
