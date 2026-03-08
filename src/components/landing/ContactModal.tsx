@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -22,6 +23,7 @@ const contactSchema = z.object({
   email: z.string().trim().email("Bitte gib eine gültige E-Mail-Adresse ein").max(255, "E-Mail darf maximal 255 Zeichen haben"),
   phone: z.string().trim().max(30, "Telefonnummer darf maximal 30 Zeichen haben").optional().or(z.literal("")),
   message: z.string().trim().max(1000, "Nachricht darf maximal 1000 Zeichen haben").optional().or(z.literal("")),
+  privacyAccepted: z.literal(true, { errorMap: () => ({ message: "Bitte akzeptiere die Datenschutzerklärung." }) }),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -43,6 +45,7 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
       email: "",
       phone: "",
       message: "",
+      privacyAccepted: undefined as unknown as true,
     },
   });
 
@@ -200,6 +203,39 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
                   )}
                 />
                 
+                <FormField
+                  control={form.control}
+                  name="privacyAccepted"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value === true}
+                            onCheckedChange={(checked) => field.onChange(checked === true ? true : undefined)}
+                          />
+                        </FormControl>
+                        <label
+                          className="text-sm text-muted-foreground leading-tight cursor-pointer"
+                          onClick={() => field.onChange(field.value === true ? undefined : true)}
+                        >
+                          Ich akzeptiere die{" "}
+                          <a
+                            href="https://krsimmobilien.de/datenschutz"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-primary hover:text-primary/80"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Datenschutzerklärung
+                          </a>{" "}*
+                        </label>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary"

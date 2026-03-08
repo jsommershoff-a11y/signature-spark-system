@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -43,6 +44,7 @@ const qualifizierungSchema = z.object({
   }),
   motivation: z.string().trim().min(50, "Bitte mindestens 2-3 Sätze schreiben (min. 50 Zeichen)").max(2000, "Maximal 2000 Zeichen"),
   entscheidungsstil: z.enum(["red", "green", "blue"]).optional(),
+  privacyAccepted: z.literal(true, { errorMap: () => ({ message: "Bitte akzeptiere die Datenschutzerklärung." }) }),
 });
 
 type QualifizierungFormData = z.infer<typeof qualifizierungSchema>;
@@ -417,6 +419,40 @@ const Qualifizierung = () => {
                       />
                     </div>
                     
+                    {/* DSGVO Checkbox */}
+                    <FormField
+                      control={form.control}
+                      name="privacyAccepted"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-start space-x-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value === true}
+                                onCheckedChange={(checked) => field.onChange(checked === true ? true : undefined)}
+                              />
+                            </FormControl>
+                            <label
+                              className="text-sm text-muted-foreground leading-tight cursor-pointer"
+                              onClick={() => field.onChange(field.value === true ? undefined : true)}
+                            >
+                              Ich akzeptiere die{" "}
+                              <a
+                                href="https://krsimmobilien.de/datenschutz"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-primary hover:text-primary/80"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Datenschutzerklärung
+                              </a>{" "}*
+                            </label>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <Button 
                       type="submit" 
                       className="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary"
