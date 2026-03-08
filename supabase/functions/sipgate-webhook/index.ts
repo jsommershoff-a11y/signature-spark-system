@@ -284,7 +284,7 @@ serve(async (req) => {
                 .select("id")
                 .eq("lead_id", hangupLeadId)
                 .eq("status", "open")
-                .eq("type", "follow_up")
+                .eq("type", "followup")
                 .maybeSingle();
 
               if (taskQueryError) {
