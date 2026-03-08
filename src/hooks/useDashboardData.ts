@@ -190,3 +190,5 @@ export function useDashboardData() {
     todayTasksLoading: todayTasksQuery.isLoading,
   };
 }
+
+export type DashboardDataReturn = ReturnType<typeof useDashboardData>;

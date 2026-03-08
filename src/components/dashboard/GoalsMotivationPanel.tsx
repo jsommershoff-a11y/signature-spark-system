@@ -150,7 +150,7 @@ export default function GoalsMotivationPanel() {
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Heute zu tun
             </h4>
-            <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
               {todayItems.map((item, i) => (
                 <div
                   key={i}
