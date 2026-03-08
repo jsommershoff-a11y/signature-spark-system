@@ -19,12 +19,15 @@ import { Phone, Search, Filter } from 'lucide-react';
 
 export default function Calls() {
   const navigate = useNavigate();
+  const { hasMinRole } = useAuth();
   const [statusFilter, setStatusFilter] = useState<CallStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
   const { calls, loading, startCall, endCall } = useCalls(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
   );
+
+  const showSipgate = hasMinRole('mitarbeiter');
 
   // Filter calls by search query
   const filteredCalls = calls.filter(call => {
