@@ -98,13 +98,10 @@ serve(async (req) => {
     if (normalizedRemote) {
       const suffix = phoneMatchSuffix(normalizedRemote);
 
-      // Query leads matching by phone suffix (last 8 digits)
-      // This handles format differences between stored and incoming numbers
+      // Use DB function that strips non-digits before matching
+      // This handles spaces, dashes, parentheses in stored phone numbers
       const { data: leadMatches, error: matchError } = await supabase
-        .from("crm_leads")
-        .select("id, owner_user_id, phone, status, first_name, last_name")
-        .or(`phone.ilike.%${suffix}%`)
-        .limit(5);
+        .rpc("match_lead_by_phone", { search_suffix: suffix });
 
       if (matchError) {
         console.error(`[${requestId}] Lead matching query failed:`, matchError.message);
@@ -259,7 +256,7 @@ serve(async (req) => {
             const { error: activityError } = await supabase.from("activities").insert({
               lead_id: hangupLeadId,
               user_id: ownerId,
-              type: "call",
+              type: "anruf",
               content: `${dirLabel} Sipgate-Anruf beendet${durationSeconds ? ` (${Math.floor(durationSeconds / 60)}:${String(durationSeconds % 60).padStart(2, "0")})` : ""} — ${eventData.cause === "normalClearing" ? "Normal beendet" : eventData.cause || "Unbekannt"}`,
               metadata: {
                 source: "sipgate_webhook",
@@ -287,7 +284,7 @@ serve(async (req) => {
                 .select("id")
                 .eq("lead_id", hangupLeadId)
                 .eq("status", "open")
-                .eq("type", "follow_up")
+                .eq("type", "followup")
                 .maybeSingle();
 
               if (taskQueryError) {
@@ -302,7 +299,7 @@ serve(async (req) => {
                   description: `Automatisch erstellt nach ${dirLabel.toLowerCase()}m Sipgate-Anruf.`,
                   lead_id: hangupLeadId,
                   assigned_user_id: ownerId,
-                  type: "follow_up",
+                  type: "followup",
                   status: "open",
                   due_at: tomorrow.toISOString(),
                   meta: {

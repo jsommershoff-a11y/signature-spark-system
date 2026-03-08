@@ -2205,6 +2205,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      match_lead_by_phone: {
+        Args: { search_suffix: string }
+        Returns: {
+          first_name: string
+          id: string
+          last_name: string
+          owner_user_id: string
+          phone: string
+          status: string
+        }[]
+      }
     }
     Enums: {
       activity_type: "anruf" | "email" | "meeting" | "notiz" | "fehler"
