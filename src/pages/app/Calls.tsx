@@ -11,18 +11,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CallList } from '@/components/calls/CallList';
+import { SipgatePanel } from '@/components/calls/SipgatePanel';
 import { useCalls } from '@/hooks/useCalls';
+import { useAuth } from '@/contexts/AuthContext';
 import { Call, CallStatus, CALL_STATUS_LABELS } from '@/types/calls';
 import { Phone, Search, Filter } from 'lucide-react';
 
 export default function Calls() {
   const navigate = useNavigate();
+  const { hasMinRole } = useAuth();
   const [statusFilter, setStatusFilter] = useState<CallStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
   const { calls, loading, startCall, endCall } = useCalls(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
   );
+
+  const showSipgate = hasMinRole('mitarbeiter');
 
   // Filter calls by search query
   const filteredCalls = calls.filter(call => {
@@ -103,6 +108,9 @@ export default function Calls() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Sipgate Integration */}
+      {showSipgate && <SipgatePanel />}
 
       {/* Filters */}
       <Card>
