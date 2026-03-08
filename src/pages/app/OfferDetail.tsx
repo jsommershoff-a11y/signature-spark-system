@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useOffers } from '@/hooks/useOffers';
 import { useAuth } from '@/contexts/AuthContext';
@@ -158,19 +158,19 @@ export default function OfferDetail() {
   return (
     <div className="space-y-6">
       {/* Back + Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/app/offers')}>
+      <div className="flex items-start gap-3">
+        <Button variant="ghost" size="icon" className="shrink-0 mt-0.5" onClick={() => navigate('/app/offers')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight truncate">
               {offerJson?.title || 'Angebot'}
             </h1>
             <OfferStatusBadge status={offer.status} />
           </div>
           {offer.lead && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground truncate">
               {offer.lead.first_name} {offer.lead.last_name}
               {offer.lead.company ? ` · ${offer.lead.company}` : ''}
             </p>
@@ -180,34 +180,34 @@ export default function OfferDetail() {
 
       {/* Workflow Status Bar */}
       <Card>
-        <CardContent className="py-4">
-          <div className="flex items-center gap-1">
+        <CardContent className="py-3 md:py-4 overflow-x-auto">
+          <div className="flex items-center gap-0.5 md:gap-1 min-w-[280px]">
             {WORKFLOW_STEPS.map((ws, i) => {
               const isCompleted = i < currentStepIndex;
               const isCurrent = i === currentStepIndex;
               const isExpired = offer.status === 'expired';
 
               return (
-                <div key={ws.status} className="flex items-center gap-1 flex-1">
+                <div key={ws.status} className="flex items-center gap-0.5 md:gap-1 flex-1">
                   <div className={cn(
-                    'flex items-center justify-center h-8 w-8 rounded-full shrink-0 transition-colors',
+                    'flex items-center justify-center h-6 w-6 md:h-8 md:w-8 rounded-full shrink-0 transition-colors',
                     isCompleted
                       ? 'bg-primary text-primary-foreground'
                       : isCurrent && !isExpired
                         ? 'bg-primary text-primary-foreground ring-2 ring-primary/30'
                         : 'bg-muted text-muted-foreground'
                   )}>
-                    {isCompleted ? <Check className="h-4 w-4" /> : ws.icon}
+                    {isCompleted ? <Check className="h-3 w-3 md:h-4 md:w-4" /> : React.cloneElement(ws.icon as React.ReactElement, { className: 'h-3 w-3 md:h-4 md:w-4' })}
                   </div>
                   <span className={cn(
-                    'text-xs truncate hidden lg:block',
+                    'text-[10px] md:text-xs truncate hidden sm:block',
                     isCurrent ? 'font-semibold' : 'text-muted-foreground'
                   )}>
                     {ws.label}
                   </span>
                   {i < WORKFLOW_STEPS.length - 1 && (
                     <div className={cn(
-                      'h-px flex-1 ml-1',
+                      'h-px flex-1 ml-0.5 md:ml-1',
                       isCompleted ? 'bg-primary' : 'bg-border'
                     )} />
                   )}
@@ -219,76 +219,83 @@ export default function OfferDetail() {
       </Card>
 
       {/* Action Bar */}
-      <div className="flex flex-wrap gap-3">
-        {/* Sales Guide Toggle */}
-        <Button
-          variant={showGuide ? 'default' : 'outline'}
-          onClick={() => setShowGuide(!showGuide)}
-        >
-          <MessageSquare className="h-4 w-4 mr-2" />
-          {showGuide ? 'Leitfaden ausblenden' : 'Gesprächsleitfaden'}
-        </Button>
-
-        {/* Submit for review */}
-        {canSubmitForReview && offer.status === 'draft' && (
-          <Button onClick={() => submitForReview(offer.id)}>
-            <Clock className="h-4 w-4 mr-2" />
-            Zur Prüfung einreichen
+      <div className="space-y-3">
+        {/* Primary Actions */}
+        <div className="flex flex-wrap gap-2">
+          {/* Sales Guide Toggle */}
+          <Button
+            variant={showGuide ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setShowGuide(!showGuide)}
+            className="md:size-default"
+          >
+            <MessageSquare className="h-4 w-4 mr-1.5" />
+            <span className="hidden xs:inline">{showGuide ? 'Leitfaden ausblenden' : 'Gesprächsleitfaden'}</span>
+            <span className="xs:hidden">{showGuide ? 'Ausblenden' : 'Leitfaden'}</span>
           </Button>
-        )}
 
-        {/* Approve */}
-        {canApprove && offer.status === 'pending_review' && (
-          <Button onClick={() => approveOffer(offer.id)}>
-            <Check className="h-4 w-4 mr-2" />
-            Genehmigen
-          </Button>
-        )}
+          {/* Submit for review */}
+          {canSubmitForReview && offer.status === 'draft' && (
+            <Button size="sm" onClick={() => submitForReview(offer.id)}>
+              <Clock className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">Zur Prüfung einreichen</span>
+              <span className="sm:hidden">Einreichen</span>
+            </Button>
+          )}
 
-        {/* Send */}
-        {canSend && offer.status === 'approved' && (
-          <Button onClick={() => sendOffer(offer.id)}>
-            <Send className="h-4 w-4 mr-2" />
-            Senden
-          </Button>
-        )}
+          {/* Approve */}
+          {canApprove && offer.status === 'pending_review' && (
+            <Button size="sm" onClick={() => approveOffer(offer.id)}>
+              <Check className="h-4 w-4 mr-1.5" />
+              Genehmigen
+            </Button>
+          )}
 
-        {/* Unlock payment — only after accepted */}
-        {canUnlockPayment && offer.status === 'accepted' && (
-          <PaymentUnlockButton
-            isUnlocked={offer.payment_unlocked}
-            onUnlock={async () => { await unlockPayment(offer.id); }}
-          />
-        )}
+          {/* Send */}
+          {canSend && offer.status === 'approved' && (
+            <Button size="sm" onClick={() => sendOffer(offer.id)}>
+              <Send className="h-4 w-4 mr-1.5" />
+              Senden
+            </Button>
+          )}
+
+          {/* Unlock payment — only after accepted */}
+          {canUnlockPayment && offer.status === 'accepted' && (
+            <PaymentUnlockButton
+              isUnlocked={offer.payment_unlocked}
+              onUnlock={async () => { await unlockPayment(offer.id); }}
+            />
+          )}
+        </div>
 
         {/* Sharing Actions */}
-        <div className="flex gap-2 ml-auto">
-          {/* PDF Download */}
-          <Button variant="outline" onClick={handleDownloadPDF} disabled={pdfLoading}>
-            <Download className="h-4 w-4 mr-2" />
-            {pdfLoading ? 'Wird erstellt...' : 'PDF'}
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={pdfLoading}>
+            <Download className="h-4 w-4 mr-1.5" />
+            {pdfLoading ? 'Erstellen...' : 'PDF'}
           </Button>
 
-          {/* Public link actions */}
           {publicUrl && (
             <>
-              <Button variant="outline" onClick={copyPublicLink}>
-                <Copy className="h-4 w-4 mr-2" />
-                Link kopieren
+              <Button variant="outline" size="sm" onClick={copyPublicLink}>
+                <Copy className="h-4 w-4 mr-1.5" />
+                <span className="hidden sm:inline">Link kopieren</span>
+                <span className="sm:hidden">Link</span>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Landing Page
+                  <ExternalLink className="h-4 w-4 mr-1.5" />
+                  <span className="hidden sm:inline">Landing Page</span>
+                  <span className="sm:hidden">Seite</span>
                 </a>
               </Button>
             </>
           )}
 
           {offer.lead && (
-            <Button variant="outline" asChild>
+            <Button variant="outline" size="sm" asChild>
               <Link to="/app/leads">
-                <User className="h-4 w-4 mr-2" />
+                <User className="h-4 w-4 mr-1.5" />
                 Lead
               </Link>
             </Button>
@@ -332,7 +339,7 @@ export default function OfferDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Unterzeichnet von</p>
                 <p className="font-medium">{offerJson.signer_name || '—'}</p>
