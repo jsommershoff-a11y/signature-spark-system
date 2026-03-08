@@ -11,7 +11,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CallList } from '@/components/calls/CallList';
+import { SipgatePanel } from '@/components/calls/SipgatePanel';
 import { useCalls } from '@/hooks/useCalls';
+import { useAuth } from '@/contexts/AuthContext';
 import { Call, CallStatus, CALL_STATUS_LABELS } from '@/types/calls';
 import { Phone, Search, Filter } from 'lucide-react';
 
