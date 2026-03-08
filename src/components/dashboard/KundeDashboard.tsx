@@ -29,11 +29,11 @@ export function KundeDashboard() {
               <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm md:text-base">Kurse</h3>
-              <p className="text-xs md:text-sm text-muted-foreground">Lernbereich und Fortschritt</p>
+              <h3 className="font-semibold text-sm md:text-base">KI-Academy</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">Lernpfade & Fortschritt</p>
             </div>
             <Button variant="ghost" size="icon" asChild className="flex-shrink-0">
-              <Link to="/app/courses"><ArrowRight className="h-4 w-4" /></Link>
+              <Link to="/app/academy"><ArrowRight className="h-4 w-4" /></Link>
             </Button>
           </CardContent>
         </Card>
