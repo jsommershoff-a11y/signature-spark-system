@@ -24,7 +24,7 @@ export function LearningPathCard({ path }: LearningPathCardProps) {
   const Icon = ICON_MAP[path.icon] || BookOpen;
   const gradient = TOPIC_COLORS[path.color] || TOPIC_COLORS.orange;
   const courses = path.courses || [];
-  const levels = courses.map(c => c.path_level || 'starter');
+  const tiers = [...new Set(courses.map(c => c.price_tier || 'freebie'))] as CoursePriceTier[];
 
   return (
     <Link to={`/app/academy/${path.id}`}>
