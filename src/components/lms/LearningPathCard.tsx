@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProgressRing } from './ProgressRing';
-import { LevelBadge } from './LevelBadge';
+import { PriceTierBadge } from './PriceTierBadge';
 import { MessageSquare, Megaphone, TrendingUp, Workflow, BookOpen, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { LearningPath } from '@/types/lms';
+import type { LearningPath, CoursePriceTier } from '@/types/lms';
 import { TOPIC_COLORS } from '@/types/lms';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
