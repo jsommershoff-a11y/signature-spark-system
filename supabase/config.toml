@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.sipgate-webhook]
 verify_jwt = false
+
+[functions.generate-offer-pdf]
+verify_jwt = false

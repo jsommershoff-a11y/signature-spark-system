@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useOffers } from '@/hooks/useOffers';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,6 +7,7 @@ import { OfferStatusBadge } from '@/components/offers/OfferStatusBadge';
 import { PaymentUnlockButton } from '@/components/offers/PaymentUnlockButton';
 import { PainPointRadar } from '@/components/offers/PainPointRadar';
 import { ProgressTracker } from '@/components/offers/ProgressTracker';
+import { SalesGuideWizard } from '@/components/offers/SalesGuideWizard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,9 +15,11 @@ import { Separator } from '@/components/ui/separator';
 import {
   ArrowLeft, Check, Send, Copy, ExternalLink, User,
   FileText, Eye, CreditCard, CheckCircle2, Clock, PenLine,
+  Download, Share2, MessageSquare,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { OfferStatus } from '@/types/offers';
+import { supabase } from '@/integrations/supabase/client';
+import type { OfferStatus, DiscoveryData, OfferContent } from '@/types/offers';
 import { cn } from '@/lib/utils';
 
 // =============================================
@@ -44,6 +48,9 @@ export default function OfferDetail() {
   const { hasMinRole } = useAuth();
   const { offers, isLoading, approveOffer, sendOffer, unlockPayment, submitForReview, updateOffer } = useOffers();
 
+  const [showGuide, setShowGuide] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   const offer = offers.find((o) => o.id === offerId);
 
   const canSubmitForReview = hasMinRole('mitarbeiter');
@@ -65,6 +72,56 @@ export default function OfferDetail() {
   const handleProgressUpdate = async (updatedJson: any) => {
     if (!offer) return;
     await updateOffer({ id: offer.id, offer_json: updatedJson });
+  };
+
+  const handleSaveDiscovery = async (data: DiscoveryData) => {
+    if (!offer) return;
+    const updatedJson: OfferContent = {
+      ...offer.offer_json,
+      discovery_data: data,
+      offer_mode: data.recommended_mode || offer.offer_json.offer_mode,
+    };
+    await updateOffer({ id: offer.id, offer_json: updatedJson });
+    toast({ title: 'Analyse gespeichert', description: 'Die Pain-Point-Analyse wurde dem Angebot hinzugefügt.' });
+  };
+
+  const handleSaveGuideNotes = async (phaseNotes: Record<string, any>) => {
+    if (!offer) return;
+    const existingNotes = offer.notes || '';
+    const guideNotesText = Object.entries(phaseNotes)
+      .filter(([, data]) => data.notes)
+      .map(([phaseId, data]) => `[${phaseId}] ${data.notes}`)
+      .join('\n');
+    
+    const combinedNotes = existingNotes
+      ? `${existingNotes}\n\n--- Gesprächsnotizen ---\n${guideNotesText}`
+      : `--- Gesprächsnotizen ---\n${guideNotesText}`;
+
+    await updateOffer({ id: offer.id, notes: combinedNotes });
+    toast({ title: 'Notizen gespeichert', description: 'Die Gesprächsnotizen wurden gespeichert.' });
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!offer) return;
+    setPdfLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-offer-pdf', {
+        body: { offer_id: offer.id },
+      });
+
+      if (error) throw error;
+
+      // The edge function returns HTML - open in new tab for printing
+      const blob = new Blob([data], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      
+      toast({ title: 'PDF generiert', description: 'Das Angebot wurde in einem neuen Tab geöffnet. Nutzen Sie "Drucken" → "Als PDF speichern".' });
+    } catch (err: any) {
+      toast({ title: 'Fehler', description: err.message || 'PDF konnte nicht generiert werden.', variant: 'destructive' });
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -163,6 +220,15 @@ export default function OfferDetail() {
 
       {/* Action Bar */}
       <div className="flex flex-wrap gap-3">
+        {/* Sales Guide Toggle */}
+        <Button
+          variant={showGuide ? 'default' : 'outline'}
+          onClick={() => setShowGuide(!showGuide)}
+        >
+          <MessageSquare className="h-4 w-4 mr-2" />
+          {showGuide ? 'Leitfaden ausblenden' : 'Gesprächsleitfaden'}
+        </Button>
+
         {/* Submit for review */}
         {canSubmitForReview && offer.status === 'draft' && (
           <Button onClick={() => submitForReview(offer.id)}>
@@ -195,34 +261,52 @@ export default function OfferDetail() {
           />
         )}
 
-        {/* Public link actions */}
-        {publicUrl && (
-          <>
-            <Button variant="outline" onClick={copyPublicLink}>
-              <Copy className="h-4 w-4 mr-2" />
-              Link kopieren
-            </Button>
-            <Button variant="outline" asChild>
-              <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Öffnen
-              </a>
-            </Button>
-          </>
-        )}
-
-        {offer.lead && (
-          <Button variant="outline" asChild>
-            <Link to="/app/leads">
-              <User className="h-4 w-4 mr-2" />
-              Lead ansehen
-            </Link>
+        {/* Sharing Actions */}
+        <div className="flex gap-2 ml-auto">
+          {/* PDF Download */}
+          <Button variant="outline" onClick={handleDownloadPDF} disabled={pdfLoading}>
+            <Download className="h-4 w-4 mr-2" />
+            {pdfLoading ? 'Wird erstellt...' : 'PDF'}
           </Button>
-        )}
+
+          {/* Public link actions */}
+          {publicUrl && (
+            <>
+              <Button variant="outline" onClick={copyPublicLink}>
+                <Copy className="h-4 w-4 mr-2" />
+                Link kopieren
+              </Button>
+              <Button variant="outline" asChild>
+                <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Landing Page
+                </a>
+              </Button>
+            </>
+          )}
+
+          {offer.lead && (
+            <Button variant="outline" asChild>
+              <Link to="/app/leads">
+                <User className="h-4 w-4 mr-2" />
+                Lead
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
+      {/* Sales Guide Wizard */}
+      {showGuide && offerJson && (
+        <SalesGuideWizard
+          offerJson={offerJson}
+          onSaveDiscovery={handleSaveDiscovery}
+          onSaveNotes={handleSaveGuideNotes}
+        />
+      )}
+
       {/* Pain-Point Radar (if discovery data exists) */}
-      {offerJson?.discovery_data && (
+      {offerJson?.discovery_data && !showGuide && (
         <PainPointRadar
           discoveryData={offerJson.discovery_data}
           selectedModules={offerJson.selected_modules}

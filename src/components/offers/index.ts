@@ -9,3 +9,4 @@ export { PainPointRadar } from './PainPointRadar';
 export { SignaturePad } from './SignaturePad';
 export { ContractAcceptance } from './ContractAcceptance';
 export { ProgressTracker } from './ProgressTracker';
+export { SalesGuideWizard } from './SalesGuideWizard';
