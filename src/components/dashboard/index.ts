@@ -4,3 +4,7 @@ export { PipelineStatsWidget } from './PipelineStatsWidget';
 export { CallQueueWidget } from './CallQueueWidget';
 export { FollowupApprovalsWidget } from './FollowupApprovalsWidget';
 export { CustomerAvatarWidget } from './CustomerAvatarWidget';
+export { TodayPrioritiesWidget } from './TodayPrioritiesWidget';
+export { QuickActionsWidget } from './QuickActionsWidget';
+export { RecentActivitiesWidget } from './RecentActivitiesWidget';
+export { CommunicationStatusWidget } from './CommunicationStatusWidget';
