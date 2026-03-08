@@ -27,6 +27,9 @@ export interface LearningCourse {
   thumbnail_url?: string;
   learning_path_id?: string;
   path_level?: PathLevel;
+  price_tier?: CoursePriceTier;
+  price_cents?: number;
+  includes_done_for_you?: boolean;
   sort_order: number;
   published: boolean;
   // Joined
