@@ -24,7 +24,7 @@ interface TemplateForm {
 const emptyForm: TemplateForm = { name: '', subject: '', body_html: '', variables: '' };
 
 export default function AdminEmailTemplates() {
-  const { profileId } = useAuth();
+  const { profile } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
