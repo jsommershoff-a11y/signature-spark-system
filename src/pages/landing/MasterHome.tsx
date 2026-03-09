@@ -48,6 +48,7 @@ const MasterHome = () => {
         <EmotionalHookSection />
         <FivePillarsSection onCtaClick={handleCTAClick} />
         <CaseStudiesSection />
+        <AcademyPreviewSection onCtaClick={handleCTAClick} />
         <AboutFounderSection />
         <ProcessStepsSection />
 
