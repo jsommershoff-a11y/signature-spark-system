@@ -214,12 +214,28 @@ export function LessonPlayerView() {
           {/* Description */}
           {lesson.description && (
             <div className="prose prose-sm dark:prose-invert max-w-none">
-              <p>{lesson.description}</p>
+              <p className="text-muted-foreground">{lesson.description}</p>
             </div>
           )}
 
-          {/* Task / Worksheet content */}
-          {(lesson.lesson_type === 'task' || lesson.lesson_type === 'worksheet') && (
+          {/* Rich HTML Content from meta */}
+          {meta.content_html && (
+            <div
+              className="prose prose-sm dark:prose-invert max-w-none
+                prose-headings:text-foreground prose-h2:text-lg prose-h2:font-bold prose-h2:mt-6 prose-h2:mb-3
+                prose-h3:text-base prose-h3:font-semibold prose-h3:mt-4 prose-h3:mb-2
+                prose-pre:bg-muted prose-pre:text-foreground prose-pre:p-4 prose-pre:rounded-lg prose-pre:text-xs prose-pre:whitespace-pre-wrap prose-pre:border prose-pre:border-border
+                prose-ul:space-y-1 prose-ol:space-y-1 prose-li:text-muted-foreground
+                prose-p:text-muted-foreground prose-strong:text-foreground
+                prose-table:border-collapse prose-th:bg-muted prose-th:p-2 prose-th:text-left prose-th:border prose-th:border-border prose-th:text-xs
+                prose-td:p-2 prose-td:border prose-td:border-border prose-td:text-xs
+                prose-dt:font-semibold prose-dt:text-foreground prose-dd:text-muted-foreground prose-dd:mb-3 prose-dd:ml-4"
+              dangerouslySetInnerHTML={{ __html: meta.content_html as string }}
+            />
+          )}
+
+          {/* Task / Worksheet action area */}
+          {(lesson.lesson_type === 'task' || lesson.lesson_type === 'worksheet') && !meta.content_html && (
             <Card className="bg-muted/30 border-dashed">
               <CardContent className="py-6 text-center space-y-3">
                 <Icon className="h-10 w-10 text-primary/50 mx-auto" />
@@ -228,16 +244,18 @@ export function LessonPlayerView() {
                     ? 'Bearbeite die Aufgabe und markiere sie als abgeschlossen.'
                     : 'Lade das Arbeitsblatt herunter und fülle es aus.'}
                 </p>
-                {lesson.content_ref && (
-                  <Button variant="outline" asChild>
-                    <a href={lesson.content_ref} target="_blank" rel="noopener noreferrer" className="gap-2">
-                      <ExternalLink className="h-4 w-4" />
-                      {lesson.lesson_type === 'task' ? 'Aufgabe öffnen' : 'Arbeitsblatt herunterladen'}
-                    </a>
-                  </Button>
-                )}
               </CardContent>
             </Card>
+          )}
+
+          {/* External link if available */}
+          {lesson.content_ref && (lesson.lesson_type === 'task' || lesson.lesson_type === 'worksheet') && (
+            <Button variant="outline" asChild className="w-full">
+              <a href={lesson.content_ref} target="_blank" rel="noopener noreferrer" className="gap-2">
+                <ExternalLink className="h-4 w-4" />
+                {lesson.lesson_type === 'task' ? 'Aufgabe öffnen' : 'Arbeitsblatt herunterladen'}
+              </a>
+            </Button>
           )}
 
           {/* Complete Button */}
