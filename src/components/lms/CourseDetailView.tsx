@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLearningPaths } from '@/hooks/useLearningPaths';
+import { useMembershipAccess, DEMO_LESSON_LIMIT } from '@/hooks/useMembershipAccess';
 import { LevelBadge } from './LevelBadge';
 import { ProgressRing } from './ProgressRing';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +22,9 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
+  Lock,
+  ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -45,6 +49,7 @@ export function CourseDetailView() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { paths, memberId, isLoading: pathsLoading } = useLearningPaths();
+  const { canAccessCourse, canAccessLesson, isLoading: accessLoading } = useMembershipAccess();
 
   // Find the course in paths data
   const allCourses = paths.flatMap((p) => p.courses || []);
@@ -103,7 +108,7 @@ export function CourseDetailView() {
   });
 
   const courseData = course || directQuery.data;
-  const isLoading = pathsLoading || directQuery.isLoading;
+  const isLoading = pathsLoading || directQuery.isLoading || accessLoading;
 
   if (isLoading) {
     return (
@@ -126,9 +131,11 @@ export function CourseDetailView() {
 
   const modules = (courseData.modules || []) as LearningModule[];
   const progress = courseData.progress_percent || 0;
-
-  // Find parent path for breadcrumb
+  const courseAccess = canAccessCourse(courseData);
   const parentPath = paths.find((p) => (p.courses || []).some((c) => c.id === courseId));
+
+  // Build flat lesson index for demo access checking
+  let globalLessonIdx = 0;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -140,6 +147,32 @@ export function CourseDetailView() {
         </Button>
       </div>
 
+      {/* Paywall Banner */}
+      {!courseAccess.hasAccess && (
+        <Card className="border-amber-300 dark:border-amber-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+          <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="p-3 bg-amber-100 dark:bg-amber-900/50 rounded-xl flex-shrink-0">
+              <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-amber-900 dark:text-amber-200">
+                Premium-Inhalte – Zugang eingeschränkt
+              </h3>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                {courseAccess.reason} Die ersten {DEMO_LESSON_LIMIT} Lektionen sind als Demo verfügbar.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate('/app/contracts')}
+              className="bg-amber-600 hover:bg-amber-700 text-white flex-shrink-0 gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              Jetzt freischalten
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Course Header */}
       <div className="flex flex-col md:flex-row items-start gap-6 p-6 rounded-2xl bg-card border">
         <ProgressRing progress={progress} size={80} strokeWidth={6} />
@@ -150,6 +183,12 @@ export function CourseDetailView() {
             )}
             {courseData.path_level && (
               <LevelBadge level={courseData.path_level as PathLevel} size="sm" />
+            )}
+            {courseAccess.hasAccess && (
+              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 gap-1 text-xs">
+                <ShieldCheck className="h-3 w-3" />
+                Freigeschaltet
+              </Badge>
             )}
           </div>
           <h1 className="text-2xl font-bold">{courseData.name}</h1>
@@ -166,16 +205,23 @@ export function CourseDetailView() {
 
       {/* Modules */}
       <div className="space-y-3">
-        {modules.map((module, idx) => (
-          <ModuleSection
-            key={module.id}
-            module={module}
-            courseId={courseId!}
-            defaultOpen={idx === 0 || (module.lessons || []).some(
-              (l) => l.progress_status === 'in_progress'
-            )}
-          />
-        ))}
+        {modules.map((module, idx) => {
+          const startIdx = globalLessonIdx;
+          globalLessonIdx += (module.lessons || []).length;
+          return (
+            <ModuleSection
+              key={module.id}
+              module={module}
+              courseId={courseId!}
+              courseAccess={courseAccess}
+              lessonStartIndex={startIdx}
+              canAccessLesson={canAccessLesson}
+              defaultOpen={idx === 0 || (module.lessons || []).some(
+                (l) => l.progress_status === 'in_progress'
+              )}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -184,10 +230,16 @@ export function CourseDetailView() {
 function ModuleSection({
   module,
   courseId,
+  courseAccess,
+  lessonStartIndex,
+  canAccessLesson: checkLessonAccess,
   defaultOpen = false,
 }: {
   module: LearningModule;
   courseId: string;
+  courseAccess: { hasAccess: boolean };
+  lessonStartIndex: number;
+  canAccessLesson: (idx: number, access: { hasAccess: boolean }) => boolean;
   defaultOpen?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -227,9 +279,19 @@ function ModuleSection({
 
       {isOpen && (
         <CardContent className="pt-0 pb-3 px-3 space-y-1">
-          {lessons.map((lesson) => (
-            <LessonRow key={lesson.id} lesson={lesson} courseId={courseId} />
-          ))}
+          {lessons.map((lesson, idx) => {
+            const globalIdx = lessonStartIndex + idx;
+            const isAccessible = checkLessonAccess(globalIdx, courseAccess);
+            return (
+              <LessonRow
+                key={lesson.id}
+                lesson={lesson}
+                courseId={courseId}
+                isLocked={!isAccessible}
+                isDemo={!courseAccess.hasAccess && isAccessible}
+              />
+            );
+          })}
           {lessons.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">
               Keine Lektionen in diesem Modul.
@@ -241,53 +303,93 @@ function ModuleSection({
   );
 }
 
-function LessonRow({ lesson, courseId }: { lesson: LearningLesson; courseId: string }) {
+function LessonRow({
+  lesson,
+  courseId,
+  isLocked,
+  isDemo,
+}: {
+  lesson: LearningLesson;
+  courseId: string;
+  isLocked: boolean;
+  isDemo: boolean;
+}) {
   const Icon = LESSON_ICONS[lesson.lesson_type] || Play;
   const isComplete = lesson.progress_status === 'completed';
   const isInProgress = lesson.progress_status === 'in_progress';
 
-  return (
-    <Link to={`/app/academy/course/${courseId}/lesson/${lesson.id}`}>
-      <div
-        className={cn(
-          'flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-accent/50',
-          isComplete && 'bg-emerald-50/50 dark:bg-emerald-950/10',
-          isInProgress && 'bg-amber-50/50 dark:bg-amber-950/10'
+  const content = (
+    <div
+      className={cn(
+        'flex items-center gap-3 p-3 rounded-lg transition-colors',
+        isLocked
+          ? 'opacity-60 cursor-not-allowed bg-muted/20'
+          : 'hover:bg-accent/50 cursor-pointer',
+        isComplete && !isLocked && 'bg-emerald-50/50 dark:bg-emerald-950/10',
+        isInProgress && !isLocked && 'bg-amber-50/50 dark:bg-amber-950/10'
+      )}
+    >
+      {/* Status */}
+      <div className="flex-shrink-0">
+        {isLocked ? (
+          <Lock className="h-5 w-5 text-muted-foreground/50" />
+        ) : isComplete ? (
+          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+        ) : isInProgress ? (
+          <Clock className="h-5 w-5 text-amber-500" />
+        ) : (
+          <Circle className="h-5 w-5 text-muted-foreground/40" />
         )}
-      >
-        {/* Status */}
-        <div className="flex-shrink-0">
-          {isComplete ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-          ) : isInProgress ? (
-            <Clock className="h-5 w-5 text-amber-500" />
-          ) : (
-            <Circle className="h-5 w-5 text-muted-foreground/40" />
-          )}
-        </div>
+      </div>
 
-        {/* Type Icon */}
-        <div className="p-1.5 bg-muted rounded-md flex-shrink-0">
-          <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-        </div>
+      {/* Type Icon */}
+      <div className="p-1.5 bg-muted rounded-md flex-shrink-0">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <span className={cn('text-sm font-medium', isComplete && 'text-emerald-700 dark:text-emerald-400')}>
-            {lesson.name}
-          </span>
-        </div>
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <span className={cn(
+          'text-sm font-medium',
+          isComplete && !isLocked && 'text-emerald-700 dark:text-emerald-400',
+          isLocked && 'text-muted-foreground'
+        )}>
+          {lesson.name}
+        </span>
+      </div>
 
-        {/* Meta */}
-        <Badge variant="secondary" className="text-xs flex-shrink-0">
+      {/* Badges */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {isDemo && (
+          <Badge variant="outline" className="text-xs border-amber-300 text-amber-600 dark:text-amber-400">
+            Demo
+          </Badge>
+        )}
+        {isLocked && (
+          <Badge variant="outline" className="text-xs border-muted-foreground/30 text-muted-foreground">
+            <Lock className="h-2.5 w-2.5 mr-1" />
+            Gesperrt
+          </Badge>
+        )}
+        <Badge variant="secondary" className="text-xs">
           {LESSON_LABELS[lesson.lesson_type]}
         </Badge>
         {lesson.duration_seconds && (
-          <span className="text-xs text-muted-foreground flex-shrink-0">
+          <span className="text-xs text-muted-foreground">
             {Math.floor(lesson.duration_seconds / 60)} Min.
           </span>
         )}
       </div>
+    </div>
+  );
+
+  if (isLocked) {
+    return content;
+  }
+
+  return (
+    <Link to={`/app/academy/course/${courseId}/lesson/${lesson.id}`}>
+      {content}
     </Link>
   );
 }

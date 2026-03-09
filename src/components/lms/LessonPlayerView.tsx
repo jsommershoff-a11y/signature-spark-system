@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLearningPaths } from '@/hooks/useLearningPaths';
+import { useMembershipAccess, DEMO_LESSON_LIMIT } from '@/hooks/useMembershipAccess';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,9 @@ import {
   HelpCircle,
   Loader2,
   ExternalLink,
+  Lock,
+  Sparkles,
+  ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -31,6 +35,7 @@ export function LessonPlayerView() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { memberId } = useLearningPaths();
+  const { canAccessCourse, canAccessLesson, isLoading: accessLoading } = useMembershipAccess();
 
   // Fetch lesson
   const lessonQuery = useQuery({
@@ -47,7 +52,7 @@ export function LessonPlayerView() {
     enabled: !!lessonId,
   });
 
-  // Fetch course structure for navigation
+  // Fetch course structure for navigation + access check
   const courseQuery = useQuery({
     queryKey: ['course-nav', courseId],
     queryFn: async () => {
@@ -112,13 +117,18 @@ export function LessonPlayerView() {
   });
 
   const lesson = lessonQuery.data;
+  const courseData = courseQuery.data?.course;
   const allLessons = courseQuery.data?.allLessons || [];
   const currentIdx = allLessons.findIndex((l: Record<string, unknown>) => l.id === lessonId);
   const prevLesson = currentIdx > 0 ? allLessons[currentIdx - 1] : null;
   const nextLesson = currentIdx < allLessons.length - 1 ? allLessons[currentIdx + 1] : null;
   const isCompleted = progressQuery.data?.status === 'completed';
 
-  if (lessonQuery.isLoading) {
+  // Access check
+  const courseAccess = courseData ? canAccessCourse(courseData) : { hasAccess: true, reason: '' };
+  const lessonAccessible = canAccessLesson(currentIdx >= 0 ? currentIdx : 0, courseAccess);
+
+  if (lessonQuery.isLoading || accessLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -135,6 +145,11 @@ export function LessonPlayerView() {
         </Button>
       </div>
     );
+  }
+
+  // Paywall gate
+  if (!lessonAccessible) {
+    return <PaywallGate courseId={courseId!} reason={courseAccess.reason} />;
   }
 
   const Icon = LESSON_ICONS[lesson.lesson_type as keyof typeof LESSON_ICONS] || Play;
@@ -160,9 +175,21 @@ export function LessonPlayerView() {
         </div>
       </div>
 
+      {/* Demo Banner */}
+      {!courseAccess.hasAccess && lessonAccessible && (
+        <Card className="border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/20">
+          <CardContent className="p-3 flex items-center gap-3 text-sm">
+            <Sparkles className="h-4 w-4 text-amber-600 flex-shrink-0" />
+            <span className="text-amber-700 dark:text-amber-400">
+              Demo-Lektion – <button onClick={() => navigate('/app/contracts')} className="underline font-medium hover:text-amber-900">Jetzt freischalten</button> für vollen Zugang.
+            </span>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Lesson Content */}
       <Card className="overflow-hidden">
-        {/* Video / Content Area */}
+        {/* Video */}
         {lesson.lesson_type === 'video' && lesson.content_ref && (
           <div className="aspect-video bg-foreground/5 flex items-center justify-center">
             {lesson.content_ref.includes('youtube') || lesson.content_ref.includes('vimeo') ? (
@@ -211,14 +238,12 @@ export function LessonPlayerView() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Description */}
           {lesson.description && (
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <p className="text-muted-foreground">{lesson.description}</p>
             </div>
           )}
 
-          {/* Rich HTML Content from meta */}
           {meta.content_html && (
             <div
               className="prose prose-sm dark:prose-invert max-w-none
@@ -234,7 +259,6 @@ export function LessonPlayerView() {
             />
           )}
 
-          {/* Task / Worksheet action area */}
           {(lesson.lesson_type === 'task' || lesson.lesson_type === 'worksheet') && !meta.content_html && (
             <Card className="bg-muted/30 border-dashed">
               <CardContent className="py-6 text-center space-y-3">
@@ -248,7 +272,6 @@ export function LessonPlayerView() {
             </Card>
           )}
 
-          {/* External link if available */}
           {lesson.content_ref && (lesson.lesson_type === 'task' || lesson.lesson_type === 'worksheet') && (
             <Button variant="outline" asChild className="w-full">
               <a href={lesson.content_ref} target="_blank" rel="noopener noreferrer" className="gap-2">
@@ -258,7 +281,6 @@ export function LessonPlayerView() {
             </Button>
           )}
 
-          {/* Complete Button */}
           {memberId && !isCompleted && (
             <Button
               onClick={() => completeMutation.mutate()}
@@ -293,7 +315,15 @@ export function LessonPlayerView() {
         )}
         {nextLesson ? (
           <Button
-            onClick={() => navigate(`/app/academy/course/${courseId}/lesson/${(nextLesson as Record<string, unknown>).id}`)}
+            onClick={() => {
+              const nextIdx = currentIdx + 1;
+              const nextAccess = canAccessLesson(nextIdx, courseAccess);
+              if (!nextAccess) {
+                toast.error('Die nächste Lektion ist gesperrt. Schalte den Kurs frei!');
+                return;
+              }
+              navigate(`/app/academy/course/${courseId}/lesson/${(nextLesson as Record<string, unknown>).id}`);
+            }}
             className="gap-2"
           >
             Nächste Lektion
@@ -308,6 +338,47 @@ export function LessonPlayerView() {
             Zurück zum Kurs
           </Button>
         )}
+      </div>
+    </div>
+  );
+}
+
+function PaywallGate({ courseId, reason }: { courseId: string; reason: string }) {
+  const navigate = useNavigate();
+
+  return (
+    <div className="max-w-lg mx-auto py-16 space-y-8 text-center">
+      <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40 flex items-center justify-center">
+        <ShieldAlert className="h-10 w-10 text-amber-600 dark:text-amber-400" />
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-2xl font-bold">Premium-Inhalt</h2>
+        <p className="text-muted-foreground max-w-sm mx-auto">
+          {reason || 'Dieser Inhalt ist Teil deines Premium-Zugangs. Schalte ihn jetzt frei, um weiterzulernen.'}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <Button
+          size="lg"
+          onClick={() => navigate('/app/contracts')}
+          className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+        >
+          <Sparkles className="h-5 w-5" />
+          Jetzt Zugang freischalten
+        </Button>
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(`/app/academy/course/${courseId}`)}
+            className="gap-1.5 text-muted-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Zurück zum Kurs
+          </Button>
+        </div>
       </div>
     </div>
   );
