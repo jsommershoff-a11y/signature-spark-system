@@ -43,6 +43,7 @@ import MyContracts from "./pages/app/MyContracts";
 import Goals from "./pages/app/Goals";
 import SocialMedia from "./pages/app/SocialMedia";
 import EmailCampaigns from "./pages/app/EmailCampaigns";
+import MemberManagement from "./pages/app/MemberManagement";
 
 const queryClient = new QueryClient({
   defaultOptions: {
