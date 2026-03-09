@@ -144,6 +144,11 @@ const App = () => (
               <Route path="courses" element={<Courses />} />
               <Route path="academy/*" element={<Academy />} />
               <Route path="contracts" element={<MyContracts />} />
+              <Route path="member-management" element={
+                <ProtectedRoute requireMinRole="teamleiter">
+                  <MemberManagement />
+                </ProtectedRoute>
+              } />
               <Route path="members" element={
                 <ProtectedRoute requireMinRole="mitarbeiter">
                   <Members />
