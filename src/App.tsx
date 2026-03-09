@@ -44,6 +44,8 @@ import Goals from "./pages/app/Goals";
 import SocialMedia from "./pages/app/SocialMedia";
 import EmailCampaigns from "./pages/app/EmailCampaigns";
 import MemberManagement from "./pages/app/MemberManagement";
+import Pricing from "./pages/app/Pricing";
+import Welcome from "./pages/app/Welcome";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -144,6 +146,8 @@ const App = () => (
               <Route path="courses" element={<Courses />} />
               <Route path="academy/*" element={<Academy />} />
               <Route path="contracts" element={<MyContracts />} />
+              <Route path="pricing" element={<Pricing />} />
+              <Route path="welcome" element={<Welcome />} />
               <Route path="member-management" element={
                 <ProtectedRoute requireMinRole="teamleiter">
                   <MemberManagement />

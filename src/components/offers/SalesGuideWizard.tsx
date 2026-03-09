@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils';
 import {
   ChevronRight, ChevronLeft, List, LayoutGrid, CheckCircle2,
   MessageSquare, Search, Presentation, ShieldCheck, Save,
+  Lightbulb, AlertTriangle, TrendingUp, FileText,
 } from 'lucide-react';
 import { PainPointDiscovery } from './PainPointDiscovery';
+import { getPhaseCoaching, analyzeNotes, type AiSuggestion } from '@/lib/sales-guide-ai';
 import type { DiscoveryData, OfferContent } from '@/types/offers';
 
 // =============================================
@@ -33,6 +35,10 @@ interface SalesGuideWizardProps {
   offerJson: OfferContent;
   onSaveDiscovery: (data: DiscoveryData) => void;
   onSaveNotes: (phaseNotes: Record<string, PhaseData>) => void;
+  /** Called from Call context to create a deal + offer after closing phase */
+  onCreateDeal?: (discoveryData: DiscoveryData | null, phaseNotes: Record<string, PhaseData>) => void;
+  /** Structogram type for dynamic coaching */
+  structogramType?: import('@/lib/sales-guide-ai').StructogramType | null;
 }
 
 // =============================================
@@ -98,7 +104,7 @@ const PHASES = [
 // Component
 // =============================================
 
-export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes }: SalesGuideWizardProps) {
+export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCreateDeal, structogramType }: SalesGuideWizardProps) {
   const [activePhase, setActivePhase] = useState(0);
   const [viewMode, setViewMode] = useState<'wizard' | 'overview'>('wizard');
   const [discoveryCompleted, setDiscoveryCompleted] = useState(!!offerJson.discovery_data);
@@ -316,6 +322,73 @@ export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes }: Sa
           </Card>
         )}
 
+        {/* AI Coaching Panel */}
+        {structogramType && structogramType !== 'mixed' && structogramType !== 'unknown' && (() => {
+          const coaching = getPhaseCoaching(structogramType, currentPhase.id);
+          return (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="pt-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                  KI-Coaching ({structogramType === 'rot' ? 'Zielorientiert' : structogramType === 'gruen' ? 'Sicherheitsorientiert' : 'Analytisch'})
+                </div>
+                <p className="text-xs text-muted-foreground">{coaching.greeting}</p>
+                <ul className="space-y-1">
+                  {coaching.tips.map((tip, i) => (
+                    <li key={i} className="text-xs flex items-start gap-1.5">
+                      <TrendingUp className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+                {coaching.avoidPhrases.length > 0 && (
+                  <div className="pt-1">
+                    <p className="text-xs font-medium flex items-center gap-1 text-destructive">
+                      <AlertTriangle className="h-3 w-3" /> Vermeiden:
+                    </p>
+                    {coaching.avoidPhrases.map((p, i) => (
+                      <p key={i} className="text-xs text-muted-foreground italic ml-4">"{p}"</p>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs pt-1">
+                  <span className="font-medium">Closing-Stil:</span>{' '}
+                  <span className="text-muted-foreground">{coaching.closingStyle}</span>
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
+        {/* AI Note Suggestions */}
+        {(() => {
+          const allNotes = Object.values(phaseData).map(p => p.notes).join(' ');
+          if (allNotes.trim().length < 10) return null;
+          const suggestions = analyzeNotes(allNotes);
+          if (suggestions.length === 0) return null;
+          return (
+            <Card className="border-dashed">
+              <CardContent className="pt-3 space-y-1.5">
+                <p className="text-xs font-medium flex items-center gap-1">
+                  <Lightbulb className="h-3 w-3 text-primary" /> KI-Hinweise aus Ihren Notizen
+                </p>
+                {suggestions.map((s, i) => (
+                  <p key={i} className={cn(
+                    'text-xs flex items-start gap-1.5',
+                    s.type === 'warning' && 'text-destructive',
+                    s.type === 'opportunity' && 'text-primary',
+                  )}>
+                    {s.type === 'warning' ? <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" /> :
+                     s.type === 'opportunity' ? <TrendingUp className="h-3 w-3 shrink-0 mt-0.5" /> :
+                     <Lightbulb className="h-3 w-3 shrink-0 mt-0.5" />}
+                    {s.text}
+                  </p>
+                ))}
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* Notes */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Gesprächsnotizen zu dieser Phase</label>
@@ -348,10 +421,18 @@ export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes }: Sa
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <Button size="sm" onClick={handleSaveAll}>
-              <CheckCircle2 className="h-4 w-4 mr-1" />
-              Abschließen
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={handleSaveAll}>
+                <CheckCircle2 className="h-4 w-4 mr-1" />
+                Abschließen
+              </Button>
+              {onCreateDeal && (
+                <Button size="sm" onClick={() => onCreateDeal(discoveryData, phaseData)}>
+                  <FileText className="h-4 w-4 mr-1" />
+                  Angebot erstellen
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>
