@@ -1,12 +1,55 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, GraduationCap, TrendingUp, Clock, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { FileText, GraduationCap, TrendingUp, Clock, ArrowRight, Gift, Sparkles, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useMembershipAccess } from '@/hooks/useMembershipAccess';
 
 export function KundeDashboard() {
+  const { products, isLoading } = useMembershipAccess();
+  const hasNoProduct = !isLoading && products.length === 0;
+
   return (
     <div className="space-y-4 md:space-y-6">
+      {/* Freebie Banner */}
+      {hasNoProduct && (
+        <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10 shadow-md">
+          <CardContent className="flex flex-col sm:flex-row items-center gap-4 py-5 px-4">
+            <div className="p-3 rounded-xl bg-primary/15 shrink-0">
+              <Gift className="h-8 w-8 text-primary" />
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
+                <h3 className="font-bold text-base">Dein kostenloses KI-Starter-Paket</h3>
+                <Badge variant="secondary" className="gap-1 text-xs">
+                  <Sparkles className="h-3 w-3" />
+                  Gratis
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                5 sofort einsetzbare KI-Prompts + persönliche KI-Bedarfsanalyse.
+                Finde heraus, welche KI dein Unternehmen am meisten voranbringt.
+              </p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/app/academy">
+                  <GraduationCap className="h-4 w-4 mr-1" />
+                  Prompts ansehen
+                </Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/app/pricing">
+                  <Phone className="h-4 w-4 mr-1" />
+                  Analyse-Gespräch
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Quick Links */}
       <div className="grid gap-3 md:grid-cols-2">
         <Card className="hover:shadow-md transition-shadow">

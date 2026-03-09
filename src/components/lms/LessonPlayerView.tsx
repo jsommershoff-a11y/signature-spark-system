@@ -362,12 +362,22 @@ function PaywallGate({ courseId, reason }: { courseId: string; reason: string })
       <div className="space-y-3">
         <Button
           size="lg"
-          onClick={() => navigate('/app/contracts')}
+          onClick={() => navigate('/app/pricing')}
           className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
         >
           <Sparkles className="h-5 w-5" />
-          Jetzt Zugang freischalten
+          Pakete & Preise ansehen
         </Button>
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/app/contracts')}
+            className="gap-1.5 text-muted-foreground"
+          >
+            Meine Verträge
+          </Button>
+        </div>
         <div>
           <Button
             variant="ghost"
