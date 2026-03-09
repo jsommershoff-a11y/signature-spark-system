@@ -51,7 +51,7 @@ export default function AdminEmailTemplates() {
         subject: f.subject,
         body_html: f.body_html,
         variables: vars,
-        created_by: profileId!,
+        created_by: profile!.id,
       };
 
       if (editId) {

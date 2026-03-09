@@ -43,7 +43,7 @@ export default function AdminSystemLogs() {
         .limit(200);
 
       if (typeFilter !== 'all') {
-        query = query.eq('type', typeFilter);
+        query = query.eq('type', typeFilter as any);
       }
 
       const { data, error } = await query;
