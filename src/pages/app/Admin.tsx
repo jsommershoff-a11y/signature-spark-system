@@ -21,6 +21,7 @@ export default function Admin() {
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="users" className="gap-1.5"><Shield className="h-3.5 w-3.5" /> Benutzer</TabsTrigger>
           <TabsTrigger value="leads" className="gap-1.5">Leads</TabsTrigger>
+          <TabsTrigger value="members" className="gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> Mitgliederbereich</TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5"><Activity className="h-3.5 w-3.5" /> System-Logs</TabsTrigger>
           <TabsTrigger value="templates" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> E-Mail-Templates</TabsTrigger>
           <TabsTrigger value="integrations" className="gap-1.5"><Plug className="h-3.5 w-3.5" /> Integrationen</TabsTrigger>
