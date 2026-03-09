@@ -44,6 +44,18 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="members" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><GraduationCap className="h-5 w-5" /> Mitgliederbereich</CardTitle>
+              <CardDescription>Mitglieder, Lernpfade, Kurse und Inhalte verwalten</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AdminMembersOverview />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="logs">
           <Card>
             <CardHeader>
