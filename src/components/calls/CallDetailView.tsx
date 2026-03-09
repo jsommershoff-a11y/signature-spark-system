@@ -51,6 +51,7 @@ export function CallDetailView({
   onStartCall,
   onEndCall,
   onRefresh,
+  onCreateDeal,
 }: CallDetailViewProps) {
   if (loading) {
     return (
