@@ -11,6 +11,7 @@ import {
   MessageSquare, Search, Presentation, ShieldCheck, Save,
 } from 'lucide-react';
 import { PainPointDiscovery } from './PainPointDiscovery';
+import { getPhaseCoaching, analyzeNotes, type AiSuggestion } from '@/lib/sales-guide-ai';
 import type { DiscoveryData, OfferContent } from '@/types/offers';
 
 // =============================================
