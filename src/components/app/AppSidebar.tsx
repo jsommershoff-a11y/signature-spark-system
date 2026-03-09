@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
   { label: 'Angebote', href: '/app/offers', icon: FileText, minRole: 'mitarbeiter' },
   { label: 'Kunden', href: '/app/customers', icon: Users, minRole: 'mitarbeiter' },
   { label: 'Mitglieder', href: '/app/members', icon: UserCheck, minRole: 'mitarbeiter' },
+  { label: 'Mitgliederbereich', href: '/app/member-management', icon: GraduationCap, minRole: 'teamleiter' },
   { label: 'Aufgaben', href: '/app/tasks', icon: CheckSquare },
   { label: 'Ziele', href: '/app/goals', icon: Target, minRole: 'mitarbeiter' },
   { label: 'Social Media', href: '/app/social-media', icon: Share2, minRole: 'mitarbeiter' },
