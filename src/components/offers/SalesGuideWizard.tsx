@@ -102,7 +102,7 @@ const PHASES = [
 // Component
 // =============================================
 
-export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes }: SalesGuideWizardProps) {
+export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCreateDeal, structogramType }: SalesGuideWizardProps) {
   const [activePhase, setActivePhase] = useState(0);
   const [viewMode, setViewMode] = useState<'wizard' | 'overview'>('wizard');
   const [discoveryCompleted, setDiscoveryCompleted] = useState(!!offerJson.discovery_data);
