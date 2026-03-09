@@ -1,12 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Activity, Mail, Plug, Download } from 'lucide-react';
+import { Shield, Activity, Mail, Plug, Download, GraduationCap } from 'lucide-react';
 import AdminUserManagement from '@/components/admin/AdminUserManagement';
 import AdminLeadsTable from '@/components/admin/AdminLeadsTable';
 import AdminSystemLogs from '@/components/admin/AdminSystemLogs';
 import AdminEmailTemplates from '@/components/admin/AdminEmailTemplates';
 import AdminIntegrations from '@/components/admin/AdminIntegrations';
 import AdminBackupExport from '@/components/admin/AdminBackupExport';
+import AdminMembersOverview from '@/components/admin/AdminMembersOverview';
 
 export default function Admin() {
   return (
@@ -20,6 +21,7 @@ export default function Admin() {
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="users" className="gap-1.5"><Shield className="h-3.5 w-3.5" /> Benutzer</TabsTrigger>
           <TabsTrigger value="leads" className="gap-1.5">Leads</TabsTrigger>
+          <TabsTrigger value="members" className="gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> Mitgliederbereich</TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5"><Activity className="h-3.5 w-3.5" /> System-Logs</TabsTrigger>
           <TabsTrigger value="templates" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> E-Mail-Templates</TabsTrigger>
           <TabsTrigger value="integrations" className="gap-1.5"><Plug className="h-3.5 w-3.5" /> Integrationen</TabsTrigger>
@@ -38,6 +40,18 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <AdminLeadsTable />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="members" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><GraduationCap className="h-5 w-5" /> Mitgliederbereich</CardTitle>
+              <CardDescription>Mitglieder, Lernpfade, Kurse und Inhalte verwalten</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AdminMembersOverview />
             </CardContent>
           </Card>
         </TabsContent>
