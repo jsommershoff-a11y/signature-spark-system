@@ -33,6 +33,10 @@ interface SalesGuideWizardProps {
   offerJson: OfferContent;
   onSaveDiscovery: (data: DiscoveryData) => void;
   onSaveNotes: (phaseNotes: Record<string, PhaseData>) => void;
+  /** Called from Call context to create a deal + offer after closing phase */
+  onCreateDeal?: (discoveryData: DiscoveryData | null, phaseNotes: Record<string, PhaseData>) => void;
+  /** Structogram type for dynamic coaching */
+  structogramType?: import('@/lib/sales-guide-ai').StructogramType | null;
 }
 
 // =============================================
