@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import {
   ChevronRight, ChevronLeft, List, LayoutGrid, CheckCircle2,
   MessageSquare, Search, Presentation, ShieldCheck, Save,
+  Lightbulb, AlertTriangle, TrendingUp, FileText,
 } from 'lucide-react';
 import { PainPointDiscovery } from './PainPointDiscovery';
 import { getPhaseCoaching, analyzeNotes, type AiSuggestion } from '@/lib/sales-guide-ai';
