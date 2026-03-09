@@ -10,6 +10,7 @@ import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection
 import { AboutFounderSection } from "@/components/landing/home/AboutFounderSection";
 import { ProcessStepsSection } from "@/components/landing/home/ProcessStepsSection";
 import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
+import { AcademyPreviewSection } from "@/components/landing/home/AcademyPreviewSection";
 
 const faqItems = [
   {
