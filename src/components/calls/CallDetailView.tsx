@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TranscriptView } from './TranscriptView';
 import { AnalysisPanel } from './AnalysisPanel';
+import { SalesGuideWizard } from '@/components/offers/SalesGuideWizard';
+import type { StructogramType } from '@/lib/sales-guide-ai';
+import type { DiscoveryData, OfferContent } from '@/types/offers';
 import { 
   Call, 
   Transcript, 
@@ -26,6 +29,7 @@ import {
   Square,
   ExternalLink,
   Loader2,
+  MessageSquare,
 } from 'lucide-react';
 
 interface CallDetailViewProps {
@@ -36,6 +40,7 @@ interface CallDetailViewProps {
   onStartCall?: () => void;
   onEndCall?: () => void;
   onRefresh?: () => void;
+  onCreateDeal?: (discoveryData: DiscoveryData | null, phaseNotes: Record<string, unknown>) => void;
 }
 
 export function CallDetailView({
