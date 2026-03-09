@@ -178,8 +178,12 @@ export function CallDetailView({
       </Card>
 
       {/* Content Tabs */}
-      <Tabs defaultValue="analysis" className="space-y-4">
+      <Tabs defaultValue={call.status === 'in_progress' ? 'salesguide' : 'analysis'} className="space-y-4">
         <TabsList>
+          <TabsTrigger value="salesguide" className="gap-1">
+            <MessageSquare className="h-3.5 w-3.5" />
+            Gesprächsleitfaden
+          </TabsTrigger>
           <TabsTrigger value="analysis">
             Analyse
             {analysis && (
@@ -198,6 +202,30 @@ export function CallDetailView({
           </TabsTrigger>
           <TabsTrigger value="recording">Aufnahme</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="salesguide">
+          <SalesGuideWizard
+            offerJson={{
+              title: '',
+              valid_until: '',
+              customer: {
+                name: `${call.lead?.first_name || ''} ${call.lead?.last_name || ''}`.trim(),
+                company: call.lead?.company || '',
+                email: call.lead?.email || '',
+              },
+              line_items: [],
+              subtotal_cents: 0,
+              tax_rate: 19,
+              tax_cents: 0,
+              total_cents: 0,
+              payment_terms: { type: 'one_time' },
+            }}
+            onSaveDiscovery={() => {}}
+            onSaveNotes={() => {}}
+            onCreateDeal={onCreateDeal}
+            structogramType={(analysis?.primary_type as StructogramType) || null}
+          />
+        </TabsContent>
 
         <TabsContent value="analysis">
           <AnalysisPanel 
