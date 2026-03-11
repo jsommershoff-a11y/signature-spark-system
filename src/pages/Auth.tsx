@@ -16,9 +16,6 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   
