@@ -221,32 +221,6 @@ export default function Auth() {
             
             <TabsContent value="register">
               <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first-name">Vorname</Label>
-                    <Input
-                      id="first-name"
-                      type="text"
-                      placeholder="Max"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last-name">Nachname</Label>
-                    <Input
-                      id="last-name"
-                      type="text"
-                      placeholder="Mustermann"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="email-register">E-Mail</Label>
                   <Input
@@ -256,17 +230,6 @@ export default function Auth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone-register">Telefon</Label>
-                  <Input
-                    id="phone-register"
-                    type="tel"
-                    placeholder="+49 123 456789"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
