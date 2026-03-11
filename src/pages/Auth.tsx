@@ -115,11 +115,7 @@ export default function Auth() {
       return;
     }
     
-    const { error } = await signUp(email, password, {
-      first_name: firstName,
-      last_name: lastName,
-      phone,
-    });
+    const { error } = await signUp(email, password);
     
     if (error) {
       let message = error.message;
