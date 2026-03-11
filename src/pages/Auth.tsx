@@ -16,9 +16,6 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   
@@ -118,11 +115,7 @@ export default function Auth() {
       return;
     }
     
-    const { error } = await signUp(email, password, {
-      first_name: firstName,
-      last_name: lastName,
-      phone,
-    });
+    const { error } = await signUp(email, password);
     
     if (error) {
       let message = error.message;
@@ -221,32 +214,6 @@ export default function Auth() {
             
             <TabsContent value="register">
               <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first-name">Vorname</Label>
-                    <Input
-                      id="first-name"
-                      type="text"
-                      placeholder="Max"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last-name">Nachname</Label>
-                    <Input
-                      id="last-name"
-                      type="text"
-                      placeholder="Mustermann"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="email-register">E-Mail</Label>
                   <Input
@@ -256,17 +223,6 @@ export default function Auth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone-register">Telefon</Label>
-                  <Input
-                    id="phone-register"
-                    type="tel"
-                    placeholder="+49 123 456789"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
