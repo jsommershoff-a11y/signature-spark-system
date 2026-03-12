@@ -81,7 +81,6 @@ export const AcademyPreviewSection = ({ onCtaClick }: AcademyPreviewSectionProps
             {[
               ["170+", "Lektionen"],
               ["4", "Lernpfade"],
-              ["50+", "Prompt-Vorlagen"],
               ["12", "Praxis-Workshops"],
             ].map(([num, label]) => (
               <div key={label} className="text-center">
