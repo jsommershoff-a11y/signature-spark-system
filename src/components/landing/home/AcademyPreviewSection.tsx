@@ -1,4 +1,4 @@
-import { BookOpen, Sparkles, Lock, CheckCircle2, Play } from "lucide-react";
+import { BookOpen, Lock, Play } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 interface AcademyPreviewSectionProps {
@@ -20,17 +20,6 @@ const previewModules = [
     title: "Automatisierung",
     lessons: ["Was ist No-Code Automation?", "Make vs. Zapier vs. n8n", "Workflow: Lead → E-Mail → CRM"],
     free: false,
-  },
-];
-
-const samplePrompts = [
-  {
-    label: "Lead-Qualifizierung",
-    prompt: `Bewerte diesen Lead für mein ICP:\nLead: [Daten]\nBewerte: Branchen-Fit, Größe, Budget, Timing\nGesamtscore + Empfehlung (Hot/Warm/Cold)`,
-  },
-  {
-    label: "Follow-up E-Mail",
-    prompt: `Schreibe eine Follow-up-E-Mail (Tag 3):\nLead: [Name], Branche: [X]\nAngebot: [Y]€\nTonalität: Persönlich, nicht aufdringlich.`,
   },
 ];
 
