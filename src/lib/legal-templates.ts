@@ -29,7 +29,7 @@ Stand: Februar 2026
 
 § 4 Laufzeit und Kündigung
 (1) Die Vertragslaufzeit beträgt 6 Monate ab dem vereinbarten Startdatum.
-(2) Eine ordentliche Kündigung ist während der Laufzeit ausgeschlossen.
+(2) Der Kunde kann den Vertrag jederzeit ordentlich kündigen. Die vereinbarte Vergütung für das gebuchte Paket bleibt in voller Höhe fällig und ist unabhängig von einer Kündigung vollständig zu entrichten.
 (3) Das Recht zur außerordentlichen Kündigung aus wichtigem Grund bleibt unberührt.
 (4) Die Kündigung bedarf der Schriftform.
 
