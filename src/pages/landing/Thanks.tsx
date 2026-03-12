@@ -1,5 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { CheckCircle, Info, ArrowLeft, BookOpen } from "lucide-react";
+import { CheckCircle, Info, ArrowLeft, BookOpen, Users } from "lucide-react";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
