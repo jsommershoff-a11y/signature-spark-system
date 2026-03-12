@@ -228,6 +228,15 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
                             onClick={(e) => e.stopPropagation()}
                           >
                             Datenschutzerklärung
+                          </a>{" "}und die{" "}
+                          <a
+                            href="/agb"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-primary hover:text-primary/80"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            AGB
                           </a>{" "}*
                         </label>
                       </div>

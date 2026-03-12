@@ -255,6 +255,14 @@ export default function Auth() {
                       className="underline text-primary hover:text-primary/80"
                     >
                       Datenschutzerklärung
+                    </a>{' '}und die{' '}
+                    <a
+                      href="/agb"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline text-primary hover:text-primary/80"
+                    >
+                      AGB
                     </a>
                   </label>
                 </div>
