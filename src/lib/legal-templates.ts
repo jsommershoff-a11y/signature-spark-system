@@ -36,7 +36,7 @@ Stand: Februar 2026
 § 5 Mitwirkungspflichten des Kunden
 (1) Der Kunde stellt die für die Leistungserbringung erforderlichen Informationen, Zugänge und Ressourcen rechtzeitig zur Verfügung.
 (2) Bei dem Programm „Rocket Performance" benennt der Kunde einen internen Verantwortlichen für die Umsetzung.
-(3) Verzögert sich die Leistungserbringung aufgrund fehlender Mitwirkung des Kunden, verlängert sich die Laufzeit entsprechend.
+(3) Verzögert sich die Leistungserbringung aufgrund fehlender Mitwirkung des Kunden, entbindet dies den Anbieter von der Einhaltung vereinbarter Fristen. Eine automatische Verlängerung der Vertragslaufzeit erfolgt nicht.
 
 § 6 Geistiges Eigentum
 (1) Alle im Rahmen des Vertrages erstellten Materialien, Skripte, Konzepte und Systeme verbleiben im Eigentum des Anbieters, soweit nicht ausdrücklich anders vereinbart.
