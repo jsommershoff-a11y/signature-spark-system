@@ -71,7 +71,7 @@ export default function AGB() {
                     ))}
                   </ul>
                   <a
-                    href="https://www.skool.com/ki-prozess"
+                    href="https://www.skool.com/dein-erfolg"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg px-5 py-2.5 sm:w-auto w-full transition-colors"
