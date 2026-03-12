@@ -1,22 +1,64 @@
 
 
-## Mobile-Optimierung der AGB-Seite
+## Analyse
 
-### Probleme auf kleinen Bildschirmen
-1. **Padding/Spacing zu gross** -- `py-16` und `space-y-16` verschwenden Platz auf Mobile
-2. **AGB-Titel** -- `text-3xl` ist auf Mobile zu gross
-3. **Stripe Pricing Table** -- kann auf kleinen Screens horizontal ueberlaufen (overflow)
-4. **Skool-Card Padding** -- `p-6` kann auf sehr kleinen Screens eng werden
-5. **Feature-Grid** -- `sm:grid-cols-2` ist ok, aber Textgroesse koennte besser skalieren
+**Problem**: Die Funktion `assign_default_role()` weist neuen Benutzern die Rolle `mitarbeiter` zu. Das bedeutet, jeder der sich registriert, hat sofort Zugriff auf CRM, Leads, Pipeline, Kundenveraltung und alle personenbezogenen Daten.
 
-### Aenderungen in `src/pages/landing/AGB.tsx`
+**Ziel**: Neue Registrierungen erhalten die Rolle `kunde`. Nur Admin/Geschaeftsfuehrung darf Rollen hochstufen.
 
-1. **Container**: `py-10 md:py-16 space-y-10 md:space-y-16 px-4 sm:px-6` -- weniger Abstand auf Mobile
-2. **AGB Headline**: `text-2xl md:text-3xl` statt fix `text-3xl`
-3. **Stripe Container**: `overflow-x-auto` hinzufuegen fuer horizontales Scrolling falls noetig
-4. **Skool Card**: `p-4 sm:p-6 md:p-8` fuer bessere Padding-Skalierung
-5. **Skool Icon**: kleiner auf Mobile `h-10 w-10 md:h-14 md:w-14`
-6. **CTA-Link**: auf Mobile als voller Button-Stil statt inline-Link fuer bessere Touch-Targets
+## Plan
 
-Kleine, gezielte CSS-Klassenanpassungen -- keine strukturellen Aenderungen noetig.
+### Step 01 -- DB-Migration: Default-Rolle auf 'kunde' ändern
+
+SQL-Migration, die `assign_default_role()` ändert:
+
+```sql
+CREATE OR REPLACE FUNCTION public.assign_default_role()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (NEW.user_id, 'kunde');
+  RETURN NEW;
+END;
+$function$;
+```
+
+### Step 02 -- Auth-Redirect: Kunden nach Login auf /app/contracts leiten
+
+Bereits implementiert in `Auth.tsx` (Zeile 37-40): Kunden werden auf `/app/contracts` weitergeleitet. Keine Änderung nötig.
+
+### Step 03 -- Routen absichern: Settings-Seite für Kunden einschränken
+
+Die Route `/app/settings` ist derzeit für alle Rollen offen. Prüfen ob dort sensible Daten (z.B. andere Profile) sichtbar sind. Falls ja, Einschränkung auf eigene Profildaten.
+
+### Step 04 -- Sidebar-Anpassung prüfen
+
+Die Sidebar filtert bereits korrekt nach Rollen:
+- CRM, Leads, Pipeline, Calls, Angebote, Kunden, Mitglieder, Ziele, Social Media, Email: `minRole: 'mitarbeiter'` -- Kunden sehen diese nicht
+- Kurse, Verträge: `exactRole: 'kunde'` -- nur für Kunden sichtbar
+- Dashboard, Aufgaben, Einstellungen: keine Einschränkung -- für alle sichtbar
+
+Keine Änderung nötig.
+
+### Step 05 -- Bestehende Benutzer mit Rolle 'mitarbeiter' prüfen
+
+Hinweis an den Benutzer: Bereits registrierte Benutzer, die fälschlicherweise als `mitarbeiter` angelegt wurden, müssen manuell in der Admin-Benutzerverwaltung auf `kunde` heruntergestuft werden. Dies ist eine manuelle Aktion in der Admin-UI.
+
+---
+
+### Zusammenfassung
+
+| Was | Aktion |
+|-----|--------|
+| DB-Trigger `assign_default_role` | `mitarbeiter` -> `kunde` |
+| Routen-Schutz | Bereits vorhanden via `requireMinRole` |
+| Sidebar-Filter | Bereits korrekt konfiguriert |
+| Rollenhochstufung | Nur über Admin-UI möglich (bereits implementiert) |
+| Bestehende User | Manuelle Korrektur durch Admin empfohlen |
+
+**Einzige Code-Änderung**: Eine SQL-Migration, die den Trigger anpasst.
 

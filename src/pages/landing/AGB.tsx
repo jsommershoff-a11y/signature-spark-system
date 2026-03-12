@@ -30,7 +30,7 @@ const SKOOL_FEATURES = [
 export default function AGB() {
   return (
     <PublicLayout>
-      <div className="container mx-auto px-4 py-16 max-w-4xl space-y-16">
+      <div className="container mx-auto px-4 sm:px-6 py-10 md:py-16 max-w-4xl space-y-10 md:space-y-16">
 
         {/* Einstiegsangebot – Skool */}
         <section className="space-y-6">
@@ -49,10 +49,10 @@ export default function AGB() {
           </div>
 
           <Card className="border-primary/30 bg-primary/5 shadow-md">
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 shrink-0">
-                  <Users className="h-7 w-7 text-primary" />
+              <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start">
+                <div className="flex h-10 w-10 md:h-14 md:w-14 items-center justify-center rounded-2xl bg-primary/10 shrink-0">
+                  <Users className="h-5 w-5 md:h-7 md:w-7 text-primary" />
                 </div>
                 <div className="flex-1 space-y-4">
                   <div>
@@ -74,7 +74,7 @@ export default function AGB() {
                     href="https://www.skool.com/ki-prozess"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+                    className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg px-5 py-2.5 sm:w-auto w-full transition-colors"
                   >
                     Jetzt der Community beitreten
                     <ArrowRight className="h-4 w-4" />
@@ -98,7 +98,7 @@ export default function AGB() {
             </p>
           </div>
 
-          <div className="w-full">
+          <div className="w-full overflow-x-auto">
             <stripe-pricing-table
               pricing-table-id="prctbl_1TA1NXBmqjP8eJrScytk6Mrj"
               publishable-key="pk_live_51NpX6uBmqjP8eJrSMZt8bBoobLYUDo7oxVHiGHKKdrUT6fmVeA0tEltdLGuP3Rr4a8DeeilvsbNJL5cblrNCm7tR00njg6DyC5"
@@ -110,7 +110,7 @@ export default function AGB() {
 
         {/* AGB Text */}
         <section>
-          <h1 className="text-3xl font-bold mb-8">Allgemeine Geschäftsbedingungen</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Allgemeine Geschäftsbedingungen</h1>
           <div className="prose prose-sm max-w-none dark:prose-invert">
             <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground bg-transparent p-0 border-none">
               {DEFAULT_AGB}
