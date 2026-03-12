@@ -30,7 +30,7 @@ const SKOOL_FEATURES = [
 export default function AGB() {
   return (
     <PublicLayout>
-      <div className="container mx-auto px-4 py-16 max-w-4xl space-y-16">
+      <div className="container mx-auto px-4 sm:px-6 py-10 md:py-16 max-w-4xl space-y-10 md:space-y-16">
 
         {/* Einstiegsangebot – Skool */}
         <section className="space-y-6">
