@@ -36,17 +36,18 @@ const Thanks = () => {
                     Aktuell passt unser Angebot möglicherweise noch nicht zu deiner Situation – aber das kann sich ändern! Schau dich gerne um und informiere dich über unseren Ansatz.
                   </p>
                   
-                  <div className="bg-card rounded-xl border border-border p-6 mb-10">
-                    <div className="flex items-center gap-3 mb-4">
-                      <BookOpen className="w-6 h-6 text-primary" />
-                      <h3 className="font-semibold text-foreground">Kostenlose Ressourcen</h3>
+                  <div className="bg-card rounded-xl border border-primary/20 p-6 mb-10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Users className="w-6 h-6 text-primary" />
+                      <h3 className="font-semibold text-foreground">Starte trotzdem kostenlos</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Erfahre mehr über das Signature System und wie es Unternehmern hilft, mehr Zeit und Struktur zu gewinnen.
+                      Tritt unserer KI-Community bei – vernetze dich mit Unternehmern und hole dir erste Impulse für dein Business.
                     </p>
-                    <Link to="/">
-                      <Button variant="outline" size="sm">
-                        Mehr erfahren
+                    <Link to="/community">
+                      <Button variant="default" size="sm" className="gap-2">
+                        Zur kostenlosen Community
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
                       </Button>
                     </Link>
                   </div>
