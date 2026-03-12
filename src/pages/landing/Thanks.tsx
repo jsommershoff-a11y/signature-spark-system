@@ -79,6 +79,23 @@ const Thanks = () => {
                     In der Zwischenzeit: Schau dich gerne um und erfahre mehr über das Signature System.
                   </p>
                   
+                  {/* Skool Community Teaser */}
+                  <div className="bg-card rounded-xl border border-primary/20 p-6 mb-10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Users className="w-6 h-6 text-primary" />
+                      <h3 className="font-semibold text-foreground">In der Zwischenzeit: Tritt unserer Community bei</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Vernetze dich mit anderen Unternehmern, stelle Fragen und erhalte erste Einblicke – kostenlos.
+                    </p>
+                    <Link to="/community">
+                      <Button variant="outline" size="sm" className="gap-2">
+                        Zur KI-Community
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
+                      </Button>
+                    </Link>
+                  </div>
+
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link to="/">
                       <Button variant="outline" className="gap-2">
