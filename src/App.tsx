@@ -77,6 +77,8 @@ const App = () => (
             <Route path="/kurzzeitvermietung" element={<Kurzzeitvermietung />} />
             <Route path="/qualifizierung" element={<Qualifizierung />} />
             <Route path="/danke" element={<Thanks />} />
+            <Route path="/agb" element={<AGB />} />
+            <Route path="/widerruf" element={<Widerruf />} />
             
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />

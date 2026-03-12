@@ -129,7 +129,11 @@ export function ContractAcceptance({ offer, onAccept }: ContractAcceptanceProps)
               onCheckedChange={(v) => setWithdrawalAccepted(v === true)}
             />
             <Label htmlFor="withdrawal" className="text-sm leading-tight cursor-pointer">
-              Ich habe die Widerrufsbelehrung zur Kenntnis genommen. *
+              Ich habe die{' '}
+              <a href="/widerruf" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80">
+                Widerrufsbelehrung
+              </a>{' '}
+              zur Kenntnis genommen. *
             </Label>
           </div>
         </div>

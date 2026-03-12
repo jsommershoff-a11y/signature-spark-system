@@ -54,6 +54,18 @@ export const Footer = () => {
               >
                 Potenzial-Analyse buchen
               </Link>
+              <Link 
+                to="/agb"
+                className="text-muted hover:text-primary-foreground transition-colors text-sm"
+              >
+                AGB
+              </Link>
+              <Link 
+                to="/widerruf"
+                className="text-muted hover:text-primary-foreground transition-colors text-sm"
+              >
+                Widerrufsbelehrung
+              </Link>
               <a 
                 href="https://krsimmobilien.de/impressum"
                 target="_blank"
