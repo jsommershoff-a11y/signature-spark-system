@@ -22,8 +22,6 @@ declare global {
 const SKOOL_FEATURES = [
   'Exklusive KI-Community mit Gleichgesinnten',
   'Wöchentliche Live-Calls & Q&A Sessions',
-  'Fertige KI-Vorlagen & Prompt-Bibliothek',
-  'Schritt-für-Schritt Kurse zur KI-Integration',
   'Direkter Austausch mit dem Gründer',
 ];
 
