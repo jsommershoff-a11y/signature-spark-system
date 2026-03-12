@@ -49,10 +49,10 @@ export default function AGB() {
           </div>
 
           <Card className="border-primary/30 bg-primary/5 shadow-md">
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 shrink-0">
-                  <Users className="h-7 w-7 text-primary" />
+              <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start">
+                <div className="flex h-10 w-10 md:h-14 md:w-14 items-center justify-center rounded-2xl bg-primary/10 shrink-0">
+                  <Users className="h-5 w-5 md:h-7 md:w-7 text-primary" />
                 </div>
                 <div className="flex-1 space-y-4">
                   <div>
