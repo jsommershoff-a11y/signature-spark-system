@@ -18,6 +18,7 @@ import Qualifizierung from "./pages/landing/Qualifizierung";
 import Thanks from "./pages/landing/Thanks";
 import AGB from "./pages/landing/AGB";
 import Widerruf from "./pages/landing/Widerruf";
+import Community from "./pages/landing/Community";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
