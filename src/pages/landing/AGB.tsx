@@ -110,7 +110,7 @@ export default function AGB() {
 
         {/* AGB Text */}
         <section>
-          <h1 className="text-3xl font-bold mb-8">Allgemeine Geschäftsbedingungen</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Allgemeine Geschäftsbedingungen</h1>
           <div className="prose prose-sm max-w-none dark:prose-invert">
             <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground bg-transparent p-0 border-none">
               {DEFAULT_AGB}
