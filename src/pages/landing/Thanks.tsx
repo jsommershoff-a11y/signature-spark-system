@@ -1,5 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { CheckCircle, Info, ArrowLeft, BookOpen } from "lucide-react";
+import { CheckCircle, Info, ArrowLeft, BookOpen, Users } from "lucide-react";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
@@ -36,17 +36,18 @@ const Thanks = () => {
                     Aktuell passt unser Angebot möglicherweise noch nicht zu deiner Situation – aber das kann sich ändern! Schau dich gerne um und informiere dich über unseren Ansatz.
                   </p>
                   
-                  <div className="bg-card rounded-xl border border-border p-6 mb-10">
-                    <div className="flex items-center gap-3 mb-4">
-                      <BookOpen className="w-6 h-6 text-primary" />
-                      <h3 className="font-semibold text-foreground">Kostenlose Ressourcen</h3>
+                  <div className="bg-card rounded-xl border border-primary/20 p-6 mb-10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Users className="w-6 h-6 text-primary" />
+                      <h3 className="font-semibold text-foreground">Starte trotzdem kostenlos</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Erfahre mehr über das Signature System und wie es Unternehmern hilft, mehr Zeit und Struktur zu gewinnen.
+                      Tritt unserer KI-Community bei – vernetze dich mit Unternehmern und hole dir erste Impulse für dein Business.
                     </p>
-                    <Link to="/">
-                      <Button variant="outline" size="sm">
-                        Mehr erfahren
+                    <Link to="/community">
+                      <Button variant="default" size="sm" className="gap-2">
+                        Zur kostenlosen Community
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
                       </Button>
                     </Link>
                   </div>
@@ -79,6 +80,23 @@ const Thanks = () => {
                     In der Zwischenzeit: Schau dich gerne um und erfahre mehr über das Signature System.
                   </p>
                   
+                  {/* Skool Community Teaser */}
+                  <div className="bg-card rounded-xl border border-primary/20 p-6 mb-10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Users className="w-6 h-6 text-primary" />
+                      <h3 className="font-semibold text-foreground">In der Zwischenzeit: Tritt unserer Community bei</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Vernetze dich mit anderen Unternehmern, stelle Fragen und erhalte erste Einblicke – kostenlos.
+                    </p>
+                    <Link to="/community">
+                      <Button variant="outline" size="sm" className="gap-2">
+                        Zur KI-Community
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
+                      </Button>
+                    </Link>
+                  </div>
+
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link to="/">
                       <Button variant="outline" className="gap-2">

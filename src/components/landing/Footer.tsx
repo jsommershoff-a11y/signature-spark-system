@@ -46,13 +46,19 @@ export const Footer = () => {
           
           {/* Legal Links */}
           <div>
-            <h3 className="text-primary-foreground font-semibold mb-4">Rechtliches</h3>
+            <h3 className="text-primary-foreground font-semibold mb-4">Rechtliches & mehr</h3>
             <nav className="flex flex-col gap-2">
               <Link 
                 to="/qualifizierung" 
                 className="text-muted hover:text-primary-foreground transition-colors text-sm"
               >
                 Potenzial-Analyse buchen
+              </Link>
+              <Link 
+                to="/community" 
+                className="text-muted hover:text-primary-foreground transition-colors text-sm"
+              >
+                KI-Community (Skool)
               </Link>
               <Link 
                 to="/agb"
