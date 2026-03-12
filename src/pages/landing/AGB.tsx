@@ -98,7 +98,7 @@ export default function AGB() {
             </p>
           </div>
 
-          <div className="w-full">
+          <div className="w-full overflow-x-auto">
             <stripe-pricing-table
               pricing-table-id="prctbl_1TA1NXBmqjP8eJrScytk6Mrj"
               publishable-key="pk_live_51NpX6uBmqjP8eJrSMZt8bBoobLYUDo7oxVHiGHKKdrUT6fmVeA0tEltdLGuP3Rr4a8DeeilvsbNJL5cblrNCm7tR00njg6DyC5"
