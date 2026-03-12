@@ -12,24 +12,6 @@ const cases = [
     solution: "Implementierung eines zentralen CRMs, eines Planungs- und Mitarbeiterportals. Automatisierung des Bewerbungsprozesses.",
     result: "\u201ENeue Website, eigenes CRM, Planungs-, Mitarbeiter- und Kundenportal \u2013 alles aus einer Hand implementiert. Dazu \u00FCber 40 Bewerbungen generiert und neue Mitarbeiter gewonnen. Die gesamten Prozesse wurden extrem erleichtert. Der Value ist ehrlich gesagt unmessbar.\u201C",
   },
-  {
-    name: "[Name des Kunden]",
-    company: "[Firma], [Branche]",
-    image: null,
-    problem: "Stagnierender Umsatz, Vertrieb war reine Chefsache und nicht skalierbar.",
-    goal: "Vertriebsprozess vom Inhaber entkoppeln und monatliche Umsätze planbar machen.",
-    solution: "Implementierung eines systematisierten Vertriebs-Prozesses (Säule 2) mit klaren Skripten und einem Lead-Management-System.",
-    result: "+ 40% Umsatz in 6 Monaten · Abschlussquote um 25% gesteigert",
-  },
-  {
-    name: "[Name des Kunden]",
-    company: "[Firma], [Branche]",
-    image: null,
-    problem: "Inhaber war im operativen Tagesgeschäft gefangen, keine Zeit für strategische Arbeit.",
-    goal: "Unternehmerische Freiheit zurückgewinnen und weniger als 10 Stunden pro Woche operativ tätig sein.",
-    solution: "Kombination aus Prozessautomatisierung (Säule 3) und Implementierung klarer Führungsstrukturen (Säule 4).",
-    result: "\u201EIch habe zum ersten Mal seit 5 Jahren wieder 3 Wochen am St\u00FCck Urlaub gemacht, ohne dass mein Handy geklingelt hat. Der Laden l\u00E4uft besser als vorher.\u201C",
-  },
 ];
 
 export const CaseStudiesSection = () => {
@@ -40,7 +22,7 @@ export const CaseStudiesSection = () => {
           Ergebnisse unserer Partner
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-xl mx-auto">
           {cases.map((c, i) => (
             <div key={i} className="border-l-4 border-primary rounded-2xl bg-background shadow-sm p-6">
               {/* Avatar */}
