@@ -22,7 +22,7 @@ export const CaseStudiesSection = () => {
           Ergebnisse unserer Partner
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-xl mx-auto">
           {cases.map((c, i) => (
             <div key={i} className="border-l-4 border-primary rounded-2xl bg-background shadow-sm p-6">
               {/* Avatar */}
