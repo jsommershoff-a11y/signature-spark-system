@@ -74,26 +74,6 @@ export const AcademyPreviewSection = ({ onCtaClick }: AcademyPreviewSectionProps
           ))}
         </div>
 
-        {/* Sample Prompts */}
-        <div className="bg-card border border-border rounded-xl p-6 mb-10">
-          <h3 className="font-bold text-foreground mb-1 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Prompt-Vorlagen aus der Academy
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Copy & Paste – sofort in ChatGPT oder Claude verwendbar.
-          </p>
-          <div className="grid md:grid-cols-2 gap-4">
-            {samplePrompts.map((sp) => (
-              <div key={sp.label} className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <span className="text-xs font-semibold text-primary">{sp.label}</span>
-                <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono bg-background/80 p-3 rounded border border-border">
-                  {sp.prompt}
-                </pre>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Stats + CTA */}
         <div className="text-center space-y-6">
