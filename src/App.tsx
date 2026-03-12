@@ -16,6 +16,8 @@ import Immobilien from "./pages/landing/Immobilien";
 import Kurzzeitvermietung from "./pages/landing/Kurzzeitvermietung";
 import Qualifizierung from "./pages/landing/Qualifizierung";
 import Thanks from "./pages/landing/Thanks";
+import AGB from "./pages/landing/AGB";
+import Widerruf from "./pages/landing/Widerruf";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -75,6 +77,8 @@ const App = () => (
             <Route path="/kurzzeitvermietung" element={<Kurzzeitvermietung />} />
             <Route path="/qualifizierung" element={<Qualifizierung />} />
             <Route path="/danke" element={<Thanks />} />
+            <Route path="/agb" element={<AGB />} />
+            <Route path="/widerruf" element={<Widerruf />} />
             
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />

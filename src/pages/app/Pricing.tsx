@@ -231,6 +231,24 @@ export default function Pricing() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Legal Links */}
+      <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+        <Link to="/agb" className="underline hover:text-foreground transition-colors">
+          AGB
+        </Link>
+        <Link to="/widerruf" className="underline hover:text-foreground transition-colors">
+          Widerrufsbelehrung
+        </Link>
+        <a
+          href="https://krsimmobilien.de/datenschutz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground transition-colors"
+        >
+          Datenschutz
+        </a>
+      </div>
     </div>
   );
 }

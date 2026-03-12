@@ -115,7 +115,11 @@ export function ContractAcceptance({ offer, onAccept }: ContractAcceptanceProps)
               onCheckedChange={(v) => setAgbAccepted(v === true)}
             />
             <Label htmlFor="agb" className="text-sm leading-tight cursor-pointer">
-              Ich habe die Allgemeinen Geschäftsbedingungen gelesen und akzeptiere diese. *
+              Ich habe die{' '}
+              <a href="/agb" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80">
+                Allgemeinen Geschäftsbedingungen
+              </a>{' '}
+              gelesen und akzeptiere diese. *
             </Label>
           </div>
           <div className="flex items-start gap-3">
@@ -125,7 +129,11 @@ export function ContractAcceptance({ offer, onAccept }: ContractAcceptanceProps)
               onCheckedChange={(v) => setWithdrawalAccepted(v === true)}
             />
             <Label htmlFor="withdrawal" className="text-sm leading-tight cursor-pointer">
-              Ich habe die Widerrufsbelehrung zur Kenntnis genommen. *
+              Ich habe die{' '}
+              <a href="/widerruf" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80">
+                Widerrufsbelehrung
+              </a>{' '}
+              zur Kenntnis genommen. *
             </Label>
           </div>
         </div>
