@@ -1,64 +1,50 @@
 
 
-## Analyse
+## Plan: Community-Seite zur Conversion-Landingpage umbauen
 
-**Problem**: Die Funktion `assign_default_role()` weist neuen Benutzern die Rolle `mitarbeiter` zu. Das bedeutet, jeder der sich registriert, hat sofort Zugriff auf CRM, Leads, Pipeline, Kundenveraltung und alle personenbezogenen Daten.
+### Kontext
+Die `/community`-Seite wird zur verkaufsfertigen Landingpage für 61 bestehende Skool-Mitglieder. Founder Price: 199 €/Jahr. Ab 21. März 2026: 50 €/Monat. Stripe Pricing Table wird direkt eingebettet.
 
-**Ziel**: Neue Registrierungen erhalten die Rolle `kunde`. Nur Admin/Geschaeftsfuehrung darf Rollen hochstufen.
+### Aufbau der neuen Seite
 
-## Plan
+**1. Urgency-Banner (oben, sticky)**
+- Countdown bis 21. März 2026 (festes Datum, kein Fake-Timer)
+- Text: "Founder-Preis endet in X Tagen X:XX:XX – Danach 50 €/Monat"
 
-### Step 01 -- DB-Migration: Default-Rolle auf 'kunde' ändern
+**2. Hero-Section**
+- Badge: "Exklusiv für bestehende Mitglieder"
+- Headline: "Sichere dir den Founder-Preis: 199 €/Jahr statt bald 600 €/Jahr"
+- Subline: Klare Ansage – wer nicht bucht, verliert den Zugang
+- Preisvergleich visuell: ~~50 €/Monat (600 €/Jahr)~~ → 199 €/Jahr = 16,58 €/Monat
+- CTA-Button scrollt zur Stripe-Sektion
 
-SQL-Migration, die `assign_default_role()` ändert:
+**3. Benefits-Grid (bleibt ähnlich)**
+- 4 Benefit-Cards wie bisher
 
-```sql
-CREATE OR REPLACE FUNCTION public.assign_default_role()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $function$
-BEGIN
-  INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.user_id, 'kunde');
-  RETURN NEW;
-END;
-$function$;
-```
+**4. Was du verlierst-Sektion (Loss Aversion)**
+- Liste: Community-Zugang, Live-Calls, Gründer-Kontakt, Netzwerk
+- Framing: "Ohne Buchung wird dein Zugang am 21. März entfernt"
 
-### Step 02 -- Auth-Redirect: Kunden nach Login auf /app/contracts leiten
+**5. Pricing + Stripe Checkout**
+- Founder-Preis prominent: 199 €/Jahr hervorgehoben
+- Durchgestrichener Normalpreis (600 €/Jahr)
+- Ersparnis-Badge: "Spare 401 € im ersten Jahr"
+- Stripe Pricing Table eingebettet (gleiche IDs wie auf /agb)
+- Darunter: Vertrauenssignale (sichere Zahlung, jederzeit kündbar)
 
-Bereits implementiert in `Auth.tsx` (Zeile 37-40): Kunden werden auf `/app/contracts` weitergeleitet. Keine Änderung nötig.
+**6. FAQ-Bereich (kurz)**
+- Was passiert wenn ich nicht buche?
+- Kann ich monatlich kündigen?
+- Was ist im Founder-Preis enthalten?
 
-### Step 03 -- Routen absichern: Settings-Seite für Kunden einschränken
+**7. Finaler CTA**
+- Nochmal Countdown + Button
 
-Die Route `/app/settings` ist derzeit für alle Rollen offen. Prüfen ob dort sensible Daten (z.B. andere Profile) sichtbar sind. Falls ja, Einschränkung auf eigene Profildaten.
+### Technische Umsetzung
 
-### Step 04 -- Sidebar-Anpassung prüfen
-
-Die Sidebar filtert bereits korrekt nach Rollen:
-- CRM, Leads, Pipeline, Calls, Angebote, Kunden, Mitglieder, Ziele, Social Media, Email: `minRole: 'mitarbeiter'` -- Kunden sehen diese nicht
-- Kurse, Verträge: `exactRole: 'kunde'` -- nur für Kunden sichtbar
-- Dashboard, Aufgaben, Einstellungen: keine Einschränkung -- für alle sichtbar
-
-Keine Änderung nötig.
-
-### Step 05 -- Bestehende Benutzer mit Rolle 'mitarbeiter' prüfen
-
-Hinweis an den Benutzer: Bereits registrierte Benutzer, die fälschlicherweise als `mitarbeiter` angelegt wurden, müssen manuell in der Admin-Benutzerverwaltung auf `kunde` heruntergestuft werden. Dies ist eine manuelle Aktion in der Admin-UI.
-
----
-
-### Zusammenfassung
-
-| Was | Aktion |
-|-----|--------|
-| DB-Trigger `assign_default_role` | `mitarbeiter` -> `kunde` |
-| Routen-Schutz | Bereits vorhanden via `requireMinRole` |
-| Sidebar-Filter | Bereits korrekt konfiguriert |
-| Rollenhochstufung | Nur über Admin-UI möglich (bereits implementiert) |
-| Bestehende User | Manuelle Korrektur durch Admin empfohlen |
-
-**Einzige Code-Änderung**: Eine SQL-Migration, die den Trigger anpasst.
+- **Datei**: `src/pages/landing/Community.tsx` komplett überarbeiten
+- **Countdown**: Festes Zieldatum `2026-03-21T23:59:59` (kein Fake-Midnight-Reset)
+- **Stripe**: `<stripe-pricing-table>` mit den bestehenden Keys aus der AGB-Seite
+- **Scroll-to-Checkout**: CTA-Buttons scrollen per `useRef` zur Stripe-Sektion
+- **Keine neuen Abhängigkeiten** nötig
 
