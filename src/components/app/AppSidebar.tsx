@@ -19,6 +19,7 @@ import {
   Target,
   Share2,
   Mail,
+  Gauge,
 } from 'lucide-react';
 
 interface NavItem {
