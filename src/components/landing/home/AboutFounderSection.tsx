@@ -1,37 +1,25 @@
-import founderPortrait from "@/assets/founder-about.jpeg";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 export const AboutFounderSection = () => {
   return (
     <section className={`${t.sectionPadding} bg-muted/30`}>
-      <div className={t.container}>
-        <div className="grid md:grid-cols-2 gap-10 items-center">
-          {/* Image */}
-          <div className="flex justify-center">
-            <img
-              src={founderPortrait}
-              alt="Jan Sommershoff – Gründer von KRS Signature"
-              className="rounded-2xl shadow-xl max-w-sm w-full object-cover"
-            />
-          </div>
-
-          {/* Text */}
-          <div>
-            <h2 className={`${t.headline.h2} text-foreground mb-6`}>
-              Dein Partner auf Augenhöhe – aus der Praxis, für die Praxis.
-            </h2>
-            <div className="space-y-4 text-base md:text-lg text-muted-foreground leading-relaxed">
-              <p>
-                Ich bin kein theoretischer Berater. Ich bin Unternehmer. Durch und durch.
-              </p>
-              <p>
-                Mit der KRS Immobilien GmbH habe ich ein Unternehmen aufgebaut, das heute in einem der härtesten Märkte Deutschlands erfolgreich und systemgetrieben agiert. Die 5 Säulen, die ich dir zeige, sind kein theoretisches Konzept – sie sind das exakte Betriebssystem, das mein eigenes Unternehmen antreibt.
-              </p>
-              <p>
-                Ich habe die Fehler gemacht, damit du sie nicht machen musst. Ich habe die Systeme gebaut, damit du sie direkt nutzen kannst. Mein Ziel ist es, dir nicht nur zu erzählen, wie es geht, sondern es mit dir gemeinsam umzusetzen.
-              </p>
-            </div>
-          </div>
+      <div className="max-w-3xl mx-auto px-4">
+        <div className="space-y-6 text-base md:text-lg text-muted-foreground leading-relaxed">
+          <p className="text-xl md:text-2xl font-semibold text-foreground">
+            Ich bin kein klassischer Berater.
+          </p>
+          <p>
+            Ich habe selbst erlebt, wie es ist, wenn alles an dir hängt, nichts strukturiert ist und du dauerhaft im operativen Stress feststeckst.
+          </p>
+          <p>
+            Ich habe Systeme gebaut, die genau dieses Problem lösen.
+          </p>
+          <p>
+            Heute laufen Prozesse, die früher Zeit gefressen haben, automatisiert im Hintergrund.
+          </p>
+          <p className="text-lg font-medium text-foreground">
+            Und genau das bauen wir jetzt auch für dich.
+          </p>
         </div>
       </div>
     </section>
