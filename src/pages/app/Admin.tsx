@@ -23,6 +23,7 @@ export default function Admin() {
       <Tabs defaultValue="users">
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="users" className="gap-1.5"><Shield className="h-3.5 w-3.5" /> Benutzer</TabsTrigger>
+          <TabsTrigger value="coo" className="gap-1.5"><Gauge className="h-3.5 w-3.5" /> COO Cockpit</TabsTrigger>
           <TabsTrigger value="leads" className="gap-1.5">Leads</TabsTrigger>
           <TabsTrigger value="members" className="gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> Mitgliederbereich</TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5"><Activity className="h-3.5 w-3.5" /> System-Logs</TabsTrigger>
