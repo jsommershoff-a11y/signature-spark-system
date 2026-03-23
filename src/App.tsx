@@ -171,6 +171,11 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="settings" element={<Settings />} />
+              <Route path="coo-cockpit" element={
+                <ProtectedRoute requiredRole="admin">
+                  <CooCockpit />
+                </ProtectedRoute>
+              } />
               <Route path="admin" element={
                 <ProtectedRoute requiredRole="admin">
                   <Admin />

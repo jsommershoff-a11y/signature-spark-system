@@ -49,6 +49,7 @@ const navItems: NavItem[] = [
   { label: 'Email Kampagnen', href: '/app/email-kampagnen', icon: Mail, minRole: 'mitarbeiter' },
   { label: 'Reports', href: '/app/reports', icon: BarChart3, minRole: 'teamleiter' },
   { label: 'Einstellungen', href: '/app/settings', icon: Settings },
+  { label: 'COO Cockpit', href: '/app/coo-cockpit', icon: Gauge, exactRole: 'admin' },
   { label: 'Admin', href: '/app/admin', icon: Shield, exactRole: 'admin' },
 ];
 
