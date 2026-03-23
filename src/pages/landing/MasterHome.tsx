@@ -9,6 +9,8 @@ import { EmotionalHookSection } from "@/components/landing/home/EmotionalHookSec
 import { FivePillarsSection } from "@/components/landing/home/FivePillarsSection";
 import { SolutionSection } from "@/components/landing/home/SolutionSection";
 import { OfferSection } from "@/components/landing/home/OfferSection";
+import { AiAnalysisWidget } from "@/components/landing/home/AiAnalysisWidget";
+import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection";
 import { ResultsSection } from "@/components/landing/home/ResultsSection";
 import { AboutFounderSection } from "@/components/landing/home/AboutFounderSection";
 import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
@@ -51,6 +53,8 @@ const MasterHome = () => {
         <FivePillarsSection />
         <SolutionSection />
         <OfferSection onCtaClick={handleCTAClick} />
+        <AiAnalysisWidget />
+        <CaseStudiesSection />
         <ResultsSection />
         <AboutFounderSection />
 
