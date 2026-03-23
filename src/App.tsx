@@ -49,6 +49,7 @@ import EmailCampaigns from "./pages/app/EmailCampaigns";
 import MemberManagement from "./pages/app/MemberManagement";
 import Pricing from "./pages/app/Pricing";
 import Welcome from "./pages/app/Welcome";
+import CooCockpit from "./pages/app/CooCockpit";
 
 const queryClient = new QueryClient({
   defaultOptions: {
