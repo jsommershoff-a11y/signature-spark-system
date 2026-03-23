@@ -8,6 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+import n8nLogo from "@/assets/trust/n8n.png";
+import makeLogo from "@/assets/trust/make.png";
+import stripeLogo from "@/assets/trust/stripe.png";
+import paypalLogo from "@/assets/trust/paypal.png";
+import chatgptLogo from "@/assets/trust/chatgpt.png";
+import gdriveLogo from "@/assets/trust/gdrive.png";
+import outlookLogo from "@/assets/trust/outlook.png";
+import excelLogo from "@/assets/trust/excel.png";
+import gsheetsLogo from "@/assets/trust/gsheets.png";
+
 declare global {
   namespace JSX {
     interface IntrinsicElements {
@@ -193,6 +203,47 @@ const Community = () => {
                     <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 3b. Trust Logos ── */}
+        <section className="py-12 md:py-16 bg-muted/30 border-y border-border/30">
+          <div className="container mx-auto px-4">
+            <p className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8">
+              Unsere Tools & Automatisierungen – powered by
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 max-w-4xl mx-auto opacity-70 hover:opacity-100 transition-opacity">
+              {[
+                { name: "n8n", url: "https://n8n.io", logo: "https://cdn.brandfetch.io/id2alue-rx/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1740622927026" },
+                { name: "Make", url: "https://make.com", logo: "https://cdn.brandfetch.io/idnz0cZG3y/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1741462498220" },
+                { name: "Stripe", url: "https://stripe.com", logo: "https://cdn.brandfetch.io/idxAg10C0L/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1668515654088" },
+                { name: "PayPal", url: "https://paypal.com", logo: "https://cdn.brandfetch.io/idL0iThUjG/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1740547497069" },
+                { name: "ChatGPT", url: "https://openai.com", logo: "https://cdn.brandfetch.io/idR3duQxYl/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1717836824484" },
+                { name: "Google Drive", url: "https://drive.google.com", logo: "https://cdn.brandfetch.io/idnrSSPyKh/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1689610729878" },
+                { name: "Outlook", url: "https://outlook.com", logo: "https://cdn.brandfetch.io/idchmboHEZ/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1730399385498" },
+                { name: "Excel", url: "https://microsoft.com/excel", logo: "https://cdn.brandfetch.io/idchmboHEZ/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1730399385498" },
+                { name: "Google Sheets", url: "https://sheets.google.com", logo: "https://cdn.brandfetch.io/idnrSSPyKh/w/512/h/512/theme/dark/icon.jpeg?c=1id-4Ig6a1&t=1689610729878" },
+              ].map((tool) => (
+                <a
+                  key={tool.name}
+                  href={tool.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-2 group"
+                  title={tool.name}
+                >
+                  <img
+                    src={tool.logo}
+                    alt={tool.name}
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                    loading="lazy"
+                  />
+                  <span className="text-[11px] text-muted-foreground font-medium group-hover:text-foreground transition-colors">
+                    {tool.name}
+                  </span>
+                </a>
               ))}
             </div>
           </div>
