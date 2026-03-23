@@ -378,6 +378,51 @@ export type Database = {
           },
         ]
       }
+      contacts: {
+        Row: {
+          crm_id: string | null
+          email: string | null
+          erstellt_am: string | null
+          hubspot_id: string | null
+          id: string
+          kostenstelle: string | null
+          name: string
+          standard_konto: string | null
+          telefon: string | null
+          typ: string | null
+          ust_id: string | null
+          zahlungsziel: number | null
+        }
+        Insert: {
+          crm_id?: string | null
+          email?: string | null
+          erstellt_am?: string | null
+          hubspot_id?: string | null
+          id?: string
+          kostenstelle?: string | null
+          name: string
+          standard_konto?: string | null
+          telefon?: string | null
+          typ?: string | null
+          ust_id?: string | null
+          zahlungsziel?: number | null
+        }
+        Update: {
+          crm_id?: string | null
+          email?: string | null
+          erstellt_am?: string | null
+          hubspot_id?: string | null
+          id?: string
+          kostenstelle?: string | null
+          name?: string
+          standard_konto?: string | null
+          telefon?: string | null
+          typ?: string | null
+          ust_id?: string | null
+          zahlungsziel?: number | null
+        }
+        Relationships: []
+      }
       courses: {
         Row: {
           created_at: string | null
@@ -1249,6 +1294,66 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          bereich: string | null
+          betrag_brutto: number
+          betrag_netto: number
+          bezahlt_am: string | null
+          cash_flag: boolean | null
+          created_at: string
+          crm_id: string | null
+          datum: string | null
+          erstattungsfaehig: boolean | null
+          faelligkeit: string | null
+          gegenpartei: string | null
+          id: string
+          invoice_id: string | null
+          kostenstelle: string | null
+          objekt: string | null
+          status: string
+          ust: number
+        }
+        Insert: {
+          bereich?: string | null
+          betrag_brutto?: number
+          betrag_netto?: number
+          bezahlt_am?: string | null
+          cash_flag?: boolean | null
+          created_at?: string
+          crm_id?: string | null
+          datum?: string | null
+          erstattungsfaehig?: boolean | null
+          faelligkeit?: string | null
+          gegenpartei?: string | null
+          id?: string
+          invoice_id?: string | null
+          kostenstelle?: string | null
+          objekt?: string | null
+          status?: string
+          ust?: number
+        }
+        Update: {
+          bereich?: string | null
+          betrag_brutto?: number
+          betrag_netto?: number
+          bezahlt_am?: string | null
+          cash_flag?: boolean | null
+          created_at?: string
+          crm_id?: string | null
+          datum?: string | null
+          erstattungsfaehig?: boolean | null
+          faelligkeit?: string | null
+          gegenpartei?: string | null
+          id?: string
+          invoice_id?: string | null
+          kostenstelle?: string | null
+          objekt?: string | null
+          status?: string
+          ust?: number
+        }
+        Relationships: []
+      }
       lead_sequence_enrollments: {
         Row: {
           completed_at: string | null
@@ -1789,6 +1894,51 @@ export type Database = {
           },
         ]
       }
+      open_items: {
+        Row: {
+          betrag: number
+          created_at: string
+          faelligkeit: string | null
+          gegenpartei: string | null
+          id: string
+          kostenstelle: string | null
+          objekt: string | null
+          quelle: string | null
+          risiko: string | null
+          status: string | null
+          tage_ueberfaellig: number | null
+          typ: string | null
+        }
+        Insert: {
+          betrag?: number
+          created_at?: string
+          faelligkeit?: string | null
+          gegenpartei?: string | null
+          id?: string
+          kostenstelle?: string | null
+          objekt?: string | null
+          quelle?: string | null
+          risiko?: string | null
+          status?: string | null
+          tage_ueberfaellig?: number | null
+          typ?: string | null
+        }
+        Update: {
+          betrag?: number
+          created_at?: string
+          faelligkeit?: string | null
+          gegenpartei?: string | null
+          id?: string
+          kostenstelle?: string | null
+          objekt?: string | null
+          quelle?: string | null
+          risiko?: string | null
+          status?: string | null
+          tage_ueberfaellig?: number | null
+          typ?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount_cents: number
@@ -1978,6 +2128,42 @@ export type Database = {
           },
         ]
       }
+      revenue_summary: {
+        Row: {
+          bereich: string | null
+          created_at: string
+          delta: number | null
+          id: string
+          ist_umsatz: number
+          monat: string
+          objekt: string | null
+          plan_umsatz: number | null
+          quelle: string | null
+        }
+        Insert: {
+          bereich?: string | null
+          created_at?: string
+          delta?: number | null
+          id?: string
+          ist_umsatz?: number
+          monat: string
+          objekt?: string | null
+          plan_umsatz?: number | null
+          quelle?: string | null
+        }
+        Update: {
+          bereich?: string | null
+          created_at?: string
+          delta?: number | null
+          id?: string
+          ist_umsatz?: number
+          monat?: string
+          objekt?: string | null
+          plan_umsatz?: number | null
+          quelle?: string | null
+        }
+        Relationships: []
+      }
       social_library_items: {
         Row: {
           content: string | null
@@ -2128,6 +2314,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sync_errors: {
+        Row: {
+          entity: string | null
+          error_message: string | null
+          id: string
+          node_name: string | null
+          raw_payload: Json | null
+          timestamp: string
+          workflow: string | null
+        }
+        Insert: {
+          entity?: string | null
+          error_message?: string | null
+          id?: string
+          node_name?: string | null
+          raw_payload?: Json | null
+          timestamp?: string
+          workflow?: string | null
+        }
+        Update: {
+          entity?: string | null
+          error_message?: string | null
+          id?: string
+          node_name?: string | null
+          raw_payload?: Json | null
+          timestamp?: string
+          workflow?: string | null
+        }
+        Relationships: []
+      }
+      sync_logs: {
+        Row: {
+          entity: string | null
+          id: string
+          message: string | null
+          records_processed: number | null
+          status: string | null
+          timestamp: string
+          workflow: string | null
+        }
+        Insert: {
+          entity?: string | null
+          id?: string
+          message?: string | null
+          records_processed?: number | null
+          status?: string | null
+          timestamp?: string
+          workflow?: string | null
+        }
+        Update: {
+          entity?: string | null
+          id?: string
+          message?: string | null
+          records_processed?: number | null
+          status?: string | null
+          timestamp?: string
+          workflow?: string | null
+        }
+        Relationships: []
       }
       transcripts: {
         Row: {
