@@ -4,13 +4,14 @@ import { Footer } from "@/components/landing/Footer";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { ExitIntentPopup } from "@/components/landing/conversion/ExitIntentPopup";
 import { HeroSection } from "@/components/landing/home/HeroSection";
+import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { EmotionalHookSection } from "@/components/landing/home/EmotionalHookSection";
 import { FivePillarsSection } from "@/components/landing/home/FivePillarsSection";
-import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection";
+import { SolutionSection } from "@/components/landing/home/SolutionSection";
+import { OfferSection } from "@/components/landing/home/OfferSection";
+import { ResultsSection } from "@/components/landing/home/ResultsSection";
 import { AboutFounderSection } from "@/components/landing/home/AboutFounderSection";
-import { ProcessStepsSection } from "@/components/landing/home/ProcessStepsSection";
 import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
-import { AcademyPreviewSection } from "@/components/landing/home/AcademyPreviewSection";
 
 const faqItems = [
   {
@@ -45,12 +46,13 @@ const MasterHome = () => {
 
       <main className="flex-1 pt-16">
         <HeroSection onCtaClick={handleCTAClick} />
+        <TrustLogosSection />
         <EmotionalHookSection />
-        <FivePillarsSection onCtaClick={handleCTAClick} />
-        <CaseStudiesSection />
-        <AcademyPreviewSection onCtaClick={handleCTAClick} />
+        <FivePillarsSection />
+        <SolutionSection />
+        <OfferSection onCtaClick={handleCTAClick} />
+        <ResultsSection />
         <AboutFounderSection />
-        <ProcessStepsSection />
 
         <FAQSection
           headline="Häufige Fragen – ehrlich beantwortet"
