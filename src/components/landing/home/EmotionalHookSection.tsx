@@ -1,4 +1,4 @@
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, X } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 const problems = [
@@ -23,10 +23,10 @@ export const EmotionalHookSection = () => {
           {problems.map((problem) => (
             <div
               key={problem}
-              className="flex items-start gap-4 p-4 bg-card rounded-xl border border-border/50 shadow-sm"
+              className="flex items-start gap-4 p-4 bg-destructive/5 rounded-xl border border-destructive/20"
             >
-              <AlertCircle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
-              <p className="text-foreground text-lg">{problem}</p>
+              <X className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
+              <p className="text-foreground text-lg font-medium">{problem}</p>
             </div>
           ))}
         </div>
@@ -36,7 +36,7 @@ export const EmotionalHookSection = () => {
         </p>
         <div className="text-center space-y-1">
           <p className="text-lg text-muted-foreground">Das Problem ist nicht dein Einsatz.</p>
-          <p className="text-xl font-semibold text-foreground">
+          <p className="text-2xl md:text-3xl font-bold text-foreground mt-4">
             Das Problem ist: Dir fehlt ein funktionierendes System.
           </p>
         </div>
