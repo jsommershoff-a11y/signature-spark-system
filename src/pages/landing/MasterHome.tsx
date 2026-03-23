@@ -14,6 +14,8 @@ import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection
 import { ResultsSection } from "@/components/landing/home/ResultsSection";
 import { AboutFounderSection } from "@/components/landing/home/AboutFounderSection";
 import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
+import { AiRealitySection } from "@/components/landing/home/AiRealitySection";
+import { CompetitionSection } from "@/components/landing/home/CompetitionSection";
 
 const faqItems = [
   {
