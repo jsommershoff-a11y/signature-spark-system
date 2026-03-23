@@ -54,6 +54,8 @@ const MasterHome = () => {
         <EmotionalHookSection />
         <FivePillarsSection />
         <SolutionSection />
+        <AiRealitySection />
+        <CompetitionSection />
         <OfferSection onCtaClick={handleCTAClick} />
         <AiAnalysisWidget />
         <CaseStudiesSection />
