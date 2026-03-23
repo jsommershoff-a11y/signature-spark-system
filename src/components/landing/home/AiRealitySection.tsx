@@ -21,7 +21,7 @@ const dangers = [
   {
     icon: AlertTriangle,
     headline: "KI ist nur so gut wie dein System.",
-    text: "Wenn du dein Wissen nicht strukturierst, kann auch keine KI daraus etwas bauen. Die meisten hoffen, dass KI „mitdenkt". Die Realität: Sie verstärkt nur dein Chaos.",
+    text: "Wenn du dein Wissen nicht strukturierst, kann auch keine KI daraus etwas bauen. Die meisten hoffen, dass KI mitdenkt. Die Realität: Sie verstärkt nur dein Chaos.",
   },
 ];
 
