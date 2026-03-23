@@ -1,51 +1,41 @@
 
 
-# Plan: Homepage-Relaunch mit allen Sektionen
+# Plan: Trust-Logos verbessern + weitere Tools hinzufuegen
 
-## Seitenstruktur (komplett)
+## Problem
+Die lokalen PNG-Assets sind schlecht erkennbar (wahrscheinlich zu klein/niedrige Qualitaet). Die Grayscale-Darstellung reduziert die Sichtbarkeit zusaetzlich.
 
-```text
-1. Hero                → HeroSection.tsx neu
-2. Trust-Logos         → Neue TrustLogosSection.tsx
-3. Problem             → EmotionalHookSection.tsx ersetzen
-4. Realität            → FivePillarsSection.tsx ersetzen
-5. Lösung              → Neue SolutionSection.tsx
-6. Angebot             → Neue OfferSection.tsx
-7. Ergebnis            → Neue ResultsSection.tsx
-8. Personal Brand      → AboutFounderSection.tsx ersetzen
-9. Entscheidung        → FinalCtaSection.tsx ersetzen
-10. FAQ                → bleibt
-```
+## Loesung
 
-## Dateien
+### 1. Weg von lokalen Assets, hin zu hochwertigen SVG/CDN-Logos
+Statt der generierten PNGs werden offizielle, hochaufloesende Logos als inline-SVGs oder von bekannten CDNs (z.B. simpleicons.org SVGs) verwendet. Das garantiert scharfe Darstellung in jeder Groesse.
 
-### Neu erstellen
+### 2. Visuelle Verbesserungen
+- Logos groesser: `h-10` → `h-12 md:h-14`
+- Grayscale entfernen, stattdessen reduzierte Opacity (`opacity-50 hover:opacity-100`)
+- Weisser Hintergrund-Container pro Logo fuer besseren Kontrast (`bg-white/80 rounded-xl p-4 shadow-sm`)
+- Besserer Gap und Grid-Layout statt flex-wrap
 
-1. **`TrustLogosSection.tsx`** -- Logo-Leiste (n8n, Make, Stripe, PayPal, ChatGPT, Google Drive, Outlook, Excel, Google Sheets), Grayscale-Hover, nutzt bestehende Assets aus `src/assets/trust/`
+### 3. Weitere Tools hinzufuegen
+Zusaetzlich zu den bestehenden 9:
+- **Zapier** (Automatisierung)
+- **Slack** (Kommunikation)
+- **HubSpot** (CRM)
+- **Notion** (Organisation)
+- **Google Calendar** (Terminplanung)
+- **WhatsApp Business** (Kundenkommunikation)
 
-2. **`SolutionSection.tsx`** -- "Wir bauen dir einfache Automatisierungen..." mit 4 Checkmark-Punkten, Abschluss-Statement
+Gesamt: 15 Tools
 
-3. **`OfferSection.tsx`** -- "Du hast zwei Möglichkeiten:" mit zwei Cards (Selbst umsetzen / Gemeinsam umsetzen), CTA zu /qualifizierung
+### 4. Technische Umsetzung
+- **`TrustLogosSection.tsx`** komplett ueberarbeiten:
+  - Inline-SVG-Icons fuer alle 15 Tools (aus simpleicons.org / eigene SVG-Paths)
+  - Alternativ: `react-icons/si` Package fuer Simple Icons (bereits gaengig)
+  - Grid-Layout `grid grid-cols-3 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-5`
+  - Jedes Logo in einer weissen Card mit Schatten
+  - Kein Grayscale mehr, stattdessen sanfte Opacity-Animation
+- Lokale PNG-Assets bleiben erhalten (kein Breaking Change auf Community-Seite)
 
-4. **`ResultsSection.tsx`** -- "Unternehmen, die ihre Prozesse automatisieren:" mit 4 Ergebnis-Punkten + Abschluss
-
-### Ersetzen (Inhalt komplett neu, Datei bleibt)
-
-5. **`HeroSection.tsx`** -- Neue Headline "Du arbeitest zu viel, weil dir einfache Automatisierungen fehlen.", zwei CTAs ("Automatisierungen verstehen" scrollt runter, "Automatisierungen gemeinsam umsetzen" geht zu /qualifizierung)
-
-6. **`EmotionalHookSection.tsx`** → Problem-Sektion mit Aufzählungspunkten als Karten
-
-7. **`FivePillarsSection.tsx`** → Realität-Sektion: 3 Punkte + "Alles läuft manuell..."
-
-8. **`AboutFounderSection.tsx`** → Personal Brand: "Ich bin kein klassischer Berater..." -- kein Foto, reiner Text, persönlich und direkt
-
-9. **`FinalCtaSection.tsx`** → Entscheidung: Zwei Optionen-Cards (Weitermachen vs. System bauen), zwei CTAs
-
-### Anpassen
-
-10. **`MasterHome.tsx`** -- Neue Import-Reihenfolge, entferne CaseStudiesSection, AcademyPreviewSection, ProcessStepsSection aus dem Render
-
-## Texte
-
-Alle Texte werden wörtlich wie vorgegeben übernommen. Beide neuen Sektionen (Personal Brand + Entscheidung) nutzen die exakten Formulierungen aus der Vorgabe.
+### Dateiaenderungen
+- **Aendern**: `src/components/landing/home/TrustLogosSection.tsx` -- kompletter Rewrite mit SVG-Icons und neuem Layout
 
