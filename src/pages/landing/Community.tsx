@@ -8,6 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+import n8nLogo from "@/assets/trust/n8n.png";
+import makeLogo from "@/assets/trust/make.png";
+import stripeLogo from "@/assets/trust/stripe.png";
+import paypalLogo from "@/assets/trust/paypal.png";
+import chatgptLogo from "@/assets/trust/chatgpt.png";
+import gdriveLogo from "@/assets/trust/gdrive.png";
+import outlookLogo from "@/assets/trust/outlook.png";
+import excelLogo from "@/assets/trust/excel.png";
+import gsheetsLogo from "@/assets/trust/gsheets.png";
+
 declare global {
   namespace JSX {
     interface IntrinsicElements {
