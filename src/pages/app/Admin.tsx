@@ -12,6 +12,7 @@ import AdminBackupExport from '@/components/admin/AdminBackupExport';
 import AdminMembersOverview from '@/components/admin/AdminMembersOverview';
 
 export default function Admin() {
+  const navigate = useNavigate();
   return (
     <div className="space-y-6">
       <div>
