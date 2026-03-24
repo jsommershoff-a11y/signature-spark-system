@@ -1,5 +1,6 @@
 import { AlertTriangle, XCircle, Brain, ShieldAlert, Wrench, Bot, Cog, Clock, TrendingDown, CheckCircle2, BarChart3 } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
+import founderKiSystem from "@/assets/founder-ki-system.png";
 
 const misconceptions = [
   "Sie bezahlen Agenturen für Chatbots, die kein Kunde nutzt.",
