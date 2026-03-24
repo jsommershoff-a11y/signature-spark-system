@@ -27,6 +27,8 @@ interface Profile {
   company: string | null;
   avatar_url: string | null;
   assigned_to: string | null;
+  industry: string | null;
+  primary_goal: string | null;
   created_at: string;
   updated_at: string;
 }
