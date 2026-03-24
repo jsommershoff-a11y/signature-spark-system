@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { Star } from "lucide-react";
 import founderPortrait from "@/assets/founder-hero.jpeg";
 import { landingTokens as t } from "@/styles/landing-tokens";
@@ -24,13 +23,10 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
       <div className={`${t.container} relative z-10 py-20`}>
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-white mb-6">
-            Du arbeitest zu viel, weil dir einfache Automatisierungen fehlen.
+            Jeder Tag ohne Automatisierung kostet dich Geld, Kunden und Wachstum.
           </h1>
-          <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto mb-4 leading-relaxed">
-            Die meisten Unternehmer verlieren jeden Tag Zeit, weil Prozesse manuell laufen, nichts sauber strukturiert ist und alles an ihnen hängt.
-          </p>
-          <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto mb-10 font-medium leading-relaxed">
-            Wir bauen dir einfache Automatisierungen, die dein Unternehmen strukturieren, dir täglich Arbeit abnehmen und Wachstum planbar machen.
+          <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto mb-10 leading-relaxed">
+            Jede Stunde, die du mit manuellen Prozessen verbringst, fehlt dir für Umsatz, Führung und strategische Entscheidungen. Die meisten Unternehmer wissen das – und ändern trotzdem nichts.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">

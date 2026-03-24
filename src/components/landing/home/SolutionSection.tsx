@@ -2,10 +2,10 @@ import { CheckCircle } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 const points = [
-  "Neue Anfragen werden automatisch erfasst und organisiert",
-  "Kunden bekommen automatisch Follow-ups",
-  "Aufgaben entstehen automatisch für dich und dein Team",
-  "Prozesse laufen im Hintergrund, ohne dass du ständig eingreifen musst",
+  "Keine Anfrage geht mehr verloren – egal ob sie per E-Mail, Formular oder WhatsApp kommt",
+  "Kein Follow-up wird mehr vergessen – dein System erinnert automatisch",
+  "Dein Team weiß immer, was als Nächstes zu tun ist – ohne Rückfragen",
+  "Prozesse laufen zuverlässig im Hintergrund – du greifst nur noch ein, wenn du willst",
 ];
 
 export const SolutionSection = () => {
@@ -29,9 +29,8 @@ export const SolutionSection = () => {
         </div>
 
         <div className="text-center space-y-1">
-          <p className="text-lg text-muted-foreground">Das Ziel ist nicht mehr Arbeit.</p>
           <p className="text-xl font-semibold text-foreground">
-            Das Ziel ist: weniger Chaos, mehr Kontrolle.
+            Weniger Chaos. Weniger Abhängigkeit. Mehr Kontrolle über dein Unternehmen.
           </p>
         </div>
       </div>
