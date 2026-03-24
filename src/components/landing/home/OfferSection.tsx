@@ -1,5 +1,6 @@
 import { BookOpen, Handshake, ArrowRight } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
+import founderEntlasten from "@/assets/founder-entlasten.png";
 
 interface OfferSectionProps {
   onCtaClick: () => void;
@@ -42,6 +43,15 @@ export const OfferSection = ({ onCtaClick }: OfferSectionProps) => {
               Du investierst einmal, sparst ab Tag 1.
             </p>
           </div>
+        </div>
+
+        {/* Visual Banner */}
+        <div className="mb-10 rounded-2xl overflow-hidden shadow-lg border border-border">
+          <img
+            src={founderEntlasten}
+            alt="Jan Sommershoff – Mitarbeiter entlasten und stärken durch bessere Prozesse und Automatisierung"
+            className="w-full h-auto"
+          />
         </div>
 
         <div className="text-center">

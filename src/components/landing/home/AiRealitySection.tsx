@@ -1,5 +1,6 @@
 import { AlertTriangle, XCircle, Brain, ShieldAlert, Wrench, Bot, Cog, Clock, TrendingDown, CheckCircle2, BarChart3 } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
+import founderKiSystem from "@/assets/founder-ki-system.png";
 
 const misconceptions = [
   "Sie bezahlen Agenturen für Chatbots, die kein Kunde nutzt.",
@@ -157,6 +158,15 @@ export const AiRealitySection = () => {
           <p className="text-foreground font-semibold text-lg">
             Das ist kein Zukunftsthema.<br />Das ist operatives Versagen.
           </p>
+        </div>
+
+        {/* Visual Banner */}
+        <div className="max-w-4xl mx-auto mb-14 rounded-2xl overflow-hidden shadow-lg border border-border">
+          <img
+            src={founderKiSystem}
+            alt="Jan Sommershoff – KI für Unternehmer: Zeitsparnis, Team-Entlastung, automatisierte Prozesse"
+            className="w-full h-auto"
+          />
         </div>
 
         {/* Handwerker / Mittelstand Block */}

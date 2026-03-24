@@ -1,4 +1,5 @@
 import founderPersonal from "@/assets/founder-personal.jpeg";
+import founderKiErfolg from "@/assets/founder-ki-erfolg.png";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 export const AboutFounderSection = () => {
@@ -40,6 +41,15 @@ export const AboutFounderSection = () => {
               Dein Unternehmen funktioniert nur, solange du es tust. Das ändern wir.
             </p>
           </div>
+        </div>
+
+        {/* Visual Banner */}
+        <div className="mt-12 max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-lg border border-border">
+          <img
+            src={founderKiErfolg}
+            alt="Jan Sommershoff – Mit KI zum Erfolg: Effizienter arbeiten, Zeit gewinnen, Teams entlasten"
+            className="w-full h-auto"
+          />
         </div>
       </div>
     </section>
