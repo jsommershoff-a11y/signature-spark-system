@@ -1,99 +1,85 @@
 
 
-# Plan: Homepage Conversion-Optimierung
+# Plan: Strategische Conversion-Optimierung der Homepage
 
-## Ueberblick
+## Core-Claim & Signature System
 
-Gezielte Text- und Struktur-Optimierung aller 12 bestehenden Sektionen. Keine neuen Komponenten, keine Dopplungen. Jede Sektion bekommt schaerfere Texte, klarere Funnel-Rolle und staerkere Conversion-Logik.
+Der Begriff **"Signature System"** wird als benannter Mechanismus durch die gesamte Seite gezogen. Core-Claim: **"Dein Unternehmen funktioniert nur, solange du es tust. Genau das ist das Problem."**
 
-## Aenderungen pro Sektion
+## Aenderungen pro Datei
 
 ### 1. HeroSection.tsx
-- Headline haerter: Fokus auf taeglichen Geldverlust statt nur "zu viel arbeiten"
-- Subline konkretisieren: "Jede Stunde, die du manuell arbeitest, kostet dich Geld, Kunden und Wachstum"
-- Zweite Subline streichen, stattdessen ein knapper Konsequenz-Satz
-- Sterne-Zeile bleibt
+- Subline ergaenzen: "Die meisten Unternehmen verlieren 2.000–5.000 € monatlich durch ineffiziente Prozesse."
+- Core-Claim als separater Textblock vor den CTAs: "Dein Unternehmen funktioniert nur, solange du es tust. Genau das ist das Problem."
+- CTA-Texte anpassen: "System verstehen" / "Signature System aufbauen"
+- Micro-Conversion unter CTAs: "Kostenlos und unverbindlich • Dauert nur 2 Minuten"
+- Marktabgrenzung als kurze Zeile: "Keine Chatbots. Keine Tools. Ein System, das funktioniert."
 
 ### 2. EmotionalHookSection.tsx (Problem)
-- 4 Punkte durch 6 konkretere Alltagssituationen ersetzen:
-  - "Kundenanfragen liegen in WhatsApp, E-Mail und Excel verteilt"
-  - "Follow-ups werden vergessen, weil niemand sie trackt"
-  - "Dein Team fragt dich bei jeder Kleinigkeit, weil es keine klaren Ablaeufe gibt"
-  - "Angebote werden zu spaet geschickt, weil der Prozess manuell ist"
-  - "Informationen stecken in Koepfen statt in Systemen"
-  - "Ohne dich steht alles still"
-- Abschluss-Statement bleibt, ergaenzt um: "Und jeder Tag ohne System kostet dich bares Geld."
+- Abschluss-Statement erweitern um: "Unternehmen, die wir begleiten, gewinnen jede Woche mehrere Stunden zurueck."
+- Pattern-Break-Block nach dem Statement: grosser, zentrierter Satz "Ohne System bist du der Engpass." als visuell abgesetzte Einheit (bg-foreground/text-background, rounded, volle Breite)
 
-### 3. FivePillarsSection.tsx (Realitaet)
-- 3 Punkte ausfuehrlicher und konkreter:
-  - "Keine klare Struktur – Aufgaben entstehen, aber niemand weiss, wer was bis wann erledigt"
-  - "Keine automatisierten Ablaeufe – jeder Handgriff passiert manuell und fehleranfaellig"
-  - "Keine saubere Organisation – Informationen liegen verstreut, Uebergaben gehen verloren"
-- Abschluss: "Alles laeuft ueber dich. Und genau deshalb waechst dein Unternehmen nicht."
+### 3. SolutionSection.tsx
+- Headline anpassen: "Das Signature System entlastet dein Unternehmen sofort."
+- Mini-Prozess als 4-Schritt-Leiste unter den Checkpoints einfuegen (horizontal, nummeriert):
+  1. Analyse deiner Prozesse
+  2. Groesste Zeitfresser identifizieren
+  3. Erste Automatisierungen (7–14 Tage)
+  4. Skalierung & Erweiterung
+- Abschluss ergaenzen: "Typische Ergebnisse: weniger Chaos, schnellere Ablaeufe, klarere Prozesse."
 
-### 4. SolutionSection.tsx
-- Outcome-orientiert umschreiben. Statt "Anfragen werden automatisch erfasst" → "Keine Anfrage geht mehr verloren – egal ob sie per E-Mail, Formular oder WhatsApp kommt"
-- Neue Punkte:
-  - "Kein Follow-up wird mehr vergessen – dein System erinnert automatisch"
-  - "Dein Team weiss immer, was als Naechstes zu tun ist – ohne Rueckfragen"
-  - "Prozesse laufen zuverlaessig im Hintergrund – du greifst nur noch ein, wenn du willst"
-- Abschluss: "Weniger Chaos. Weniger Abhaengigkeit. Mehr Kontrolle ueber dein Unternehmen."
+### 4. AiRealitySection.tsx
+- Opener-Text nach der Headline ergaenzen: "Wir bauen keine Chatbots. Wir verkaufen keine Tools. Wir bauen Systeme, die funktionieren."
+- Core-Claim als Statement-Block: "Du brauchst keine KI. Du brauchst ein System." → umbenennen zu "Du brauchst keine KI. Du brauchst dein Signature System."
 
-### 5. AiRealitySection.tsx
-- Misconceptions schaerfer: "Sie bezahlen Agenturen fuer Chatbots, die kein Kunde nutzt."
-- Handwerker/Mittelstands-Argument als neuen Block am Ende einbauen (innerhalb der Sektion, kein neues Component):
-  - Headline: "„KI bringt mir nichts" ist die teuerste Ausrede im Mittelstand."
-  - Text: "Auf der Baustelle, in der Werkstatt, beim Kunden – da bist du unersetzlich. Aber in der Buchhaltung, Terminplanung, Angebotserstellung und Dokumentation? Da verlierst du jeden Tag Geld. Und genau dort greifen einfache Automatisierungen sofort."
-- Prozesse-Liste erweitern: + "Terminplanung", "Dokumentation", "Rechnungsstellung"
+### 5. CompetitionSection.tsx
+- Preisanker in die linke Karte: "Das kostet dich 2.000–5.000 € – jeden Monat."
+- Pattern-Break-Block nach dem Grid: "Automatisierung ist kein Luxus. Es ist Pflicht." (bg-primary, text-primary-foreground, zentriert, gross)
 
-### 6. CompetitionSection.tsx
-- Rechte Karte (Konkurrenz) schaerfer: "Und das reicht, um dir Kunden wegzunehmen, schneller Angebote rauszuschicken und mit weniger Aufwand mehr Umsatz zu machen."
-- Linke Karte: "Im Buero, in der Verwaltung, bei jedem Prozess der nicht am Kunden stattfindet – da bist du ersetzbar. Und dort verlierst du jeden Tag Geld."
+### 6. OfferSection.tsx
+- Headline anpassen: "Dein Signature System – zwei Wege:"
+- Unter dem CTA-Button Micro-Conversion: "Kostenlos und unverbindlich • Sofort Ergebnis"
 
-### 7. OfferSection.tsx
-- Subline schaerfer: "Warte nicht. Jeder Tag ohne System kostet dich Stunden und Umsatz."
-- Option 1: Ergaenzen "Du sparst Geld, investierst aber Zeit."
-- Option 2: Ergaenzen "Du investierst einmal, sparst ab Tag 1."
+### 7. AiAnalysisWidget.tsx
+- Ergebnis-Bereich erweitern:
+  - Neue dritte Savings-Card: "Auf 12 Monate" mit Jahresberechnung (savingsHours * 12, savingsEuro * 12)
+  - Textblock nach den Cards: "Wenn du nichts aenderst, bleibt das exakt so. Jeden Monat."
+  - CTA-Text aendern: "Diese Prozesse setzen wir innerhalb von 14 Tagen fuer dich auf."
+  - Micro-Conversion darunter: "Dauert nur 2 Minuten • Kostenlos"
 
-### 8. AiAnalysisWidget.tsx
-- Intro-Text wirtschaftlicher: "Finde heraus, wie viele Stunden und Euro du jede Woche verlierst – weil Prozesse manuell laufen, die laengst automatisiert sein koennten."
-- Ergebnis-Texte um wirtschaftliche Dimension ergaenzen: "Bei einem Stundensatz von 80 € entspricht das X–Y € pro Monat, die du verschenkst."
-- Savings-Card um Euro-Berechnung ergaenzen (basierend auf 80 €/Std-Annahme)
+### 8. ResultsSection.tsx
+- Case-Logik ergaenzen als Textblock unter den Ergebnis-Punkten: "Unternehmen, die wir begleiten, gewinnen jede Woche mehrere Stunden zurueck – durch weniger manuelle Uebergaben und klarere Ablaeufe."
 
-### 9. ResultsSection.tsx
-- Ergebnis-Punkte outcome-staerker:
-  - "Weniger operative Abhaengigkeit von einzelnen Personen"
-  - "Schnellere Reaktionszeiten auf Kundenanfragen"
-  - "Sauberere Prozesse mit weniger manuellen Uebergaben"
-  - "Bessere Planbarkeit fuer Wachstum und Skalierung"
+### 9. AboutFounderSection.tsx
+- Ergaenzen: "Ich baue keine Chatbots. Ich baue Systeme." als separaten Absatz
+- Core-Claim als letzten Block: "Dein Unternehmen funktioniert nur, solange du es tust. Das aendern wir."
 
-### 10. AboutFounderSection.tsx
-- Staerker positionieren: "Keine Theorie. Keine Frameworks. Funktionierende Systeme aus echter Praxis." als zusaetzlichen Absatz
-- Badge-Text: "Aus der Praxis, nicht aus dem Lehrbuch"
+### 10. FinalCtaSection.tsx
+- Option 1 erweitern: "Du bleibst der Engpass. Dein Unternehmen haengt weiter an dir. Wachstum bleibt begrenzt."
+- Option 2 erweitern: "Du baust ein Signature System, das ohne dich funktioniert. Dein Team arbeitet eigenstaendig. Du gewinnst Zeit und Kontrolle zurueck."
+- Uebergangstext: "Jeder Tag ohne System kostet dich Zeit, Geld und Energie."
+- CTA-Text: "Signature System aufbauen →"
+- Micro-Conversion: "Kostenlos und unverbindlich • Dauert nur 2 Minuten"
 
-### 11. FinalCtaSection.tsx
-- Option 1 haerter: "Alles bleibt an dir haengen. Dein Team wartet. Anfragen gehen unter. Du arbeitest abends und am Wochenende."
-- Option 2 konkreter: "Innerhalb von 14 Tagen laufen erste Prozesse automatisiert. Du gewinnst Zeit zurueck. Dein Team arbeitet eigenstaendig."
-- Uebergangstext: "Jeder Tag, an dem du wartest, kostet dich Stunden, Geld und Nerven."
+### 11. TrustLogosSection.tsx
+- Keine Aenderungen
 
-### 12. TrustLogosSection.tsx
-- Untertitel ergaenzen: "Kompetenz in Integration und Automatisierung – nicht nur einzelne Tools, sondern vernetzte Systeme."
+### 12. MasterHome.tsx
+- Keine strukturellen Aenderungen
 
 ## Dateien die geaendert werden
 
-Nur bestehende Dateien, keine neuen:
-1. `src/components/landing/home/HeroSection.tsx`
-2. `src/components/landing/home/EmotionalHookSection.tsx`
-3. `src/components/landing/home/FivePillarsSection.tsx`
-4. `src/components/landing/home/SolutionSection.tsx`
-5. `src/components/landing/home/AiRealitySection.tsx`
-6. `src/components/landing/home/CompetitionSection.tsx`
-7. `src/components/landing/home/OfferSection.tsx`
-8. `src/components/landing/home/AiAnalysisWidget.tsx`
-9. `src/components/landing/home/ResultsSection.tsx`
-10. `src/components/landing/home/AboutFounderSection.tsx`
-11. `src/components/landing/home/FinalCtaSection.tsx`
-12. `src/components/landing/home/TrustLogosSection.tsx`
+10 bestehende Dateien, keine neuen:
+1. `HeroSection.tsx`
+2. `EmotionalHookSection.tsx`
+3. `SolutionSection.tsx`
+4. `AiRealitySection.tsx`
+5. `CompetitionSection.tsx`
+6. `OfferSection.tsx`
+7. `AiAnalysisWidget.tsx`
+8. `ResultsSection.tsx`
+9. `AboutFounderSection.tsx`
+10. `FinalCtaSection.tsx`
 
-Keine strukturellen Aenderungen an MasterHome.tsx. Keine neuen Komponenten. Designsystem, Tokens und Layout bleiben identisch.
+Designsystem, Layout und Sektionsreihenfolge bleiben identisch.
 
