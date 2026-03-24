@@ -13,6 +13,7 @@ import { AiAnalysisWidget } from "@/components/landing/home/AiAnalysisWidget";
 import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection";
 import { ResultsSection } from "@/components/landing/home/ResultsSection";
 import { AboutFounderSection } from "@/components/landing/home/AboutFounderSection";
+import { TransformationFinancingSection } from "@/components/landing/home/TransformationFinancingSection";
 import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
 import { AiRealitySection } from "@/components/landing/home/AiRealitySection";
 import { CompetitionSection } from "@/components/landing/home/CompetitionSection";
@@ -60,6 +61,8 @@ const MasterHome = () => {
         <AiAnalysisWidget />
         <CaseStudiesSection />
         <ResultsSection />
+        <TransformationFinancingSection />
+        <AboutFounderSection />
         <AboutFounderSection />
 
         <FAQSection
