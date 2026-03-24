@@ -1,5 +1,6 @@
 import { BookOpen, Handshake, ArrowRight } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
+import founderEntlasten from "@/assets/founder-entlasten.png";
 
 interface OfferSectionProps {
   onCtaClick: () => void;
