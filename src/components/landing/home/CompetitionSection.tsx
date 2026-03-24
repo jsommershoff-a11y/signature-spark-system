@@ -15,8 +15,11 @@ export const CompetitionSection = () => {
             <p className="text-muted-foreground leading-relaxed mb-4">
               Im Büro, in der Verwaltung, bei jedem Prozess der nicht am Kunden stattfindet – da bist du ersetzbar.
             </p>
-            <p className="text-foreground font-semibold text-lg">
+            <p className="text-foreground font-semibold text-lg mb-2">
               Und dort verlierst du jeden Tag Geld.
+            </p>
+            <p className="text-destructive font-bold text-lg">
+              Das kostet dich 2.000–5.000 € – jeden Monat.
             </p>
           </div>
 
@@ -34,6 +37,13 @@ export const CompetitionSection = () => {
               <span className="font-bold text-primary">mehr Umsatz zu machen.</span>
             </p>
           </div>
+        </div>
+
+        {/* Pattern Break */}
+        <div className="mt-8 bg-primary text-primary-foreground rounded-2xl py-8 px-6 text-center">
+          <p className="text-2xl md:text-3xl font-bold">
+            Automatisierung ist kein Luxus. Es ist Pflicht.
+          </p>
         </div>
       </div>
     </section>

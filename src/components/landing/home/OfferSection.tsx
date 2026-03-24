@@ -10,7 +10,7 @@ export const OfferSection = ({ onCtaClick }: OfferSectionProps) => {
     <section className={`${t.sectionPadding} bg-muted/30`}>
       <div className="max-w-4xl mx-auto px-4">
         <h2 className={`${t.headline.h2} text-foreground text-center mb-4`}>
-          Du hast zwei Möglichkeiten:
+          Dein Signature System – zwei Wege:
         </h2>
         <p className="text-center text-muted-foreground mb-10 text-lg">
           Warte nicht. Jeder Tag ohne System kostet dich Stunden und Umsatz.
@@ -50,7 +50,7 @@ export const OfferSection = ({ onCtaClick }: OfferSectionProps) => {
             <ArrowRight className="inline-block ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
           <p className="text-sm text-muted-foreground mt-3">
-            45 Min. • Kein Verkaufsdruck • 100 % individuell
+            Kostenlos und unverbindlich • Sofort Ergebnis
           </p>
         </div>
       </div>

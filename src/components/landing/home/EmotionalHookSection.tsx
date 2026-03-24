@@ -44,6 +44,16 @@ export const EmotionalHookSection = () => {
           <p className="text-lg text-muted-foreground mt-3">
             Und jeder Tag ohne System kostet dich bares Geld.
           </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Unternehmen, die wir begleiten, gewinnen jede Woche mehrere Stunden zurück.
+          </p>
+        </div>
+
+        {/* Pattern Break */}
+        <div className="mt-10 bg-foreground text-background rounded-2xl py-8 px-6 text-center">
+          <p className="text-2xl md:text-3xl font-bold">
+            Ohne System bist du der Engpass.
+          </p>
         </div>
       </div>
     </section>
