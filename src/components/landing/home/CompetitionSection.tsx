@@ -1,5 +1,6 @@
 import { TrendingUp, AlertCircle } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
+import kiZeitfresser from "@/assets/ki-zeitfresser.png";
 
 export const CompetitionSection = () => {
   return (
