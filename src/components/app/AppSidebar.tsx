@@ -32,8 +32,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/app', icon: LayoutDashboard },
-  { label: 'KI-Academy', href: '/app/academy', icon: GraduationCap, exactRole: 'kunde' },
-  { label: 'Verträge', href: '/app/contracts', icon: ScrollText, exactRole: 'kunde' },
+  { label: 'Mein System', href: '/app/academy', icon: GraduationCap, exactRole: 'kunde' },
+  { label: 'Dokumente', href: '/app/contracts', icon: ScrollText, exactRole: 'kunde' },
   { label: 'Pakete & Preise', href: '/app/pricing', icon: Kanban, exactRole: 'kunde' },
   { label: 'CRM', href: '/app/crm', icon: Building2, minRole: 'mitarbeiter' },
   { label: 'Leads', href: '/app/leads', icon: UserPlus, minRole: 'mitarbeiter' },
