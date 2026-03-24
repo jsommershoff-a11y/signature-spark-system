@@ -1,49 +1,110 @@
 
 
-# Plan: Kurs "START HIER" mit 2 Modulen und 8 Lektionen anlegen
+# Plan: Onboarding-Flow, Kunden-Dashboard Umbau & Kurs-Inhalte
 
-## Ueberblick
+## Zusammenfassung
 
-Neuer Freebie-Kurs als Einstiegspunkt fuer alle Kunden. Wird per SQL-Insert in die bestehenden Tabellen `courses`, `modules` und `lessons` geschrieben. Kein Learning Path noetig (eigenstaendiger Kurs wie "SalesFlow Grundlagen"). Alle Lektionen mit vollstaendigen `content_html` Inhalten im `meta` JSONB-Feld.
+Drei zusammenhaengende Aenderungen: (1) Gefuehrter Onboarding-Flow nach Registrierung, (2) Kunden-Dashboard als Umsetzungs-Cockpit mit Fortschritt und naechster Lektion, (3) Kurs 2 "ANFRAGEN & LEADS" in der Datenbank anlegen + fehlende Inhalte fuer Kurs 1 und 2.
 
-## Kursstruktur
+---
 
-```text
-Kurs: START HIER – Dein Unternehmen auf dem Pruefstand (Freebie, published, sort_order: -1)
+## 1. Gefuehrter Onboarding-Flow
 
-├── Modul 1: Wo stehst du? (Selbstanalyse)
-│   ├── L1: Was ist ein Signature System? (video, 5 Min)
-│   ├── L2: Die 5 groessten Zeitfresser identifizieren (task + Arbeitsblatt)
-│   ├── L3: Dein Prozess-Audit in 30 Minuten (worksheet)
-│   └── L4: Quiz: Wie automatisiert ist dein Unternehmen? (quiz)
-│
-└── Modul 2: Die Grundlagen verstehen
-    ├── L5: Automatisierung ≠ kompliziert (video, 5 Min)
-    ├── L6: Die 3 Automatisierungs-Ebenen (video, 8 Min)
-    ├── L7: Dein erster Quick Win (task)
-    └── L8: Checkliste: Deine Top-3 Hebel (worksheet)
+### Problem
+Die aktuelle `ProfileCompletionDialog` fragt nur "Firma" ab. Kein Branchenbezug, kein Ziel, keine Weiterleitung zum ersten Kurs.
+
+### Loesung
+Die bestehende `ProfileCompletionDialog.tsx` wird zu einem mehrstufigen Onboarding-Wizard umgebaut (3 Schritte, gleiche Dialog-Komponente):
+
+**Schritt 1: Branche** (Select mit 8 Optionen)
+- Handwerk, Dienstleistung, Praxis/Gesundheit, Immobilien, Gastronomie/Hotellerie, Handel, Agentur/Beratung, Sonstiges
+
+**Schritt 2: Groesstes Ziel** (Select mit 4 Optionen)
+- "Weniger operatives Chaos"
+- "Mehr Zeit fuer Kerngeschaeft"  
+- "Bessere Prozesse und Uebergaben"
+- "Wachstum ohne mehr Arbeit"
+
+**Schritt 3: Firma + Name** (wie bisher, aber kompakter)
+
+Nach Abschluss: Weiterleitung zu `/app/academy` mit Toast "Starte mit deinem ersten Kurs"
+
+### DB-Aenderung (Migration)
+`profiles` Tabelle braucht 2 neue Spalten:
+```sql
+ALTER TABLE profiles ADD COLUMN industry text;
+ALTER TABLE profiles ADD COLUMN primary_goal text;
 ```
 
-## Technische Umsetzung
+### Datei-Aenderungen
+- `src/components/app/ProfileCompletionDialog.tsx` – Komplett umschreiben als 3-Step-Wizard
+- `src/contexts/AuthContext.tsx` – Profile-Interface um `industry` und `primary_goal` erweitern
 
-3 SQL-INSERT-Statements via Supabase Insert Tool:
-1. **1x INSERT into `courses`** – Freebie, published, sort_order -1 (erscheint ganz oben)
-2. **2x INSERT into `modules`** – je 1 pro Modul
-3. **8x INSERT into `lessons`** – mit vollstaendigen `content_html` Inhalten, Beschreibungen, Typen, Dauer
+---
 
-Jede Lektion enthaelt:
-- Klarer Titel
-- Beschreibung (1 Satz)
-- lesson_type (video/task/worksheet/quiz)
-- duration_seconds
-- meta.content_html mit vollstaendigem HTML-Inhalt (Erklaerung, Praxisbeispiel, Aufgabe, naechster Schritt)
-- Fuer Quiz: meta.quiz Array mit Fragen und Antworten
+## 2. Kunden-Dashboard Umbau
 
-## Keine Code-Aenderungen noetig
+### Problem
+Dashboard zeigt statische "0"-Karten. Kein Einstiegspunkt, keine Motivation.
 
-Die bestehenden LMS-Komponenten (LearningDashboard, CourseDetailView, LessonPlayerView) lesen bereits dynamisch aus der DB und rendern content_html. Der Kurs erscheint automatisch.
+### Loesung
+`KundeDashboard.tsx` komplett ersetzen durch ein Umsetzungs-Cockpit:
 
-## Dateien
+**Willkommens-Widget** (oben, volle Breite):
+- "Dein Signature System – Schritt fuer Schritt aufbauen"
+- Fortschrittsring (ProgressRing aus LMS wiederverwendet)
+- "Naechste Lektion: [Titel]" mit direktem Link
+- "Starte hier"-Button wenn noch kein Fortschritt
 
-- Keine Dateiaenderungen – nur Datenbank-Inserts
+**Freebie-Banner** (bleibt, wenn kein Produkt)
+
+**Quick-Links** (2 Karten):
+- "Mein System" statt "KI-Academy"
+- "Dokumente" statt "Meine Vertraege"
+
+**Stats** werden dynamisch aus `useLearningPaths` Hook befuellt statt statisch "0".
+
+### Datei-Aenderungen
+- `src/components/dashboard/KundeDashboard.tsx` – Komplett umschreiben
+- Importiert `useLearningPaths` fuer echte Fortschrittsdaten
+- Importiert `ProgressRing` aus LMS-Komponenten
+
+---
+
+## 3. Kurs 2 anlegen + Inhalte befuellen
+
+### Kurs 2: "ANFRAGEN & LEADS – Nie wieder Anfragen verlieren"
+Wird per SQL-Insert in die DB geschrieben (gleicher Ansatz wie Kurs 1):
+
+```text
+Kurs 2: ANFRAGEN & LEADS (Starter, published, sort_order: 0)
+├── Modul 3: Anfragen automatisch erfassen
+│   ├── L9: Warum Anfragen untergehen (video, 5 Min)
+│   ├── L10: Dein CRM in 15 Minuten einrichten (video, 12 Min)
+│   ├── L11: Automatische Lead-Erfassung einrichten (task)
+│   └── L12: Praxis: Deine ersten 5 Leads eintragen (task)
+├── Modul 4: Follow-ups, die laufen
+│   ├── L13: Warum Follow-ups Geld bringen (video, 5 Min)
+│   ├── L14: Automatische Follow-up-Sequenz bauen (video, 10 Min)
+│   ├── L15: E-Mail-Vorlage: Der perfekte Follow-up (worksheet)
+│   └── L16: Quiz: Follow-up-Strategie (quiz)
+```
+
+Alle Lektionen mit vollstaendigen `content_html` Texten im `meta`-Feld, Quizze mit Fragen/Antworten.
+
+### Arbeitsblatt-PDFs
+2 PDFs werden generiert und in `/mnt/documents/` abgelegt:
+1. "Prozess-Audit Arbeitsblatt" (fuer Kurs 1, L3)
+2. "Follow-up E-Mail-Vorlage" (fuer Kurs 2, L15)
+
+---
+
+## Dateien die geaendert werden
+
+1. **Migration**: `profiles` + `industry` + `primary_goal` Spalten
+2. `src/components/app/ProfileCompletionDialog.tsx` – 3-Step Onboarding Wizard
+3. `src/contexts/AuthContext.tsx` – Profile-Interface erweitern
+4. `src/components/dashboard/KundeDashboard.tsx` – Umsetzungs-Cockpit
+5. **DB-Inserts**: Kurs 2 mit 2 Modulen und 8 Lektionen
+6. **PDFs**: 2 Arbeitsblaetter generieren
 
