@@ -196,7 +196,7 @@ export const AiAnalysisWidget = () => {
                 <p className="text-muted-foreground text-center text-lg">{result.description}</p>
 
                 {/* Savings Cards */}
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="bg-foreground text-background rounded-2xl p-4 text-center">
                     <p className="text-xs uppercase tracking-wider opacity-70 mb-1">Pro Woche</p>
                     <p className="text-xl md:text-2xl font-bold">{result.savingsHoursLow}–{result.savingsHoursHigh} Std.</p>
@@ -221,9 +221,12 @@ export const AiAnalysisWidget = () => {
                     className={`${t.ctaPrimary} group`}
                   >
                     <Calendar className="inline-block mr-2 w-5 h-5" />
-                    Diese Prozesse setzen wir innerhalb von 14 Tagen für dich auf.
+                    Potenzial-Analyse sichern
                     <ArrowRight className="inline-block ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Wir setzen die ersten Automatisierungen innerhalb von 14 Tagen um.
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Dauert nur 2 Minuten • Kostenlos und unverbindlich
                   </p>

@@ -11,16 +11,16 @@ export const CompetitionSection = () => {
           <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-8 flex flex-col justify-center">
             <AlertCircle className="w-10 h-10 text-destructive mb-4" />
             <h3 className="text-xl font-bold text-foreground mb-3">
-              „KI bringt mir nichts" ist die teuerste Ausrede im Mittelstand.
+              Du verlierst jeden Monat Geld durch manuelle Prozesse.
             </h3>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Im Büro, in der Verwaltung, bei jedem Prozess der nicht am Kunden stattfindet – da bist du ersetzbar.
+              Jeder Prozess, der nicht am Kunden stattfindet und trotzdem manuell läuft – Verwaltung, Buchhaltung, Angebote, Follow-ups – kostet dich operative Stunden.
             </p>
             <p className="text-foreground font-semibold text-lg mb-2">
-              Und dort verlierst du jeden Tag Geld.
+              Stunden, die dir für Umsatz, Führung und Wachstum fehlen.
             </p>
             <p className="text-destructive font-bold text-lg">
-              Das kostet dich 2.000–5.000 € – jeden Monat.
+              Das sind 2.000–5.000 € – jeden Monat.
             </p>
           </div>
 

@@ -53,12 +53,9 @@ export const SolutionSection = () => {
           </div>
         </div>
 
-        <div className="text-center space-y-2">
+        <div className="text-center">
           <p className="text-xl font-semibold text-foreground">
             Weniger Chaos. Weniger Abhängigkeit. Mehr Kontrolle über dein Unternehmen.
-          </p>
-          <p className="text-muted-foreground">
-            Typische Ergebnisse: weniger Chaos, schnellere Abläufe, klarere Prozesse.
           </p>
         </div>
       </div>

@@ -24,7 +24,7 @@ export const Footer = () => {
               />
             </Link>
             <p className="text-muted text-sm">
-              Ganzheitliche Unternehmensberatung – aus der Praxis, für die Praxis.
+              Einfache Automatisierungen für Unternehmen – Struktur, Entlastung, Kontrolle.
             </p>
           </div>
           
