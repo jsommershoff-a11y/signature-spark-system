@@ -6,7 +6,6 @@ export const AboutFounderSection = () => {
     <section className={`${t.sectionPadding} bg-muted/30`}>
       <div className={`${t.container}`}>
         <div className="grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
-          {/* Image */}
           <div className="relative">
             <img
               src={founderPersonal}
@@ -18,7 +17,6 @@ export const AboutFounderSection = () => {
             </div>
           </div>
 
-          {/* Text */}
           <div className="space-y-5 text-base md:text-lg text-muted-foreground leading-relaxed">
             <p className="text-2xl md:text-3xl font-bold text-foreground">
               Ich bin kein klassischer Berater.
@@ -35,8 +33,11 @@ export const AboutFounderSection = () => {
             <p className="text-foreground font-semibold">
               Keine Theorie. Keine Frameworks. Funktionierende Systeme aus echter Praxis.
             </p>
+            <p className="text-foreground font-semibold">
+              Ich baue keine Chatbots. Ich baue Systeme.
+            </p>
             <p className="text-xl font-bold text-foreground border-l-4 border-primary pl-4">
-              Und genau das bauen wir jetzt auch für dich.
+              Dein Unternehmen funktioniert nur, solange du es tust. Das ändern wir.
             </p>
           </div>
         </div>

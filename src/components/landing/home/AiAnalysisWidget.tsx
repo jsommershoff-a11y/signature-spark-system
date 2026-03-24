@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, ChevronRight, Loader2, Sparkles, ArrowRight } from "lucide-react";
+import { Brain, ChevronRight, Loader2, Sparkles, ArrowRight, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
@@ -38,42 +38,33 @@ interface AnalysisResult {
   level: string;
   headline: string;
   description: string;
-  savingsHours: string;
-  savingsEuroMonth: string;
+  savingsHoursLow: number;
+  savingsHoursHigh: number;
   color: string;
 }
 
 function getResult(totalScore: number): AnalysisResult {
   if (totalScore >= 16) {
     return {
-      score: totalScore,
-      level: "KRITISCH",
+      score: totalScore, level: "KRITISCH",
       headline: "Du verlierst massiv Zeit und Umsatz.",
       description: "Dein Unternehmen hat enormes Automatisierungs-Potenzial. Du verschwendest aktuell geschätzt 15–25 Stunden pro Woche mit Aufgaben, die ein System in Sekunden erledigen kann.",
-      savingsHours: "15–25 Std./Woche",
-      savingsEuroMonth: `${(15 * HOURLY_RATE * 4).toLocaleString("de-DE")}–${(25 * HOURLY_RATE * 4).toLocaleString("de-DE")} €/Monat`,
-      color: "text-destructive",
+      savingsHoursLow: 15, savingsHoursHigh: 25, color: "text-destructive",
     };
   }
   if (totalScore >= 11) {
     return {
-      score: totalScore,
-      level: "HOCH",
+      score: totalScore, level: "HOCH",
       headline: "Du hast deutliches Optimierungspotenzial.",
       description: "Viele deiner Prozesse laufen noch manuell. Mit einfachen Automatisierungen kannst du sofort 8–15 Stunden pro Woche einsparen und dein Team entlasten.",
-      savingsHours: "8–15 Std./Woche",
-      savingsEuroMonth: `${(8 * HOURLY_RATE * 4).toLocaleString("de-DE")}–${(15 * HOURLY_RATE * 4).toLocaleString("de-DE")} €/Monat`,
-      color: "text-orange-500",
+      savingsHoursLow: 8, savingsHoursHigh: 15, color: "text-orange-500",
     };
   }
   return {
-    score: totalScore,
-    level: "MODERAT",
+    score: totalScore, level: "MODERAT",
     headline: "Du bist auf einem guten Weg – aber da geht mehr.",
     description: "Dein Unternehmen hat solide Grundlagen, aber gezielte Automatisierungen können dir noch 3–8 Stunden pro Woche sparen und Fehlerquellen eliminieren.",
-    savingsHours: "3–8 Std./Woche",
-    savingsEuroMonth: `${(3 * HOURLY_RATE * 4).toLocaleString("de-DE")}–${(8 * HOURLY_RATE * 4).toLocaleString("de-DE")} €/Monat`,
-    color: "text-primary",
+    savingsHoursLow: 3, savingsHoursHigh: 8, color: "text-primary",
   };
 }
 
@@ -108,9 +99,18 @@ export const AiAnalysisWidget = () => {
     setResult(null);
   };
 
+  const fmt = (n: number) => n.toLocaleString("de-DE");
+
   return (
     <section id="ki-analyse" className={t.sectionPadding}>
       <div className="max-w-3xl mx-auto px-4">
+        {/* Intro text above widget */}
+        <div className="text-center mb-8">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Die meisten Unternehmer unterschätzen, wie viel Zeit und Geld sie jeden Monat durch manuelle Prozesse verlieren. Diese Analyse zeigt dir in 60 Sekunden, wo dein größtes Einsparpotenzial liegt.
+          </p>
+        </div>
+
         <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-background to-primary/5 shadow-xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-primary to-primary-light p-6 text-center">
@@ -135,15 +135,12 @@ export const AiAnalysisWidget = () => {
                 <p className="text-lg text-muted-foreground">
                   Finde heraus, wie viele Stunden und Euro du jede Woche verlierst – weil Prozesse manuell laufen, die längst automatisiert sein könnten.
                 </p>
-                <button
-                  onClick={handleStart}
-                  className={`${t.ctaPrimary} group`}
-                >
+                <button onClick={handleStart} className={`${t.ctaPrimary} group`}>
                   <Sparkles className="inline-block mr-2 w-5 h-5" />
                   Jetzt analysieren
                 </button>
                 <p className="text-xs text-muted-foreground">
-                  Keine E-Mail nötig • 100 % kostenlos
+                  Keine E-Mail nötig • 100 % kostenlos • Dauert nur 2 Minuten
                 </p>
               </div>
             )}
@@ -153,22 +150,11 @@ export const AiAnalysisWidget = () => {
               <div>
                 <div className="flex gap-1 mb-6">
                   {questions.map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-1.5 flex-1 rounded-full transition-all ${
-                        i <= step ? "bg-primary" : "bg-muted"
-                      }`}
-                    />
+                    <div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${i <= step ? "bg-primary" : "bg-muted"}`} />
                   ))}
                 </div>
-
-                <p className="text-sm text-muted-foreground mb-2">
-                  Frage {step + 1} von {questions.length}
-                </p>
-                <h4 className="text-xl font-semibold text-foreground mb-6">
-                  {questions[step].question}
-                </h4>
-
+                <p className="text-sm text-muted-foreground mb-2">Frage {step + 1} von {questions.length}</p>
+                <h4 className="text-xl font-semibold text-foreground mb-6">{questions[step].question}</h4>
                 <div className="space-y-3">
                   {questions[step].options.map((option, i) => (
                     <button
@@ -206,42 +192,42 @@ export const AiAnalysisWidget = () => {
                   </div>
                 </div>
 
-                <h4 className="text-2xl font-bold text-foreground text-center">
-                  {result.headline}
-                </h4>
-
-                <p className="text-muted-foreground text-center text-lg">
-                  {result.description}
-                </p>
+                <h4 className="text-2xl font-bold text-foreground text-center">{result.headline}</h4>
+                <p className="text-muted-foreground text-center text-lg">{result.description}</p>
 
                 {/* Savings Cards */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-foreground text-background rounded-2xl p-5 text-center">
-                    <p className="text-xs uppercase tracking-wider opacity-70 mb-1">Zeitersparnis</p>
-                    <p className="text-2xl md:text-3xl font-bold">{result.savingsHours}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-foreground text-background rounded-2xl p-4 text-center">
+                    <p className="text-xs uppercase tracking-wider opacity-70 mb-1">Pro Woche</p>
+                    <p className="text-xl md:text-2xl font-bold">{result.savingsHoursLow}–{result.savingsHoursHigh} Std.</p>
                   </div>
-                  <div className="bg-primary text-primary-foreground rounded-2xl p-5 text-center">
-                    <p className="text-xs uppercase tracking-wider opacity-80 mb-1">Wert bei 80 €/Std.</p>
-                    <p className="text-2xl md:text-3xl font-bold">{result.savingsEuroMonth}</p>
+                  <div className="bg-primary text-primary-foreground rounded-2xl p-4 text-center">
+                    <p className="text-xs uppercase tracking-wider opacity-80 mb-1">Pro Monat</p>
+                    <p className="text-xl md:text-2xl font-bold">{fmt(result.savingsHoursLow * HOURLY_RATE * 4)}–{fmt(result.savingsHoursHigh * HOURLY_RATE * 4)} €</p>
+                  </div>
+                  <div className="bg-destructive text-white rounded-2xl p-4 text-center">
+                    <p className="text-xs uppercase tracking-wider opacity-80 mb-1">Auf 12 Monate</p>
+                    <p className="text-xl md:text-2xl font-bold">{fmt(result.savingsHoursLow * HOURLY_RATE * 4 * 12)}–{fmt(result.savingsHoursHigh * HOURLY_RATE * 4 * 12)} €</p>
                   </div>
                 </div>
 
-                <p className="text-center text-sm text-muted-foreground">
-                  Ungenutzte Automatisierung erzeugt direkte operative Kosten – jeden Tag.
+                <p className="text-center text-foreground font-semibold text-lg">
+                  Wenn du nichts änderst, bleibt das exakt so. Jeden Monat.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+                <div className="flex flex-col items-center gap-3 pt-2">
                   <button
                     onClick={() => navigate("/qualifizierung")}
                     className={`${t.ctaPrimary} group`}
                   >
-                    Kostenloses Strategiegespräch sichern
+                    <Calendar className="inline-block mr-2 w-5 h-5" />
+                    Diese Prozesse setzen wir innerhalb von 14 Tagen für dich auf.
                     <ArrowRight className="inline-block ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
+                  <p className="text-xs text-muted-foreground">
+                    Dauert nur 2 Minuten • Kostenlos und unverbindlich
+                  </p>
                 </div>
-                <p className="text-center text-sm text-muted-foreground">
-                  In 45 Min. zeigen wir dir, welche Automatisierungen bei dir sofort wirken.
-                </p>
 
                 <button onClick={handleReset} className="block mx-auto text-sm text-muted-foreground underline hover:text-foreground transition-colors">
                   Analyse wiederholen

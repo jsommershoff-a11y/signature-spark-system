@@ -1,4 +1,4 @@
-import { AlertTriangle, XCircle, Brain, ShieldAlert, Wrench, Bot, Cog, Clock, TrendingDown, CheckCircle2, ArrowRight, BarChart3 } from "lucide-react";
+import { AlertTriangle, XCircle, Brain, ShieldAlert, Wrench, Bot, Cog, Clock, TrendingDown, CheckCircle2, BarChart3 } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 const misconceptions = [
@@ -38,13 +38,8 @@ const dangers = [
 ];
 
 const simpleProcesses = [
-  "Buchhaltung",
-  "Angebote",
-  "Follow-ups",
-  "Personalplanung",
-  "Terminplanung",
-  "Dokumentation",
-  "Rechnungsstellung",
+  "Buchhaltung", "Angebote", "Follow-ups", "Personalplanung",
+  "Terminplanung", "Dokumentation", "Rechnungsstellung",
 ];
 
 export const AiRealitySection = () => {
@@ -52,11 +47,17 @@ export const AiRealitySection = () => {
     <section className={`${t.sectionPadding} bg-muted/30`}>
       <div className={`${t.container}`}>
         {/* Opener */}
-        <div className="max-w-3xl mx-auto text-center mb-14">
+        <div className="max-w-3xl mx-auto text-center mb-6">
           <span className={`${t.badgeAccent} mb-4`}>KI-Realitätscheck</span>
           <h2 className={`${t.headline.h2} text-foreground mt-4 mb-4`}>
             Die meisten Unternehmen setzen KI komplett falsch ein.
           </h2>
+          <p className="text-lg text-muted-foreground font-medium">
+            Wir bauen keine Chatbots. Wir verkaufen keine Tools. Wir bauen Systeme, die funktionieren.
+          </p>
+        </div>
+
+        <div className="max-w-3xl mx-auto mb-14">
           <div className="space-y-3 mt-8">
             {misconceptions.map((item) => (
               <div
@@ -68,13 +69,13 @@ export const AiRealitySection = () => {
               </div>
             ))}
           </div>
-          <p className="text-muted-foreground text-lg mt-6">
+          <p className="text-muted-foreground text-lg mt-6 text-center">
             Währenddessen verlieren sie jeden Tag Stunden – unnötig.
           </p>
-          <p className="text-2xl md:text-3xl font-bold text-foreground mt-6">
+          <p className="text-2xl md:text-3xl font-bold text-foreground mt-6 text-center">
             Du brauchst keinen weiteren KI-Assistenten.
             <br />
-            <span className="text-primary">Du brauchst Systeme.</span>
+            <span className="text-primary">Du brauchst dein Signature System.</span>
           </p>
         </div>
 
@@ -90,12 +91,8 @@ export const AiRealitySection = () => {
               </div>
               <div className="mt-10 text-center mb-6">
                 <Bot className="w-12 h-12 text-destructive mx-auto mb-3 opacity-80" />
-                <h3 className="text-xl md:text-2xl font-bold text-foreground">
-                  Unnötige Chatbots
-                </h3>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Komplexität ohne Ergebnis
-                </p>
+                <h3 className="text-xl md:text-2xl font-bold text-foreground">Unnötige Chatbots</h3>
+                <p className="text-muted-foreground text-sm mt-1">Komplexität ohne Ergebnis</p>
               </div>
               <div className="space-y-3">
                 {wrongSide.map((item) => (
@@ -105,9 +102,6 @@ export const AiRealitySection = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-center text-destructive font-semibold text-sm mt-5">
-                Status: Warten auf Antwort. Fehlerbehebung: Gescheitert.
-              </p>
             </div>
 
             {/* RICHTIG */}
@@ -119,12 +113,8 @@ export const AiRealitySection = () => {
               </div>
               <div className="mt-10 text-center mb-6">
                 <Cog className="w-12 h-12 text-primary mx-auto mb-3" />
-                <h3 className="text-xl md:text-2xl font-bold text-foreground">
-                  Effektive Systeme
-                </h3>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Zeiteinsparung: Maximal
-                </p>
+                <h3 className="text-xl md:text-2xl font-bold text-foreground">Effektive Systeme</h3>
+                <p className="text-muted-foreground text-sm mt-1">Zeiteinsparung: Maximal</p>
               </div>
               <div className="space-y-3">
                 {rightSide.map((item) => (
@@ -134,23 +124,14 @@ export const AiRealitySection = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-center text-primary font-semibold text-sm mt-5">
-                Du brauchst ein System, das KI nutzt und deine Prozesse automatisiert.
-              </p>
             </div>
           </div>
-          <p className="text-center text-foreground font-bold text-lg mt-6">
-            Vergiss KI-Assistenten. Du brauchst ein System.
-          </p>
         </div>
 
         {/* Danger Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-14">
           {dangers.map((d) => (
-            <div
-              key={d.headline}
-              className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 flex flex-col"
-            >
+            <div key={d.headline} className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 flex flex-col">
               <d.icon className="w-8 h-8 text-destructive mb-4" />
               <h3 className="text-lg font-bold text-foreground mb-2">{d.headline}</h3>
               <p className="text-muted-foreground leading-relaxed">{d.text}</p>
@@ -168,18 +149,13 @@ export const AiRealitySection = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             {simpleProcesses.map((p) => (
-              <span
-                key={p}
-                className="px-5 py-2.5 bg-primary/10 text-primary font-semibold rounded-full border border-primary/20 text-base"
-              >
+              <span key={p} className="px-5 py-2.5 bg-primary/10 text-primary font-semibold rounded-full border border-primary/20 text-base">
                 {p}
               </span>
             ))}
           </div>
           <p className="text-foreground font-semibold text-lg">
-            Das ist kein Zukunftsthema.
-            <br />
-            Das ist operatives Versagen.
+            Das ist kein Zukunftsthema.<br />Das ist operatives Versagen.
           </p>
         </div>
 

@@ -14,13 +14,12 @@ export const ResultsSection = () => {
     <section className={t.sectionPadding}>
       <div className={t.container}>
         <div className="grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
-          {/* Content */}
           <div>
             <h2 className={`${t.headline.h2} text-foreground mb-8`}>
               Unternehmen, die ihre Prozesse automatisieren:
             </h2>
 
-            <div className="space-y-4 mb-8">
+            <div className="space-y-4 mb-6">
               {results.map((r) => (
                 <div key={r.text} className="flex items-center gap-4 p-3 rounded-xl bg-primary/5 border border-primary/10">
                   <r.icon className="w-6 h-6 text-primary flex-shrink-0" />
@@ -28,6 +27,10 @@ export const ResultsSection = () => {
                 </div>
               ))}
             </div>
+
+            <p className="text-muted-foreground text-sm mb-8">
+              Unternehmen, die wir begleiten, gewinnen jede Woche mehrere Stunden zurück – durch weniger manuelle Übergaben und klarere Abläufe.
+            </p>
 
             <div className="bg-foreground text-background rounded-2xl p-6 text-center">
               <p className="text-lg mb-1">Und vor allem:</p>
@@ -37,11 +40,10 @@ export const ResultsSection = () => {
             </div>
           </div>
 
-          {/* Image */}
           <div className="hidden md:block">
             <img
               src={founderAbout}
-              alt="Ergebnisse mit KRS Signature"
+              alt="Ergebnisse mit dem Signature System"
               className="rounded-2xl shadow-xl w-full object-cover aspect-square"
             />
           </div>
