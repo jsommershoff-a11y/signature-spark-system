@@ -63,7 +63,6 @@ const MasterHome = () => {
         <ResultsSection />
         <TransformationFinancingSection />
         <AboutFounderSection />
-        <AboutFounderSection />
 
         <FAQSection
           headline="Häufige Fragen – ehrlich beantwortet"
