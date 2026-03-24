@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, ChevronRight, CheckCircle, Loader2, Sparkles, ArrowRight } from "lucide-react";
+import { Brain, ChevronRight, Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
@@ -31,12 +31,15 @@ const questions = [
   },
 ];
 
+const HOURLY_RATE = 80;
+
 interface AnalysisResult {
   score: number;
   level: string;
   headline: string;
   description: string;
-  savings: string;
+  savingsHours: string;
+  savingsEuroMonth: string;
   color: string;
 }
 
@@ -47,7 +50,8 @@ function getResult(totalScore: number): AnalysisResult {
       level: "KRITISCH",
       headline: "Du verlierst massiv Zeit und Umsatz.",
       description: "Dein Unternehmen hat enormes Automatisierungs-Potenzial. Du verschwendest aktuell geschätzt 15–25 Stunden pro Woche mit Aufgaben, die ein System in Sekunden erledigen kann.",
-      savings: "15–25 Std./Woche",
+      savingsHours: "15–25 Std./Woche",
+      savingsEuroMonth: `${(15 * HOURLY_RATE * 4).toLocaleString("de-DE")}–${(25 * HOURLY_RATE * 4).toLocaleString("de-DE")} €/Monat`,
       color: "text-destructive",
     };
   }
@@ -57,7 +61,8 @@ function getResult(totalScore: number): AnalysisResult {
       level: "HOCH",
       headline: "Du hast deutliches Optimierungspotenzial.",
       description: "Viele deiner Prozesse laufen noch manuell. Mit einfachen Automatisierungen kannst du sofort 8–15 Stunden pro Woche einsparen und dein Team entlasten.",
-      savings: "8–15 Std./Woche",
+      savingsHours: "8–15 Std./Woche",
+      savingsEuroMonth: `${(8 * HOURLY_RATE * 4).toLocaleString("de-DE")}–${(15 * HOURLY_RATE * 4).toLocaleString("de-DE")} €/Monat`,
       color: "text-orange-500",
     };
   }
@@ -66,14 +71,15 @@ function getResult(totalScore: number): AnalysisResult {
     level: "MODERAT",
     headline: "Du bist auf einem guten Weg – aber da geht mehr.",
     description: "Dein Unternehmen hat solide Grundlagen, aber gezielte Automatisierungen können dir noch 3–8 Stunden pro Woche sparen und Fehlerquellen eliminieren.",
-    savings: "3–8 Std./Woche",
+    savingsHours: "3–8 Std./Woche",
+    savingsEuroMonth: `${(3 * HOURLY_RATE * 4).toLocaleString("de-DE")}–${(8 * HOURLY_RATE * 4).toLocaleString("de-DE")} €/Monat`,
     color: "text-primary",
   };
 }
 
 export const AiAnalysisWidget = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(-1); // -1 = intro, 0-4 = questions, 5 = analyzing, 6 = result
+  const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<number[]>([]);
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
@@ -87,7 +93,7 @@ export const AiAnalysisWidget = () => {
     if (step < questions.length - 1) {
       setStep(step + 1);
     } else {
-      setStep(5); // analyzing
+      setStep(5);
       const total = newAnswers.reduce((a, b) => a + b, 0);
       setTimeout(() => {
         setResult(getResult(total));
@@ -115,7 +121,7 @@ export const AiAnalysisWidget = () => {
               </span>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground">
-              Wie viel Zeit verlierst du pro Woche?
+              Wie viel Zeit und Geld verlierst du pro Woche?
             </h3>
             <p className="text-primary-foreground/70 mt-2">
               5 Fragen • 60 Sekunden • Sofortige Auswertung
@@ -127,7 +133,7 @@ export const AiAnalysisWidget = () => {
             {step === -1 && (
               <div className="text-center space-y-6">
                 <p className="text-lg text-muted-foreground">
-                  Finde in 60 Sekunden heraus, wie viel Automatisierungs-Potenzial in deinem Unternehmen steckt – und wie viele Stunden du pro Woche einsparen kannst.
+                  Finde heraus, wie viele Stunden und Euro du jede Woche verlierst – weil Prozesse manuell laufen, die längst automatisiert sein könnten.
                 </p>
                 <button
                   onClick={handleStart}
@@ -145,7 +151,6 @@ export const AiAnalysisWidget = () => {
             {/* Questions */}
             {step >= 0 && step < questions.length && (
               <div>
-                {/* Progress */}
                 <div className="flex gap-1 mb-6">
                   {questions.map((_, i) => (
                     <div
@@ -191,7 +196,6 @@ export const AiAnalysisWidget = () => {
             {/* Result */}
             {step === 6 && result && (
               <div className="space-y-6">
-                {/* Score Badge */}
                 <div className="text-center">
                   <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full font-bold text-lg ${
                     result.level === "KRITISCH" ? "bg-destructive/10 text-destructive" :
@@ -210,11 +214,21 @@ export const AiAnalysisWidget = () => {
                   {result.description}
                 </p>
 
-                {/* Savings Card */}
-                <div className="bg-foreground text-background rounded-2xl p-6 text-center">
-                  <p className="text-sm uppercase tracking-wider opacity-70 mb-1">Geschätzte Zeitersparnis durch Automatisierung</p>
-                  <p className="text-4xl font-bold">{result.savings}</p>
+                {/* Savings Cards */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-foreground text-background rounded-2xl p-5 text-center">
+                    <p className="text-xs uppercase tracking-wider opacity-70 mb-1">Zeitersparnis</p>
+                    <p className="text-2xl md:text-3xl font-bold">{result.savingsHours}</p>
+                  </div>
+                  <div className="bg-primary text-primary-foreground rounded-2xl p-5 text-center">
+                    <p className="text-xs uppercase tracking-wider opacity-80 mb-1">Wert bei 80 €/Std.</p>
+                    <p className="text-2xl md:text-3xl font-bold">{result.savingsEuroMonth}</p>
+                  </div>
                 </div>
+
+                <p className="text-center text-sm text-muted-foreground">
+                  Ungenutzte Automatisierung erzeugt direkte operative Kosten – jeden Tag.
+                </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
                   <button

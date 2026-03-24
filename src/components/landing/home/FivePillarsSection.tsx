@@ -2,9 +2,18 @@ import { XCircle } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 const points = [
-  "keine klare Struktur",
-  "keine automatisierten Abläufe",
-  "keine saubere Organisation",
+  {
+    title: "Keine klare Struktur",
+    text: "Aufgaben entstehen, aber niemand weiß, wer was bis wann erledigt.",
+  },
+  {
+    title: "Keine automatisierten Abläufe",
+    text: "Jeder Handgriff passiert manuell und fehleranfällig.",
+  },
+  {
+    title: "Keine saubere Organisation",
+    text: "Informationen liegen verstreut, Übergaben gehen verloren.",
+  },
 ];
 
 export const FivePillarsSection = () => {
@@ -15,11 +24,14 @@ export const FivePillarsSection = () => {
           Die meisten Unternehmen haben:
         </h2>
 
-        <div className="space-y-4 mb-10 max-w-md mx-auto">
+        <div className="space-y-4 mb-10 max-w-xl mx-auto">
           {points.map((point) => (
-            <div key={point} className="flex items-center gap-4 p-4 bg-destructive/5 rounded-xl border border-destructive/20">
-              <XCircle className="w-6 h-6 text-destructive flex-shrink-0" />
-              <p className="text-foreground text-lg text-left">{point}</p>
+            <div key={point.title} className="flex items-start gap-4 p-5 bg-destructive/5 rounded-xl border border-destructive/20 text-left">
+              <XCircle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-foreground text-lg font-semibold">{point.title}</p>
+                <p className="text-muted-foreground mt-1">{point.text}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -28,7 +40,7 @@ export const FivePillarsSection = () => {
           <p className="text-lg text-muted-foreground">Alles läuft manuell.</p>
           <p className="text-lg text-muted-foreground">Alles läuft über den Unternehmer.</p>
           <p className="text-xl font-semibold text-foreground mt-4">
-            Und genau deshalb entsteht Chaos.
+            Und genau deshalb wächst dein Unternehmen nicht.
           </p>
         </div>
       </div>

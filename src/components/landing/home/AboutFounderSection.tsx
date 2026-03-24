@@ -14,7 +14,7 @@ export const AboutFounderSection = () => {
               className="rounded-2xl shadow-xl w-full object-cover aspect-[4/5]"
             />
             <div className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground font-bold text-sm px-5 py-3 rounded-xl shadow-lg">
-              10+ Jahre Erfahrung
+              Aus der Praxis, nicht aus dem Lehrbuch
             </div>
           </div>
 
@@ -31,6 +31,9 @@ export const AboutFounderSection = () => {
             </p>
             <p>
               Heute laufen Prozesse, die früher Zeit gefressen haben, automatisiert im Hintergrund.
+            </p>
+            <p className="text-foreground font-semibold">
+              Keine Theorie. Keine Frameworks. Funktionierende Systeme aus echter Praxis.
             </p>
             <p className="text-xl font-bold text-foreground border-l-4 border-primary pl-4">
               Und genau das bauen wir jetzt auch für dich.

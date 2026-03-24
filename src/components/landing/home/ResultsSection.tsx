@@ -1,12 +1,12 @@
-import { CheckCircle, TrendingUp, Clock, ShieldCheck, Users } from "lucide-react";
+import { Users, Zap, GitBranch, TrendingUp } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 import founderAbout from "@/assets/founder-about.jpeg";
 
 const results = [
-  { text: "sparen täglich 2–4 Stunden operative Arbeit", icon: Clock },
-  { text: "verlieren keine einzige Anfrage mehr", icon: ShieldCheck },
-  { text: "arbeiten strukturierter als 95 % ihrer Wettbewerber", icon: TrendingUp },
-  { text: "entlasten sich selbst und ihr Team sofort", icon: Users },
+  { text: "Weniger operative Abhängigkeit von einzelnen Personen", icon: Users },
+  { text: "Schnellere Reaktionszeiten auf Kundenanfragen", icon: Zap },
+  { text: "Sauberere Prozesse mit weniger manuellen Übergaben", icon: GitBranch },
+  { text: "Bessere Planbarkeit für Wachstum und Skalierung", icon: TrendingUp },
 ];
 
 export const ResultsSection = () => {

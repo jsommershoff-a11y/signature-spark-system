@@ -1,11 +1,13 @@
-import { AlertCircle, X } from "lucide-react";
+import { X } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 const problems = [
-  "Du bist in jedem Prozess involviert",
-  "Entscheidungen bleiben an dir hängen",
-  "Dein Team wartet auf dich",
-  "Dinge gehen unter oder werden vergessen",
+  "Kundenanfragen liegen in WhatsApp, E-Mail und Excel verteilt",
+  "Follow-ups werden vergessen, weil niemand sie trackt",
+  "Dein Team fragt dich bei jeder Kleinigkeit, weil es keine klaren Abläufe gibt",
+  "Angebote werden zu spät geschickt, weil der Prozess manuell ist",
+  "Informationen stecken in Köpfen statt in Systemen",
+  "Ohne dich steht alles still",
 ];
 
 export const EmotionalHookSection = () => {
@@ -38,6 +40,9 @@ export const EmotionalHookSection = () => {
           <p className="text-lg text-muted-foreground">Das Problem ist nicht dein Einsatz.</p>
           <p className="text-2xl md:text-3xl font-bold text-foreground mt-4">
             Das Problem ist: Dir fehlt ein funktionierendes System.
+          </p>
+          <p className="text-lg text-muted-foreground mt-3">
+            Und jeder Tag ohne System kostet dich bares Geld.
           </p>
         </div>
       </div>

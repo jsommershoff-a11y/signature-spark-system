@@ -13,12 +13,10 @@ export const CompetitionSection = () => {
               „KI bringt mir nichts" ist die teuerste Ausrede im Mittelstand.
             </h3>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Auf der Baustelle bist du unersetzlich.
-              <br />
-              Im Büro bist du es nicht.
+              Im Büro, in der Verwaltung, bei jedem Prozess der nicht am Kunden stattfindet – da bist du ersetzbar.
             </p>
             <p className="text-foreground font-semibold text-lg">
-              Und genau dort verlierst du jeden Tag Geld.
+              Und dort verlierst du jeden Tag Geld.
             </p>
           </div>
 
@@ -32,11 +30,8 @@ export const CompetitionSection = () => {
               Nicht perfekt. Aber besser als du.
             </p>
             <p className="text-foreground leading-relaxed">
-              Und das reicht, um schneller zu wachsen,
-              <br />
-              mehr Anfragen zu bearbeiten
-              <br />
-              und <span className="font-bold text-primary">weniger Chaos</span> zu haben.
+              Und das reicht, um dir Kunden wegzunehmen, schneller Angebote rauszuschicken und mit weniger Aufwand{" "}
+              <span className="font-bold text-primary">mehr Umsatz zu machen.</span>
             </p>
           </div>
         </div>

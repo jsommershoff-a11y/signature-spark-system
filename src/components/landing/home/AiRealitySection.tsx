@@ -1,8 +1,8 @@
-import { AlertTriangle, XCircle, Brain, ShieldAlert } from "lucide-react";
+import { AlertTriangle, XCircle, Brain, ShieldAlert, Wrench } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 const misconceptions = [
-  "Sie bauen Chatbots, die keiner braucht.",
+  "Sie bezahlen Agenturen für Chatbots, die kein Kunde nutzt.",
   "Sie automatisieren Dinge, die keinen ROI haben.",
   "Und verpassen die einfachsten Hebel, die sofort Zeit sparen würden.",
 ];
@@ -30,6 +30,9 @@ const simpleProcesses = [
   "Angebote",
   "Follow-ups",
   "Personalplanung",
+  "Terminplanung",
+  "Dokumentation",
+  "Rechnungsstellung",
 ];
 
 export const AiRealitySection = () => {
@@ -78,7 +81,7 @@ export const AiRealitySection = () => {
         </div>
 
         {/* Simple Processes */}
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto text-center mb-14">
           <h3 className={`${t.headline.h3} text-foreground mb-2`}>
             Die größten Gewinne liegen nicht in komplexer KI.
           </h3>
@@ -100,6 +103,24 @@ export const AiRealitySection = () => {
             <br />
             Das ist operatives Versagen.
           </p>
+        </div>
+
+        {/* Handwerker / Mittelstand Block */}
+        <div className="max-w-3xl mx-auto">
+          <div className="rounded-2xl border border-border bg-card p-8 md:p-10 text-center">
+            <Wrench className="w-10 h-10 text-primary mx-auto mb-4" />
+            <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4">
+              „KI bringt mir nichts" ist die teuerste Ausrede im Mittelstand.
+            </h3>
+            <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
+              Auf der Baustelle, in der Werkstatt, beim Kunden – da bist du unersetzlich.
+              Aber in der Buchhaltung, Terminplanung, Angebotserstellung und Dokumentation?
+              Da verlierst du jeden Tag Geld.
+              <span className="block mt-3 text-foreground font-semibold">
+                Und genau dort greifen einfache Automatisierungen sofort.
+              </span>
+            </p>
+          </div>
         </div>
       </div>
     </section>

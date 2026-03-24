@@ -34,8 +34,7 @@ export const FinalCtaSection = ({ onCtaClick }: FinalCtaSectionProps) => {
               </div>
               <p className="text-white/90 mb-2 font-medium">Du machst weiter wie bisher</p>
               <p className="text-white/60">
-                → mehr Stress, mehr Chaos, mehr Abhängigkeit.
-                Jeden Tag verlierst du Geld, Kunden und Lebenszeit.
+                Alles bleibt an dir hängen. Dein Team wartet. Anfragen gehen unter. Du arbeitest abends und am Wochenende.
               </p>
             </div>
             <div className="bg-primary/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-primary/50 ring-2 ring-primary/20">
@@ -45,14 +44,13 @@ export const FinalCtaSection = ({ onCtaClick }: FinalCtaSectionProps) => {
               </div>
               <p className="text-white/90 mb-2 font-medium">Du baust ein System, das dich entlastet</p>
               <p className="text-white/60">
-                → mehr Struktur, mehr Zeit, mehr Kontrolle.
-                In 14 Tagen spürst du den Unterschied.
+                Innerhalb von 14 Tagen laufen erste Prozesse automatisiert. Du gewinnst Zeit zurück. Dein Team arbeitet eigenständig.
               </p>
             </div>
           </div>
 
           <p className="text-xl text-white/80 mb-8 font-medium">
-            Warte nicht, bis es zu spät ist. Deine Konkurrenz automatisiert bereits.
+            Jeder Tag, an dem du wartest, kostet dich Stunden, Geld und Nerven.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

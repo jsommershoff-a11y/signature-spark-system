@@ -13,7 +13,7 @@ export const OfferSection = ({ onCtaClick }: OfferSectionProps) => {
           Du hast zwei Möglichkeiten:
         </h2>
         <p className="text-center text-muted-foreground mb-10 text-lg">
-          Beide führen zum Ziel. Aber nur eine spart dir Monate.
+          Warte nicht. Jeder Tag ohne System kostet dich Stunden und Umsatz.
         </p>
 
         <div className="grid md:grid-cols-2 gap-6 mb-10">
@@ -21,8 +21,11 @@ export const OfferSection = ({ onCtaClick }: OfferSectionProps) => {
             <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-4" />
             <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">1. Du setzt es selbst um</p>
             <p className="text-foreground font-medium mb-2">Struktur lernen & eigenständig automatisieren</p>
-            <p className="text-muted-foreground leading-relaxed text-sm">
+            <p className="text-muted-foreground leading-relaxed text-sm mb-3">
               Du bekommst eine klare Schritt-für-Schritt-Anleitung und setzt alles in deinem Tempo um.
+            </p>
+            <p className="text-sm font-medium text-muted-foreground">
+              Du sparst Geld, investierst aber Zeit.
             </p>
           </div>
           <div className="rounded-2xl border-2 border-primary/40 bg-primary/5 shadow-md hover:shadow-lg transition-all p-6 text-center relative">
@@ -32,8 +35,11 @@ export const OfferSection = ({ onCtaClick }: OfferSectionProps) => {
             <Handshake className="w-10 h-10 text-primary mx-auto mb-4" />
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">2. Wir setzen es gemeinsam um</p>
             <p className="text-foreground font-medium mb-2">Done-with-you in 30 Tagen</p>
-            <p className="text-muted-foreground leading-relaxed text-sm">
+            <p className="text-muted-foreground leading-relaxed text-sm mb-3">
               Wir bauen dein System mit dir auf – direkt in deinem Unternehmen, angepasst an deine Prozesse. Ergebnisse ab Tag 1.
+            </p>
+            <p className="text-sm font-semibold text-primary">
+              Du investierst einmal, sparst ab Tag 1.
             </p>
           </div>
         </div>
