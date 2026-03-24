@@ -50,7 +50,6 @@ export const FinalCtaSection = ({ onCtaClick }: FinalCtaSectionProps) => {
                 <li>→ Innerhalb von 14 Tagen laufen erste Prozesse automatisiert</li>
                 <li>→ Dein Team arbeitet eigenständig</li>
                 <li>→ Du gewinnst Zeit und Kontrolle zurück</li>
-                <li>→ Dein Unternehmen wächst, ohne dass du mehr arbeitest</li>
               </ul>
             </div>
           </div>

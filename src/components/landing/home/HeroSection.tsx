@@ -48,7 +48,7 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
             </button>
           </div>
 
-          <p className="text-xs text-white/50 mb-6">
+          <p className="text-xs text-white/50 mb-8">
             Kostenlos und unverbindlich • Dauert nur 2 Minuten
           </p>
 

@@ -221,9 +221,12 @@ export const AiAnalysisWidget = () => {
                     className={`${t.ctaPrimary} group`}
                   >
                     <Calendar className="inline-block mr-2 w-5 h-5" />
-                    Diese Prozesse setzen wir innerhalb von 14 Tagen für dich auf.
+                    Potenzial-Analyse sichern
                     <ArrowRight className="inline-block ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Wir setzen die ersten Automatisierungen innerhalb von 14 Tagen um.
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Dauert nur 2 Minuten • Kostenlos und unverbindlich
                   </p>

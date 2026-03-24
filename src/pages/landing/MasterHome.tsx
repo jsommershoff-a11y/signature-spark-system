@@ -21,23 +21,27 @@ import { CompetitionSection } from "@/components/landing/home/CompetitionSection
 const faqItems = [
   {
     question: "Funktioniert das auch in meiner Branche?",
-    answer: "Ja. Unser System ist branchenübergreifend erprobt – von Handwerk über Praxen bis zu Dienstleistern und Immobilien. Wir passen die Strategie individuell an deine Geschäftsprozesse an.",
+    answer: "Ja. Unser Signature System ist branchenübergreifend erprobt – von Handwerk über Praxen bis zu Dienstleistern und Immobilien. Die Prozesse sind unterschiedlich, die Engpässe sind überall dieselben.",
+  },
+  {
+    question: "Ich habe keine Zeit für so ein Projekt.",
+    answer: "Genau deshalb brauchst du es. Wir übernehmen Setup und Umsetzung. Dein Zeitaufwand: ca. 30 Minuten pro Woche für ein kurzes Status-Update. Alles andere läuft.",
+  },
+  {
+    question: "Was genau bekomme ich?",
+    answer: "Ein funktionierendes operatives System: automatisierte Lead-Erfassung, Follow-ups, Aufgabenverteilung, Angebotsprozesse und Reporting. Plattform + persönliches Sparring – kein Kurs, kein Tool-Verkauf.",
   },
   {
     question: "Wie schnell sehe ich Ergebnisse?",
-    answer: "Die meisten Partner sehen erste Effizienzgewinne innerhalb von 14–30 Tagen. Messbare Einsparungen bei Zeit und Kosten sind typischerweise nach 60–90 Tagen dokumentiert.",
+    answer: "Erste Automatisierungen laufen innerhalb von 7–14 Tagen. Messbare Einsparungen bei Zeit und Kosten sind typischerweise nach 30–60 Tagen sichtbar.",
   },
   {
-    question: "Muss ich selbst viel tun?",
-    answer: "Wir übernehmen Setup, Optimierung und laufende Betreuung. Du investierst ca. 30 Minuten pro Woche für ein kurzes Status-Update.",
+    question: "Ist das nicht zu teuer?",
+    answer: "Die Frage ist: Was kosten dich manuelle Prozesse jeden Monat? Die meisten Unternehmer verlieren 2.000–5.000 € monatlich durch Ineffizienz. Ein System, das das stoppt, ist keine Ausgabe – es ist eine Investition.",
   },
   {
-    question: "Was passiert in der Potenzial-Analyse?",
-    answer: "In 45 Minuten analysieren wir gemeinsam dein Unternehmen, decken die größten Wachstumshebel auf und definieren einen klaren nächsten Schritt. Kein Verkaufsdruck, garantiert.",
-  },
-  {
-    question: "Ist das nicht zu teuer für ein kleines Unternehmen?",
-    answer: "Die Frage ist: Was kostet dich der manuelle Aufwand jeden Monat? Die meisten Unternehmer sparen durch Systematisierung ein Vielfaches der Investition – an Zeit und Personalkosten.",
+    question: "Ich habe schon Tools ausprobiert, die nichts gebracht haben.",
+    answer: "Tools allein lösen kein Problem. Wir verkaufen keine Tools – wir bauen Systeme. Der Unterschied: Alles ist vernetzt, automatisiert und auf dein Unternehmen zugeschnitten. Kein weiteres Tool im Regal.",
   },
 ];
 
