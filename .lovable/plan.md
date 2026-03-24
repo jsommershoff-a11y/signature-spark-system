@@ -1,62 +1,49 @@
 
 
-# Plan: Finale Homepage-Optimierung fuer Go-Live
+# Plan: Kurs "START HIER" mit 2 Modulen und 8 Lektionen anlegen
 
-## Identifizierte Probleme
+## Ueberblick
 
-1. **Doppelte AboutFounderSection** in MasterHome.tsx (Zeile 65-66) -- kritischer Bug
-2. **FAQ-Fragen zu generisch** -- brauchen schaerfere, einwandbezogene Formulierungen
-3. **Savings-Cards im KI-Widget** brechen auf Mobile (3 Spalten bei 375px zu eng)
-4. **Footer-Beschreibung veraltet** -- "Ganzheitliche Unternehmensberatung" passt nicht zur Signature-System-Positionierung
-5. **Textliche Dopplungen** zwischen CompetitionSection und AiRealitySection (beide sagen "KI bringt mir nichts")
-6. **SolutionSection Redundanz** -- "Typische Ergebnisse: weniger Chaos" wiederholt die Headline darueber
-7. **CTA-Text im Widget** zu lang fuer einen Button ("Diese Prozesse setzen wir innerhalb von 14 Tagen fuer dich auf.")
-8. **Keine Uebergangslogik zwischen Sektionen** -- manche Bloecke enden abrupt
+Neuer Freebie-Kurs als Einstiegspunkt fuer alle Kunden. Wird per SQL-Insert in die bestehenden Tabellen `courses`, `modules` und `lessons` geschrieben. Kein Learning Path noetig (eigenstaendiger Kurs wie "SalesFlow Grundlagen"). Alle Lektionen mit vollstaendigen `content_html` Inhalten im `meta` JSONB-Feld.
 
-## Aenderungen
+## Kursstruktur
 
-### 1. MasterHome.tsx
-- Doppelte `<AboutFounderSection />` entfernen (Zeile 66)
-- FAQ-Items inhaltlich ueberarbeiten: staerker auf Einwaende abzielen (keine Zeit, zu teuer, falsche Branche, schon versucht, Cashflow-Angst)
+```text
+Kurs: START HIER – Dein Unternehmen auf dem Pruefstand (Freebie, published, sort_order: -1)
 
-### 2. AiAnalysisWidget.tsx (Mobile-Fix + CTA-Schaerfung)
-- Savings-Cards Grid: `grid-cols-3` → `grid-cols-1 sm:grid-cols-3` fuer Mobile-Lesbarkeit
-- CTA-Button Text kuerzen: "Potenzial-Analyse sichern" (der 14-Tage-Hinweis wird Subtext)
-- Darunter: "Wir setzen die ersten Automatisierungen innerhalb von 14 Tagen um."
+├── Modul 1: Wo stehst du? (Selbstanalyse)
+│   ├── L1: Was ist ein Signature System? (video, 5 Min)
+│   ├── L2: Die 5 groessten Zeitfresser identifizieren (task + Arbeitsblatt)
+│   ├── L3: Dein Prozess-Audit in 30 Minuten (worksheet)
+│   └── L4: Quiz: Wie automatisiert ist dein Unternehmen? (quiz)
+│
+└── Modul 2: Die Grundlagen verstehen
+    ├── L5: Automatisierung ≠ kompliziert (video, 5 Min)
+    ├── L6: Die 3 Automatisierungs-Ebenen (video, 8 Min)
+    ├── L7: Dein erster Quick Win (task)
+    └── L8: Checkliste: Deine Top-3 Hebel (worksheet)
+```
 
-### 3. CompetitionSection.tsx (Dopplung entfernen)
-- Headline links aendern von "KI bringt mir nichts..." (identisch mit AiRealitySection) zu: "Du verlierst jeden Monat Geld durch manuelle Prozesse."
-- Konsistenz sicherstellen
+## Technische Umsetzung
 
-### 4. SolutionSection.tsx (Redundanz entfernen)
-- Letzten Absatz "Typische Ergebnisse: weniger Chaos, schnellere Ablaeufe, klarere Prozesse." entfernen (Redundanz zur Headline darueber)
+3 SQL-INSERT-Statements via Supabase Insert Tool:
+1. **1x INSERT into `courses`** – Freebie, published, sort_order -1 (erscheint ganz oben)
+2. **2x INSERT into `modules`** – je 1 pro Modul
+3. **8x INSERT into `lessons`** – mit vollstaendigen `content_html` Inhalten, Beschreibungen, Typen, Dauer
 
-### 5. Footer.tsx
-- Beschreibung von "Ganzheitliche Unternehmensberatung..." aendern zu: "Einfache Automatisierungen fuer Unternehmen – Struktur, Entlastung, Kontrolle."
+Jede Lektion enthaelt:
+- Klarer Titel
+- Beschreibung (1 Satz)
+- lesson_type (video/task/worksheet/quiz)
+- duration_seconds
+- meta.content_html mit vollstaendigem HTML-Inhalt (Erklaerung, Praxisbeispiel, Aufgabe, naechster Schritt)
+- Fuer Quiz: meta.quiz Array mit Fragen und Antworten
 
-### 6. FAQ-Items in MasterHome.tsx ueberarbeiten
-Neue FAQ-Items (6 statt 5), direkt auf Einwaende ausgerichtet:
-- "Funktioniert das in meiner Branche?" -- bleibt
-- "Ich habe keine Zeit fuer so ein Projekt." -- NEU, direkt adressiert
-- "Was genau bekomme ich?" -- NEU, Angebot greifbar machen
-- "Wie schnell sehe ich Ergebnisse?" -- bleibt, leicht geschaerft
-- "Ist das nicht zu teuer?" -- bleibt, geschaerft auf ROI
-- "Ich habe schon Tools ausprobiert, die nichts gebracht haben." -- NEU, Differenzierung
+## Keine Code-Aenderungen noetig
 
-### 7. HeroSection.tsx (Feinschliff)
-- Microcopy "Kostenlos und unverbindlich" Abstand zum CTA leicht vergroessern (mb-6 → mb-8)
+Die bestehenden LMS-Komponenten (LearningDashboard, CourseDetailView, LessonPlayerView) lesen bereits dynamisch aus der DB und rendern content_html. Der Kurs erscheint automatisch.
 
-### 8. FinalCtaSection.tsx (Feinschliff)
-- Option 2 letzte Zeile kuerzer: entferne "Dein Unternehmen waechst, ohne dass du mehr arbeitest" (zu generisch)
+## Dateien
 
-## Dateien die geaendert werden
-
-1. `src/pages/landing/MasterHome.tsx` -- Dopplung entfernen + FAQ ueberarbeiten
-2. `src/components/landing/home/AiAnalysisWidget.tsx` -- Mobile-Fix + CTA
-3. `src/components/landing/home/CompetitionSection.tsx` -- Dopplung entfernen
-4. `src/components/landing/home/SolutionSection.tsx` -- Redundanz entfernen
-5. `src/components/landing/Footer.tsx` -- Beschreibung aktualisieren
-6. `src/components/landing/home/FinalCtaSection.tsx` -- Feinschliff
-
-Keine neuen Dateien. Keine Strukturaenderungen. Designsystem bleibt identisch.
+- Keine Dateiaenderungen – nur Datenbank-Inserts
 
