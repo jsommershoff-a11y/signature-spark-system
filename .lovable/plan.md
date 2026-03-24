@@ -1,55 +1,62 @@
 
 
-# Plan: Neue Sektion "Signature Transformation Finanzierung"
+# Plan: Finale Homepage-Optimierung fuer Go-Live
 
-## Zusammenfassung
+## Identifizierte Probleme
 
-Neue eigenstaendige Sektion, die das Finanzierungsmodell als Einwandbehandlung positioniert: "Du kannst dein Unternehmen umbauen, ohne deinen Cashflow zu gefaehrden." Platzierung zwischen ResultsSection und AboutFounderSection.
+1. **Doppelte AboutFounderSection** in MasterHome.tsx (Zeile 65-66) -- kritischer Bug
+2. **FAQ-Fragen zu generisch** -- brauchen schaerfere, einwandbezogene Formulierungen
+3. **Savings-Cards im KI-Widget** brechen auf Mobile (3 Spalten bei 375px zu eng)
+4. **Footer-Beschreibung veraltet** -- "Ganzheitliche Unternehmensberatung" passt nicht zur Signature-System-Positionierung
+5. **Textliche Dopplungen** zwischen CompetitionSection und AiRealitySection (beide sagen "KI bringt mir nichts")
+6. **SolutionSection Redundanz** -- "Typische Ergebnisse: weniger Chaos" wiederholt die Headline darueber
+7. **CTA-Text im Widget** zu lang fuer einen Button ("Diese Prozesse setzen wir innerhalb von 14 Tagen fuer dich auf.")
+8. **Keine Uebergangslogik zwischen Sektionen** -- manche Bloecke enden abrupt
 
-## Neue Datei
+## Aenderungen
 
-### `src/components/landing/home/TransformationFinancingSection.tsx`
+### 1. MasterHome.tsx
+- Doppelte `<AboutFounderSection />` entfernen (Zeile 66)
+- FAQ-Items inhaltlich ueberarbeiten: staerker auf Einwaende abzielen (keine Zeit, zu teuer, falsche Branche, schon versucht, Cashflow-Angst)
 
-Aufbau (alle Texte woertlich aus Vorgabe):
+### 2. AiAnalysisWidget.tsx (Mobile-Fix + CTA-Schaerfung)
+- Savings-Cards Grid: `grid-cols-3` → `grid-cols-1 sm:grid-cols-3` fuer Mobile-Lesbarkeit
+- CTA-Button Text kuerzen: "Potenzial-Analyse sichern" (der 14-Tage-Hinweis wird Subtext)
+- Darunter: "Wir setzen die ersten Automatisierungen innerhalb von 14 Tagen um."
 
-1. **Opener-Block** (zentriert, max-w-3xl):
-   - Badge: "Transformation ohne Risiko"
-   - Headline h2: "Die meisten Unternehmer wissen, dass sie ihr Unternehmen veraendern muessen."
-   - Subtext: "Sie tun es nicht. Nicht, weil sie es nicht verstehen. Sondern weil ihnen die Zeit fehlt – und weil der Cashflow an ihnen haengt."
+### 3. CompetitionSection.tsx (Dopplung entfernen)
+- Headline links aendern von "KI bringt mir nichts..." (identisch mit AiRealitySection) zu: "Du verlierst jeden Monat Geld durch manuelle Prozesse."
+- Konsistenz sicherstellen
 
-2. **Angst-Block** (bg-destructive/5, border-destructive/20, rounded):
-   - "Genau hier scheitern die meisten..."
-   - Zitat: „Dann verliere ich Umsatz."
-   - Aufloesung: "Das Gegenteil ist der Fall." + 3 Gewinne (Struktur, Kontrolle, Wachstum) als CheckCircle2-Liste
+### 4. SolutionSection.tsx (Redundanz entfernen)
+- Letzten Absatz "Typische Ergebnisse: weniger Chaos, schnellere Ablaeufe, klarere Prozesse." entfernen (Redundanz zur Headline darueber)
 
-3. **Finanzierungs-Erklaerung** (bg-primary/5, border-primary/20, rounded):
-   - "Deshalb haben wir die Signature Transformation Finanzierung aufgebaut."
-   - Erklaerung des Modells
-   - Statement: "Du kannst dein Unternehmen umbauen, waehrend es weiterlaeuft."
+### 5. Footer.tsx
+- Beschreibung von "Ganzheitliche Unternehmensberatung..." aendern zu: "Einfache Automatisierungen fuer Unternehmen – Struktur, Entlastung, Kontrolle."
 
-4. **Konkretes Beispiel** (Card mit Icon):
-   - "2 Tage pro Woche → nur noch halbtags = 1 Tag pro Woche zurueckgewonnen"
-   - "Diese Zeit nutzt du, um dein Unternehmen richtig aufzubauen."
+### 6. FAQ-Items in MasterHome.tsx ueberarbeiten
+Neue FAQ-Items (6 statt 5), direkt auf Einwaende ausgerichtet:
+- "Funktioniert das in meiner Branche?" -- bleibt
+- "Ich habe keine Zeit fuer so ein Projekt." -- NEU, direkt adressiert
+- "Was genau bekomme ich?" -- NEU, Angebot greifbar machen
+- "Wie schnell sehe ich Ergebnisse?" -- bleibt, leicht geschaerft
+- "Ist das nicht zu teuer?" -- bleibt, geschaerft auf ROI
+- "Ich habe schon Tools ausprobiert, die nichts gebracht haben." -- NEU, Differenzierung
 
-5. **Realitaets-Block**:
-   - Zitat nochmal: „Dann verliere ich Umsatz."
-   - Aufloesung: "Du verlierst kurzfristig operative Zeit, gewinnst aber ein System..."
+### 7. HeroSection.tsx (Feinschliff)
+- Microcopy "Kostenlos und unverbindlich" Abstand zum CTA leicht vergroessern (mb-6 → mb-8)
 
-6. **Finanzierungsrahmen** (Card, zentriert):
-   - "Je nach Unternehmensgroesse sind Finanzierungen von bis zu 250.000 € moeglich."
-   - Disclaimer: "Keine pauschale Zusage, sondern basiert auf individuellen Voraussetzungen"
-   - Abschluss: "Es zeigt, was moeglich ist, wenn Unternehmen diesen Schritt gehen."
+### 8. FinalCtaSection.tsx (Feinschliff)
+- Option 2 letzte Zeile kuerzer: entferne "Dein Unternehmen waechst, ohne dass du mehr arbeitest" (zu generisch)
 
-Styling: Bestehende landingTokens (sectionPadding, headline, card, badgeAccent), Icons aus lucide-react (Shield, TrendingUp, CheckCircle2, Clock, Banknote).
+## Dateien die geaendert werden
 
-## Bestehende Datei aendern
+1. `src/pages/landing/MasterHome.tsx` -- Dopplung entfernen + FAQ ueberarbeiten
+2. `src/components/landing/home/AiAnalysisWidget.tsx` -- Mobile-Fix + CTA
+3. `src/components/landing/home/CompetitionSection.tsx` -- Dopplung entfernen
+4. `src/components/landing/home/SolutionSection.tsx` -- Redundanz entfernen
+5. `src/components/landing/Footer.tsx` -- Beschreibung aktualisieren
+6. `src/components/landing/home/FinalCtaSection.tsx` -- Feinschliff
 
-### `src/pages/landing/MasterHome.tsx`
-- Import der neuen Komponente
-- Einfuegen zwischen `<ResultsSection />` und `<AboutFounderSection />`
-
-## Dateien
-
-- **Neu**: `src/components/landing/home/TransformationFinancingSection.tsx`
-- **Aendern**: `src/pages/landing/MasterHome.tsx` (1 Import + 1 Zeile im Render)
+Keine neuen Dateien. Keine Strukturaenderungen. Designsystem bleibt identisch.
 
