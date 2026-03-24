@@ -1,5 +1,6 @@
 import { TrendingUp, AlertCircle } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
+import kiZeitfresser from "@/assets/ki-zeitfresser.png";
 
 export const CompetitionSection = () => {
   return (
@@ -37,6 +38,15 @@ export const CompetitionSection = () => {
               <span className="font-bold text-primary">mehr Umsatz zu machen.</span>
             </p>
           </div>
+        </div>
+
+        {/* Visual */}
+        <div className="mt-8 rounded-2xl overflow-hidden shadow-lg border border-border">
+          <img
+            src={kiZeitfresser}
+            alt="Mittelstands-KI: Die Wahrheit über deine Zeitfresser – Deine Konkurrenz automatisiert schon"
+            className="w-full h-auto"
+          />
         </div>
 
         {/* Pattern Break */}
