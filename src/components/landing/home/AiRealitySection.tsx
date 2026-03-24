@@ -160,6 +160,15 @@ export const AiRealitySection = () => {
           </p>
         </div>
 
+        {/* Visual Banner */}
+        <div className="max-w-4xl mx-auto mb-14 rounded-2xl overflow-hidden shadow-lg border border-border">
+          <img
+            src={founderKiSystem}
+            alt="Jan Sommershoff – KI für Unternehmer: Zeitsparnis, Team-Entlastung, automatisierte Prozesse"
+            className="w-full h-auto"
+          />
+        </div>
+
         {/* Handwerker / Mittelstand Block */}
         <div className="max-w-3xl mx-auto">
           <div className="rounded-2xl border border-border bg-card p-8 md:p-10 text-center">

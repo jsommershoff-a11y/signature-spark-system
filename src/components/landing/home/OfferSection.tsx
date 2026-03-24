@@ -45,6 +45,15 @@ export const OfferSection = ({ onCtaClick }: OfferSectionProps) => {
           </div>
         </div>
 
+        {/* Visual Banner */}
+        <div className="mb-10 rounded-2xl overflow-hidden shadow-lg border border-border">
+          <img
+            src={founderEntlasten}
+            alt="Jan Sommershoff – Mitarbeiter entlasten und stärken durch bessere Prozesse und Automatisierung"
+            className="w-full h-auto"
+          />
+        </div>
+
         <div className="text-center">
           <button onClick={onCtaClick} className={`${t.ctaPrimary} group`}>
             Kostenlose Potenzial-Analyse sichern

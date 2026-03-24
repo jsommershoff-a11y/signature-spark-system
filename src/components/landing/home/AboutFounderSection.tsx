@@ -42,6 +42,15 @@ export const AboutFounderSection = () => {
             </p>
           </div>
         </div>
+
+        {/* Visual Banner */}
+        <div className="mt-12 max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-lg border border-border">
+          <img
+            src={founderKiErfolg}
+            alt="Jan Sommershoff – Mit KI zum Erfolg: Effizienter arbeiten, Zeit gewinnen, Teams entlasten"
+            className="w-full h-auto"
+          />
+        </div>
       </div>
     </section>
   );
