@@ -1,4 +1,5 @@
 import founderPersonal from "@/assets/founder-personal.jpeg";
+import founderKiErfolg from "@/assets/founder-ki-erfolg.png";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 export const AboutFounderSection = () => {
