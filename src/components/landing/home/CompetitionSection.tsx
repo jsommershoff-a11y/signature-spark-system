@@ -40,6 +40,15 @@ export const CompetitionSection = () => {
           </div>
         </div>
 
+        {/* Visual */}
+        <div className="mt-8 rounded-2xl overflow-hidden shadow-lg border border-border">
+          <img
+            src={kiZeitfresser}
+            alt="Mittelstands-KI: Die Wahrheit über deine Zeitfresser – Deine Konkurrenz automatisiert schon"
+            className="w-full h-auto"
+          />
+        </div>
+
         {/* Pattern Break */}
         <div className="mt-8 bg-primary text-primary-foreground rounded-2xl py-8 px-6 text-center">
           <p className="text-2xl md:text-3xl font-bold">
