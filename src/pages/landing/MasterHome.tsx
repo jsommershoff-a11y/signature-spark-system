@@ -61,6 +61,8 @@ const MasterHome = () => {
         <AiAnalysisWidget />
         <CaseStudiesSection />
         <ResultsSection />
+        <TransformationFinancingSection />
+        <AboutFounderSection />
         <AboutFounderSection />
 
         <FAQSection
