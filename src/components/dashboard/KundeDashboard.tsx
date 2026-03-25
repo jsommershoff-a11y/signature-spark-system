@@ -51,7 +51,7 @@ export function KundeDashboard() {
             )}
             {nextLesson && (
               <div className="flex items-center gap-2 mt-2">
-                <PlayCircle className="h-4 w-4 text-primary shrink-0" />
+                <PlayCircle className="h-4 w-4 text-success shrink-0" />
                 <span className="text-sm font-medium truncate">Nächste Lektion: {nextLesson.title}</span>
               </div>
             )}
