@@ -1,18 +1,20 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import {
   ChevronRight, ChevronLeft, List, LayoutGrid, CheckCircle2,
   MessageSquare, Search, Presentation, ShieldCheck, Save,
-  Lightbulb, AlertTriangle, TrendingUp, FileText,
+  Lightbulb, AlertTriangle, TrendingUp, FileText, Zap,
 } from 'lucide-react';
 import { PainPointDiscovery } from './PainPointDiscovery';
 import { getPhaseCoaching, analyzeNotes, type AiSuggestion } from '@/lib/sales-guide-ai';
+import { OBJECTION_HANDLING, GOLDEN_RULES, TRIAGE_SCRIPT, STRATEGY_SCRIPT, COLD_CALL_SCRIPT } from '@/lib/sales-scripts';
 import type { DiscoveryData, OfferContent } from '@/types/offers';
 
 // =============================================
@@ -23,6 +25,7 @@ interface GuideCheckItem {
   id: string;
   label: string;
   hint?: string;
+  script?: string;
   checked: boolean;
 }
 
@@ -35,14 +38,13 @@ interface SalesGuideWizardProps {
   offerJson: OfferContent;
   onSaveDiscovery: (data: DiscoveryData) => void;
   onSaveNotes: (phaseNotes: Record<string, PhaseData>) => void;
-  /** Called from Call context to create a deal + offer after closing phase */
   onCreateDeal?: (discoveryData: DiscoveryData | null, phaseNotes: Record<string, PhaseData>) => void;
-  /** Structogram type for dynamic coaching */
   structogramType?: import('@/lib/sales-guide-ai').StructogramType | null;
+  callType?: 'triage' | 'strategy' | 'cold';
 }
 
 // =============================================
-// Phase Definitions
+// Phase Definitions with Scripts
 // =============================================
 
 const PHASES = [
@@ -52,10 +54,10 @@ const PHASES = [
     icon: <MessageSquare className="h-5 w-5" />,
     description: 'Vertrauen aufbauen, Gesprächsrahmen setzen',
     defaultChecklist: [
-      { id: 'r1', label: 'Persönliche Begrüßung', hint: 'Name nennen, Wertschätzung zeigen' },
-      { id: 'r2', label: 'Small Talk / Eisbrecher', hint: 'Gemeinsamkeiten finden, Branche ansprechen' },
-      { id: 'r3', label: 'Gesprächsrahmen setzen', hint: '"In den nächsten 30 Min schauen wir gemeinsam..."' },
-      { id: 'r4', label: 'Erwartungen klären', hint: 'Was erhofft sich der Kunde vom Gespräch?' },
+      { id: 'r1', label: 'Persönliche Begrüßung', hint: 'Name nennen, Wertschätzung zeigen', script: 'Hey [Name], lass uns keine Zeit verlieren. Ich will herausfinden, ob und wie ich dir helfen kann.' },
+      { id: 'r2', label: 'Gesprächsrahmen setzen', hint: '"In den nächsten X Min schauen wir gemeinsam..."', script: 'Wenn ja, planen wir den nächsten Schritt. Wenn nein, sag ich dir das ehrlich. Deal?' },
+      { id: 'r3', label: 'Situation erfragen', hint: 'Was machst du, wie lange, wie viele Leute?', script: 'Erzähl mir kurz: Was machst du genau und wie lange schon? Wie viele Leute arbeiten bei dir?' },
+      { id: 'r4', label: 'Auslöser verstehen', hint: 'Warum hat die Person reagiert?', script: 'Was war der Hauptgrund, warum du auf meine Nachricht reagiert hast?' },
       { id: 'r5', label: 'Zeitrahmen bestätigen', hint: 'Verfügbarkeit des Kunden sicherstellen' },
     ],
   },
@@ -65,11 +67,11 @@ const PHASES = [
     icon: <Search className="h-5 w-5" />,
     description: 'Probleme identifizieren, Schmerzpunkte bewerten',
     defaultChecklist: [
-      { id: 'd1', label: 'Aktuelle Situation erfragen', hint: '"Wie sieht Ihr Alltag aktuell aus?"' },
-      { id: 'd2', label: 'Hauptprobleme identifizieren', hint: 'Pain-Point Discovery Modul nutzen' },
-      { id: 'd3', label: 'Auswirkungen quantifizieren', hint: '"Was kostet Sie das Problem monatlich?"' },
-      { id: 'd4', label: 'Bisherige Lösungsversuche', hint: '"Was haben Sie bereits probiert?"' },
-      { id: 'd5', label: 'Entscheidungsstruktur klären', hint: 'Wer entscheidet? Budget-Rahmen?' },
+      { id: 'd1', label: 'Operatives Problem identifizieren', hint: 'Größter Engpass im Alltag', script: 'Was ist gerade dein größtes operatives Problem?' },
+      { id: 'd2', label: 'Zeitverlust quantifizieren', hint: 'Stunden pro Woche messbar machen', script: 'Wie viele Stunden pro Woche verbringst du mit Dingen, die eigentlich ein System machen sollte?' },
+      { id: 'd3', label: 'Kosten des Problems beziffern', hint: 'Monatlicher Verlust in Euro', script: 'Was kostet dich das im Monat? Rechnen wir mal zusammen: [X] Stunden × Stundensatz = [Y] €.' },
+      { id: 'd4', label: 'Konsequenz aufzeigen', hint: 'Was passiert bei Nichtstun?', script: 'Was passiert, wenn du so weitermachst wie bisher? Auf 12 Monate: Das sind [Z] €.' },
+      { id: 'd5', label: 'Budget & Entscheider klären', hint: 'Entscheidungsfähigkeit prüfen', script: 'Bist du der Entscheider? Hast du grundsätzlich Budget für eine Lösung eingeplant? Wärst du bereit, in den nächsten 30 Tagen etwas zu verändern?' },
     ],
   },
   {
@@ -78,11 +80,11 @@ const PHASES = [
     icon: <Presentation className="h-5 w-5" />,
     description: 'Passende Lösung vorstellen, Preise präsentieren',
     defaultChecklist: [
-      { id: 'p1', label: 'Zusammenfassung der Probleme', hint: 'Pain Points spiegeln, Verständnis zeigen' },
-      { id: 'p2', label: 'Lösung vorstellen', hint: 'Programm-Empfehlung auf Basis der Analyse' },
-      { id: 'p3', label: 'Ergebnisse & Fallstudien', hint: 'Konkrete Erfolgsbeispiele nennen' },
-      { id: 'p4', label: 'Preis & Konditionen', hint: 'Investition im Verhältnis zum Problem darstellen' },
-      { id: 'p5', label: 'Zahlungsoptionen erklären', hint: 'Ratenzahlung, Einmalzahlung etc.' },
+      { id: 'p1', label: 'Zielbild aufbauen (Future Pacing)', hint: 'Kunde soll das Ergebnis spüren', script: 'Stell dir vor, in 90 Tagen: Dein Team arbeitet eigenständig. Du hast 2 Tage pro Woche zurück. Was würdest du mit dieser Zeit machen?' },
+      { id: 'p2', label: 'Lösung vorstellen', hint: 'Signature System als Done-with-you', script: 'Wir bauen das System GEMEINSAM in dein Unternehmen. 30 Tage. Ab Tag 1 Ergebnisse. Das ist kein Kurs, kein Coaching von der Seitenlinie.' },
+      { id: 'p3', label: 'Case Study nennen', hint: 'Konkretes Beispiel mit Ergebnis', script: 'Case Study: [Name] hatte das gleiche Problem. Nach 4 Wochen: [konkretes Ergebnis].' },
+      { id: 'p4', label: 'Preis im Kontext präsentieren', hint: 'Investition vs. monatlicher Verlust', script: 'Die Investition liegt bei [Betrag]. Verglichen mit [monatlicher Verlust] × 12 = [Jahresverlust] ist das ein klarer Business Case.' },
+      { id: 'p5', label: 'Zahlungsoptionen erklären', hint: 'Ratenzahlung, Finanzierung', script: 'Ratenzahlung und Signature Transformation Finanzierung sind möglich – bis zu 250.000 €.' },
     ],
   },
   {
@@ -91,11 +93,11 @@ const PHASES = [
     icon: <ShieldCheck className="h-5 w-5" />,
     description: 'Einwände entkräften, Abschluss herbeiführen',
     defaultChecklist: [
-      { id: 'c1', label: 'Einwände aktiv erfragen', hint: '"Was hält Sie davon ab, heute zu starten?"' },
-      { id: 'c2', label: 'Preis-Einwand behandeln', hint: 'ROI-Rechnung: Kosten vs. Verlust ohne Lösung' },
-      { id: 'c3', label: 'Zeit-Einwand behandeln', hint: '"Wann wäre der perfekte Zeitpunkt?" → Jetzt' },
-      { id: 'c4', label: 'Abschlussfrage stellen', hint: '"Sollen wir gemeinsam starten?"' },
-      { id: 'c5', label: 'Nächste Schritte vereinbaren', hint: 'Angebot senden, Folgetermin, Vertrag' },
+      { id: 'c1', label: 'Zusammenfassung geben', hint: 'Problem, Kosten, Lösung, Ergebnis', script: 'Ok [Name], ich fasse zusammen: [Problem], [Kosten pro Monat], [unsere Lösung], [erwartetes Ergebnis].' },
+      { id: 'c2', label: 'Einwände aktiv erfragen', hint: 'Nicht warten, direkt fragen', script: 'Was hält dich davon ab, heute zu starten?' },
+      { id: 'c3', label: 'Einwände behandeln', hint: 'Big 5 Konter nutzen (siehe unten)' },
+      { id: 'c4', label: 'Abschlussfrage stellen', hint: 'Direkt, klar, keine Umwege', script: 'Sollen wir das aufsetzen? Wenn ja: Ich schicke dir jetzt das Angebot, wir starten nächste Woche.' },
+      { id: 'c5', label: 'Nächste Schritte vereinbaren', hint: 'Termin, Angebot, Deadline', script: 'Das Angebot steht 48 Stunden. Wann können wir starten – Montag oder Mittwoch?' },
     ],
   },
 ];
@@ -104,11 +106,12 @@ const PHASES = [
 // Component
 // =============================================
 
-export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCreateDeal, structogramType }: SalesGuideWizardProps) {
+export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCreateDeal, structogramType, callType }: SalesGuideWizardProps) {
   const [activePhase, setActivePhase] = useState(0);
   const [viewMode, setViewMode] = useState<'wizard' | 'overview'>('wizard');
   const [discoveryCompleted, setDiscoveryCompleted] = useState(!!offerJson.discovery_data);
   const [discoveryData, setDiscoveryData] = useState<DiscoveryData | null>(offerJson.discovery_data || null);
+  const [showScripts, setShowScripts] = useState(false);
 
   const [phaseData, setPhaseData] = useState<Record<string, PhaseData>>(() => {
     const initial: Record<string, PhaseData> = {};
@@ -193,7 +196,6 @@ export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCr
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{phase.description}</p>
-                  {/* Progress bar */}
                   <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary rounded-full transition-all"
@@ -210,11 +212,72 @@ export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCr
   );
 
   // =============================================
+  // Render: Objection Handling Accordion
+  // =============================================
+  const renderObjectionHandling = () => (
+    <Card className="border-destructive/20">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-destructive" />
+          Einwandbehandlung – Big 5
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="single" collapsible className="w-full">
+          {OBJECTION_HANDLING.map((obj) => (
+            <AccordionItem key={obj.id} value={obj.id}>
+              <AccordionTrigger className="text-sm py-3">
+                <span className="flex items-center gap-2">
+                  <span>{obj.emoji}</span>
+                  <span className="font-medium">„{obj.objection}"</span>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-3">
+                <div className="p-2 bg-primary/5 rounded-lg border border-primary/20">
+                  <p className="text-xs font-medium text-primary">Reframe:</p>
+                  <p className="text-sm font-medium">{obj.reframe}</p>
+                </div>
+                <div className="space-y-1.5">
+                  {obj.response.map((line, i) => (
+                    <p key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                      <span className="text-primary shrink-0 mt-0.5">→</span>
+                      {line}
+                    </p>
+                  ))}
+                </div>
+                <p className="text-xs italic text-muted-foreground border-t pt-2">
+                  🧠 {obj.psychology}
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+
+        {/* Golden Rules */}
+        <div className="mt-4 p-3 bg-muted rounded-lg">
+          <p className="text-xs font-medium mb-2 flex items-center gap-1">
+            <Zap className="h-3 w-3 text-primary" />
+            6 Goldene Regeln
+          </p>
+          <ol className="space-y-1">
+            {GOLDEN_RULES.map((rule, i) => (
+              <li key={i} className="text-xs text-muted-foreground">
+                {i + 1}. {rule}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // =============================================
   // Render: Wizard Mode
   // =============================================
   const renderWizard = () => {
     const pd = phaseData[currentPhase.id];
     const isDiscoveryPhase = currentPhase.id === 'discovery';
+    const isClosingPhase = currentPhase.id === 'closing';
 
     return (
       <div className="space-y-4">
@@ -223,10 +286,19 @@ export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCr
           <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-primary-foreground">
             {currentPhase.icon}
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="font-semibold">{currentPhase.title}</h3>
             <p className="text-sm text-muted-foreground">{currentPhase.description}</p>
           </div>
+          <Button
+            variant={showScripts ? 'default' : 'outline'}
+            size="sm"
+            className="text-xs h-7"
+            onClick={() => setShowScripts(!showScripts)}
+          >
+            <FileText className="h-3 w-3 mr-1" />
+            Skripte
+          </Button>
         </div>
 
         {/* Progress bar */}
@@ -273,6 +345,11 @@ export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCr
                   </p>
                   {item.hint && (
                     <p className="text-xs text-muted-foreground mt-0.5">{item.hint}</p>
+                  )}
+                  {showScripts && item.script && (
+                    <div className="mt-2 p-2 bg-muted/50 rounded border border-dashed text-xs text-muted-foreground italic">
+                      💬 „{item.script}"
+                    </div>
                   )}
                 </div>
               </label>
@@ -321,6 +398,9 @@ export function SalesGuideWizard({ offerJson, onSaveDiscovery, onSaveNotes, onCr
             </CardContent>
           </Card>
         )}
+
+        {/* Objection Handling (only in closing phase) */}
+        {isClosingPhase && renderObjectionHandling()}
 
         {/* AI Coaching Panel */}
         {structogramType && structogramType !== 'mixed' && structogramType !== 'unknown' && (() => {
