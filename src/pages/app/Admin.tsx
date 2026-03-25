@@ -1,8 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Shield, Activity, Mail, Plug, Download, GraduationCap, Gauge, ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Shield, Activity, Mail, Plug, Download, GraduationCap } from 'lucide-react';
+import AdminUserManagement from '@/components/admin/AdminUserManagement';
 import AdminUserManagement from '@/components/admin/AdminUserManagement';
 import AdminLeadsTable from '@/components/admin/AdminLeadsTable';
 import AdminSystemLogs from '@/components/admin/AdminSystemLogs';
