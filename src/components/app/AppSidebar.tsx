@@ -77,8 +77,8 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   });
 
   return (
-    <aside className="w-64 bg-card border-r border-border h-full flex flex-col">
-      <nav className="flex-1 p-3 md:p-4 space-y-0.5 overflow-y-auto overscroll-contain">
+    <aside className="w-64 bg-gradient-to-b from-card to-muted/30 border-r border-border/50 h-full flex flex-col">
+      <nav className="flex-1 p-3 md:p-4 space-y-1 overflow-y-auto overscroll-contain">
         {filteredNavItems.map((item) => (
           <NavLink
             key={item.href}
@@ -87,15 +87,15 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             onClick={onNavigate}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-lg text-sm font-medium transition-colors touch-manipulation',
+                'flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl text-sm font-medium transition-all duration-200 touch-manipulation',
                 'min-h-[44px] md:min-h-0',
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground active:bg-accent/80'
+                  ? 'bg-primary/10 text-primary border-l-[3px] border-primary pl-[9px]'
+                  : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground active:bg-muted/70'
               )
             }
           >
-            <item.icon className="h-5 w-5 shrink-0" />
+            <item.icon className="h-[18px] w-[18px] shrink-0" />
             {item.label}
           </NavLink>
         ))}

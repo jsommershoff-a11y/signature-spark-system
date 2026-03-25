@@ -21,19 +21,18 @@ const marqueeTools = [...tools, ...tools];
 
 export const TrustLogosSection = () => {
   return (
-    <section className="py-10 md:py-14 bg-muted/20 border-y border-border/20 overflow-hidden">
-      <div className="max-w-5xl mx-auto px-4 mb-8">
-        <p className="text-center text-base md:text-lg font-semibold text-foreground">
+    <section className="py-8 md:py-10 bg-muted/10 border-y border-border/10 overflow-hidden">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 mb-6">
+        <p className="text-center text-sm md:text-base font-semibold text-foreground">
           Wir automatisieren mit diesen Tools – und vielen weiteren
         </p>
-        <p className="text-center text-sm text-muted-foreground mt-1">
+        <p className="text-center text-xs text-muted-foreground mt-1">
           Kompetenz in Integration und Automatisierung – nicht nur einzelne Tools, sondern vernetzte Systeme.
         </p>
       </div>
 
       {/* Marquee wrapper */}
       <div className="relative">
-        {/* Fade edges */}
         <div className="absolute left-0 top-0 bottom-0 w-20 md:w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-20 md:w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
@@ -43,7 +42,7 @@ export const TrustLogosSection = () => {
               key={`${tool.name}-${i}`}
               className="flex-shrink-0 flex flex-col items-center justify-center gap-2 mx-3 md:mx-4 w-[88px] md:w-[100px]"
             >
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-card border border-border/50 shadow-sm flex items-center justify-center transition-all duration-300 hover:shadow-lg hover:scale-110 hover:border-primary/30">
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-card flex items-center justify-center transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:scale-110">
                 <svg
                   viewBox={tool.viewBox || "0 0 24 24"}
                   className="h-7 w-7 md:h-8 md:w-8"

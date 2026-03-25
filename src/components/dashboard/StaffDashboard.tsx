@@ -22,32 +22,32 @@ export function StaffDashboard({
   todayTasks,
 }: DashboardDataReturn) {
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-5 md:space-y-6">
       {/* Summary Cards */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <KPICard
           title="Offene Leads"
           value={pipelineStats.find(s => s.stage === 'new_lead')?.count || 0}
           sub="Neue Anfragen"
-          icon={<UserPlus className="h-4 w-4 text-muted-foreground" />}
+          icon={<UserPlus className="h-4 w-4 text-primary" />}
         />
         <KPICard
           title="Aktive Kunden"
           value={pipelineStats.find(s => s.stage === 'won')?.count || 0}
           sub="Gewonnene Deals"
-          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          icon={<Users className="h-4 w-4 text-primary" />}
         />
         <KPICard
           title="Aufgaben heute"
           value={todayTasks.length}
           sub="Fällige Aufgaben"
-          icon={<CheckSquare className="h-4 w-4 text-muted-foreground" />}
+          icon={<CheckSquare className="h-4 w-4 text-primary" />}
         />
         <KPICard
           title="Analysen"
           value={recentAnalyses.length}
           sub="Letzte KI-Analysen"
-          icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
+          icon={<TrendingUp className="h-4 w-4 text-primary" />}
         />
       </div>
 
@@ -57,7 +57,7 @@ export function StaffDashboard({
       <GoalsMotivationPanel />
 
       {/* Widgets Grid */}
-      <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <CallQueueWidget />
         <TopLeadsWidget leads={topLeads} isLoading={topLeadsLoading} />
         <RecentAnalysesWidget analyses={recentAnalyses} isLoading={recentAnalysesLoading} />
@@ -71,14 +71,16 @@ export function StaffDashboard({
 
 function KPICard({ title, value, sub, icon }: { title: string; value: number | string; sub: string; icon: React.ReactNode }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 px-4 pt-4">
-        <CardTitle className="text-xs md:text-sm font-medium leading-tight">{title}</CardTitle>
-        {icon}
+    <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-5 pt-5">
+        <CardTitle className="text-xs md:text-sm font-medium leading-tight text-muted-foreground">{title}</CardTitle>
+        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          {icon}
+        </div>
       </CardHeader>
-      <CardContent className="px-4 pb-4">
-        <div className="text-xl md:text-2xl font-bold tabular-nums">{value}</div>
-        <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">{sub}</p>
+      <CardContent className="px-5 pb-5">
+        <div className="text-2xl md:text-3xl font-bold tabular-nums">{value}</div>
+        <p className="text-[11px] md:text-xs text-muted-foreground mt-1">{sub}</p>
       </CardContent>
     </Card>
   );
@@ -100,21 +102,23 @@ function SalesCockpitWidget() {
   ];
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
-      <CardHeader className="pb-2">
+    <Card className="border-primary/15 bg-gradient-to-br from-primary/5 to-transparent">
+      <CardHeader className="pb-2 px-5">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Zap className="h-4 w-4 text-primary" />
+          <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
+            <Zap className="h-3.5 w-3.5 text-primary" />
+          </div>
           Vertriebs-Cockpit
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 px-5">
         {/* Mantra */}
         <p className="text-xs font-medium text-primary">{mantra}</p>
 
         {/* Daily Activities */}
         <div className="grid grid-cols-3 gap-2">
           {dailyActivities.map((a) => (
-            <div key={a.label} className="flex items-center gap-2 p-2 bg-background rounded-lg border">
+            <div key={a.label} className="flex items-center gap-2 p-2.5 bg-card rounded-xl border border-border/40">
               <div className="text-primary">{a.icon}</div>
               <div>
                 <p className="text-xs font-medium">{a.target}× {a.label}</p>
@@ -125,7 +129,7 @@ function SalesCockpitWidget() {
         </div>
 
         {/* Monthly Targets */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 border-t">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 border-t border-border/40">
           {monthlyTargets.map((t) => (
             <div key={t.label} className="flex items-center gap-1">
               <span className="font-medium text-foreground">{t.target}</span>

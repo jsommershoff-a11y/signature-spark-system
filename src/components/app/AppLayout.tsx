@@ -22,12 +22,12 @@ export function AppLayout() {
       <IncomingCallPopup />
       
       {/* Header */}
-      <header className="h-14 md:h-16 border-b border-primary-deep/30 bg-gradient-to-r from-primary-deep via-primary to-primary-light flex items-center justify-between px-3 md:px-6 shadow-md flex-shrink-0">
+      <header className="h-14 md:h-16 border-b border-border/50 bg-[#1a1a2e] flex items-center justify-between px-3 md:px-6 flex-shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           {/* Mobile hamburger */}
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/20 flex-shrink-0 h-10 w-10">
+              <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10 flex-shrink-0 h-10 w-10">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -54,7 +54,7 @@ export function AppLayout() {
         </div>
         
         {/* Content Area */}
-        <main className="flex-1 p-3 md:p-6 overflow-x-hidden overflow-y-auto min-w-0">
+        <main className="flex-1 p-4 md:p-8 overflow-x-hidden overflow-y-auto min-w-0">
           <Outlet />
         </main>
       </div>

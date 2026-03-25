@@ -4,6 +4,7 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 import { KundeDashboard } from '@/components/dashboard/KundeDashboard';
 import { StaffDashboard } from '@/components/dashboard/StaffDashboard';
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
+import { Badge } from '@/components/ui/badge';
 
 export default function Dashboard() {
   const { profile, effectiveRole, isViewingAs } = useAuth();
@@ -26,15 +27,21 @@ export default function Dashboard() {
   const isEffectiveStaff = effectiveRole && ['mitarbeiter', 'teamleiter', 'geschaeftsfuehrung', 'admin'].includes(effectiveRole);
 
   return (
-    <div className="space-y-4 md:space-y-6 max-w-full">
+    <div className="space-y-5 md:space-y-8 max-w-full">
       <div className="min-w-0">
-        <h1 className="text-xl md:text-3xl font-bold tracking-tight truncate">
+        <h1 className="text-2xl md:text-4xl font-bold tracking-tight truncate">
           {getGreeting()}, {getName()}!
         </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {effectiveRole && `${ROLE_LABELS[effectiveRole]}`}
-          {isViewingAs && ' · Admin-Ansicht'}
-        </p>
+        <div className="flex items-center gap-2 mt-1.5">
+          {effectiveRole && (
+            <Badge variant="secondary" className="text-xs font-medium">
+              {ROLE_LABELS[effectiveRole]}
+            </Badge>
+          )}
+          {isViewingAs && (
+            <Badge variant="outline" className="text-xs">Admin-Ansicht</Badge>
+          )}
+        </div>
       </div>
 
       {isEffectiveAdmin && <AdminDashboard {...dashboardData} />}
