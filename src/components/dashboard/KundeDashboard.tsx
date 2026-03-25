@@ -105,8 +105,8 @@ export function KundeDashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:-translate-y-px transition-all duration-300">
           <CardContent className="flex items-center gap-4 py-5 px-5">
-            <div className="p-3 rounded-xl bg-primary/10 flex-shrink-0">
-              <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+            <div className="p-3 rounded-xl bg-muted flex-shrink-0">
+              <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-foreground" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-sm md:text-base">Mein System</h3>
