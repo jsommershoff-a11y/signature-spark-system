@@ -1,0 +1,1 @@
+UPDATE profiles SET first_name = 'Jan', last_name = 'Sommershoff', full_name = 'Jan Sommershoff' WHERE id = 'c009d338-0325-4145-88d2-b054ad0f499f';
