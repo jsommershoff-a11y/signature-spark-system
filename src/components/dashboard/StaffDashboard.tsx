@@ -124,7 +124,7 @@ function SalesCockpitWidget() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {DAILY_ACTIVITIES.map((a) => (
               <div key={a.label} className="flex items-center gap-2 p-2 bg-card rounded-xl border border-border/40">
-                <div className="text-primary">{ACTIVITY_ICONS[a.icon]}</div>
+                <div className="text-muted-foreground">{ACTIVITY_ICONS[a.icon]}</div>
                 <div>
                   <p className="text-xs font-semibold tabular-nums">{a.target}×</p>
                   <p className="text-[9px] text-muted-foreground leading-tight">{a.label}</p>
