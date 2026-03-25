@@ -13,8 +13,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Primary = Brand Teal-Green (jan-sommershoff.de) */
-    --primary: 160 70% 36%;
+    /* Primary = Brand Orange */
+    --primary: 23 92% 54%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 20% 92%;
@@ -23,25 +23,25 @@
     --muted: 220 18% 96%;
     --muted-foreground: 220 10% 46%;
 
-    /* Accent = Light Green */
-    --accent: 160 55% 44%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent = Warm Light */
+    --accent: 30 20% 96%;
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 15% 91%;
     --input: 220 15% 91%;
-    --ring: 160 70% 36%;
+    --ring: 23 92% 54%;
 
     --radius: 0.75rem;
 
-    /* Green variants for Landing */
-    --primary-deep: 160 75% 28%;
-    --primary-dark: 160 60% 22%;
-    --primary-light: 160 60% 44%;
-    --gradient-start: 160 75% 28%;
-    --gradient-end: 160 60% 44%;
+    /* Orange variants for Landing */
+    --primary-deep: 20 85% 45%;
+    --primary-dark: 18 80% 38%;
+    --primary-light: 28 95% 60%;
+    --gradient-start: 20 85% 45%;
+    --gradient-end: 28 95% 60%;
 
     /* Success (semantic green for App) */
     --success: 152 60% 40%;
@@ -62,27 +62,27 @@
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 160 70% 36%;
+    --sidebar-primary: 23 92% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 160 70% 36%;
+    --sidebar-ring: 23 92% 54%;
   }
 
-  /* App-Bereich: Neutral/Charcoal statt Gruen */
+  /* App-Bereich: Warm-Neutral statt Orange */
   .app-scope {
-    --primary: 220 14% 20%;
+    --primary: 210 6% 25%;
     --primary-foreground: 0 0% 100%;
-    --primary-deep: 220 14% 14%;
-    --primary-dark: 220 14% 10%;
-    --primary-light: 220 13% 35%;
-    --accent: 220 13% 91%;
-    --accent-foreground: 220 14% 20%;
-    --ring: 220 14% 40%;
-    --sidebar-primary: 220 14% 20%;
+    --primary-deep: 210 6% 18%;
+    --primary-dark: 210 6% 14%;
+    --primary-light: 210 5% 40%;
+    --accent: 30 8% 94%;
+    --accent-foreground: 210 6% 20%;
+    --ring: 210 6% 45%;
+    --sidebar-primary: 210 6% 25%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-ring: 220 14% 40%;
+    --sidebar-ring: 210 6% 45%;
   }
 
   .dark {
@@ -145,14 +145,14 @@
   }
 
   .dark .app-scope {
-    --primary: 220 14% 75%;
-    --primary-foreground: 220 14% 10%;
-    --accent: 220 13% 20%;
-    --accent-foreground: 220 14% 85%;
-    --ring: 220 14% 55%;
-    --sidebar-primary: 220 14% 75%;
-    --sidebar-primary-foreground: 220 14% 10%;
-    --sidebar-ring: 220 14% 55%;
+    --primary: 210 6% 75%;
+    --primary-foreground: 210 6% 10%;
+    --accent: 210 5% 20%;
+    --accent-foreground: 210 6% 85%;
+    --ring: 210 6% 55%;
+    --sidebar-primary: 210 6% 75%;
+    --sidebar-primary-foreground: 210 6% 10%;
+    --sidebar-ring: 210 6% 55%;
   }
 }
 
