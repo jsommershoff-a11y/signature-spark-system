@@ -34,20 +34,6 @@ export default function Admin() {
           <AdminUserManagement />
         </TabsContent>
 
-        <TabsContent value="coo">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Gauge className="h-5 w-5" /> COO Cockpit</CardTitle>
-              <CardDescription>Finanz-, Sync- und Performance-Übersicht — sevDesk-Daten aus Supabase</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => navigate('/app/coo-cockpit')} className="gap-2">
-                <ExternalLink className="h-4 w-4" /> COO Cockpit öffnen
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="leads">
           <Card>
             <CardHeader>
