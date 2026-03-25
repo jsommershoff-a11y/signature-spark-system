@@ -1,171 +1,90 @@
 
 
-# Plan: Premium Visual Redesign — Website + App Interface
+# Plan: Komplette Vertriebsplan-Tabelle ins System integrieren
 
 ## Zusammenfassung
 
-Massive visuelle Qualitaetssteigerung ueber 3 Ebenen: (1) Design-System-Foundation (CSS Variablen, Tokens, Card-Komponente), (2) Landing-Page-Sektionen einzeln aufwerten, (3) App-Interface (Sidebar, Header, Dashboard-Cards) auf Premium-Niveau heben. Keine neuen Features, keine Strukturaenderungen — nur visuelle Exzellenz.
+Die Spreadsheet hat 9 Tabs. 4 davon (Cockpit, Gespraechsleitfaden, Einwandbehandlung, Outreach) sind bereits in `sales-scripts.ts` integriert — die Skripte muessen aber mit den exakten Formulierungen aus der Tabelle aktualisiert werden. Die 5 fehlenden Tabs (Sprint-Plan, Marketingplan, Sales Funnel & KPIs, Revenue Tracker, 12-Monats-Skalierung) werden als neue Daten-Objekte in `sales-scripts.ts` ergaenzt und im StaffDashboard bzw. einer neuen Reports-Sektion angezeigt.
 
 ---
 
-## Ebene 1: Design-System Foundation
+## Was fehlt / was wird aktualisiert
 
-### `src/index.css`
-- **Feineres Farbsystem**: Muted-Foreground waermer (von kalt-grau zu warm-neutral), Border subtiler (heller, weniger blau-stich), Card-Background minimal warm getönt
-- **Neue CSS-Variablen**: `--shadow-card`, `--shadow-elevated`, `--shadow-glow` fuer konsistente Premium-Schatten
-- **Typografie-Verbesserung**: `font-feature-settings: "cv11", "ss01"` auf body fuer professionellere Glyphen
-- **Smoothere Transitions**: Globale `transition-colors duration-200` Basis
+### 1. `sales-scripts.ts` — Bestehende Daten an Spreadsheet anpassen
 
-### `src/styles/landing-tokens.ts`
-- **Container breiter**: `max-w-6xl` → `max-w-7xl` fuer mehr Atem
-- **Section-Padding grosszuegiger**: `py-16 md:py-24` → `py-20 md:py-32` — deutlich mehr Weissraum zwischen Sektionen
-- **Headlines staerker**: H1 `text-5xl md:text-7xl`, H2 `text-3xl md:text-5xl` — mehr Praesenz
-- **Card-Token Premium**: Feinerer Schatten (`shadow-[0_1px_3px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]`), groesserer Radius (`rounded-3xl`), subtilerer Border
-- **Badge-Token raffinierter**: Backdrop-blur, feinere Border, etwas mehr Padding
+**Triage-Script**: Exakte Formulierungen aus Tabelle uebernehmen:
+- Opener: "Hey [Name], lass uns keine Zeit verlieren. Wir haben 15 Minuten..."
+- Pain-Phase: "Was war der Hauptgrund, warum du auf meine Nachricht reagiert hast?"
+- Kosten: "Was kostet dich das im Monat? Jeder Tag ohne System kostet dich Umsatz."
+- Budget-Check: "Wenn wir eine Loesung finden die dir sofort 10-15h/Woche spart - waerst du bereit dafuer zu investieren?"
+- Termin: "Ich sehe genau wo dein Engpass ist. Das ist exakt das was ich bei Rene Schreiner geloest habe."
+- Abschluss: "Ich schicke dir den Link. Bereite dich vor mir deine 3 groessten Zeitfresser zu nennen."
 
-### `src/components/ui/card.tsx`
-- Default-Styling upgraden: `rounded-xl` → `rounded-2xl`, Schatten von `shadow-sm` zu `shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)]`, Border subtiler `border-border/60`
+**Strategy-Script**: Exakte Formulierungen:
+- Vision: "Stell dir vor: CRM qualifiziert Leads automatisch. Follow-ups laufen alleine."
+- Luecke: "Warum hast du das bisher nicht selbst gebaut?"
+- Case Study: "Rene Schreiner: Unstrukturiert, hoher Aufwand. Wir: CRM, Portal, Bewerbungsprozess. Ergebnis: 40+ Bewerbungen."
+- Pitch: "Wir bauen das System GEMEINSAM in dein Unternehmen. 30 Tage. Ab Tag 1 Ergebnisse. Investment: 10.000 EUR."
 
----
+**Kaltakquise-Script**: Exakte Formulierungen + neue "Bei Ablehnung"-Phase:
+- Opener: "Herr/Frau [Name], Jan Sommershoff hier. Ich sehe dass Ihr Unternehmen waechst. Haben Sie 60 Sekunden?"
+- Hook: "Die meisten in Ihrer Groesse verlieren 2-5k/Monat durch manuelle Prozesse."
+- Termin: "Genau da setzen wir an. Ich habe 2 Slots fuer ein 15-Min Prozess-Audit."
+- NEU — Ablehnung: "Kein Problem. Darf ich kurz eine Info per E-Mail schicken?"
 
-## Ebene 2: Landing Page — Sektion fuer Sektion
+**Einwandbehandlung**: Exakte Konter aus Tabelle uebernehmen (aktuell leicht anders formuliert)
 
-### `HeroSection.tsx`
-- Overlay-Gradient verfeinern: von hartem `foreground/80` zu eleganterem `from-[#0f1419]/85 via-[#0f1419]/70 to-[#0f1419]/95` — mehr Tiefe
-- Headline: `text-4xl md:text-6xl lg:text-7xl` mit `leading-[1.08]` — kompakter, dominanter
-- Subtext `max-w-2xl` statt `max-w-3xl` — bessere Zeilenlaenge
-- CTA-Buttons: Primaer-Button mit `shadow-[0_0_30px_rgba(246,113,31,0.25)]` Glow-Effekt, groessere Padding
-- Sekundaer-Button: `border-white/20` statt `/40`, eleganteren Hover
-- Sterne-Sektion: Abstand zum CTA vergroessern, subtilere Darstellung
+**Outreach-Vorlagen**: Texte 1:1 aus Tabelle ersetzen (sind aktuell paraphrasiert, nicht original)
 
-### `TrustLogosSection.tsx`
-- Padding reduzieren auf `py-8 md:py-10` — kompakter, weniger Gewicht fuer diesen Social-Proof-Streifen
-- Logo-Cards: Border entfernen, nur Schatten-on-hover, cleaner Look
+**SALES_TARGETS**: Erweitern um Produktpreise + neue Funnel-Stufen:
+- Produkte: Done-with-you (9.990 brutto), Coaching-Retainer (1.990 brutto), Website-Pakete (999 brutto)
+- Funnel: 500 Leads → 250 Triage → 150 Strategy → 100 Angebote → 40 Abschluesse
 
-### `EmotionalHookSection.tsx`
-- Problem-Items: Von `bg-destructive/5` zu `bg-gradient-to-r from-destructive/5 to-transparent` — subtiler, weniger aggressive Hintergruende
-- Pattern-Break Block: `bg-foreground` → `bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a]` mit leichtem Orange-Glow am Rand — edler, nicht nur schwarz
+### 2. `sales-scripts.ts` — Neue Daten-Objekte
 
-### `FivePillarsSection.tsx`
-- Hintergrund: `bg-muted/30` → sanfter Gradient `bg-gradient-to-b from-muted/20 to-background`
-- Cards groesser, mehr Innen-Padding (`p-6` → `p-7`), bessere Icon-Platzierung
+**SPRINT_PLAN**: Woechentlicher Aktionsplan (Mo-Fr) mit Uhrzeiten, Aufgaben, Details, Kanal
+- Wird als Array von Tages-Objekten mit Zeitslots gespeichert
 
-### `SolutionSection.tsx`
-- Checkmark-Items: `bg-primary/5` → subtiler Border-Left-Akzent statt vollem Hintergrund — mehr Premium
-- Prozess-Steps: Von flachen Kreisen zu eleganteren Karten mit leichtem Gradient, verbindende Linie zwischen Steps
+**MARKETING_PLAN**: Kanal-Strategie + Content-Kalender
+- Kanaele: LinkedIn, Instagram, Kaltakquise, E-Mail, Lead-Magnet, Empfehlungen, Events
+- Content-Wochenplan: Tag → Plattform → Typ → Hook → CTA
+- Marketing-KPIs: 20+ Posts, 12+ Reels, 100+ DMs, 30+ Downloads, 80+ Kaltanrufe
 
-### `AiRealitySection.tsx`
-- Falsch/Richtig Vergleich: Mehr vertikalen Abstand, groessere Padding in den Spalten
-- Danger-Cards: `rounded-2xl` → `rounded-3xl`, mehr Padding, subtilere Icons
-- Process-Tags: Von `bg-primary/10` zu Outline-Style (`border-primary/30 bg-transparent`) — cleaner
+**FUNNEL_STAGES**: Sales-Funnel mit Conversion-Rates
+- 5 Stufen mit Ziel-Zahlen und Ziel-Raten
 
-### `CompetitionSection.tsx`
-- Grid-Gap: `gap-8` → `gap-10` — mehr Luft zwischen den Karten
-- Pattern-Break: Von flachem `bg-primary` zu `bg-gradient-to-r from-primary-deep via-primary to-primary-light` mit subtle radial glow
+**DAILY_ACTIVITIES**: Tages-Aktivitaeten-Tracker
+- Outreach: 30/Tag, Kaltanrufe: 30/Tag, Triage: 10/Tag, Strategy: 5/Tag, Follow-ups: 10/Tag
 
-### `OfferSection.tsx`
-- Offer-Cards: Mehr vertikale Hoehe, groesserer Padding, Icon groesser
-- Empfohlen-Card: Staerkerer visueller Unterschied — leichter Drop-Shadow-Glow um die Border
-- CTA-Button: `group` Hover mit sanfter Scale-Animation (`hover:scale-[1.02]`)
+**SCALING_ROADMAP**: 12-Monats-Plan
+- Apr 2026 bis Maerz 2027 mit Einmalig/Recurring/Gesamt pro Monat
+- Meilensteine: Monat 1 (37k) → Monat 6 (100k) → Monat 12 (140k = 1.2 Mio/Jahr)
 
-### `AiAnalysisWidget.tsx`
-- Widget-Container: Von `border-2 border-primary/30` zu `border border-primary/20` mit `shadow-2xl` — weniger Border, mehr Tiefe
-- Header-Gradient: Reicher, mit subtiler Textur-Overlay
-- Option-Buttons: Groessere Touch-Targets (`p-5`), bessere Hover-Animation mit leichtem Scale
-- Result-Cards (Savings): Groesserer Radius, bessere Typografie-Hierarchie
+### 3. `StaffDashboard.tsx` — Erweitertes Sales Cockpit
 
-### `CaseStudiesSection.tsx`
-- Testimonial-Card: Von `border-l-4` zu vollem `rounded-3xl` Card mit groesserem Avatar, besserem Quote-Styling
-- Avatar groesser: `w-14 h-14` → `w-16 h-16`
-- Quote-Styling: Groeßere Anfuehrungszeichen als dekoratives Element
+Das bestehende `SalesCockpitWidget` wird erweitert:
+- **Produktpreise anzeigen**: Done-with-you (9.990), Coaching (1.990), Website (999) mit Stueckziel
+- **Funnel-Uebersicht**: 5 Stufen mit Ziel-Conversion-Rates als horizontale Mini-Bar
+- **Tages-Aktivitaeten**: Vollstaendige Liste (Outreach 30, Kaltanrufe 30, Triage 10, Strategy 5, Follow-ups 10, Posts 1, Stories 3)
+- **Sprint-Plan Hinweis**: Link oder Kurzansicht des aktuellen Wochen-Plans
 
-### `ResultsSection.tsx`
-- Result-Items: Mehr Padding, groessere Icons (`w-7 h-7`)
-- Pattern-Break Box: Wie EmotionalHook — dunklerer, edlerer Gradient
+### 4. Neue Sektion im Reports-Bereich: Vertriebsplan
 
-### `TransformationFinancingSection.tsx`
-- Blocks: Mehr vertikaler Abstand (`space-y-8` → `space-y-10`)
-- Finanzierungs-Card (250k): Staerkerer visueller Impact — groesserer Font fuer die Zahl, dezenter Orange-Glow
+In `src/pages/app/Reports.tsx` neuen Tab "Vertriebsplan" hinzufuegen mit:
+- **Funnel-Visualisierung**: 5 Stufen als Trichter mit IST/SOLL
+- **Marketing-KPIs**: Tabelle mit Kanal, Massnahme, Frequenz, Ziel-Leads
+- **Content-Kalender**: Wochenansicht Mo-Fr
+- **12-Monats-Roadmap**: Timeline-Ansicht mit Meilensteinen
+- **Revenue-Tracker**: Tabelle mit Abschluessen und Monatszusammenfassung
 
-### `AboutFounderSection.tsx`
-- Foto: Groesserer Schatten, leichter Border-Radius-Increase
-- Blockquote: Von `border-l-4` zu eleganterem Design mit hinterlegtem Highlight
-
-### `FAQSection.tsx`
-- Accordion-Items: Groesserer Padding (`px-6` → `px-8 py-6`), weicherer Schatten
-- Trigger: `text-lg` → `text-xl` auf Desktop fuer mehr Praesenz
-
-### `FinalCtaSection.tsx`
-- Overlay-Gradient verfeinern wie Hero
-- Options-Grid: Cards mit `backdrop-blur-md` statt `backdrop-blur-sm`, groessere Radien
-- CTA-Button: Glow-Effekt wie im Hero
-
-### `Footer.tsx`
-- Hintergrund: Von flachem `bg-foreground` zu `bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a]` — edler
-- Links: Mehr Spacing, bessere Hover-Effekte
-- Separator: Von `border-muted/20` zu feinerem `border-white/10`
-
-### `Header.tsx`
-- Background: Von Gradient zu `bg-[#1a1a2e]/95 backdrop-blur-xl` — moderner, glasiger
-- CTA-Button: Mehr Praesenz mit Glow
+### Neue Komponente: `src/components/reports/SalesPlanTab.tsx`
 
 ---
 
-## Ebene 3: App-Interface
+## Dateien
 
-### `AppLayout.tsx`
-- Header: Von Orange-Gradient zu `bg-[#1a1a2e] border-b border-white/10` — professioneller, neutraler, weniger "marketingy"
-- Main Content: Padding `p-4 md:p-8` — mehr Raum
-
-### `AppSidebar.tsx`
-- Background: Subtiler Gradient `bg-gradient-to-b from-card to-muted/30`
-- Active-State: Von `bg-primary` (volles Orange) zu `bg-primary/10 text-primary border-l-2 border-primary` — subtiler, professioneller
-- Hover: Sanfterer Hover mit `bg-muted/50`
-- Spacing: `space-y-0.5` → `space-y-1` — mehr Luft
-
-### `AdminDashboard.tsx` + `StaffDashboard.tsx`
-- KPI-Cards: Groesserer Padding, Icon in farbigem Circle statt nackt, Wert in `text-3xl` statt `text-2xl`
-- Section-Headers: Von `text-xs uppercase` zu `text-sm font-semibold` mit einer feinen Linie — eleganter
-
-### `KundeDashboard.tsx`
-- Welcome-Card: Edlerer Gradient, mehr Padding (`py-8 px-7`)
-- Quick-Link-Cards: Hover mit `translate-y-[-1px]` Lift-Effekt
-
-### `Dashboard.tsx`
-- Greeting: `text-2xl md:text-4xl` — groesser, mehr Praesenz
-- Role-Label: Dezenter Badge statt Plain-Text
-
----
-
-## Dateien die geaendert werden
-
-1. `src/index.css` — Farbvariablen verfeinern, Custom-Utilities
-2. `src/styles/landing-tokens.ts` — Spacing, Typografie, Card-Tokens upgraden
-3. `src/components/ui/card.tsx` — Premium Default-Styling
-4. `src/components/landing/Header.tsx` — Glassmorphism-Header
-5. `src/components/landing/Footer.tsx` — Edlerer dunkler Gradient
-6. `src/components/landing/FAQSection.tsx` — Groessere Typo, mehr Padding
-7. `src/components/landing/CTAButton.tsx` — Glow-Effekt, bessere Hover
-8. `src/components/landing/home/HeroSection.tsx` — Staerkere Headline, Glow-CTA
-9. `src/components/landing/home/TrustLogosSection.tsx` — Kompakter, cleaner
-10. `src/components/landing/home/EmotionalHookSection.tsx` — Subtilere Farben, edlerer Pattern-Break
-11. `src/components/landing/home/FivePillarsSection.tsx` — Mehr Raum, bessere Cards
-12. `src/components/landing/home/SolutionSection.tsx` — Premium-Checkmarks, elegantere Steps
-13. `src/components/landing/home/AiRealitySection.tsx` — Mehr Spacing, feinere Cards
-14. `src/components/landing/home/CompetitionSection.tsx` — Mehr Luft, edlerer Pattern-Break
-15. `src/components/landing/home/OfferSection.tsx` — Groessere Cards, besserer CTA
-16. `src/components/landing/home/AiAnalysisWidget.tsx` — Weniger Border, mehr Tiefe, bessere Buttons
-17. `src/components/landing/home/CaseStudiesSection.tsx` — Groessere Avatare, besseres Quote-Design
-18. `src/components/landing/home/ResultsSection.tsx` — Edlerer Pattern-Break
-19. `src/components/landing/home/TransformationFinancingSection.tsx` — Mehr Spacing, staerkere Finanz-Zahl
-20. `src/components/landing/home/AboutFounderSection.tsx` — Besserer Schatten, eleganteres Blockquote
-21. `src/components/landing/home/FinalCtaSection.tsx` — Besseres Overlay, Glow-CTA
-22. `src/components/app/AppLayout.tsx` — Dunklerer Premium-Header
-23. `src/components/app/AppSidebar.tsx` — Subtilerer Active-State, mehr Spacing
-24. `src/components/dashboard/AdminDashboard.tsx` — Premium KPI-Cards, elegantere Section-Headers
-25. `src/components/dashboard/StaffDashboard.tsx` — Gleiche KPI-Upgrades
-26. `src/components/dashboard/KundeDashboard.tsx` — Edlerer Welcome-Widget, Lift-Hover
-27. `src/pages/app/Dashboard.tsx` — Groessere Greeting, Badge fuer Rolle
-
-Keine neuen Dateien. Keine neuen Features. Keine Strukturaenderungen.
+1. **Aendern**: `src/lib/sales-scripts.ts` — Bestehende Skripte aktualisieren + 5 neue Daten-Objekte
+2. **Aendern**: `src/components/dashboard/StaffDashboard.tsx` — SalesCockpitWidget erweitern
+3. **Neu**: `src/components/reports/SalesPlanTab.tsx` — Vertriebsplan-Tab fuer Reports
+4. **Aendern**: `src/pages/app/Reports.tsx` — Neuen "Vertriebsplan"-Tab hinzufuegen
 
