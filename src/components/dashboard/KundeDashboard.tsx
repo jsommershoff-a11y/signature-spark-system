@@ -66,10 +66,10 @@ export function KundeDashboard() {
 
       {/* Freebie Banner */}
       {hasNoProduct && (
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/8">
+        <Card className="border-border/40 bg-gradient-to-r from-muted/20 to-muted/30">
           <CardContent className="flex flex-col sm:flex-row items-center gap-5 py-6 px-5">
-            <div className="p-3 rounded-2xl bg-primary/10 shrink-0">
-              <Gift className="h-8 w-8 text-primary" />
+            <div className="p-3 rounded-2xl bg-muted shrink-0">
+              <Gift className="h-8 w-8 text-foreground" />
             </div>
             <div className="flex-1 text-center sm:text-left">
               <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
