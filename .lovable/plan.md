@@ -1,110 +1,92 @@
 
 
-# Plan: Onboarding-Flow, Kunden-Dashboard Umbau & Kurs-Inhalte
+# Plan: Vertriebsplan-Daten in das System integrieren
 
 ## Zusammenfassung
 
-Drei zusammenhaengende Aenderungen: (1) Gefuehrter Onboarding-Flow nach Registrierung, (2) Kunden-Dashboard als Umsetzungs-Cockpit mit Fortschritt und naechster Lektion, (3) Kurs 2 "ANFRAGEN & LEADS" in der Datenbank anlegen + fehlende Inhalte fuer Kurs 1 und 2.
+Die kompletten Inhalte aus der Google Spreadsheet (9 Tabs) werden an den passenden Stellen im System integriert: Gesprächsleitfaden und Einwandbehandlung direkt in den SalesGuideWizard, Outreach-Vorlagen als E-Mail-Templates, und der Vertriebsplan als neues Cockpit-Widget.
 
----
+## Aenderungen
 
-## 1. Gefuehrter Onboarding-Flow
+### 1. SalesGuideWizard.tsx – Gesprächsleitfaden & Einwandbehandlung integrieren
 
-### Problem
-Die aktuelle `ProfileCompletionDialog` fragt nur "Firma" ab. Kein Branchenbezug, kein Ziel, keine Weiterleitung zum ersten Kurs.
+Die Phasen-Definitionen (PHASES) werden mit den konkreten Skripten aus der Spreadsheet angereichert:
 
-### Loesung
-Die bestehende `ProfileCompletionDialog.tsx` wird zu einem mehrstufigen Onboarding-Wizard umgebaut (3 Schritte, gleiche Dialog-Komponente):
+**Rapport-Phase**: Skript-Texte aus Triage-Call und Strategy Session als `script`-Feld pro Checklist-Item:
+- "Hey [Name], lass uns keine Zeit verlieren. Wir haben 15 Minuten..."
+- "Erzaehl mir kurz: Was machst du genau und wie lange schon?"
 
-**Schritt 1: Branche** (Select mit 8 Optionen)
-- Handwerk, Dienstleistung, Praxis/Gesundheit, Immobilien, Gastronomie/Hotellerie, Handel, Agentur/Beratung, Sonstiges
+**Discovery-Phase**: Konkrete Fragen aus dem Gespraechsleitfaden:
+- "Was war der Hauptgrund, warum du auf meine Nachricht reagiert hast?"
+- "Wie viele Stunden pro Woche verbringst du mit Dingen, die eigentlich ein System machen sollte?"
+- "Was kostet dich das im Monat?"
+- Budget-Check: "Waerst du bereit dafuer zu investieren?"
 
-**Schritt 2: Groesstes Ziel** (Select mit 4 Optionen)
-- "Weniger operatives Chaos"
-- "Mehr Zeit fuer Kerngeschaeft"  
-- "Bessere Prozesse und Uebergaben"
-- "Wachstum ohne mehr Arbeit"
+**Presentation-Phase**: Pitch-Skript:
+- "Wir bauen das System GEMEINSAM in dein Unternehmen. 30 Tage. Ab Tag 1 Ergebnisse."
+- Case Study Referenz
 
-**Schritt 3: Firma + Name** (wie bisher, aber kompakter)
+**Closing-Phase – Einwandbehandlung als eigene UI-Sektion**:
+Neue ausklappbare Accordion-Komponente innerhalb der Closing-Phase mit den Big 5 Einwaenden:
+- "Keine Zeit" → Reframe + Done-with-you Antwort
+- "Zu teuer / 10k sind eng" → ROI-Rechnung + Finanzierung
+- "Muss mit Partner besprechen" → Emotionaler Hebel
+- "Habe schon was Aehnliches probiert" → System vs. Tool Differenzierung
+- "Muss darueber nachdenken" → Echten Einwand finden + Deadline
 
-Nach Abschluss: Weiterleitung zu `/app/academy` mit Toast "Starte mit deinem ersten Kurs"
+Plus 6 Goldene Regeln als Tipps-Box.
 
-### DB-Aenderung (Migration)
-`profiles` Tabelle braucht 2 neue Spalten:
-```sql
-ALTER TABLE profiles ADD COLUMN industry text;
-ALTER TABLE profiles ADD COLUMN primary_goal text;
-```
+### 2. sales-guide-ai.ts – Keyword-Suggestions erweitern
 
-### Datei-Aenderungen
-- `src/components/app/ProfileCompletionDialog.tsx` – Komplett umschreiben als 3-Step-Wizard
-- `src/contexts/AuthContext.tsx` – Profile-Interface um `industry` und `primary_goal` erweitern
+Neue Keyword-Patterns aus der Einwandbehandlung hinzufuegen:
+- `['partner', 'besprechen', 'frau', 'mann']` → "Partner-Einwand: Emotionalen Hebel nutzen (Familie/Zeit)"
+- `['probiert', 'versucht', 'tool', 'software']` → "Tool-Erfahrung: System vs. Tool differenzieren"
+- `['nachdenken', 'ueberlegen', 'spaeter']` → "Nachdenk-Einwand: Echten Einwand erfragen + Deadline"
+- `['finanzierung', 'rate', 'raten']` → "Finanzierung erwaehnen: Signature Transformation Finanzierung"
 
----
+### 3. Neue Datei: src/lib/sales-scripts.ts
 
-## 2. Kunden-Dashboard Umbau
-
-### Problem
-Dashboard zeigt statische "0"-Karten. Kein Einstiegspunkt, keine Motivation.
-
-### Loesung
-`KundeDashboard.tsx` komplett ersetzen durch ein Umsetzungs-Cockpit:
-
-**Willkommens-Widget** (oben, volle Breite):
-- "Dein Signature System – Schritt fuer Schritt aufbauen"
-- Fortschrittsring (ProgressRing aus LMS wiederverwendet)
-- "Naechste Lektion: [Titel]" mit direktem Link
-- "Starte hier"-Button wenn noch kein Fortschritt
-
-**Freebie-Banner** (bleibt, wenn kein Produkt)
-
-**Quick-Links** (2 Karten):
-- "Mein System" statt "KI-Academy"
-- "Dokumente" statt "Meine Vertraege"
-
-**Stats** werden dynamisch aus `useLearningPaths` Hook befuellt statt statisch "0".
-
-### Datei-Aenderungen
-- `src/components/dashboard/KundeDashboard.tsx` – Komplett umschreiben
-- Importiert `useLearningPaths` fuer echte Fortschrittsdaten
-- Importiert `ProgressRing` aus LMS-Komponenten
-
----
-
-## 3. Kurs 2 anlegen + Inhalte befuellen
-
-### Kurs 2: "ANFRAGEN & LEADS – Nie wieder Anfragen verlieren"
-Wird per SQL-Insert in die DB geschrieben (gleicher Ansatz wie Kurs 1):
+Zentrales Daten-Modul mit allen Gespraechsskripten und Outreach-Vorlagen:
 
 ```text
-Kurs 2: ANFRAGEN & LEADS (Starter, published, sort_order: 0)
-├── Modul 3: Anfragen automatisch erfassen
-│   ├── L9: Warum Anfragen untergehen (video, 5 Min)
-│   ├── L10: Dein CRM in 15 Minuten einrichten (video, 12 Min)
-│   ├── L11: Automatische Lead-Erfassung einrichten (task)
-│   └── L12: Praxis: Deine ersten 5 Leads eintragen (task)
-├── Modul 4: Follow-ups, die laufen
-│   ├── L13: Warum Follow-ups Geld bringen (video, 5 Min)
-│   ├── L14: Automatische Follow-up-Sequenz bauen (video, 10 Min)
-│   ├── L15: E-Mail-Vorlage: Der perfekte Follow-up (worksheet)
-│   └── L16: Quiz: Follow-up-Strategie (quiz)
+- TRIAGE_SCRIPT: 7 Phasen mit Dauer, Text und Psychologie
+- STRATEGY_SCRIPT: 9 Phasen mit Dauer, Text und Psychologie  
+- COLD_CALL_SCRIPT: 4 Phasen mit Text und Psychologie
+- OBJECTION_HANDLING: 5 Einwaende mit Konter und Psychologie
+- GOLDEN_RULES: 6 Regeln
+- OUTREACH_TEMPLATES: 5 Vorlagen (Warm DM, Lead-Magnet, Kalt-DM, Follow-up, E-Mail nach Kaltanruf)
 ```
 
-Alle Lektionen mit vollstaendigen `content_html` Texten im `meta`-Feld, Quizze mit Fragen/Antworten.
+### 4. CallDetailView.tsx – Gesprächstyp-Auswahl
 
-### Arbeitsblatt-PDFs
-2 PDFs werden generiert und in `/mnt/documents/` abgelegt:
-1. "Prozess-Audit Arbeitsblatt" (fuer Kurs 1, L3)
-2. "Follow-up E-Mail-Vorlage" (fuer Kurs 2, L15)
+Neuer Tab oder Dropdown im SalesGuideWizard-Bereich:
+- "Triage-Call (15 Min)" → laedt Triage-Skript mit passenden Checklisten
+- "Strategy Session (45-60 Min)" → laedt Strategy-Skript
+- "Kaltakquise" → laedt Kaltakquise-Skript
 
----
+Das aendert die Checklist-Items und Hints dynamisch basierend auf dem Gespraechstyp.
 
-## Dateien die geaendert werden
+### 5. Outreach-Vorlagen als E-Mail-Templates in DB einfuegen
 
-1. **Migration**: `profiles` + `industry` + `primary_goal` Spalten
-2. `src/components/app/ProfileCompletionDialog.tsx` – 3-Step Onboarding Wizard
-3. `src/contexts/AuthContext.tsx` – Profile-Interface erweitern
-4. `src/components/dashboard/KundeDashboard.tsx` – Umsetzungs-Cockpit
-5. **DB-Inserts**: Kurs 2 mit 2 Modulen und 8 Lektionen
-6. **PDFs**: 2 Arbeitsblaetter generieren
+5 Outreach-Vorlagen als Eintraege in die `email_templates` Tabelle:
+- Vorlage A: WhatsApp/LinkedIn DM (Warm)
+- Vorlage B: Nach Lead-Magnet Download
+- Vorlage C: Kalt-DM an Unbekannte
+- Vorlage D: Follow-up nach 48h
+- Vorlage E: E-Mail nach Kaltanruf
+
+### 6. Dashboard-Widget: Vertriebsziele (StaffDashboard)
+
+Neues Widget in `StaffDashboard.tsx` das die Cockpit-Daten anzeigt:
+- Tages-Mantra: "Jeden Tag 3 Outreach. Jeden Tag 1 Call. Jeden Tag 1 Follow-up."
+- KPI-Karten: Leads/Monat (Ziel: 100), Strategy Sessions (Ziel: 35), Close-Rate (40%)
+- Tages-Aktivitaeten Tracker (Outreach, Kaltanrufe, Triage-Calls, Strategy Sessions, Follow-ups)
+
+## Dateien
+
+1. **Neu**: `src/lib/sales-scripts.ts` – Alle Skripte, Einwaende, Outreach-Vorlagen
+2. **Aendern**: `src/components/offers/SalesGuideWizard.tsx` – Einwandbehandlung-Accordion, Skript-Anzeige, Gespraechstyp-Wahl
+3. **Aendern**: `src/lib/sales-guide-ai.ts` – Erweiterte Keyword-Suggestions
+4. **Aendern**: `src/components/dashboard/StaffDashboard.tsx` – Vertriebsziele-Widget
+5. **DB-Insert**: 5 Outreach-Vorlagen in `email_templates`
 
