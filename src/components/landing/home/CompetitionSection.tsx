@@ -6,10 +6,10 @@ export const CompetitionSection = () => {
   return (
     <section className={t.sectionPadding}>
       <div className={`${t.container} max-w-4xl`}>
-        <div className="grid md:grid-cols-2 gap-8 items-stretch">
+        <div className="grid md:grid-cols-2 gap-10 items-stretch">
           {/* Left: Excuse */}
-          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-8 flex flex-col justify-center">
-            <AlertCircle className="w-10 h-10 text-destructive mb-4" />
+          <div className="rounded-3xl border border-destructive/15 bg-gradient-to-br from-destructive/5 to-transparent p-8 flex flex-col justify-center">
+            <AlertCircle className="w-10 h-10 text-destructive mb-5" />
             <h3 className="text-xl font-bold text-foreground mb-3">
               Du verlierst jeden Monat Geld durch manuelle Prozesse.
             </h3>
@@ -25,8 +25,8 @@ export const CompetitionSection = () => {
           </div>
 
           {/* Right: Competition */}
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8 flex flex-col justify-center">
-            <TrendingUp className="w-10 h-10 text-primary mb-4" />
+          <div className="rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/5 to-transparent p-8 flex flex-col justify-center">
+            <TrendingUp className="w-10 h-10 text-primary mb-5" />
             <h3 className="text-xl font-bold text-foreground mb-3">
               Deine Konkurrenz automatisiert bereits.
             </h3>
@@ -41,7 +41,7 @@ export const CompetitionSection = () => {
         </div>
 
         {/* Visual */}
-        <div className="mt-8 rounded-2xl overflow-hidden shadow-lg border border-border">
+        <div className="mt-10 rounded-3xl overflow-hidden shadow-[0_4px_32px_rgba(0,0,0,0.08)] border border-border/30">
           <img
             src={kiZeitfresser}
             alt="Mittelstands-KI: Die Wahrheit über deine Zeitfresser – Deine Konkurrenz automatisiert schon"
@@ -50,8 +50,8 @@ export const CompetitionSection = () => {
         </div>
 
         {/* Pattern Break */}
-        <div className="mt-8 bg-primary text-primary-foreground rounded-2xl py-8 px-6 text-center">
-          <p className="text-2xl md:text-3xl font-bold">
+        <div className="mt-10 bg-gradient-to-r from-primary-deep via-primary to-primary-light text-primary-foreground rounded-3xl py-10 px-8 text-center shadow-[0_0_40px_rgba(246,113,31,0.15)]">
+          <p className="text-2xl md:text-4xl font-bold">
             Automatisierung ist kein Luxus. Es ist Pflicht.
           </p>
         </div>

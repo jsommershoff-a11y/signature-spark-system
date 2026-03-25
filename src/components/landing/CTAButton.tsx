@@ -18,9 +18,9 @@ export const CTAButton = forwardRef<HTMLButtonElement, CTAButtonProps>(
         size={size}
         className={cn(
           "bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary",
-          "text-primary-foreground font-semibold text-lg px-8 py-6",
-          "shadow-lg hover:shadow-[0_0_20px_rgba(230,126,34,0.3)] transition-all duration-300",
-          "rounded-lg",
+          "text-primary-foreground font-semibold text-lg px-10 py-6",
+          "shadow-[0_0_24px_rgba(246,113,31,0.2)] hover:shadow-[0_0_40px_rgba(246,113,31,0.35)]",
+          "transition-all duration-300 rounded-xl",
           className
         )}
       >

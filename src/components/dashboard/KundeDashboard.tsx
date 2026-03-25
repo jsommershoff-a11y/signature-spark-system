@@ -35,13 +35,13 @@ export function KundeDashboard() {
   })();
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-5 md:space-y-6">
       {/* Welcome / Progress Widget */}
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/5 shadow-md">
-        <CardContent className="flex flex-col sm:flex-row items-center gap-5 py-6 px-5">
+      <Card className="border-primary/15 bg-gradient-to-br from-primary/5 via-background to-primary/3 shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
+        <CardContent className="flex flex-col sm:flex-row items-center gap-6 py-8 px-7">
           <ProgressRing progress={overallProgress} size={90} strokeWidth={7} />
-          <div className="flex-1 text-center sm:text-left space-y-1.5">
-            <h2 className="font-bold text-lg">Dein Signature System – Schritt für Schritt aufbauen</h2>
+          <div className="flex-1 text-center sm:text-left space-y-2">
+            <h2 className="font-bold text-xl">Dein Signature System – Schritt für Schritt aufbauen</h2>
             {totalLessons > 0 ? (
               <p className="text-sm text-muted-foreground">
                 {completedLessons} von {totalLessons} Lektionen abgeschlossen
@@ -56,7 +56,7 @@ export function KundeDashboard() {
               </div>
             )}
           </div>
-          <Button asChild className="shrink-0">
+          <Button asChild className="shrink-0 shadow-[0_0_16px_rgba(246,113,31,0.15)]">
             <Link to={nextLesson ? `/app/academy/course/${nextLesson.courseId}/lesson/${nextLesson.lessonId}` : '/app/academy'}>
               {nextLesson ? 'Weiter lernen →' : 'Starte hier →'}
             </Link>
@@ -66,9 +66,9 @@ export function KundeDashboard() {
 
       {/* Freebie Banner */}
       {hasNoProduct && (
-        <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10 shadow-md">
-          <CardContent className="flex flex-col sm:flex-row items-center gap-4 py-5 px-4">
-            <div className="p-3 rounded-xl bg-primary/15 shrink-0">
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/8">
+          <CardContent className="flex flex-col sm:flex-row items-center gap-5 py-6 px-5">
+            <div className="p-3 rounded-2xl bg-primary/10 shrink-0">
               <Gift className="h-8 w-8 text-primary" />
             </div>
             <div className="flex-1 text-center sm:text-left">
@@ -102,10 +102,10 @@ export function KundeDashboard() {
       )}
 
       {/* Quick Links */}
-      <div className="grid gap-3 md:grid-cols-2">
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="flex items-center gap-4 py-5 px-4">
-            <div className="p-3 rounded-lg bg-primary/10 flex-shrink-0">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:-translate-y-px transition-all duration-300">
+          <CardContent className="flex items-center gap-4 py-5 px-5">
+            <div className="p-3 rounded-xl bg-primary/10 flex-shrink-0">
               <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
@@ -117,9 +117,9 @@ export function KundeDashboard() {
             </Button>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-md transition-shadow">
-          <CardContent className="flex items-center gap-4 py-5 px-4">
-            <div className="p-3 rounded-lg bg-primary/10 flex-shrink-0">
+        <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:-translate-y-px transition-all duration-300">
+          <CardContent className="flex items-center gap-4 py-5 px-5">
+            <div className="p-3 rounded-xl bg-primary/10 flex-shrink-0">
               <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">

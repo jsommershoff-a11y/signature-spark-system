@@ -35,22 +35,20 @@ export const Header = () => {
   const [branchesOpen, setBranchesOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary-deep via-primary to-primary-light shadow-md">
-      <div className="container mx-auto px-4">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-xl border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
               src={logoSignature} 
               alt="KRS Signature Logo" 
-              className="h-12 w-auto"
+              className="h-10 w-auto"
             />
           </Link>
           
-          {/* Desktop Navigation (md und größer) */}
           <nav className="hidden md:flex items-center gap-6">
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-primary-foreground hover:text-primary-foreground/80 transition-colors font-medium">
+              <DropdownMenuTrigger className="flex items-center gap-1 text-white/80 hover:text-white transition-colors font-medium text-sm">
                 Branchen
                 <ChevronDown className="w-4 h-4" />
               </DropdownMenuTrigger>
@@ -68,24 +66,23 @@ export const Header = () => {
             <Link to="/qualifizierung">
               <Button 
                 size="sm" 
-                className="bg-white text-primary-deep hover:bg-white/90 font-semibold shadow-md"
+                className="bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary text-primary-foreground font-semibold shadow-[0_0_20px_rgba(246,113,31,0.2)] hover:shadow-[0_0_30px_rgba(246,113,31,0.35)] transition-all duration-300"
               >
                 Potenzial-Analyse buchen
               </Button>
             </Link>
 
             <Link to="/auth">
-              <Button variant="ghost" size="sm" className="gap-1.5 text-primary-foreground hover:bg-primary-foreground/20">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-white/70 hover:text-white hover:bg-white/10">
                 <LogIn className="w-4 h-4" />
                 Anmelden
               </Button>
             </Link>
           </nav>
 
-          {/* Mobile Navigation (unter md) */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Menü öffnen</span>
               </Button>
@@ -96,7 +93,6 @@ export const Header = () => {
               </SheetHeader>
               
               <nav className="flex flex-col gap-4 mt-8">
-                {/* Branchen Collapsible */}
                 <Collapsible open={branchesOpen} onOpenChange={setBranchesOpen}>
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-lg font-medium">
                     Branchen
@@ -116,7 +112,6 @@ export const Header = () => {
                   </CollapsibleContent>
                 </Collapsible>
 
-                {/* Qualifizierung Link */}
                 <Link
                   to="/qualifizierung"
                   onClick={() => setIsOpen(false)}
@@ -125,7 +120,6 @@ export const Header = () => {
                   Qualifizierung
                 </Link>
 
-                {/* Anmelden Link */}
                 <Link
                   to="/auth"
                   onClick={() => setIsOpen(false)}
@@ -135,7 +129,6 @@ export const Header = () => {
                   Anmelden
                 </Link>
 
-                {/* CTA Button */}
                 <Link 
                   to="/qualifizierung" 
                   onClick={() => setIsOpen(false)}

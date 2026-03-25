@@ -103,18 +103,18 @@ export const AiAnalysisWidget = () => {
 
   return (
     <section id="ki-analyse" className={t.sectionPadding}>
-      <div className="max-w-3xl mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
         {/* Intro text above widget */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Die meisten Unternehmer unterschätzen, wie viel Zeit und Geld sie jeden Monat durch manuelle Prozesse verlieren. Diese Analyse zeigt dir in 60 Sekunden, wo dein größtes Einsparpotenzial liegt.
           </p>
         </div>
 
-        <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-background to-primary/5 shadow-xl overflow-hidden">
+        <div className="rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/5 via-background to-primary/5 shadow-[0_8px_40px_rgba(0,0,0,0.08)] overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary to-primary-light p-6 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="bg-gradient-to-r from-primary-deep via-primary to-primary-light p-7 text-center">
+            <div className="flex items-center justify-center gap-2 mb-3">
               <Brain className="w-6 h-6 text-primary-foreground" />
               <span className="text-primary-foreground/80 text-sm font-semibold uppercase tracking-wider">
                 Kostenlose KI-Analyse
@@ -123,15 +123,15 @@ export const AiAnalysisWidget = () => {
             <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground">
               Wie viel Zeit und Geld verlierst du pro Woche?
             </h3>
-            <p className="text-primary-foreground/70 mt-2">
+            <p className="text-primary-foreground/60 mt-2 text-sm">
               5 Fragen • 60 Sekunden • Sofortige Auswertung
             </p>
           </div>
 
-          <div className="p-6 md:p-8">
+          <div className="p-7 md:p-10">
             {/* Intro */}
             {step === -1 && (
-              <div className="text-center space-y-6">
+              <div className="text-center space-y-7">
                 <p className="text-lg text-muted-foreground">
                   Finde heraus, wie viele Stunden und Euro du jede Woche verlierst – weil Prozesse manuell laufen, die längst automatisiert sein könnten.
                 </p>
@@ -148,19 +148,19 @@ export const AiAnalysisWidget = () => {
             {/* Questions */}
             {step >= 0 && step < questions.length && (
               <div>
-                <div className="flex gap-1 mb-6">
+                <div className="flex gap-1.5 mb-7">
                   {questions.map((_, i) => (
-                    <div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${i <= step ? "bg-primary" : "bg-muted"}`} />
+                    <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${i <= step ? "bg-primary" : "bg-muted"}`} />
                   ))}
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">Frage {step + 1} von {questions.length}</p>
-                <h4 className="text-xl font-semibold text-foreground mb-6">{questions[step].question}</h4>
+                <h4 className="text-xl md:text-2xl font-bold text-foreground mb-7">{questions[step].question}</h4>
                 <div className="space-y-3">
                   {questions[step].options.map((option, i) => (
                     <button
                       key={option}
                       onClick={() => handleAnswer(i)}
-                      className="w-full text-left p-4 rounded-xl border border-border/50 bg-card hover:border-primary/40 hover:bg-primary/5 transition-all flex items-center justify-between group"
+                      className="w-full text-left p-5 rounded-2xl border border-border/40 bg-card hover:border-primary/30 hover:bg-primary/3 hover:scale-[1.01] transition-all duration-200 flex items-center justify-between group"
                     >
                       <span className="text-foreground font-medium">{option}</span>
                       <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -172,7 +172,7 @@ export const AiAnalysisWidget = () => {
 
             {/* Analyzing */}
             {step === 5 && (
-              <div className="text-center py-10 space-y-4">
+              <div className="text-center py-12 space-y-4">
                 <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto" />
                 <p className="text-lg font-semibold text-foreground">KI analysiert deine Antworten...</p>
                 <p className="text-muted-foreground">Berechne dein Automatisierungs-Potenzial</p>
@@ -181,7 +181,7 @@ export const AiAnalysisWidget = () => {
 
             {/* Result */}
             {step === 6 && result && (
-              <div className="space-y-6">
+              <div className="space-y-7">
                 <div className="text-center">
                   <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full font-bold text-lg ${
                     result.level === "KRITISCH" ? "bg-destructive/10 text-destructive" :
@@ -192,22 +192,22 @@ export const AiAnalysisWidget = () => {
                   </div>
                 </div>
 
-                <h4 className="text-2xl font-bold text-foreground text-center">{result.headline}</h4>
+                <h4 className="text-2xl md:text-3xl font-bold text-foreground text-center">{result.headline}</h4>
                 <p className="text-muted-foreground text-center text-lg">{result.description}</p>
 
                 {/* Savings Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="bg-foreground text-background rounded-2xl p-4 text-center">
-                    <p className="text-xs uppercase tracking-wider opacity-70 mb-1">Pro Woche</p>
-                    <p className="text-xl md:text-2xl font-bold">{result.savingsHoursLow}–{result.savingsHoursHigh} Std.</p>
+                  <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] text-white rounded-2xl p-5 text-center">
+                    <p className="text-xs uppercase tracking-wider opacity-60 mb-1">Pro Woche</p>
+                    <p className="text-2xl md:text-3xl font-bold">{result.savingsHoursLow}–{result.savingsHoursHigh} Std.</p>
                   </div>
-                  <div className="bg-primary text-primary-foreground rounded-2xl p-4 text-center">
-                    <p className="text-xs uppercase tracking-wider opacity-80 mb-1">Pro Monat</p>
-                    <p className="text-xl md:text-2xl font-bold">{fmt(result.savingsHoursLow * HOURLY_RATE * 4)}–{fmt(result.savingsHoursHigh * HOURLY_RATE * 4)} €</p>
+                  <div className="bg-gradient-to-r from-primary to-primary-light text-primary-foreground rounded-2xl p-5 text-center">
+                    <p className="text-xs uppercase tracking-wider opacity-70 mb-1">Pro Monat</p>
+                    <p className="text-2xl md:text-3xl font-bold">{fmt(result.savingsHoursLow * HOURLY_RATE * 4)}–{fmt(result.savingsHoursHigh * HOURLY_RATE * 4)} €</p>
                   </div>
-                  <div className="bg-destructive text-white rounded-2xl p-4 text-center">
-                    <p className="text-xs uppercase tracking-wider opacity-80 mb-1">Auf 12 Monate</p>
-                    <p className="text-xl md:text-2xl font-bold">{fmt(result.savingsHoursLow * HOURLY_RATE * 4 * 12)}–{fmt(result.savingsHoursHigh * HOURLY_RATE * 4 * 12)} €</p>
+                  <div className="bg-destructive text-white rounded-2xl p-5 text-center">
+                    <p className="text-xs uppercase tracking-wider opacity-70 mb-1">Auf 12 Monate</p>
+                    <p className="text-2xl md:text-3xl font-bold">{fmt(result.savingsHoursLow * HOURLY_RATE * 4 * 12)}–{fmt(result.savingsHoursHigh * HOURLY_RATE * 4 * 12)} €</p>
                   </div>
                 </div>
 
@@ -215,7 +215,7 @@ export const AiAnalysisWidget = () => {
                   Wenn du nichts änderst, bleibt das exakt so. Jeden Monat.
                 </p>
 
-                <div className="flex flex-col items-center gap-3 pt-2">
+                <div className="flex flex-col items-center gap-4 pt-2">
                   <button
                     onClick={() => navigate("/qualifizierung")}
                     className={`${t.ctaPrimary} group`}

@@ -17,10 +17,10 @@ interface FAQSectionProps {
 
 export const FAQSection = ({ headline = "Häufige Fragen", items }: FAQSectionProps) => {
   return (
-    <section className="py-20 bg-muted/30">
-      <div className="container mx-auto px-4">
+    <section className="py-20 md:py-32 bg-muted/20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground text-center mb-14 tracking-tight">
             {headline}
           </h2>
           
@@ -29,12 +29,12 @@ export const FAQSection = ({ headline = "Häufige Fragen", items }: FAQSectionPr
               <AccordionItem 
                 key={index} 
                 value={`item-${index}`}
-                className="bg-card rounded-lg border border-border/50 px-6 data-[state=open]:shadow-md transition-shadow"
+                className="bg-card rounded-2xl border border-border/40 px-8 data-[state=open]:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300"
               >
-                <AccordionTrigger className="text-lg font-semibold text-foreground hover:text-primary hover:no-underline py-5">
+                <AccordionTrigger className="text-lg md:text-xl font-semibold text-foreground hover:text-primary hover:no-underline py-6">
                   {item.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground text-base pb-5">
+                <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-6">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>

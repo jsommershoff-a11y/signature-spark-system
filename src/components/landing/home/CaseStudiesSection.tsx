@@ -1,4 +1,4 @@
-import { User } from "lucide-react";
+import { User, Quote } from "lucide-react";
 import testimonialRene from "@/assets/testimonial-rene-schreiner.jpeg";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
@@ -18,44 +18,46 @@ export const CaseStudiesSection = () => {
   return (
     <section className={t.sectionPadding}>
       <div className={t.container}>
-        <h2 className={`${t.headline.h2} text-foreground text-center mb-14`}>
+        <h2 className={`${t.headline.h2} text-foreground text-center mb-16`}>
           Ergebnisse unserer Partner
         </h2>
 
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           {cases.map((c, i) => (
-            <div key={i} className="border-l-4 border-primary rounded-2xl bg-background shadow-sm p-6">
+            <div key={i} className="rounded-3xl bg-card border border-border/30 shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-8 md:p-10 relative">
+              <Quote className="w-10 h-10 text-primary/20 absolute top-6 right-6" />
+              
               {/* Avatar */}
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-4 mb-8">
                 {c.image ? (
-                  <img src={c.image} alt={c.name} className="w-14 h-14 rounded-full object-cover" />
+                  <img src={c.image} alt={c.name} className="w-16 h-16 rounded-full object-cover ring-2 ring-primary/20" />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                    <User className="w-6 h-6 text-muted-foreground" />
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                    <User className="w-7 h-7 text-muted-foreground" />
                   </div>
                 )}
                 <div>
-                  <p className="font-semibold text-foreground text-sm">{c.name}</p>
-                  <p className="text-xs text-muted-foreground">{c.company}</p>
+                  <p className="font-bold text-foreground">{c.name}</p>
+                  <p className="text-sm text-muted-foreground">{c.company}</p>
                 </div>
               </div>
 
-              <div className="space-y-3 text-sm">
+              <div className="space-y-4 text-sm">
                 <div>
-                  <p className="font-semibold text-foreground">Problem:</p>
-                  <p className="text-muted-foreground">{c.problem}</p>
+                  <p className="font-semibold text-foreground text-base">Problem:</p>
+                  <p className="text-muted-foreground mt-1">{c.problem}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Ziel:</p>
-                  <p className="text-muted-foreground">{c.goal}</p>
+                  <p className="font-semibold text-foreground text-base">Ziel:</p>
+                  <p className="text-muted-foreground mt-1">{c.goal}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">Lösung:</p>
-                  <p className="text-muted-foreground">{c.solution}</p>
+                  <p className="font-semibold text-foreground text-base">Lösung:</p>
+                  <p className="text-muted-foreground mt-1">{c.solution}</p>
                 </div>
-                <div className="pt-2 border-t border-border/40">
-                  <p className="font-semibold text-foreground">Ergebnis:</p>
-                  <p className="text-muted-foreground italic">{c.result}</p>
+                <div className="pt-4 border-t border-border/30">
+                  <p className="font-semibold text-foreground text-base">Ergebnis:</p>
+                  <p className="text-muted-foreground italic mt-1 leading-relaxed">{c.result}</p>
                 </div>
               </div>
             </div>
