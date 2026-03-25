@@ -80,8 +80,8 @@ export default function CRM() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <KPICard title="Leads gesamt" value={totalLeads} sub={`${newLeads} neu · ${qualifiedLeads} qualifiziert`} icon={<Users className="h-4 w-4 text-primary" />} />
         <KPICard title="In Pipeline" value={activePipeline} sub="Aktive Opportunities" icon={<TrendingUp className="h-4 w-4 text-primary" />} />
-        <KPICard title="Gewonnen" value={wonDeals} sub={`${conversionToWon}% Close-Rate`} icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />} accent="emerald" />
-        <KPICard title="Aufgaben" value={openTasksCount} sub={`${todayTasks.length} heute fällig`} icon={<Clock className="h-4 w-4 text-amber-500" />} accent="amber" />
+        <KPICard title="Gewonnen" value={wonDeals} sub={`${conversionToWon}% Close-Rate`} icon={<CheckCircle2 className="h-4 w-4 text-primary" />} />
+        <KPICard title="Aufgaben" value={openTasksCount} sub={`${todayTasks.length} heute fällig`} icon={<Clock className="h-4 w-4 text-destructive" />} />
       </div>
 
       {/* Funnel + Pipeline Grid */}
