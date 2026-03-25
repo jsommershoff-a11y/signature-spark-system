@@ -219,7 +219,7 @@ export default function CRM() {
   );
 }
 
-function KPICard({ title, value, sub, icon, accent }: { title: string; value: number | string; sub: string; icon: React.ReactNode; accent?: string }) {
+function KPICard({ title, value, sub, icon }: { title: string; value: number | string; sub: string; icon: React.ReactNode }) {
   return (
     <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-5 pt-5">
