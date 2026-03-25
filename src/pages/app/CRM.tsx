@@ -134,7 +134,7 @@ export default function CRM() {
                     <span className="text-[11px] text-muted-foreground w-28 shrink-0 truncate">{label}</span>
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${stage === 'won' ? 'bg-emerald-500' : stage === 'lost' ? 'bg-destructive' : 'bg-primary'}`}
+                        className={`h-full rounded-full ${stage === 'won' ? 'bg-primary' : stage === 'lost' ? 'bg-destructive' : 'bg-primary/60'}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
