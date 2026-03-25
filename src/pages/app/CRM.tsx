@@ -7,7 +7,7 @@ import { usePipeline } from '@/hooks/usePipeline';
 import { useTasks } from '@/hooks/useTasks';
 import { useActivities } from '@/hooks/useActivities';
 import {
-  Users, TrendingUp, CheckCircle2, Clock, ArrowRight, ArrowDownRight, ArrowUpRight,
+  Users, TrendingUp, CheckCircle2, Clock, ArrowRight,
   Phone, Mail, MessageSquare, Calendar, Target,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
