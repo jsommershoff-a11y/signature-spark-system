@@ -471,7 +471,7 @@ function CourseForm({ initial, paths, onSave, onCancel }: { initial?: any; paths
         <div><Label>Beschreibung</Label><Textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={2} /></div>
         <div className="grid grid-cols-2 gap-3">
           <div><Label>Lernpfad</Label>
-            <Select value={form.learning_path_id} onValueChange={v => setForm(p => ({ ...p, learning_path_id: v }))}>
+            <Select value={form.learning_path_id || 'none'} onValueChange={v => setForm(p => ({ ...p, learning_path_id: v === 'none' ? '' : v }))}>
               <SelectTrigger><SelectValue placeholder="Kein Pfad" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Kein Pfad</SelectItem>
