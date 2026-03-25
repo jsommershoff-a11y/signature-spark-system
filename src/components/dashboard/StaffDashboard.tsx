@@ -35,10 +35,10 @@ export function StaffDashboard({
   return (
     <div className="space-y-5 md:space-y-6">
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <KPICard title="Offene Leads" value={pipelineStats.find(s => s.stage === 'new_lead')?.count || 0} sub="Neue Anfragen" icon={<UserPlus className="h-4 w-4 text-primary" />} />
-        <KPICard title="Aktive Kunden" value={pipelineStats.find(s => s.stage === 'won')?.count || 0} sub="Gewonnene Deals" icon={<Users className="h-4 w-4 text-primary" />} />
-        <KPICard title="Aufgaben heute" value={todayTasks.length} sub="Fällige Aufgaben" icon={<CheckSquare className="h-4 w-4 text-primary" />} />
-        <KPICard title="Analysen" value={recentAnalyses.length} sub="Letzte KI-Analysen" icon={<TrendingUp className="h-4 w-4 text-primary" />} />
+        <KPICard title="Offene Leads" value={pipelineStats.find(s => s.stage === 'new_lead')?.count || 0} sub="Neue Anfragen" icon={<UserPlus className="h-4 w-4 text-foreground" />} />
+        <KPICard title="Aktive Kunden" value={pipelineStats.find(s => s.stage === 'won')?.count || 0} sub="Gewonnene Deals" icon={<Users className="h-4 w-4 text-foreground" />} />
+        <KPICard title="Aufgaben heute" value={todayTasks.length} sub="Fällige Aufgaben" icon={<CheckSquare className="h-4 w-4 text-foreground" />} />
+        <KPICard title="Analysen" value={recentAnalyses.length} sub="Letzte KI-Analysen" icon={<TrendingUp className="h-4 w-4 text-foreground" />} />
       </div>
 
       <SalesCockpitWidget />
