@@ -96,8 +96,8 @@ export default function CRM() {
           <CardContent className="space-y-3">
             {[
               { label: 'Alle Leads', count: totalLeads, rate: 100 },
-              { label: 'Kontaktiert', count: contactedLeads + qualifiedLeads + wonDeals, rate: totalLeads > 0 ? Math.round(((contactedLeads + qualifiedLeads + wonDeals) / totalLeads) * 100) : 0 },
-              { label: 'Qualifiziert', count: qualifiedLeads + wonDeals, rate: conversionToQualified },
+              { label: 'Qualifiziert', count: qualifiedLeads + wonDeals, rate: totalLeads > 0 ? Math.round(((qualifiedLeads + wonDeals) / totalLeads) * 100) : 0 },
+              { label: 'Gewonnen', count: wonDeals, rate: conversionToWon },
               { label: 'Gewonnen', count: wonDeals, rate: conversionToWon },
             ].map((stage, i) => (
               <div key={stage.label} className="flex items-center gap-3">
