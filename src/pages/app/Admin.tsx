@@ -20,15 +20,14 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="users">
-        <TabsList className="flex-wrap h-auto gap-1">
+        <TabsList className="grid grid-cols-2 sm:inline-flex sm:flex-wrap h-auto gap-1 w-full sm:w-auto">
           <TabsTrigger value="users" className="gap-1.5"><Shield className="h-3.5 w-3.5" /> Benutzer</TabsTrigger>
-          <TabsTrigger value="coo" className="gap-1.5"><Gauge className="h-3.5 w-3.5" /> COO Cockpit</TabsTrigger>
           <TabsTrigger value="leads" className="gap-1.5">Leads</TabsTrigger>
-          <TabsTrigger value="members" className="gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> Mitgliederbereich</TabsTrigger>
-          <TabsTrigger value="logs" className="gap-1.5"><Activity className="h-3.5 w-3.5" /> System-Logs</TabsTrigger>
-          <TabsTrigger value="templates" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> E-Mail-Templates</TabsTrigger>
+          <TabsTrigger value="members" className="gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> Mitglieder</TabsTrigger>
+          <TabsTrigger value="logs" className="gap-1.5"><Activity className="h-3.5 w-3.5" /> Logs</TabsTrigger>
+          <TabsTrigger value="templates" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> E-Mail</TabsTrigger>
           <TabsTrigger value="integrations" className="gap-1.5"><Plug className="h-3.5 w-3.5" /> Integrationen</TabsTrigger>
-          <TabsTrigger value="export" className="gap-1.5"><Download className="h-3.5 w-3.5" /> Backup & Export</TabsTrigger>
+          <TabsTrigger value="export" className="gap-1.5 col-span-2 sm:col-span-1"><Download className="h-3.5 w-3.5" /> Backup</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
