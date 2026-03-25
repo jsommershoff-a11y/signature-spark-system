@@ -75,17 +75,17 @@ function SalesCockpitWidget() {
   const { monthly, mantra } = SALES_TARGETS;
 
   return (
-    <Card className="border-primary/15 bg-gradient-to-br from-primary/5 to-transparent">
+    <Card className="border-border/40 bg-gradient-to-br from-muted/30 to-transparent">
       <CardHeader className="pb-3 px-5">
         <CardTitle className="text-sm flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
-            <Zap className="h-3.5 w-3.5 text-primary" />
+          <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center">
+            <Zap className="h-3.5 w-3.5 text-foreground" />
           </div>
           Vertriebs-Cockpit
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 px-5">
-        <p className="text-xs font-medium text-primary">{mantra}</p>
+        <p className="text-xs font-semibold text-foreground">{mantra}</p>
 
         {/* Products */}
         <div>
