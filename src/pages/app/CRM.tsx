@@ -19,14 +19,13 @@ export default function CRM() {
   const { leads, loading: leadsLoading } = useLeads();
   const { pipelineByStage, loading: pipelineLoading } = usePipeline();
   const { openTasks, loading: tasksLoading } = useTasks();
-  const { activities, loading: activitiesLoading } = useActivities();
+  const { activities, isLoading: activitiesLoading } = useActivities({});
 
   const loading = leadsLoading || pipelineLoading || tasksLoading;
 
   const totalLeads = leads.length;
   const newLeads = leads.filter(l => l.status === 'new').length;
   const qualifiedLeads = leads.filter(l => l.status === 'qualified').length;
-  const contactedLeads = leads.filter(l => l.status === 'contacted').length;
   const wonDeals = pipelineByStage['won']?.length || 0;
   const lostDeals = pipelineByStage['lost']?.length || 0;
   const activePipeline = Object.values(pipelineByStage).flat().length - wonDeals - lostDeals;
