@@ -16,7 +16,7 @@ export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
+    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden app-scope">
       <ProfileCompletionDialog />
       <ViewAsBanner />
       <IncomingCallPopup />

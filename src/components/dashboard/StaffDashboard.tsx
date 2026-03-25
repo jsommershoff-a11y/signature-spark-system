@@ -136,7 +136,7 @@ function SalesCockpitWidget() {
 
         {/* Monthly Summary */}
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground pt-2 border-t border-border/40">
-          <div className="flex items-center gap-1"><Target className="h-3 w-3 text-primary" /><span className="font-medium text-foreground">{monthly.leads}</span> Leads</div>
+          <div className="flex items-center gap-1"><Target className="h-3 w-3 text-muted-foreground" /><span className="font-medium text-foreground">{monthly.leads}</span> Leads</div>
           <div><span className="font-medium text-foreground">{monthly.strategySessions}</span> Strategy</div>
           <div><span className="font-medium text-foreground">{monthly.closes}</span> Abschlüsse</div>
           <div><span className="font-medium text-foreground">{monthly.closeRate}%</span> Close-Rate</div>

@@ -90,7 +90,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
                 'flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl text-sm font-medium transition-all duration-200 touch-manipulation',
                 'min-h-[44px] md:min-h-0',
                 isActive
-                  ? 'bg-primary/10 text-primary border-l-[3px] border-primary pl-[9px]'
+                  ? 'bg-muted text-foreground border-l-[3px] border-foreground/30 pl-[9px]'
                   : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground active:bg-muted/70'
               )
             }
