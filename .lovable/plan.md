@@ -1,90 +1,114 @@
 
 
-# Plan: Komplette Vertriebsplan-Tabelle ins System integrieren
+# Plan: Farbstrategie trennen — Landing (Gruen) vs. App (Neutral)
 
 ## Zusammenfassung
 
-Die Spreadsheet hat 9 Tabs. 4 davon (Cockpit, Gespraechsleitfaden, Einwandbehandlung, Outreach) sind bereits in `sales-scripts.ts` integriert — die Skripte muessen aber mit den exakten Formulierungen aus der Tabelle aktualisiert werden. Die 5 fehlenden Tabs (Sprint-Plan, Marketingplan, Sales Funnel & KPIs, Revenue Tracker, 12-Monats-Skalierung) werden als neue Daten-Objekte in `sales-scripts.ts` ergaenzt und im StaffDashboard bzw. einer neuen Reports-Sektion angezeigt.
+Zwei getrennte Farbwelten: Die Landing Page bekommt das Gruen von jan-sommershoff.de als primaere Akzentfarbe (CTAs, Highlights, Badges). Der Mitgliederbereich wechselt auf eine neutrale, dunkle Farbpalette — Gruen nur noch fuer Erfolg/Status.
 
 ---
 
-## Was fehlt / was wird aktualisiert
+## Strategie
 
-### 1. `sales-scripts.ts` — Bestehende Daten an Spreadsheet anpassen
+Das Gruen von jan-sommershoff.de (~HSL 160 70% 36%, Teal-Gruen) wird zur Landing-Primary. Im App-Bereich wird `--primary` auf ein neutrales Dunkel (Charcoal/Slate) gesetzt. Gruen bleibt als semantische Statusfarbe (`--success`) erhalten.
 
-**Triage-Script**: Exakte Formulierungen aus Tabelle uebernehmen:
-- Opener: "Hey [Name], lass uns keine Zeit verlieren. Wir haben 15 Minuten..."
-- Pain-Phase: "Was war der Hauptgrund, warum du auf meine Nachricht reagiert hast?"
-- Kosten: "Was kostet dich das im Monat? Jeder Tag ohne System kostet dich Umsatz."
-- Budget-Check: "Wenn wir eine Loesung finden die dir sofort 10-15h/Woche spart - waerst du bereit dafuer zu investieren?"
-- Termin: "Ich sehe genau wo dein Engpass ist. Das ist exakt das was ich bei Rene Schreiner geloest habe."
-- Abschluss: "Ich schicke dir den Link. Bereite dich vor mir deine 3 groessten Zeitfresser zu nennen."
+### Technischer Ansatz: CSS-Scope
 
-**Strategy-Script**: Exakte Formulierungen:
-- Vision: "Stell dir vor: CRM qualifiziert Leads automatisch. Follow-ups laufen alleine."
-- Luecke: "Warum hast du das bisher nicht selbst gebaut?"
-- Case Study: "Rene Schreiner: Unstrukturiert, hoher Aufwand. Wir: CRM, Portal, Bewerbungsprozess. Ergebnis: 40+ Bewerbungen."
-- Pitch: "Wir bauen das System GEMEINSAM in dein Unternehmen. 30 Tage. Ab Tag 1 Ergebnisse. Investment: 10.000 EUR."
+Eine CSS-Klasse `.app-scope` auf dem AppLayout-Wrapper ueberschreibt `--primary` und verwandte Variablen. Die Landing Pages behalten die Root-Variablen.
 
-**Kaltakquise-Script**: Exakte Formulierungen + neue "Bei Ablehnung"-Phase:
-- Opener: "Herr/Frau [Name], Jan Sommershoff hier. Ich sehe dass Ihr Unternehmen waechst. Haben Sie 60 Sekunden?"
-- Hook: "Die meisten in Ihrer Groesse verlieren 2-5k/Monat durch manuelle Prozesse."
-- Termin: "Genau da setzen wir an. Ich habe 2 Slots fuer ein 15-Min Prozess-Audit."
-- NEU — Ablehnung: "Kein Problem. Darf ich kurz eine Info per E-Mail schicken?"
+---
 
-**Einwandbehandlung**: Exakte Konter aus Tabelle uebernehmen (aktuell leicht anders formuliert)
+## Aenderungen
 
-**Outreach-Vorlagen**: Texte 1:1 aus Tabelle ersetzen (sind aktuell paraphrasiert, nicht original)
+### 1. `src/index.css` — Farbsystem erweitern
 
-**SALES_TARGETS**: Erweitern um Produktpreise + neue Funnel-Stufen:
-- Produkte: Done-with-you (9.990 brutto), Coaching-Retainer (1.990 brutto), Website-Pakete (999 brutto)
-- Funnel: 500 Leads → 250 Triage → 150 Strategy → 100 Angebote → 40 Abschluesse
+**Root (Landing-Kontext):**
+- `--primary` aendern von Orange (`23 92% 54%`) zu Gruen (~`160 70% 36%`) — das Teal-Gruen von jan-sommershoff.de
+- `--primary-foreground` bleibt weiss
+- `--primary-deep`, `--primary-dark`, `--primary-light` auf Gruen-Varianten
+- `--accent` ebenfalls Gruen-basiert
+- `--ring` auf Gruen
+- Neues Token: `--success: 152 60% 40%` fuer Status-Gruen im App
 
-### 2. `sales-scripts.ts` — Neue Daten-Objekte
+**Neuer Scope `.app-scope`:**
+```css
+.app-scope {
+  --primary: 220 14% 20%;           /* Charcoal-Dunkel */
+  --primary-foreground: 0 0% 100%;
+  --accent: 220 13% 91%;            /* Neutral-Hell */
+  --accent-foreground: 220 14% 20%;
+  --ring: 220 14% 40%;
+  --sidebar-primary: 220 14% 20%;
+  --sidebar-primary-foreground: 0 0% 100%;
+}
+```
 
-**SPRINT_PLAN**: Woechentlicher Aktionsplan (Mo-Fr) mit Uhrzeiten, Aufgaben, Details, Kanal
-- Wird als Array von Tages-Objekten mit Zeitslots gespeichert
+Dies bewirkt: Alle `bg-primary`, `text-primary`, `border-primary` Klassen im App-Bereich werden automatisch neutral-dunkel statt gruen.
 
-**MARKETING_PLAN**: Kanal-Strategie + Content-Kalender
-- Kanaele: LinkedIn, Instagram, Kaltakquise, E-Mail, Lead-Magnet, Empfehlungen, Events
-- Content-Wochenplan: Tag → Plattform → Typ → Hook → CTA
-- Marketing-KPIs: 20+ Posts, 12+ Reels, 100+ DMs, 30+ Downloads, 80+ Kaltanrufe
+### 2. `src/components/app/AppLayout.tsx`
 
-**FUNNEL_STAGES**: Sales-Funnel mit Conversion-Rates
-- 5 Stufen mit Ziel-Zahlen und Ziel-Raten
+- Dem aeusseren `<div>` die Klasse `app-scope` hinzufuegen
+- Dadurch greifen alle App-Seiten automatisch die neutralen Farben
 
-**DAILY_ACTIVITIES**: Tages-Aktivitaeten-Tracker
-- Outreach: 30/Tag, Kaltanrufe: 30/Tag, Triage: 10/Tag, Strategy: 5/Tag, Follow-ups: 10/Tag
+### 3. `src/components/app/AppSidebar.tsx`
 
-**SCALING_ROADMAP**: 12-Monats-Plan
-- Apr 2026 bis Maerz 2027 mit Einmalig/Recurring/Gesamt pro Monat
-- Meilensteine: Monat 1 (37k) → Monat 6 (100k) → Monat 12 (140k = 1.2 Mio/Jahr)
+- Active-State: Von `bg-primary/10 text-primary border-primary` zu `bg-muted text-foreground border-foreground/30` — subtiler, kein Gruen
+- Hover: bleibt `hover:bg-muted/50` (schon neutral)
 
-### 3. `StaffDashboard.tsx` — Erweitertes Sales Cockpit
+### 4. `src/components/dashboard/StaffDashboard.tsx`
 
-Das bestehende `SalesCockpitWidget` wird erweitert:
-- **Produktpreise anzeigen**: Done-with-you (9.990), Coaching (1.990), Website (999) mit Stueckziel
-- **Funnel-Uebersicht**: 5 Stufen mit Ziel-Conversion-Rates als horizontale Mini-Bar
-- **Tages-Aktivitaeten**: Vollstaendige Liste (Outreach 30, Kaltanrufe 30, Triage 10, Strategy 5, Follow-ups 10, Posts 1, Stories 3)
-- **Sprint-Plan Hinweis**: Link oder Kurzansicht des aktuellen Wochen-Plans
+- KPI-Icon-Hintergruende: Von `bg-primary/10` + `text-primary` zu `bg-muted` + `text-foreground`
+- SalesCockpitWidget Mantra: Von `text-primary` zu `text-foreground font-semibold`
+- Activity-Icons: Von `text-primary` zu `text-muted-foreground`
+- Target-Icon: Von `text-primary` zu `text-foreground`
+- Vertriebs-Cockpit Gradient: Von `from-primary/5` zu `from-muted/30`
 
-### 4. Neue Sektion im Reports-Bereich: Vertriebsplan
+### 5. `src/components/dashboard/AdminDashboard.tsx`
 
-In `src/pages/app/Reports.tsx` neuen Tab "Vertriebsplan" hinzufuegen mit:
-- **Funnel-Visualisierung**: 5 Stufen als Trichter mit IST/SOLL
-- **Marketing-KPIs**: Tabelle mit Kanal, Massnahme, Frequenz, Ziel-Leads
-- **Content-Kalender**: Wochenansicht Mo-Fr
-- **12-Monats-Roadmap**: Timeline-Ansicht mit Meilensteinen
-- **Revenue-Tracker**: Tabelle mit Abschluessen und Monatszusammenfassung
+- Gleiche Aenderungen wie StaffDashboard: KPI-Icons neutral statt primary
 
-### Neue Komponente: `src/components/reports/SalesPlanTab.tsx`
+### 6. `src/components/dashboard/KundeDashboard.tsx`
+
+- Welcome-Card: Von `border-primary/15 bg-gradient-to-br from-primary/5` zu neutrale Gradient (`from-muted/20`)
+- PlayCircle Icon: Von `text-primary` zu `text-success` (neue Statusfarbe)
+- Quick-Link Icons: Von `bg-primary/10 text-primary` zu `bg-muted text-foreground`
+- Freebie-Banner: Gradient neutral anpassen
+- CTA-Button "Weiter lernen": Bleibt `bg-primary` — wird durch `.app-scope` automatisch neutral-dunkel
+
+### 7. `src/components/ui/button.tsx`
+
+- Keine Aenderung noetig — `bg-primary` wird durch CSS-Scope automatisch neutral im App, gruen auf Landing
+
+### 8. `src/styles/landing-tokens.ts`
+
+- `ctaPrimary` Gradient: Von `from-primary to-primary-light` — greift jetzt Gruen aus Root-Variablen
+- Glow-Effekt: Farbe auf Gruen anpassen (`rgba(26,158,120,0.2)`)
+
+### 9. Landing-Komponenten (keine individuellen Aenderungen noetig)
+
+Da die Root-CSS-Variablen auf Gruen gesetzt werden und Landing Pages NICHT im `.app-scope` liegen, greifen alle `text-primary`, `bg-primary`, `border-primary` automatisch das neue Gruen. Das betrifft:
+- HeroSection, CTAButton, FinalCtaSection, SolutionSection, etc.
+- Alle bestehenden Landing-Sektionen funktionieren ohne Code-Aenderung
+
+### 10. `tailwind.config.ts`
+
+- Neuen `success` Token hinzufuegen: `success: "hsl(var(--success))"`
+- Damit kann im App-Bereich `text-success`, `bg-success/10` fuer positive Zustaende genutzt werden
+
+### 11. Bestehende `module-green` Referenzen
+
+Die 14 Dateien die `module-green` nutzen (SocialMedia, EmailCampaigns, CalendarView etc.) bleiben unveraendert — `module-green` ist ein separates Token und nicht `--primary`. Diese Module behalten ihr eigenstaendiges Gruen.
 
 ---
 
 ## Dateien
 
-1. **Aendern**: `src/lib/sales-scripts.ts` — Bestehende Skripte aktualisieren + 5 neue Daten-Objekte
-2. **Aendern**: `src/components/dashboard/StaffDashboard.tsx` — SalesCockpitWidget erweitern
-3. **Neu**: `src/components/reports/SalesPlanTab.tsx` — Vertriebsplan-Tab fuer Reports
-4. **Aendern**: `src/pages/app/Reports.tsx` — Neuen "Vertriebsplan"-Tab hinzufuegen
+1. `src/index.css` — Root-Primary auf Gruen, neuer `.app-scope` Block, `--success` Token
+2. `tailwind.config.ts` — `success` Farbe hinzufuegen
+3. `src/components/app/AppLayout.tsx` — `app-scope` Klasse setzen
+4. `src/components/app/AppSidebar.tsx` — Active-State neutral
+5. `src/components/dashboard/StaffDashboard.tsx` — Icons/Akzente neutral
+6. `src/components/dashboard/AdminDashboard.tsx` — Icons/Akzente neutral
+7. `src/components/dashboard/KundeDashboard.tsx` — Cards/Icons neutral
+8. `src/styles/landing-tokens.ts` — Glow-Farbe auf Gruen
 
