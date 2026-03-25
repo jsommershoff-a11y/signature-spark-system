@@ -36,8 +36,7 @@ export default function CRM() {
     return new Date(task.due_at).toDateString() === new Date().toDateString();
   });
 
-  // Conversion rates
-  const conversionToQualified = totalLeads > 0 ? Math.round((qualifiedLeads / totalLeads) * 100) : 0;
+  // Conversion rate
   const conversionToWon = totalLeads > 0 ? Math.round((wonDeals / totalLeads) * 100) : 0;
 
   // Recent leads (last 7 days)
