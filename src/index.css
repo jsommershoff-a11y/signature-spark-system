@@ -145,14 +145,14 @@
   }
 
   .dark .app-scope {
-    --primary: 220 14% 75%;
-    --primary-foreground: 220 14% 10%;
-    --accent: 220 13% 20%;
-    --accent-foreground: 220 14% 85%;
-    --ring: 220 14% 55%;
-    --sidebar-primary: 220 14% 75%;
-    --sidebar-primary-foreground: 220 14% 10%;
-    --sidebar-ring: 220 14% 55%;
+    --primary: 210 6% 75%;
+    --primary-foreground: 210 6% 10%;
+    --accent: 210 5% 20%;
+    --accent-foreground: 210 6% 85%;
+    --ring: 210 6% 55%;
+    --sidebar-primary: 210 6% 75%;
+    --sidebar-primary-foreground: 210 6% 10%;
+    --sidebar-ring: 210 6% 55%;
   }
 }
 
