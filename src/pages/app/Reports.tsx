@@ -6,6 +6,7 @@ import RevenueChart from '@/components/reports/RevenueChart';
 import TeamPerformanceTable from '@/components/reports/TeamPerformanceTable';
 import ConversionFunnel from '@/components/reports/ConversionFunnel';
 import ActivityChart from '@/components/reports/ActivityChart';
+import SalesPlanTab from '@/components/reports/SalesPlanTab';
 
 const TIME_OPTIONS: { value: TimeRange; label: string }[] = [
   { value: '7d', label: 'Letzte 7 Tage' },
@@ -39,27 +40,28 @@ export default function Reports() {
       </div>
 
       <Tabs defaultValue="revenue">
-        <TabsList className="print:hidden">
+        <TabsList className="print:hidden overflow-x-auto">
           <TabsTrigger value="revenue">Umsatz</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="conversion">Konvertierung</TabsTrigger>
           <TabsTrigger value="activity">Aktivität</TabsTrigger>
+          <TabsTrigger value="salesplan">Vertriebsplan</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue">
           <RevenueChart range={range} />
         </TabsContent>
-
         <TabsContent value="team">
           <TeamPerformanceTable range={range} />
         </TabsContent>
-
         <TabsContent value="conversion">
           <ConversionFunnel />
         </TabsContent>
-
         <TabsContent value="activity">
           <ActivityChart range={range} />
+        </TabsContent>
+        <TabsContent value="salesplan">
+          <SalesPlanTab />
         </TabsContent>
       </Tabs>
     </div>
