@@ -66,6 +66,9 @@ export default {
           brown: "hsl(var(--brand-brown))",
           charcoal: "hsl(var(--brand-charcoal))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+        },
         "module-green": {
           DEFAULT: "hsl(var(--module-green))",
           light: "hsl(var(--module-green-light))",
