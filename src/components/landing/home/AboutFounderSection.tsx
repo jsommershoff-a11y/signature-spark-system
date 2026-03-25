@@ -4,22 +4,22 @@ import { landingTokens as t } from "@/styles/landing-tokens";
 
 export const AboutFounderSection = () => {
   return (
-    <section className={`${t.sectionPadding} bg-muted/30`}>
-      <div className={`${t.container}`}>
-        <div className="grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
+    <section className={`${t.sectionPadding} bg-gradient-to-b from-muted/20 to-background`}>
+      <div className={t.container}>
+        <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
           <div className="relative">
             <img
               src={founderPersonal}
               alt="Gründer KRS Signature"
-              className="rounded-2xl shadow-xl w-full object-cover aspect-[4/5]"
+              className="rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] w-full object-cover aspect-[4/5]"
             />
-            <div className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground font-bold text-sm px-5 py-3 rounded-xl shadow-lg">
+            <div className="absolute -bottom-4 -right-4 bg-gradient-to-r from-primary to-primary-light text-primary-foreground font-bold text-sm px-5 py-3 rounded-xl shadow-lg">
               Aus der Praxis, nicht aus dem Lehrbuch
             </div>
           </div>
 
           <div className="space-y-5 text-base md:text-lg text-muted-foreground leading-relaxed">
-            <p className="text-2xl md:text-3xl font-bold text-foreground">
+            <p className="text-2xl md:text-4xl font-bold text-foreground leading-tight">
               Ich bin kein klassischer Berater.
             </p>
             <p>
@@ -37,14 +37,16 @@ export const AboutFounderSection = () => {
             <p className="text-foreground font-semibold">
               Ich baue keine Chatbots. Ich baue Systeme.
             </p>
-            <p className="text-xl font-bold text-foreground border-l-4 border-primary pl-4">
-              Dein Unternehmen funktioniert nur, solange du es tust. Das ändern wir.
-            </p>
+            <div className="bg-gradient-to-r from-primary/10 to-transparent rounded-2xl p-5 border-l-4 border-primary">
+              <p className="text-xl font-bold text-foreground">
+                Dein Unternehmen funktioniert nur, solange du es tust. Das ändern wir.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Visual Banner */}
-        <div className="mt-12 max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-lg border border-border">
+        <div className="mt-14 max-w-4xl mx-auto rounded-3xl overflow-hidden shadow-[0_4px_32px_rgba(0,0,0,0.08)] border border-border/30">
           <img
             src={founderKiErfolg}
             alt="Jan Sommershoff – Mit KI zum Erfolg: Effizienter arbeiten, Zeit gewinnen, Teams entlasten"

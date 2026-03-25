@@ -18,32 +18,32 @@ const steps = [
 export const SolutionSection = () => {
   return (
     <section className={t.sectionPadding}>
-      <div className="max-w-3xl mx-auto px-4">
-        <h2 className={`${t.headline.h2} text-foreground text-center mb-4`}>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <h2 className={`${t.headline.h2} text-foreground text-center mb-5`}>
           Das Signature System entlastet dein Unternehmen sofort.
         </h2>
-        <p className="text-center text-muted-foreground text-lg mb-10">
+        <p className="text-center text-muted-foreground text-lg mb-12">
           So sieht das konkret aus:
         </p>
 
-        <div className="space-y-4 mb-10">
+        <div className="space-y-3 mb-14">
           {points.map((point) => (
-            <div key={point} className="flex items-start gap-4 p-4 bg-primary/5 rounded-xl border border-primary/20">
-              <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+            <div key={point} className="flex items-start gap-4 p-5 rounded-2xl border-l-4 border-l-primary border border-border/30 bg-card">
+              <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <p className="text-foreground text-lg">{point}</p>
             </div>
           ))}
         </div>
 
         {/* Mini-Prozess */}
-        <div className="mb-10">
-          <p className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-6">
+        <div className="mb-14">
+          <p className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8">
             So läuft es ab
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {steps.map((s, i) => (
-              <div key={s.label} className="text-center p-4 rounded-xl bg-muted/50 border border-border">
-                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold mx-auto mb-3">
+              <div key={s.label} className="text-center p-5 rounded-2xl bg-gradient-to-b from-muted/40 to-card border border-border/40 relative">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-light text-primary-foreground flex items-center justify-center text-sm font-bold mx-auto mb-3 shadow-[0_0_16px_rgba(246,113,31,0.15)]">
                   {i + 1}
                 </div>
                 <s.icon className="w-5 h-5 text-primary mx-auto mb-2" />
@@ -54,7 +54,7 @@ export const SolutionSection = () => {
         </div>
 
         <div className="text-center">
-          <p className="text-xl font-semibold text-foreground">
+          <p className="text-xl md:text-2xl font-bold text-foreground">
             Weniger Chaos. Weniger Abhängigkeit. Mehr Kontrolle über dein Unternehmen.
           </p>
         </div>

@@ -13,21 +13,21 @@ const problems = [
 export const EmotionalHookSection = () => {
   return (
     <section id="problem-section" className={t.sectionPadding}>
-      <div className="max-w-3xl mx-auto px-4">
-        <h2 className={`${t.headline.h2} text-foreground text-center mb-4`}>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <h2 className={`${t.headline.h2} text-foreground text-center mb-5`}>
           Du bist nicht gestartet, um der beste Mitarbeiter in deinem eigenen Unternehmen zu sein.
         </h2>
-        <p className="text-center text-lg text-muted-foreground mb-10">
+        <p className="text-center text-lg text-muted-foreground mb-12">
           Aber genau das ist passiert:
         </p>
 
-        <div className="space-y-4 mb-10">
+        <div className="space-y-3 mb-12">
           {problems.map((problem) => (
             <div
               key={problem}
-              className="flex items-start gap-4 p-4 bg-destructive/5 rounded-xl border border-destructive/20"
+              className="flex items-start gap-4 p-5 bg-gradient-to-r from-destructive/5 to-transparent rounded-2xl border border-destructive/15"
             >
-              <X className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
+              <X className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
               <p className="text-foreground text-lg font-medium">{problem}</p>
             </div>
           ))}
@@ -38,7 +38,7 @@ export const EmotionalHookSection = () => {
         </p>
         <div className="text-center space-y-1">
           <p className="text-lg text-muted-foreground">Das Problem ist nicht dein Einsatz.</p>
-          <p className="text-2xl md:text-3xl font-bold text-foreground mt-4">
+          <p className="text-2xl md:text-4xl font-bold text-foreground mt-5">
             Das Problem ist: Dir fehlt ein funktionierendes System.
           </p>
           <p className="text-lg text-muted-foreground mt-3">
@@ -50,8 +50,8 @@ export const EmotionalHookSection = () => {
         </div>
 
         {/* Pattern Break */}
-        <div className="mt-10 bg-foreground text-background rounded-2xl py-8 px-6 text-center">
-          <p className="text-2xl md:text-3xl font-bold">
+        <div className="mt-12 bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] text-white rounded-3xl py-10 px-8 text-center shadow-[0_0_60px_rgba(246,113,31,0.08)]">
+          <p className="text-2xl md:text-4xl font-bold">
             Ohne System bist du der Engpass.
           </p>
         </div>

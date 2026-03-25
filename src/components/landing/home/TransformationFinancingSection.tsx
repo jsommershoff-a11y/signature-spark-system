@@ -3,12 +3,12 @@ import { landingTokens as t } from "@/styles/landing-tokens";
 
 export const TransformationFinancingSection = () => {
   return (
-    <section className={`${t.sectionPadding} bg-muted/30`}>
+    <section className={`${t.sectionPadding} bg-gradient-to-b from-muted/20 to-background`}>
       <div className={t.container}>
         {/* Opener */}
-        <div className="max-w-3xl mx-auto text-center mb-12">
+        <div className="max-w-3xl mx-auto text-center mb-14">
           <span className={t.badgeAccent}>Transformation ohne Risiko</span>
-          <h2 className={`${t.headline.h2} text-foreground mt-4 mb-6`}>
+          <h2 className={`${t.headline.h2} text-foreground mt-5 mb-6`}>
             Die meisten Unternehmer wissen, dass sie ihr Unternehmen verändern müssen.
           </h2>
           <p className={`${t.text.body} text-lg`}>
@@ -18,10 +18,10 @@ export const TransformationFinancingSection = () => {
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-10">
           {/* Angst-Block */}
-          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 md:p-8">
-            <div className="flex items-start gap-3 mb-4">
+          <div className="rounded-3xl border border-destructive/15 bg-gradient-to-br from-destructive/5 to-transparent p-7 md:p-10">
+            <div className="flex items-start gap-3 mb-5">
               <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-1" />
               <p className="text-foreground font-semibold text-lg">
                 Genau hier scheitern die meisten.
@@ -31,10 +31,10 @@ export const TransformationFinancingSection = () => {
               Wenn du dein Unternehmen umbaust, arbeitest du weniger operativ.
               Und genau davor haben viele Angst:
             </p>
-            <blockquote className="border-l-4 border-destructive/40 pl-4 my-4 text-foreground font-semibold text-lg italic">
+            <blockquote className="border-l-4 border-destructive/30 pl-5 my-5 text-foreground font-semibold text-lg italic">
               „Dann verliere ich Umsatz."
             </blockquote>
-            <p className="text-foreground font-bold text-xl mb-4">
+            <p className="text-foreground font-bold text-xl mb-5">
               Das Gegenteil ist der Fall.
             </p>
             <div className="space-y-2">
@@ -48,8 +48,8 @@ export const TransformationFinancingSection = () => {
           </div>
 
           {/* Finanzierungs-Erklärung */}
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 md:p-8">
-            <div className="flex items-start gap-3 mb-4">
+          <div className="rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/5 to-transparent p-7 md:p-10">
+            <div className="flex items-start gap-3 mb-5">
               <Shield className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
               <p className="text-foreground font-semibold text-lg">
                 Deshalb haben wir die Signature Transformation Finanzierung aufgebaut.
@@ -63,13 +63,13 @@ export const TransformationFinancingSection = () => {
               Eine Bank erkennt den Wert funktionierender Systeme
               und unterstützt genau diese Transformation.
             </p>
-            <p className="text-foreground font-bold text-xl mt-6 text-center">
+            <p className="text-foreground font-bold text-xl mt-7 text-center">
               Du kannst dein Unternehmen umbauen, während es weiterläuft.
             </p>
           </div>
 
           {/* Konkretes Beispiel */}
-          <div className={`${t.card} flex items-start gap-4`}>
+          <div className={`${t.card} flex items-start gap-5`}>
             <Clock className="w-8 h-8 text-primary flex-shrink-0 mt-1" />
             <div>
               <p className="text-foreground font-semibold text-lg mb-2">
@@ -78,7 +78,7 @@ export const TransformationFinancingSection = () => {
               <p className={t.text.body}>
                 Du reduzierst bewusst deine operative Zeit. Zum Beispiel:
               </p>
-              <p className="text-foreground font-bold text-lg my-3 bg-muted/50 rounded-xl px-4 py-3 inline-block">
+              <p className="text-foreground font-bold text-lg my-4 bg-muted/50 rounded-xl px-5 py-3 inline-block">
                 2 Tage pro Woche → nur noch halbtags = 1 Tag pro Woche zurückgewonnen
               </p>
               <p className={t.text.body}>
@@ -102,9 +102,9 @@ export const TransformationFinancingSection = () => {
           </div>
 
           {/* Finanzierungsrahmen */}
-          <div className="rounded-2xl border border-border/40 bg-background/80 shadow-md p-6 md:p-8 text-center max-w-2xl mx-auto">
-            <Banknote className="w-10 h-10 text-primary mx-auto mb-4" />
-            <p className="text-foreground font-bold text-2xl mb-2">
+          <div className="rounded-3xl border border-border/30 bg-card shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-8 md:p-10 text-center max-w-2xl mx-auto">
+            <Banknote className="w-10 h-10 text-primary mx-auto mb-5" />
+            <p className="text-foreground font-bold text-3xl md:text-4xl mb-3">
               Finanzierungen von bis zu 250.000 €
             </p>
             <p className={`${t.text.body} mb-4`}>
@@ -114,7 +114,7 @@ export const TransformationFinancingSection = () => {
               Das ist keine pauschale Zusage, sondern basiert auf individuellen
               Voraussetzungen und bereits realisierten Fällen.
             </p>
-            <div className="mt-6 flex items-center justify-center gap-2">
+            <div className="mt-7 flex items-center justify-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
               <p className="text-foreground font-semibold">
                 Es zeigt, was möglich ist, wenn Unternehmen diesen Schritt gehen.
