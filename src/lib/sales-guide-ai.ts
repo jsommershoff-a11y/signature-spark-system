@@ -208,6 +208,22 @@ const KEYWORD_SUGGESTIONS: { keywords: string[]; suggestion: AiSuggestion }[] = 
     keywords: ['konkurrenz', 'wettbewerb', 'markt'],
     suggestion: { type: 'opportunity', text: 'Wettbewerbsdruck → Dringlichkeit betonen, First-Mover-Vorteil.' },
   },
+  {
+    keywords: ['partner', 'besprechen', 'frau', 'mann'],
+    suggestion: { type: 'warning', text: 'Partner-Einwand erkannt → Emotionalen Hebel nutzen: "Was würde dein Partner sagen, wenn du 2 Tage/Woche zurückgewinnst?"' },
+  },
+  {
+    keywords: ['probiert', 'versucht', 'tool', 'software'],
+    suggestion: { type: 'tip', text: 'Tool-Erfahrung erkannt → System vs. Tool differenzieren: "Du hast Tools probiert. Kein System."' },
+  },
+  {
+    keywords: ['nachdenken', 'überlegen', 'später'],
+    suggestion: { type: 'warning', text: 'Nachdenk-Einwand → Echten Einwand erfragen: "Worüber genau?" + 48h-Deadline setzen.' },
+  },
+  {
+    keywords: ['finanzierung', 'rate', 'raten', 'ratenzahlung'],
+    suggestion: { type: 'tip', text: 'Finanzierungsthema → Signature Transformation Finanzierung erwähnen (bis 250.000 €).' },
+  },
 ];
 
 export function analyzeNotes(allNotes: string): AiSuggestion[] {
