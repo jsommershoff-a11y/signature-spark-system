@@ -474,7 +474,7 @@ function CourseForm({ initial, paths, onSave, onCancel }: { initial?: any; paths
             <Select value={form.learning_path_id} onValueChange={v => setForm(p => ({ ...p, learning_path_id: v }))}>
               <SelectTrigger><SelectValue placeholder="Kein Pfad" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Kein Pfad</SelectItem>
+                <SelectItem value="none">Kein Pfad</SelectItem>
                 {paths.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
               </SelectContent>
             </Select>
