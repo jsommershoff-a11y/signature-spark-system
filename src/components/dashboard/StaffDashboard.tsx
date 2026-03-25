@@ -35,10 +35,10 @@ export function StaffDashboard({
   return (
     <div className="space-y-5 md:space-y-6">
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <KPICard title="Offene Leads" value={pipelineStats.find(s => s.stage === 'new_lead')?.count || 0} sub="Neue Anfragen" icon={<UserPlus className="h-4 w-4 text-primary" />} />
-        <KPICard title="Aktive Kunden" value={pipelineStats.find(s => s.stage === 'won')?.count || 0} sub="Gewonnene Deals" icon={<Users className="h-4 w-4 text-primary" />} />
-        <KPICard title="Aufgaben heute" value={todayTasks.length} sub="Fällige Aufgaben" icon={<CheckSquare className="h-4 w-4 text-primary" />} />
-        <KPICard title="Analysen" value={recentAnalyses.length} sub="Letzte KI-Analysen" icon={<TrendingUp className="h-4 w-4 text-primary" />} />
+        <KPICard title="Offene Leads" value={pipelineStats.find(s => s.stage === 'new_lead')?.count || 0} sub="Neue Anfragen" icon={<UserPlus className="h-4 w-4 text-foreground" />} />
+        <KPICard title="Aktive Kunden" value={pipelineStats.find(s => s.stage === 'won')?.count || 0} sub="Gewonnene Deals" icon={<Users className="h-4 w-4 text-foreground" />} />
+        <KPICard title="Aufgaben heute" value={todayTasks.length} sub="Fällige Aufgaben" icon={<CheckSquare className="h-4 w-4 text-foreground" />} />
+        <KPICard title="Analysen" value={recentAnalyses.length} sub="Letzte KI-Analysen" icon={<TrendingUp className="h-4 w-4 text-foreground" />} />
       </div>
 
       <SalesCockpitWidget />
@@ -61,7 +61,7 @@ function KPICard({ title, value, sub, icon }: { title: string; value: number | s
     <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-5 pt-5">
         <CardTitle className="text-xs md:text-sm font-medium leading-tight text-muted-foreground">{title}</CardTitle>
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">{icon}</div>
+        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">{icon}</div>
       </CardHeader>
       <CardContent className="px-5 pb-5">
         <div className="text-2xl md:text-3xl font-bold tabular-nums">{value}</div>
@@ -75,17 +75,17 @@ function SalesCockpitWidget() {
   const { monthly, mantra } = SALES_TARGETS;
 
   return (
-    <Card className="border-primary/15 bg-gradient-to-br from-primary/5 to-transparent">
+    <Card className="border-border/40 bg-gradient-to-br from-muted/30 to-transparent">
       <CardHeader className="pb-3 px-5">
         <CardTitle className="text-sm flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
-            <Zap className="h-3.5 w-3.5 text-primary" />
+          <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center">
+            <Zap className="h-3.5 w-3.5 text-foreground" />
           </div>
           Vertriebs-Cockpit
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 px-5">
-        <p className="text-xs font-medium text-primary">{mantra}</p>
+        <p className="text-xs font-semibold text-foreground">{mantra}</p>
 
         {/* Products */}
         <div>
@@ -124,7 +124,7 @@ function SalesCockpitWidget() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {DAILY_ACTIVITIES.map((a) => (
               <div key={a.label} className="flex items-center gap-2 p-2 bg-card rounded-xl border border-border/40">
-                <div className="text-primary">{ACTIVITY_ICONS[a.icon]}</div>
+                <div className="text-muted-foreground">{ACTIVITY_ICONS[a.icon]}</div>
                 <div>
                   <p className="text-xs font-semibold tabular-nums">{a.target}×</p>
                   <p className="text-[9px] text-muted-foreground leading-tight">{a.label}</p>
@@ -136,7 +136,7 @@ function SalesCockpitWidget() {
 
         {/* Monthly Summary */}
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground pt-2 border-t border-border/40">
-          <div className="flex items-center gap-1"><Target className="h-3 w-3 text-primary" /><span className="font-medium text-foreground">{monthly.leads}</span> Leads</div>
+          <div className="flex items-center gap-1"><Target className="h-3 w-3 text-muted-foreground" /><span className="font-medium text-foreground">{monthly.leads}</span> Leads</div>
           <div><span className="font-medium text-foreground">{monthly.strategySessions}</span> Strategy</div>
           <div><span className="font-medium text-foreground">{monthly.closes}</span> Abschlüsse</div>
           <div><span className="font-medium text-foreground">{monthly.closeRate}%</span> Close-Rate</div>

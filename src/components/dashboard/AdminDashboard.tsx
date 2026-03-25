@@ -31,7 +31,7 @@ function KPICard({ title, value, sub, icon }: { title: string; value: number | s
     <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-5 pt-5">
         <CardTitle className="text-xs md:text-sm font-medium leading-tight text-muted-foreground">{title}</CardTitle>
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
           {icon}
         </div>
       </CardHeader>
@@ -56,37 +56,37 @@ export function AdminDashboard(data: DashboardDataReturn) {
           title="Gesamte Leads"
           value={totalLeads}
           sub="Alle Leads im System"
-          icon={<UserPlus className="h-4 w-4 text-primary" />}
+          icon={<UserPlus className="h-4 w-4 text-foreground" />}
         />
         <KPICard
           title="Neue heute"
           value={data.newLeadsToday}
           sub="Leads heute eingegangen"
-          icon={<CalendarPlus className="h-4 w-4 text-primary" />}
+          icon={<CalendarPlus className="h-4 w-4 text-foreground" />}
         />
         <KPICard
           title="Neue diese Woche"
           value={data.newLeadsWeek}
           sub="Seit Montag"
-          icon={<CalendarRange className="h-4 w-4 text-primary" />}
+          icon={<CalendarRange className="h-4 w-4 text-foreground" />}
         />
         <KPICard
           title="Aktive Kunden"
           value={data.activeMembers}
           sub="Mitglieder aktiv"
-          icon={<Users className="h-4 w-4 text-primary" />}
+          icon={<Users className="h-4 w-4 text-foreground" />}
         />
         <KPICard
           title="Offene Aufgaben"
           value={data.todayTasks.length}
           sub="Heute fällig"
-          icon={<CheckSquare className="h-4 w-4 text-primary" />}
+          icon={<CheckSquare className="h-4 w-4 text-foreground" />}
         />
         <KPICard
           title="Conversion Rate"
           value={`${conversionRate}%`}
           sub="Gewonnen / Gesamt"
-          icon={<TrendingUp className="h-4 w-4 text-primary" />}
+          icon={<TrendingUp className="h-4 w-4 text-foreground" />}
         />
       </div>
 

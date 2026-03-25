@@ -13,8 +13,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Primary = Brand Orange */
-    --primary: 23 92% 54%;
+    /* Primary = Brand Teal-Green (jan-sommershoff.de) */
+    --primary: 160 70% 36%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 20% 92%;
@@ -23,8 +23,8 @@
     --muted: 220 18% 96%;
     --muted-foreground: 220 10% 46%;
 
-    /* Accent = Light Orange */
-    --accent: 23 92% 61%;
+    /* Accent = Light Green */
+    --accent: 160 55% 44%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -32,16 +32,19 @@
 
     --border: 220 15% 91%;
     --input: 220 15% 91%;
-    --ring: 23 92% 54%;
+    --ring: 160 70% 36%;
 
     --radius: 0.75rem;
 
-    /* Custom landing page tokens (Orange-Palette) */
-    --primary-deep: 23 92% 47%;
-    --primary-dark: 23 70% 30%;
-    --primary-light: 23 92% 61%;
-    --gradient-start: 23 92% 47%;
-    --gradient-end: 23 92% 61%;
+    /* Green variants for Landing */
+    --primary-deep: 160 75% 28%;
+    --primary-dark: 160 60% 22%;
+    --primary-light: 160 60% 44%;
+    --gradient-start: 160 75% 28%;
+    --gradient-end: 160 60% 44%;
+
+    /* Success (semantic green for App) */
+    --success: 152 60% 40%;
 
     /* Brand Colors from Logo */
     --brand-orange: 23 92% 54%;
@@ -59,12 +62,27 @@
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 23 92% 54%;
+    --sidebar-primary: 160 70% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 23 92% 54%;
+    --sidebar-ring: 160 70% 36%;
+  }
+
+  /* App-Bereich: Neutral/Charcoal statt Gruen */
+  .app-scope {
+    --primary: 220 14% 20%;
+    --primary-foreground: 0 0% 100%;
+    --primary-deep: 220 14% 14%;
+    --primary-dark: 220 14% 10%;
+    --primary-light: 220 13% 35%;
+    --accent: 220 13% 91%;
+    --accent-foreground: 220 14% 20%;
+    --ring: 220 14% 40%;
+    --sidebar-primary: 220 14% 20%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-ring: 220 14% 40%;
   }
 
   .dark {
@@ -77,8 +95,8 @@
     --popover: 226 71% 12%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 23 92% 61%;
-    --primary-foreground: 23 70% 10%;
+    --primary: 160 60% 44%;
+    --primary-foreground: 160 70% 8%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -86,21 +104,23 @@
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 23 92% 61%;
-    --accent-foreground: 23 70% 10%;
+    --accent: 160 50% 44%;
+    --accent-foreground: 160 70% 8%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 23 92% 54%;
+    --ring: 160 70% 36%;
 
-    --primary-deep: 23 92% 47%;
-    --primary-dark: 23 70% 30%;
-    --primary-light: 23 92% 61%;
-    --gradient-start: 23 92% 47%;
-    --gradient-end: 23 92% 61%;
+    --primary-deep: 160 75% 28%;
+    --primary-dark: 160 60% 22%;
+    --primary-light: 160 60% 44%;
+    --gradient-start: 160 75% 28%;
+    --gradient-end: 160 60% 44%;
+
+    --success: 152 50% 45%;
 
     --brand-orange: 23 92% 54%;
     --brand-cream: 35 25% 75%;
@@ -116,12 +136,23 @@
 
     --sidebar-background: 226 71% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 23 92% 61%;
+    --sidebar-primary: 160 60% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 23 92% 54%;
+    --sidebar-ring: 160 70% 36%;
+  }
+
+  .dark .app-scope {
+    --primary: 220 14% 75%;
+    --primary-foreground: 220 14% 10%;
+    --accent: 220 13% 20%;
+    --accent-foreground: 220 14% 85%;
+    --ring: 220 14% 55%;
+    --sidebar-primary: 220 14% 75%;
+    --sidebar-primary-foreground: 220 14% 10%;
+    --sidebar-ring: 220 14% 55%;
   }
 }
 

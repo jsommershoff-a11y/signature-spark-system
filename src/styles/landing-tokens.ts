@@ -17,7 +17,7 @@ export const landingTokens = {
   badgeAccent:
     "inline-flex items-center rounded-full border-2 border-primary/40 bg-primary/8 backdrop-blur-sm px-5 py-1.5 text-sm font-semibold text-primary",
   ctaPrimary:
-    "bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary text-primary-foreground font-semibold text-lg px-10 py-5 rounded-xl shadow-[0_0_24px_rgba(246,113,31,0.2)] hover:shadow-[0_0_40px_rgba(246,113,31,0.35)] transition-all duration-300",
+    "bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary text-primary-foreground font-semibold text-lg px-10 py-5 rounded-xl shadow-[0_0_24px_rgba(26,158,120,0.2)] hover:shadow-[0_0_40px_rgba(26,158,120,0.35)] transition-all duration-300",
   ctaSecondary:
     "text-muted-foreground underline underline-offset-4 hover:text-primary transition-colors",
 };
