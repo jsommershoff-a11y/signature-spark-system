@@ -23,9 +23,9 @@
     --muted: 220 18% 96%;
     --muted-foreground: 220 10% 46%;
 
-    /* Accent = Light Green */
-    --accent: 160 55% 44%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent = Warm Light */
+    --accent: 30 20% 96%;
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
