@@ -36,12 +36,12 @@
 
     --radius: 0.75rem;
 
-    /* Green variants for Landing */
-    --primary-deep: 160 75% 28%;
-    --primary-dark: 160 60% 22%;
-    --primary-light: 160 60% 44%;
-    --gradient-start: 160 75% 28%;
-    --gradient-end: 160 60% 44%;
+    /* Orange variants for Landing */
+    --primary-deep: 20 85% 45%;
+    --primary-dark: 18 80% 38%;
+    --primary-light: 28 95% 60%;
+    --gradient-start: 20 85% 45%;
+    --gradient-end: 28 95% 60%;
 
     /* Success (semantic green for App) */
     --success: 152 60% 40%;
