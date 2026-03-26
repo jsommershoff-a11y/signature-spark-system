@@ -53,10 +53,10 @@ export default function OfferDetail() {
 
   const offer = offers.find((o) => o.id === offerId);
 
-  const canSubmitForReview = hasMinRole('mitarbeiter');
-  const canApprove = hasMinRole('teamleiter');
-  const canSend = hasMinRole('mitarbeiter');
-  const canUnlockPayment = hasMinRole('teamleiter');
+  const canSubmitForReview = hasMinRole('vertriebspartner');
+  const canApprove = hasMinRole('gruppenbetreuer');
+  const canSend = hasMinRole('vertriebspartner');
+  const canUnlockPayment = hasMinRole('gruppenbetreuer');
 
   const publicUrl = offer?.public_token
     ? `${window.location.origin}/offer/${offer.public_token}`
