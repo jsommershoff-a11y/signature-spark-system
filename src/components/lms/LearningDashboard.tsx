@@ -57,6 +57,9 @@ export function LearningDashboard() {
         <div className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-primary/5 blur-xl" />
       </div>
 
+      {/* Tier Progress */}
+      <TierProgressHint currentTier={tierName === 'basic' ? 'basic' : tierName === 'starter' ? 'starter' : 'none'} />
+
       {/* Learning Paths Grid */}
       {paths.length > 0 && (
         <section>
