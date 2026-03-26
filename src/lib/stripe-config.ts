@@ -92,6 +92,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
       'Priorisierter Support',
     ],
     membershipProduct: 'premium',
+    directPurchase: false,
   },
   rakete: {
     id: 'rakete',
