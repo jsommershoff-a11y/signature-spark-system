@@ -160,6 +160,7 @@ const App = () => (
               <Route path="prompts" element={<PromptLibrary />} />
               <Route path="tools" element={<ToolsDirectory />} />
               <Route path="welcome" element={<Welcome />} />
+              <Route path="calendar" element={<LiveCallsCalendar />} />
               <Route path="member-management" element={
                 <ProtectedRoute requireMinRole="gruppenbetreuer">
                   <MemberManagement />
