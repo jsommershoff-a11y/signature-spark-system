@@ -1,4 +1,5 @@
 import { useLearningPaths } from '@/hooks/useLearningPaths';
+import { useMembershipAccess } from '@/hooks/useMembershipAccess';
 import { LearningPathCard } from './LearningPathCard';
 import { ProgressRing } from './ProgressRing';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, BookOpen, Trophy, Flame, Target, Sparkles, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { LockedContent, TierProgressHint } from '@/components/app/LockedContent';
 
 export function LearningDashboard() {
   const {
@@ -16,6 +18,7 @@ export function LearningDashboard() {
     completedLessons,
     overallProgress,
   } = useLearningPaths();
+  const { tierName, hasMinTier } = useMembershipAccess();
 
   if (isLoading) {
     return (
@@ -53,6 +56,9 @@ export function LearningDashboard() {
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-primary/5 blur-2xl" />
         <div className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-primary/5 blur-xl" />
       </div>
+
+      {/* Tier Progress */}
+      <TierProgressHint currentTier={tierName === 'basic' ? 'basic' : tierName === 'starter' ? 'starter' : 'none'} />
 
       {/* Learning Paths Grid */}
       {paths.length > 0 && (

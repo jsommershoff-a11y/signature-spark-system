@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom';
 import { useMembershipAccess } from '@/hooks/useMembershipAccess';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { STRIPE_PRODUCTS_LIST } from '@/lib/stripe-config';
+import { STRIPE_PRODUCTS_LIST, ADDON_SESSION } from '@/lib/stripe-config';
+import { TierProgressHint } from '@/components/app/LockedContent';
 import { toast } from 'sonner';
 import {
   Gift,
@@ -22,25 +23,26 @@ import {
   ShieldCheck,
   Loader2,
   MessageSquare,
+  Clock,
 } from 'lucide-react';
 
 const TIER_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  schnupper: Gift,
-  website: Zap,
+  mitgliedschaft: Gift,
+  starter: Zap,
   wachstum: Rocket,
   ernsthaft: Crown,
   rakete: Gem,
 };
 
 export default function Pricing() {
-  const { products, highestTier } = useMembershipAccess();
+  const { products, tierName } = useMembershipAccess();
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const handleCheckout = async (priceId: string, productId: string) => {
+  const handleCheckout = async (priceId: string, productId: string, mode: string) => {
     setLoadingId(productId);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId },
+        body: { priceId, mode },
       });
       if (error) throw error;
       if (data?.url) {
@@ -71,6 +73,9 @@ export default function Pricing() {
           vom ersten Prompt bis zur vollständigen System-Transformation.
         </p>
       </div>
+
+      {/* Tier Progress */}
+      <TierProgressHint currentTier={tierName === 'basic' ? 'basic' : tierName === 'starter' ? 'starter' : 'none'} className="max-w-lg mx-auto" />
 
       {/* Pricing Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -106,12 +111,14 @@ export default function Pricing() {
                   {product.directPurchase ? (
                     <>
                       <span className="text-3xl font-bold">{product.price}</span>
-                      <p className="text-xs text-muted-foreground mt-1">einmalig · zzgl. MwSt.</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {product.mode === 'subscription' ? 'monatlich' : 'einmalig'} · inkl. MwSt.
+                      </p>
                     </>
                   ) : (
                     <>
                       <span className="text-2xl font-bold">ab {product.price}</span>
-                      <p className="text-xs text-muted-foreground mt-1">individuelles Angebot</p>
+                      <p className="text-xs text-muted-foreground mt-1">individuelles Angebot · inkl. MwSt.</p>
                     </>
                   )}
                 </div>
@@ -143,7 +150,7 @@ export default function Pricing() {
                   <Button
                     variant={product.highlighted ? 'default' : 'outline'}
                     className={cn('w-full', product.highlighted && 'shadow-sm')}
-                    onClick={() => handleCheckout(product.priceId, product.id)}
+                    onClick={() => handleCheckout(product.priceId, product.id, product.mode)}
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -160,18 +167,35 @@ export default function Pricing() {
                     onClick={() => window.location.href = '/kontakt'}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
-                    Angebot anfordern
+                    Individuelles Angebot anfordern
                   </Button>
                 )}
                 <p className="text-center text-[10px] text-muted-foreground">
                   Es gelten unsere{' '}
                   <Link to="/agb" className="underline hover:text-foreground">AGB</Link>
+                  {' · '}
+                  <Link to="/widerruf" className="underline hover:text-foreground">Widerruf</Link>
                 </p>
               </div>
             </Card>
           );
         })}
       </div>
+
+      {/* Addon: Einzel-Session */}
+      <Card className="bg-muted/20 border-dashed">
+        <CardContent className="flex flex-col md:flex-row items-center gap-4 py-6">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted shrink-0">
+            <Clock className="h-7 w-7 text-foreground" />
+          </div>
+          <div className="text-center md:text-left flex-1">
+            <h3 className="font-semibold text-base">{ADDON_SESSION.name} – {ADDON_SESSION.price}</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {ADDON_SESSION.description} Buchbar zu jedem aktiven Paket.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Guarantee */}
       <Card className="bg-muted/30 border-dashed">

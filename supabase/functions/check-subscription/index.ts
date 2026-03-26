@@ -7,6 +7,20 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Map Stripe product IDs to membership tiers
+const PRODUCT_TO_TIER: Record<string, string> = {
+  'prod_UDUDyr4KjEJQB4': 'basic',
+  'prod_UDTIV8upy908ms': 'starter',
+  'prod_UDTImKXl8RdXyL': 'growth',
+  'prod_UDTJx9P04DYXgB': 'premium',
+  'prod_UDTJ6NcsaVWjb8': 'premium',
+};
+
+const logStep = (step: string, details?: any) => {
+  const d = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CHECK-SUBSCRIPTION] ${step}${d}`);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -34,45 +48,44 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
+    // Check internal memberships first
+    const { data: memberData } = await supabaseClient
+      .from('members')
+      .select('id, status, memberships(product, status)')
+      .eq('user_id', user.id)
+      .single();
+
+    const activeMemberships = memberData?.status === 'active'
+      ? ((memberData as any).memberships || []).filter((m: any) => m.status === 'active')
+      : [];
+
+    const activeMembershipProducts = activeMemberships.map((m: any) => m.product);
+
     if (customers.data.length === 0) {
-      // Also check internal memberships table
-      const { data: memberData } = await supabaseClient
-        .from('members')
-        .select('id, status, memberships(product, status)')
-        .eq('user_id', user.id)
-        .single();
-
-      if (memberData?.status === 'active') {
-        const activeMembership = (memberData as any).memberships?.find(
-          (m: any) => m.status === 'active'
-        );
-        return new Response(JSON.stringify({
-          subscribed: !!activeMembership,
-          product_id: null,
-          membership_product: activeMembership?.product || null,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({
+        subscribed: activeMemberships.length > 0,
+        product_id: null,
+        membership_products: activeMembershipProducts,
+        subscription_end: null,
+        completed_payments: [],
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const customerId = customers.data[0].id;
 
-    // Check for active subscriptions
+    // Check active subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
-      limit: 1,
+      limit: 10,
     });
 
-    // Also check for successful one-time payments (checkout sessions)
+    // Check completed one-time payments
     const sessions = await stripe.checkout.sessions.list({
       customer: customerId,
-      limit: 10,
+      limit: 20,
     });
 
     const completedPayments = sessions.data
@@ -84,31 +97,28 @@ serve(async (req) => {
       }));
 
     const hasActiveSub = subscriptions.data.length > 0;
-    let productId = null;
-    let subscriptionEnd = null;
+    let subscriptionProducts: string[] = [];
+    let subscriptionEnd: string | null = null;
 
     if (hasActiveSub) {
-      const sub = subscriptions.data[0];
-      subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
-      productId = sub.items.data[0].price.product;
+      for (const sub of subscriptions.data) {
+        const productId = sub.items.data[0]?.price?.product as string;
+        const tier = PRODUCT_TO_TIER[productId];
+        if (tier) subscriptionProducts.push(tier);
+        // Use latest end date
+        const end = new Date(sub.current_period_end * 1000).toISOString();
+        if (!subscriptionEnd || end > subscriptionEnd) subscriptionEnd = end;
+      }
     }
 
-    // Also check internal memberships
-    const { data: memberData } = await supabaseClient
-      .from('members')
-      .select('id, status, memberships(product, status)')
-      .eq('user_id', user.id)
-      .single();
-
-    const activeMembership = memberData?.status === 'active'
-      ? (memberData as any).memberships?.find((m: any) => m.status === 'active')
-      : null;
+    // Merge Stripe subscription products with internal memberships
+    const allProducts = [...new Set([...activeMembershipProducts, ...subscriptionProducts])];
 
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub || !!activeMembership,
-      product_id: productId,
+      subscribed: allProducts.length > 0,
+      product_id: subscriptions.data[0]?.items.data[0]?.price?.product || null,
+      membership_products: allProducts,
       subscription_end: subscriptionEnd,
-      membership_product: activeMembership?.product || null,
       completed_payments: completedPayments,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

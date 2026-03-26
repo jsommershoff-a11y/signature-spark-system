@@ -2559,7 +2559,7 @@ export type Database = {
       learning_path_level: "starter" | "fortgeschritten" | "experte"
       lesson_type: "video" | "task" | "worksheet" | "quiz"
       member_status: "active" | "paused" | "churned"
-      membership_product: "starter" | "growth" | "premium"
+      membership_product: "basic" | "starter" | "growth" | "premium"
       membership_status: "active" | "inactive" | "pending"
       offer_status:
         | "draft"
@@ -2750,7 +2750,7 @@ export const Constants = {
       learning_path_level: ["starter", "fortgeschritten", "experte"],
       lesson_type: ["video", "task", "worksheet", "quiz"],
       member_status: ["active", "paused", "churned"],
-      membership_product: ["starter", "growth", "premium"],
+      membership_product: ["basic", "starter", "growth", "premium"],
       membership_status: ["active", "inactive", "pending"],
       offer_status: [
         "draft",

@@ -207,6 +207,8 @@ serve(async (req) => {
     let orderId: string | undefined;
     let leadId: string | undefined;
     let offerId: string | undefined;
+    let userId: string | undefined;
+    let userEmail: string | undefined;
     let amountCents: number | undefined;
     let currency = 'EUR';
     let providerOrderId: string | undefined;
@@ -224,6 +226,8 @@ serve(async (req) => {
         orderId = session.metadata?.order_id;
         leadId = session.metadata?.lead_id;
         offerId = session.metadata?.offer_id;
+        userId = session.metadata?.user_id;
+        userEmail = session.metadata?.user_email;
         amountCents = session.amount_total;
         currency = session.currency?.toUpperCase() || 'EUR';
         providerOrderId = session.id;
@@ -254,12 +258,14 @@ serve(async (req) => {
       );
     }
 
-    // Validate lead_id format (UUID)
+    // Validate lead_id format (UUID) — allow self-service flow without lead_id
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!leadId || !uuidRegex.test(leadId)) {
-      console.error('Invalid or missing lead_id in payment metadata');
+    const isSelfService = !leadId && userId && uuidRegex.test(userId);
+    
+    if (!isSelfService && (!leadId || !uuidRegex.test(leadId))) {
+      console.error('Invalid or missing lead_id/user_id in payment metadata');
       return new Response(
-        JSON.stringify({ error: 'Missing or invalid lead_id in metadata' }),
+        JSON.stringify({ error: 'Missing or invalid lead_id/user_id in metadata' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -293,8 +299,8 @@ serve(async (req) => {
         throw error;
       }
       orderRecord = data;
-    } else {
-      // Create new order
+    } else if (!isSelfService) {
+      // Create new order (lead-based flow)
       const { data, error } = await supabase
         .from('orders')
         .insert({
@@ -303,7 +309,7 @@ serve(async (req) => {
           provider,
           provider_order_id: providerOrderId?.slice(0, 255),
           provider_customer_id: providerCustomerId?.slice(0, 255),
-          amount_cents: Math.max(0, Math.min(amountCents || 0, 999999999)), // Bounds check
+          amount_cents: Math.max(0, Math.min(amountCents || 0, 999999999)),
           currency: currency.slice(0, 3),
           status: 'paid',
           paid_at: new Date().toISOString()
@@ -316,6 +322,9 @@ serve(async (req) => {
         throw error;
       }
       orderRecord = data;
+    } else {
+      // Self-service: no order record needed for now, just provision membership
+      console.log('Self-service checkout – skipping order creation (no lead_id)');
     }
 
     console.log('Order processed:', orderRecord.id);
@@ -414,6 +423,68 @@ serve(async (req) => {
           } else {
             console.log('No auth user found for lead email:', leadData.email);
           }
+        }
+      }
+    }
+
+    // Self-service checkout (user_id in metadata, no lead_id/offer_id)
+    if (isSelfService && userId && !offerId) {
+      // Determine membership tier from amount
+      const AMOUNT_TO_TIER: Record<number, string> = {
+        1999: 'basic',   // 19.99€ Mitgliedschaft
+        99900: 'starter', // 999€ Starter
+      };
+      const membershipProduct = AMOUNT_TO_TIER[amountCents || 0] || 'basic';
+      
+      console.log(`Self-service checkout: user=${userId}, amount=${amountCents}, tier=${membershipProduct}`);
+
+      // Create or find member record
+      const { data: existingMember } = await supabase
+        .from('members')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+      let memberId: string | undefined;
+
+      if (existingMember) {
+        memberId = existingMember.id;
+        await supabase
+          .from('members')
+          .update({ status: 'active', updated_at: new Date().toISOString() })
+          .eq('id', memberId);
+      } else {
+        const { data: newMember, error: memberError } = await supabase
+          .from('members')
+          .insert({
+            user_id: userId,
+            status: 'active',
+          })
+          .select('id')
+          .single();
+
+        if (memberError) {
+          console.error('Error creating member (self-service):', memberError);
+        }
+        memberId = newMember?.id;
+      }
+
+      // Create membership
+      if (memberId) {
+        const { error: msError } = await supabase
+          .from('memberships')
+          .insert({
+            member_id: memberId,
+            order_id: orderRecord?.id,
+            product: membershipProduct,
+            status: 'active',
+            starts_at: new Date().toISOString(),
+          });
+
+        if (msError) {
+          console.error('Error creating membership (self-service):', msError);
+        } else {
+          console.log(`Self-service membership created: ${membershipProduct} for member ${memberId}`);
         }
       }
     }
