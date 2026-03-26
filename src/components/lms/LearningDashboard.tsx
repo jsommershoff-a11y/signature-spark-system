@@ -18,6 +18,7 @@ export function LearningDashboard() {
     completedLessons,
     overallProgress,
   } = useLearningPaths();
+  const { tierName, hasMinTier } = useMembershipAccess();
 
   if (isLoading) {
     return (
