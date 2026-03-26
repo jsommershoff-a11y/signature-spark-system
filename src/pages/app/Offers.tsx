@@ -18,8 +18,8 @@ export default function Offers() {
   const [statusFilter, setStatusFilter] = useState<OfferStatus | 'all'>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
-  const canApprove = hasMinRole('teamleiter');
-  const canSend = hasMinRole('mitarbeiter');
+  const canApprove = hasMinRole('gruppenbetreuer');
+  const canSend = hasMinRole('vertriebspartner');
 
   const filteredOffers = offers.filter((offer) => {
     const matchesSearch =

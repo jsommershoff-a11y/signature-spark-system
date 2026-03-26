@@ -97,58 +97,58 @@ const App = () => (
             }>
               <Route index element={<Dashboard />} />
               <Route path="crm" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <CRM />
                 </ProtectedRoute>
               } />
               <Route path="leads" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <Leads />
                 </ProtectedRoute>
               } />
               <Route path="pipeline" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <Pipeline />
                 </ProtectedRoute>
               } />
               <Route path="customers" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <Customers />
                 </ProtectedRoute>
               } />
               <Route path="tasks" element={<Tasks />} />
               <Route path="calls" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <Calls />
                 </ProtectedRoute>
               } />
               <Route path="calls/:callId" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <CallDetail />
                 </ProtectedRoute>
               } />
               <Route path="offers" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <Offers />
                 </ProtectedRoute>
               } />
               <Route path="offers/:offerId" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <OfferDetail />
                 </ProtectedRoute>
               } />
               <Route path="goals" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <Goals />
                 </ProtectedRoute>
               } />
               <Route path="social-media" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <SocialMedia />
                 </ProtectedRoute>
               } />
               <Route path="email-kampagnen" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <EmailCampaigns />
                 </ProtectedRoute>
               } />
@@ -160,17 +160,17 @@ const App = () => (
               <Route path="tools" element={<ToolsDirectory />} />
               <Route path="welcome" element={<Welcome />} />
               <Route path="member-management" element={
-                <ProtectedRoute requireMinRole="teamleiter">
+                <ProtectedRoute requireMinRole="gruppenbetreuer">
                   <MemberManagement />
                 </ProtectedRoute>
               } />
               <Route path="members" element={
-                <ProtectedRoute requireMinRole="mitarbeiter">
+                <ProtectedRoute requireMinRole="vertriebspartner">
                   <Members />
                 </ProtectedRoute>
               } />
               <Route path="reports" element={
-                <ProtectedRoute requireMinRole="teamleiter">
+                <ProtectedRoute requireMinRole="gruppenbetreuer">
                   <Reports />
                 </ProtectedRoute>
               } />

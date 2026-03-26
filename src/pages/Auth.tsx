@@ -28,7 +28,7 @@ export default function Auth() {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      if (effectiveRole === 'kunde') {
+      if (effectiveRole === 'member_basic' || effectiveRole === 'member_starter' || effectiveRole === 'member_pro') {
         navigate('/app/contracts', { replace: true });
       } else {
         navigate(from, { replace: true });

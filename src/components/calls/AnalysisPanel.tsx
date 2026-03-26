@@ -34,7 +34,7 @@ interface AnalysisPanelProps {
 export function AnalysisPanel({ analysis, callId, onAnalysisUpdated }: AnalysisPanelProps) {
   const { hasMinRole } = useAuth();
   const { regenerateAnalysis, analyzing } = useAnalysis();
-  const canRegenerate = hasMinRole('teamleiter');
+  const canRegenerate = hasMinRole('gruppenbetreuer');
 
   const handleRegenerate = async () => {
     const result = await regenerateAnalysis(callId);

@@ -57,7 +57,7 @@ serve(async (req) => {
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
-      .in('role', ['admin', 'geschaeftsfuehrung', 'teamleiter']);
+      .in('role', ['admin', 'gruppenbetreuer']);
 
     if (!roles || roles.length === 0) {
       return new Response(
