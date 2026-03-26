@@ -112,6 +112,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
       'Laufende Betreuung',
     ],
     membershipProduct: 'premium',
+    directPurchase: false,
   },
 };
 
