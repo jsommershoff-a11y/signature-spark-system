@@ -984,6 +984,79 @@ export type Database = {
           },
         ]
       }
+      event_registrations: {
+        Row: {
+          attended: boolean | null
+          event_id: string
+          id: string
+          registered_at: string
+          user_id: string
+        }
+        Insert: {
+          attended?: boolean | null
+          event_id: string
+          id?: string
+          registered_at?: string
+          user_id: string
+        }
+        Update: {
+          attended?: boolean | null
+          event_id?: string
+          id?: string
+          registered_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "live_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_topic_submissions: {
+        Row: {
+          description: string | null
+          event_id: string
+          id: string
+          status: string
+          submitted_at: string
+          topic: string
+          user_id: string
+          votes: number | null
+        }
+        Insert: {
+          description?: string | null
+          event_id: string
+          id?: string
+          status?: string
+          submitted_at?: string
+          topic: string
+          user_id: string
+          votes?: number | null
+        }
+        Update: {
+          description?: string | null
+          event_id?: string
+          id?: string
+          status?: string
+          submitted_at?: string
+          topic?: string
+          user_id?: string
+          votes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_topic_submissions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "live_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       followup_plans: {
         Row: {
           approved_at: string | null
@@ -1595,6 +1668,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      live_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          event_date: string
+          id: string
+          is_recurring: boolean | null
+          max_participants: number | null
+          meeting_provider: string | null
+          meeting_url: string | null
+          recurrence_rule: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          event_date: string
+          id?: string
+          is_recurring?: boolean | null
+          max_participants?: number | null
+          meeting_provider?: string | null
+          meeting_url?: string | null
+          recurrence_rule?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          event_date?: string
+          id?: string
+          is_recurring?: boolean | null
+          max_participants?: number | null
+          meeting_provider?: string | null
+          meeting_url?: string | null
+          recurrence_rule?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       member_kpis: {
         Row: {

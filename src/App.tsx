@@ -52,6 +52,7 @@ import Welcome from "./pages/app/Welcome";
 import CooCockpit from "./pages/app/CooCockpit";
 import PromptLibrary from "./pages/app/PromptLibrary";
 import ToolsDirectory from "./pages/app/ToolsDirectory";
+import LiveCallsCalendar from "./pages/app/LiveCallsCalendar";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -159,6 +160,7 @@ const App = () => (
               <Route path="prompts" element={<PromptLibrary />} />
               <Route path="tools" element={<ToolsDirectory />} />
               <Route path="welcome" element={<Welcome />} />
+              <Route path="calendar" element={<LiveCallsCalendar />} />
               <Route path="member-management" element={
                 <ProtectedRoute requireMinRole="gruppenbetreuer">
                   <MemberManagement />
