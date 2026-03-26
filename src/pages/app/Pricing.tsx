@@ -21,6 +21,7 @@ import {
   Sparkles,
   ShieldCheck,
   Loader2,
+  MessageSquare,
 } from 'lucide-react';
 
 const TIER_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
