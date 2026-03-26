@@ -52,6 +52,7 @@ import Welcome from "./pages/app/Welcome";
 import CooCockpit from "./pages/app/CooCockpit";
 import PromptLibrary from "./pages/app/PromptLibrary";
 import ToolsDirectory from "./pages/app/ToolsDirectory";
+import LiveCallsCalendar from "./pages/app/LiveCallsCalendar";
 
 const queryClient = new QueryClient({
   defaultOptions: {
