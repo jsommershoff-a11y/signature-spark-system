@@ -73,6 +73,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
     highlighted: true,
     badge: 'Beliebteste Wahl',
     membershipProduct: 'growth',
+    directPurchase: false,
   },
   ernsthaft: {
     id: 'ernsthaft',
