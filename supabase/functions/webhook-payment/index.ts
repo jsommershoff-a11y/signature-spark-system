@@ -258,12 +258,14 @@ serve(async (req) => {
       );
     }
 
-    // Validate lead_id format (UUID)
+    // Validate lead_id format (UUID) — allow self-service flow without lead_id
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!leadId || !uuidRegex.test(leadId)) {
-      console.error('Invalid or missing lead_id in payment metadata');
+    const isSelfService = !leadId && userId && uuidRegex.test(userId);
+    
+    if (!isSelfService && (!leadId || !uuidRegex.test(leadId))) {
+      console.error('Invalid or missing lead_id/user_id in payment metadata');
       return new Response(
-        JSON.stringify({ error: 'Missing or invalid lead_id in metadata' }),
+        JSON.stringify({ error: 'Missing or invalid lead_id/user_id in metadata' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
