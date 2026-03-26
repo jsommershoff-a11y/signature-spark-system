@@ -1,0 +1,1 @@
+ALTER TYPE public.membership_product ADD VALUE IF NOT EXISTS 'basic' BEFORE 'starter';
