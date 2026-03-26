@@ -20,6 +20,8 @@ import {
   Share2,
   Mail,
   Gauge,
+  Sparkles,
+  Wrench,
 } from 'lucide-react';
 
 interface NavItem {
