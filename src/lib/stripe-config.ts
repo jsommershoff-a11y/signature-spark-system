@@ -52,6 +52,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
       '4 Wochen Support',
     ],
     membershipProduct: 'starter',
+    directPurchase: true,
   },
   wachstum: {
     id: 'wachstum',
