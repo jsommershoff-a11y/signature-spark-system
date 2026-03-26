@@ -299,8 +299,8 @@ serve(async (req) => {
         throw error;
       }
       orderRecord = data;
-    } else {
-      // Create new order
+    } else if (!isSelfService) {
+      // Create new order (lead-based flow)
       const { data, error } = await supabase
         .from('orders')
         .insert({
@@ -309,7 +309,7 @@ serve(async (req) => {
           provider,
           provider_order_id: providerOrderId?.slice(0, 255),
           provider_customer_id: providerCustomerId?.slice(0, 255),
-          amount_cents: Math.max(0, Math.min(amountCents || 0, 999999999)), // Bounds check
+          amount_cents: Math.max(0, Math.min(amountCents || 0, 999999999)),
           currency: currency.slice(0, 3),
           status: 'paid',
           paid_at: new Date().toISOString()
@@ -322,6 +322,9 @@ serve(async (req) => {
         throw error;
       }
       orderRecord = data;
+    } else {
+      // Self-service: no order record needed for now, just provision membership
+      console.log('Self-service checkout – skipping order creation (no lead_id)');
     }
 
     console.log('Order processed:', orderRecord.id);
