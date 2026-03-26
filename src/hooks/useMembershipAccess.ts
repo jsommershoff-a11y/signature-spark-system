@@ -1,23 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import type { CoursePriceTier } from '@/types/lms';
 
 const TIER_ORDER: Record<string, number> = {
   freebie: 0,
-  low_budget: 1,
-  mid_range: 2,
-  high_class: 3,
-};
-
-const PRODUCT_TIER: Record<string, number> = {
-  starter: 1,
-  growth: 2,
-  premium: 3,
+  basic: 1,
+  starter: 2,
+  growth: 3,
+  premium: 4,
 };
 
 /** Max free demo lessons per course for non-paying users */
 export const DEMO_LESSON_LIMIT = 2;
+
+export type MembershipTier = 'none' | 'basic' | 'starter' | 'growth' | 'premium';
 
 export function useMembershipAccess() {
   const { user } = useAuth();
@@ -25,7 +21,7 @@ export function useMembershipAccess() {
   const membershipQuery = useQuery({
     queryKey: ['membership-access', user?.id],
     queryFn: async () => {
-      if (!user?.id) return { memberId: null, products: [] as string[], highestTier: 0 };
+      if (!user?.id) return { memberId: null, products: [] as string[], highestTier: 0, tierName: 'none' as MembershipTier };
 
       // Get member
       const { data: member } = await supabase
@@ -34,7 +30,7 @@ export function useMembershipAccess() {
         .eq('user_id', user.id)
         .single();
 
-      if (!member) return { memberId: null, products: [] as string[], highestTier: 0 };
+      if (!member) return { memberId: null, products: [] as string[], highestTier: 0, tierName: 'none' as MembershipTier };
 
       // Get active memberships
       const { data: memberships } = await supabase
@@ -44,28 +40,32 @@ export function useMembershipAccess() {
         .eq('status', 'active');
 
       const products = (memberships || []).map((m) => m.product);
-      const highestTier = products.reduce((max, p) => Math.max(max, PRODUCT_TIER[p] || 0), 0);
+      const highestTier = products.reduce((max, p) => Math.max(max, TIER_ORDER[p] || 0), 0);
 
-      return { memberId: member.id, products, highestTier };
+      // Determine tier name
+      const tierNames: MembershipTier[] = ['none', 'basic', 'starter', 'growth', 'premium'];
+      const tierName = tierNames[highestTier] || 'none';
+
+      return { memberId: member.id, products, highestTier, tierName };
     },
     enabled: !!user?.id,
   });
 
-  const { memberId, products, highestTier } = membershipQuery.data || {
+  const { memberId, products, highestTier, tierName } = membershipQuery.data || {
     memberId: null,
     products: [] as string[],
     highestTier: 0,
+    tierName: 'none' as MembershipTier,
   };
 
   /**
    * Check if user can access a course.
-   * Returns { hasAccess, reason }
    */
   function canAccessCourse(course: {
     price_tier?: string | null;
     required_product?: string | null;
   }): { hasAccess: boolean; reason: string } {
-    // Freebie courses with no required_product → always accessible
+    // Freebie courses → always accessible
     if (
       (!course.price_tier || course.price_tier === 'freebie') &&
       !course.required_product
@@ -79,7 +79,7 @@ export function useMembershipAccess() {
 
     // Check required_product
     if (course.required_product) {
-      const requiredLevel = PRODUCT_TIER[course.required_product] || 0;
+      const requiredLevel = TIER_ORDER[course.required_product] || 0;
       if (highestTier < requiredLevel) {
         return {
           hasAccess: false,
@@ -88,17 +88,14 @@ export function useMembershipAccess() {
       }
     }
 
-    // Check price_tier: low_budget → starter, mid_range → growth, high_class → premium
+    // Check price_tier mapping
     const tierLevel = TIER_ORDER[course.price_tier || 'freebie'] || 0;
-    if (tierLevel > 0) {
-      const neededProduct = tierLevel <= 1 ? 1 : tierLevel <= 2 ? 2 : 3;
-      if (highestTier < neededProduct) {
-        const productName = neededProduct === 1 ? 'Starter' : neededProduct === 2 ? 'Growth' : 'Premium';
-        return {
-          hasAccess: false,
-          reason: `Dieser Kurs erfordert das "${productName}"-Paket.`,
-        };
-      }
+    if (tierLevel > 0 && highestTier < tierLevel) {
+      const tierLabel = tierLevel === 1 ? 'Mitgliedschaft' : tierLevel === 2 ? 'Starter' : tierLevel === 3 ? 'Growth' : 'Premium';
+      return {
+        hasAccess: false,
+        reason: `Dieser Kurs erfordert das "${tierLabel}"-Paket.`,
+      };
     }
 
     return { hasAccess: true, reason: '' };
@@ -115,12 +112,22 @@ export function useMembershipAccess() {
     return lessonIndex < DEMO_LESSON_LIMIT;
   }
 
+  /**
+   * Check if user has at least a certain tier
+   */
+  function hasMinTier(minTier: MembershipTier): boolean {
+    const minLevel = TIER_ORDER[minTier] || 0;
+    return highestTier >= minLevel;
+  }
+
   return {
     memberId,
     products,
     highestTier,
+    tierName,
     isLoading: membershipQuery.isLoading,
     canAccessCourse,
     canAccessLesson,
+    hasMinTier,
   };
 }

@@ -7,6 +7,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Map product IDs to membership tiers
+const PRODUCT_TO_TIER: Record<string, string> = {
+  'prod_UDUDyr4KjEJQB4': 'basic',
+  'prod_UDTIV8upy908ms': 'starter',
+  'prod_UDTImKXl8RdXyL': 'growth',
+  'prod_UDTJx9P04DYXgB': 'premium',
+  'prod_UDTJ6NcsaVWjb8': 'premium',
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -24,10 +33,13 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { priceId } = await req.json();
+    const { priceId, mode } = await req.json();
     if (!priceId || typeof priceId !== "string" || !priceId.startsWith("price_")) {
       throw new Error("Invalid priceId");
     }
+
+    // Validate mode
+    const checkoutMode = mode === 'subscription' ? 'subscription' : 'payment';
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -46,7 +58,7 @@ serve(async (req) => {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: "payment",
+      mode: checkoutMode,
       success_url: `${origin}/app?payment=success`,
       cancel_url: `${origin}/app/pricing?payment=cancelled`,
       metadata: {
