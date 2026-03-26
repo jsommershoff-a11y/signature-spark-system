@@ -23,6 +23,7 @@ import {
   Gauge,
   Sparkles,
   Wrench,
+  Video,
 } from 'lucide-react';
 
 interface NavItem {
