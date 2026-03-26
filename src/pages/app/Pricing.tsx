@@ -133,13 +133,13 @@ export default function Pricing() {
                 </ul>
               </CardContent>
 
-              <div className="p-4 pt-0 mt-auto">
+              <div className="p-4 pt-0 mt-auto space-y-2">
                 {isActive ? (
                   <Button variant="secondary" className="w-full" disabled>
                     <ShieldCheck className="h-4 w-4 mr-2" />
                     Aktiv
                   </Button>
-                ) : (
+                ) : product.directPurchase ? (
                   <Button
                     variant={product.highlighted ? 'default' : 'outline'}
                     className={cn('w-full', product.highlighted && 'shadow-sm')}
@@ -153,7 +153,20 @@ export default function Pricing() {
                     )}
                     {isLoading ? 'Wird geladen...' : 'Jetzt kaufen'}
                   </Button>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => window.location.href = '/kontakt'}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Angebot anfordern
+                  </Button>
                 )}
+                <p className="text-center text-[10px] text-muted-foreground">
+                  Es gelten unsere{' '}
+                  <Link to="/agb" className="underline hover:text-foreground">AGB</Link>
+                </p>
               </div>
             </Card>
           );
