@@ -50,6 +50,8 @@ import MemberManagement from "./pages/app/MemberManagement";
 import Pricing from "./pages/app/Pricing";
 import Welcome from "./pages/app/Welcome";
 import CooCockpit from "./pages/app/CooCockpit";
+import PromptLibrary from "./pages/app/PromptLibrary";
+import ToolsDirectory from "./pages/app/ToolsDirectory";
 
 const queryClient = new QueryClient({
   defaultOptions: {
