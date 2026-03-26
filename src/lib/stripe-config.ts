@@ -12,7 +12,8 @@ export interface StripeProduct {
   features: string[];
   highlighted?: boolean;
   badge?: string;
-  membershipProduct?: 'starter' | 'growth' | 'premium'; // Maps to internal membership tier
+  membershipProduct?: 'starter' | 'growth' | 'premium';
+  directPurchase: boolean; // true = Stripe Checkout, false = Angebot erforderlich
 }
 
 export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
@@ -32,6 +33,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
       'Grundlagen-Kurse',
     ],
     membershipProduct: 'starter',
+    directPurchase: true,
   },
   website: {
     id: 'website',
@@ -50,6 +52,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
       '4 Wochen Support',
     ],
     membershipProduct: 'starter',
+    directPurchase: true,
   },
   wachstum: {
     id: 'wachstum',
@@ -70,6 +73,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
     highlighted: true,
     badge: 'Beliebteste Wahl',
     membershipProduct: 'growth',
+    directPurchase: false,
   },
   ernsthaft: {
     id: 'ernsthaft',
@@ -88,6 +92,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
       'Priorisierter Support',
     ],
     membershipProduct: 'premium',
+    directPurchase: false,
   },
   rakete: {
     id: 'rakete',
@@ -107,6 +112,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
       'Laufende Betreuung',
     ],
     membershipProduct: 'premium',
+    directPurchase: false,
   },
 };
 

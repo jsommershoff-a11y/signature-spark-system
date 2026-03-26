@@ -21,6 +21,7 @@ import {
   Sparkles,
   ShieldCheck,
   Loader2,
+  MessageSquare,
 } from 'lucide-react';
 
 const TIER_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -102,8 +103,17 @@ export default function Pricing() {
                 </div>
                 <CardTitle className="text-lg">{product.name}</CardTitle>
                 <div className="mt-2">
-                  <span className="text-3xl font-bold">{product.price}</span>
-                  <p className="text-xs text-muted-foreground mt-1">einmalig · zzgl. MwSt.</p>
+                  {product.directPurchase ? (
+                    <>
+                      <span className="text-3xl font-bold">{product.price}</span>
+                      <p className="text-xs text-muted-foreground mt-1">einmalig · zzgl. MwSt.</p>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-2xl font-bold">ab {product.price}</span>
+                      <p className="text-xs text-muted-foreground mt-1">individuelles Angebot</p>
+                    </>
+                  )}
                 </div>
                 <CardDescription className="text-xs mt-2">
                   {product.description}
@@ -123,13 +133,13 @@ export default function Pricing() {
                 </ul>
               </CardContent>
 
-              <div className="p-4 pt-0 mt-auto">
+              <div className="p-4 pt-0 mt-auto space-y-2">
                 {isActive ? (
                   <Button variant="secondary" className="w-full" disabled>
                     <ShieldCheck className="h-4 w-4 mr-2" />
                     Aktiv
                   </Button>
-                ) : (
+                ) : product.directPurchase ? (
                   <Button
                     variant={product.highlighted ? 'default' : 'outline'}
                     className={cn('w-full', product.highlighted && 'shadow-sm')}
@@ -143,7 +153,20 @@ export default function Pricing() {
                     )}
                     {isLoading ? 'Wird geladen...' : 'Jetzt kaufen'}
                   </Button>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => window.location.href = '/kontakt'}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Angebot anfordern
+                  </Button>
                 )}
+                <p className="text-center text-[10px] text-muted-foreground">
+                  Es gelten unsere{' '}
+                  <Link to="/agb" className="underline hover:text-foreground">AGB</Link>
+                </p>
               </div>
             </Card>
           );
