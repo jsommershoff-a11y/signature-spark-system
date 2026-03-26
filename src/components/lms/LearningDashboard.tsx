@@ -1,4 +1,5 @@
 import { useLearningPaths } from '@/hooks/useLearningPaths';
+import { useMembershipAccess } from '@/hooks/useMembershipAccess';
 import { LearningPathCard } from './LearningPathCard';
 import { ProgressRing } from './ProgressRing';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, BookOpen, Trophy, Flame, Target, Sparkles, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { LockedContent, TierProgressHint } from '@/components/app/LockedContent';
 
 export function LearningDashboard() {
   const {
