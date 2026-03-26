@@ -18,12 +18,11 @@ import {
 } from '@/components/ui/tooltip';
 import { Eye, ChevronDown, Shield } from 'lucide-react';
 
-const VIEW_AS_ROLES: AppRole[] = ['admin', 'geschaeftsfuehrung', 'teamleiter', 'mitarbeiter', 'kunde'];
+const VIEW_AS_ROLES: AppRole[] = ['admin', 'vertriebspartner', 'gruppenbetreuer', 'member_pro', 'member_starter', 'member_basic', 'guest'];
 
 export function AdminViewSwitcher() {
   const { roles, viewAsRole, setViewAsRole, effectiveRole, isViewingAs } = useAuth();
   
-  // Only show for real admins
   const isRealAdmin = roles.includes('admin');
   if (!isRealAdmin) return null;
 

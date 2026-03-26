@@ -1,29 +1,52 @@
-// CRM Role definitions and utilities
-export type AppRole = 'admin' | 'geschaeftsfuehrung' | 'teamleiter' | 'mitarbeiter' | 'kunde';
+// KRS Signature Role definitions and utilities
+// Staff roles: admin, vertriebspartner, gruppenbetreuer
+// Customer tiers: member_basic, member_starter, member_pro
+// Default: guest
+
+export type AppRole = 
+  | 'admin' 
+  | 'vertriebspartner' 
+  | 'gruppenbetreuer' 
+  | 'member_basic' 
+  | 'member_starter' 
+  | 'member_pro' 
+  | 'guest';
 
 export const ROLE_HIERARCHY: Record<AppRole, number> = {
-  admin: 5,
-  geschaeftsfuehrung: 4,
-  teamleiter: 3,
-  mitarbeiter: 2,
-  kunde: 1,
+  admin: 100,
+  vertriebspartner: 50,
+  gruppenbetreuer: 50,
+  member_pro: 30,
+  member_starter: 20,
+  member_basic: 10,
+  guest: 0,
 };
 
 export const ROLE_LABELS: Record<AppRole, string> = {
   admin: 'Administrator',
-  geschaeftsfuehrung: 'Geschäftsführung',
-  teamleiter: 'Teamleiter',
-  mitarbeiter: 'Mitarbeiter',
-  kunde: 'Kunde',
+  vertriebspartner: 'Vertriebspartner',
+  gruppenbetreuer: 'Gruppenbetreuer',
+  member_pro: 'Pro-Mitglied',
+  member_starter: 'Starter-Mitglied',
+  member_basic: 'Basis-Mitglied',
+  guest: 'Gast',
 };
 
 export const ROLE_COLORS: Record<AppRole, string> = {
   admin: 'bg-red-500',
-  geschaeftsfuehrung: 'bg-purple-500',
-  teamleiter: 'bg-blue-500',
-  mitarbeiter: 'bg-green-500',
-  kunde: 'bg-gray-500',
+  vertriebspartner: 'bg-blue-500',
+  gruppenbetreuer: 'bg-purple-500',
+  member_pro: 'bg-amber-500',
+  member_starter: 'bg-emerald-500',
+  member_basic: 'bg-slate-500',
+  guest: 'bg-gray-400',
 };
+
+/** Staff roles that can access CRM, pipeline, etc. */
+export const STAFF_ROLES: AppRole[] = ['admin', 'vertriebspartner', 'gruppenbetreuer'];
+
+/** Customer/member roles */
+export const MEMBER_ROLES: AppRole[] = ['member_basic', 'member_starter', 'member_pro'];
 
 /**
  * Check if a role has at least the minimum required role level
@@ -53,11 +76,10 @@ export function hasRole(roles: AppRole[], role: AppRole): boolean {
 }
 
 /**
- * Check if user is at least staff (mitarbeiter or higher)
+ * Check if user is staff (admin, vertriebspartner, or gruppenbetreuer)
  */
 export function isStaff(roles: AppRole[]): boolean {
-  const highest = getHighestRole(roles);
-  return hasMinRole(highest, 'mitarbeiter');
+  return roles.some(r => STAFF_ROLES.includes(r));
 }
 
 /**
@@ -65,4 +87,11 @@ export function isStaff(roles: AppRole[]): boolean {
  */
 export function isAdmin(roles: AppRole[]): boolean {
   return hasRole(roles, 'admin');
+}
+
+/**
+ * Check if user is any kind of member (basic, starter, or pro)
+ */
+export function isMember(roles: AppRole[]): boolean {
+  return roles.some(r => MEMBER_ROLES.includes(r));
 }
