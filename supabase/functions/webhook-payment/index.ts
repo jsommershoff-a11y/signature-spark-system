@@ -207,6 +207,8 @@ serve(async (req) => {
     let orderId: string | undefined;
     let leadId: string | undefined;
     let offerId: string | undefined;
+    let userId: string | undefined;
+    let userEmail: string | undefined;
     let amountCents: number | undefined;
     let currency = 'EUR';
     let providerOrderId: string | undefined;
