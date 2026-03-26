@@ -46,6 +46,7 @@ const navItems: NavItem[] = [
   { label: 'Prompt-Bibliothek', href: '/app/prompts', icon: Sparkles, memberOnly: true },
   { label: 'Meine Tools', href: '/app/tools', icon: Wrench, memberOnly: true },
   { label: 'Dokumente', href: '/app/contracts', icon: ScrollText, memberOnly: true },
+  { label: 'Live Calls', href: '/app/calendar', icon: Video },
   { label: 'Pakete & Preise', href: '/app/pricing', icon: Kanban },
   // Staff-only items
   { label: 'CRM', href: '/app/crm', icon: Building2, staffOnly: true },
