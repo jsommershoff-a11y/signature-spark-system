@@ -50,6 +50,8 @@ import MemberManagement from "./pages/app/MemberManagement";
 import Pricing from "./pages/app/Pricing";
 import Welcome from "./pages/app/Welcome";
 import CooCockpit from "./pages/app/CooCockpit";
+import PromptLibrary from "./pages/app/PromptLibrary";
+import ToolsDirectory from "./pages/app/ToolsDirectory";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -154,6 +156,8 @@ const App = () => (
               <Route path="academy/*" element={<Academy />} />
               <Route path="contracts" element={<MyContracts />} />
               <Route path="pricing" element={<Pricing />} />
+              <Route path="prompts" element={<PromptLibrary />} />
+              <Route path="tools" element={<ToolsDirectory />} />
               <Route path="welcome" element={<Welcome />} />
               <Route path="member-management" element={
                 <ProtectedRoute requireMinRole="teamleiter">

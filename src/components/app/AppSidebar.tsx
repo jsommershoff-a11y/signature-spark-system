@@ -20,6 +20,8 @@ import {
   Share2,
   Mail,
   Gauge,
+  Sparkles,
+  Wrench,
 } from 'lucide-react';
 
 interface NavItem {
@@ -33,6 +35,8 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/app', icon: LayoutDashboard },
   { label: 'Mein System', href: '/app/academy', icon: GraduationCap, exactRole: 'kunde' },
+  { label: 'Prompt-Bibliothek', href: '/app/prompts', icon: Sparkles, exactRole: 'kunde' },
+  { label: 'Meine Tools', href: '/app/tools', icon: Wrench, exactRole: 'kunde' },
   { label: 'Dokumente', href: '/app/contracts', icon: ScrollText, exactRole: 'kunde' },
   { label: 'Pakete & Preise', href: '/app/pricing', icon: Kanban },
   { label: 'CRM', href: '/app/crm', icon: Building2, minRole: 'mitarbeiter' },
