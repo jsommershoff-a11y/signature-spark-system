@@ -86,7 +86,7 @@ serve(async (req) => {
         .from('user_roles')
         .select('role')
         .eq('user_id', profile.user_id)
-        .in('role', ['mitarbeiter', 'teamleiter', 'geschaeftsfuehrung', 'admin']);
+        .in('role', ['vertriebspartner', 'gruppenbetreuer', 'admin']);
       
       if (roles && roles.length > 0) {
         staffWithRoles.push(profile);
