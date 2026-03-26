@@ -90,7 +90,7 @@ export default function Pricing() {
               className={cn(
                 'relative flex flex-col transition-shadow hover:shadow-lg',
                 product.highlighted && 'border-primary shadow-md ring-2 ring-primary/20',
-                isActive && 'border-green-500/50 bg-green-500/5'
+                isActive && 'border-success/50 bg-success/5'
               )}
             >
               {product.badge && (
