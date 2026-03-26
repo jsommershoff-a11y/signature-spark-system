@@ -2134,6 +2134,86 @@ export type Database = {
           },
         ]
       }
+      prompt_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      prompts: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_customizable: boolean | null
+          min_tier: string
+          prompt_text: string
+          sort_order: number | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_customizable?: boolean | null
+          min_tier?: string
+          prompt_text: string
+          sort_order?: number | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_customizable?: boolean | null
+          min_tier?: string
+          prompt_text?: string
+          sort_order?: number | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       revenue_summary: {
         Row: {
           bereich: string | null
@@ -2378,6 +2458,45 @@ export type Database = {
           status?: string | null
           timestamp?: string
           workflow?: string | null
+        }
+        Relationships: []
+      }
+      tools: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          icon_url: string | null
+          id: string
+          is_featured: boolean | null
+          min_tier: string
+          name: string
+          sort_order: number | null
+          url: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          min_tier?: string
+          name: string
+          sort_order?: number | null
+          url?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          min_tier?: string
+          name?: string
+          sort_order?: number | null
+          url?: string | null
         }
         Relationships: []
       }
