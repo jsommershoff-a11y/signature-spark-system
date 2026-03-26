@@ -325,7 +325,7 @@ export default function OfferDetail() {
       {offerJson && <OfferPreview content={offerJson} />}
 
       {/* Progress Tracker for variable offers (staff + admin) */}
-      {offerJson?.offer_mode === 'variable' && hasMinRole('mitarbeiter') && (
+      {offerJson?.offer_mode === 'variable' && hasMinRole('vertriebspartner') && (
         <ProgressTracker offer={offer} onUpdate={handleProgressUpdate} />
       )}
 

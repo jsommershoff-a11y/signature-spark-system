@@ -27,7 +27,7 @@ export default function Calls() {
     statusFilter !== 'all' ? { status: statusFilter } : undefined
   );
 
-  const showSipgate = hasMinRole('mitarbeiter');
+  const showSipgate = hasMinRole('vertriebspartner');
 
   // Filter calls by search query
   const filteredCalls = calls.filter(call => {

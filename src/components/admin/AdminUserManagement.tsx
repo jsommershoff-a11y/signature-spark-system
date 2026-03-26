@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ROLE_LABELS, ROLE_COLORS, ROLE_HIERARCHY, AppRole } from '@/lib/roles';
+import { ROLE_LABELS, ROLE_COLORS, ROLE_HIERARCHY, AppRole, STAFF_ROLES } from '@/lib/roles';
 import { Users, Loader2 } from 'lucide-react';
 
 interface UserWithRole {
@@ -56,7 +56,7 @@ export default function AdminUserManagement() {
         first_name: profile.first_name,
         last_name: profile.last_name,
         full_name: profile.full_name,
-        role: (userRole?.role as AppRole) || 'kunde',
+        role: (userRole?.role as AppRole) || 'guest',
         team_id: profile.team_id,
         created_at: profile.created_at,
       };
@@ -122,9 +122,8 @@ export default function AdminUserManagement() {
     return user.email || 'Unbekannt';
   };
 
-  // Team leaders: users with role >= teamleiter
   const teamLeaderCandidates = users.filter(
-    (u) => ROLE_HIERARCHY[u.role] >= ROLE_HIERARCHY['teamleiter']
+    (u) => STAFF_ROLES.includes(u.role)
   );
 
   const getTeamLeaderName = (teamId: string | null) => {
@@ -132,6 +131,8 @@ export default function AdminUserManagement() {
     const leader = users.find((u) => u.profile_id === teamId);
     return leader ? getDisplayName(leader) : '-';
   };
+
+  const allRoles: AppRole[] = ['admin', 'vertriebspartner', 'gruppenbetreuer', 'member_pro', 'member_starter', 'member_basic', 'guest'];
 
   return (
     <Card>
@@ -173,15 +174,13 @@ export default function AdminUserManagement() {
                       onValueChange={(value) => handleRoleChange(user.user_id, value as AppRole)}
                       disabled={updatingUser === user.user_id || updatingUser === user.profile_id}
                     >
-                      <SelectTrigger className="w-40">
+                      <SelectTrigger className="w-44">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="kunde">Kunde</SelectItem>
-                        <SelectItem value="mitarbeiter">Mitarbeiter</SelectItem>
-                        <SelectItem value="teamleiter">Teamleiter</SelectItem>
-                        <SelectItem value="geschaeftsfuehrung">Geschäftsführung</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
+                        {allRoles.map(role => (
+                          <SelectItem key={role} value={role}>{ROLE_LABELS[role]}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </TableCell>
