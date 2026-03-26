@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // Allowed roles for analysis access
-const ALLOWED_ROLES = ['admin', 'geschaeftsfuehrung', 'teamleiter', 'mitarbeiter'];
+const ALLOWED_ROLES = ['admin', 'vertriebspartner', 'gruppenbetreuer'];
 
 // UUID validation regex
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
