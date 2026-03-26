@@ -424,6 +424,68 @@ serve(async (req) => {
       }
     }
 
+    // Self-service checkout (user_id in metadata, no lead_id/offer_id)
+    if (isSelfService && userId && !offerId) {
+      // Determine membership tier from amount
+      const AMOUNT_TO_TIER: Record<number, string> = {
+        1999: 'basic',   // 19.99€ Mitgliedschaft
+        99900: 'starter', // 999€ Starter
+      };
+      const membershipProduct = AMOUNT_TO_TIER[amountCents || 0] || 'basic';
+      
+      console.log(`Self-service checkout: user=${userId}, amount=${amountCents}, tier=${membershipProduct}`);
+
+      // Create or find member record
+      const { data: existingMember } = await supabase
+        .from('members')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+      let memberId: string | undefined;
+
+      if (existingMember) {
+        memberId = existingMember.id;
+        await supabase
+          .from('members')
+          .update({ status: 'active', updated_at: new Date().toISOString() })
+          .eq('id', memberId);
+      } else {
+        const { data: newMember, error: memberError } = await supabase
+          .from('members')
+          .insert({
+            user_id: userId,
+            status: 'active',
+          })
+          .select('id')
+          .single();
+
+        if (memberError) {
+          console.error('Error creating member (self-service):', memberError);
+        }
+        memberId = newMember?.id;
+      }
+
+      // Create membership
+      if (memberId) {
+        const { error: msError } = await supabase
+          .from('memberships')
+          .insert({
+            member_id: memberId,
+            order_id: orderRecord?.id,
+            product: membershipProduct,
+            status: 'active',
+            starts_at: new Date().toISOString(),
+          });
+
+        if (msError) {
+          console.error('Error creating membership (self-service):', msError);
+        } else {
+          console.log(`Self-service membership created: ${membershipProduct} for member ${memberId}`);
+        }
+      }
+    }
+
     // Pipeline update happens via trigger (update_pipeline_after_payment)
 
     return new Response(
