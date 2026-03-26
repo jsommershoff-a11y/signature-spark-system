@@ -33,6 +33,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
       'Grundlagen-Kurse',
     ],
     membershipProduct: 'starter',
+    directPurchase: true,
   },
   website: {
     id: 'website',
