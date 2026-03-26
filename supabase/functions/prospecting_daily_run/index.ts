@@ -47,7 +47,7 @@ serve(async (req) => {
           .from('user_roles')
           .select('role')
           .eq('user_id', claims.user.id)
-          .in('role', ['admin', 'geschaeftsfuehrung', 'teamleiter']);
+          .in('role', ['admin', 'vertriebspartner', 'gruppenbetreuer']);
         
         if (roles && roles.length > 0) {
           isAuthorized = true;
