@@ -24,7 +24,7 @@ export default function Dashboard() {
   };
 
   const isEffectiveAdmin = effectiveRole === 'admin';
-  const isEffectiveStaff = effectiveRole && ['mitarbeiter', 'teamleiter', 'geschaeftsfuehrung', 'admin'].includes(effectiveRole);
+  const isEffectiveStaff = effectiveRole && ['vertriebspartner', 'gruppenbetreuer', 'admin'].includes(effectiveRole);
 
   return (
     <div className="space-y-5 md:space-y-8 max-w-full">
