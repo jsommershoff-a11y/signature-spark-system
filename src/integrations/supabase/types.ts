@@ -2654,6 +2654,12 @@ export type Database = {
         | "mitarbeiter"
         | "teamleiter"
         | "geschaeftsfuehrung"
+        | "vertriebspartner"
+        | "gruppenbetreuer"
+        | "member_basic"
+        | "member_starter"
+        | "member_pro"
+        | "guest"
       application_status: "pending" | "reviewing" | "accepted" | "rejected"
       call_provider: "zoom" | "twilio" | "sipgate" | "manual"
       call_status:
@@ -2842,6 +2848,12 @@ export const Constants = {
         "mitarbeiter",
         "teamleiter",
         "geschaeftsfuehrung",
+        "vertriebspartner",
+        "gruppenbetreuer",
+        "member_basic",
+        "member_starter",
+        "member_pro",
+        "guest",
       ],
       application_status: ["pending", "reviewing", "accepted", "rejected"],
       call_provider: ["zoom", "twilio", "sipgate", "manual"],
