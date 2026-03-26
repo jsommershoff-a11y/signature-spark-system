@@ -1,5 +1,6 @@
 // Stripe Product & Price Configuration
 // All Stripe product/price IDs for the KRS Signature System
+// Alle Preise inkl. 19% MwSt.
 
 export interface StripeProduct {
   id: string;
@@ -12,47 +13,60 @@ export interface StripeProduct {
   features: string[];
   highlighted?: boolean;
   badge?: string;
-  membershipProduct?: 'starter' | 'growth' | 'premium';
-  directPurchase: boolean; // true = Stripe Checkout, false = Angebot erforderlich
+  membershipProduct?: 'basic' | 'starter' | 'growth' | 'premium';
+  directPurchase: boolean;
+  mode: 'subscription' | 'payment'; // Stripe checkout mode
 }
 
 export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
-  schnupper: {
-    id: 'schnupper',
-    name: 'Schnuppermitgliedschaft',
-    price: '19,99 €',
-    priceId: 'price_1TF2FZBmqjP8eJrSQYLveamR',
-    productId: 'prod_UDTBcyC9oz2oIC',
+  mitgliedschaft: {
+    id: 'mitgliedschaft',
+    name: 'Mitgliedschaft',
+    price: '19,99 €/Monat',
+    priceId: 'price_1TF3F5BmqjP8eJrSof3ZWh7g',
+    productId: 'prod_UDUDyr4KjEJQB4',
     priceCents: 1999,
-    description: '12 Monate Zugang zur Community, Live Calls, Events und KI Prompts.',
+    description: 'Dein Einstieg ins KRS System – Community, Basis-Prompts und Live-Calls.',
     features: [
-      'Community-Zugang',
-      'Wöchentliche Live Calls',
-      'Events & Networking',
-      'KI Prompt-Bibliothek',
-      'Grundlagen-Kurse',
+      'Zugang zur kuratieren Basis-Prompt-Bibliothek (5 Vorlagen)',
+      'Erste praxisnahe Automatisierungs-Ansätze',
+      'Einstieg in Systemdenken statt Tool-Chaos',
+      'Grundlagenwissen zu Automatisierung & Prozessen',
+      'Teilnahme an Live-Calls (Einblick & Lernen)',
+      'Zugang zu Community-Gruppen + WhatsApp Austausch',
+      'Einblick in reale Use-Cases & Umsetzungen',
+      'Sichtbarer Zugang zu weiteren gesperrten Inhalten',
+      'Risikofrei das System kennenlernen',
     ],
-    membershipProduct: 'starter',
+    membershipProduct: 'basic',
     directPurchase: true,
+    mode: 'subscription',
   },
-  website: {
-    id: 'website',
-    name: 'Website Starter',
+  starter: {
+    id: 'starter',
+    name: 'Starter Paket',
     price: '999 €',
     priceId: 'price_1TF2M2BmqjP8eJrSIqFAANcb',
     productId: 'prod_UDTIV8upy908ms',
     priceCents: 99900,
-    description: 'Professionelle Website für dein Unternehmen.',
+    description: 'Individualisierte Prompts + Implementierung für dein Unternehmen.',
     features: [
-      'Alles aus Schnuppermitgliedschaft',
-      'Professionelle Website',
-      'SEO-Grundoptimierung',
-      'Mobile-Responsive Design',
-      'Content-Management',
-      '4 Wochen Support',
+      'Alles aus der Mitgliedschaft',
+      '4 individualisierte Prompts (Vertrieb, Marketing, Prozesse)',
+      'Schritt-für-Schritt Implementierungsanleitung',
+      'Sofort nutzbare Strukturen für den Alltag',
+      'Fokus auf schnelle Ergebnisse statt Theorie',
+      'Kickoff-Gespräch zur Einrichtung',
+      'Abschlussgespräch zur Optimierung',
+      'Zugriff auf Live-Calls & Aufzeichnungen',
+      'Grundlage für erste Automatisierungen',
+      'Jederzeit erweiterbar (Upsell möglich)',
     ],
+    highlighted: true,
+    badge: 'Empfohlen',
     membershipProduct: 'starter',
     directPurchase: true,
+    mode: 'payment',
   },
   wachstum: {
     id: 'wachstum',
@@ -63,17 +77,16 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
     priceCents: 499900,
     description: 'CRM, Automatisierung und Coaching für messbares Wachstum.',
     features: [
-      'Alles aus Website Starter',
+      'Alles aus dem Starter Paket',
       'CRM-System Setup',
       'Automatisierungs-Workflows',
       'Persönlicher Implementierungs-Plan',
       '1:1 Strategie-Calls',
       '8 Wochen persönlicher Support',
     ],
-    highlighted: true,
-    badge: 'Beliebteste Wahl',
     membershipProduct: 'growth',
     directPurchase: false,
+    mode: 'payment',
   },
   ernsthaft: {
     id: 'ernsthaft',
@@ -93,6 +106,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
     ],
     membershipProduct: 'premium',
     directPurchase: false,
+    mode: 'payment',
   },
   rakete: {
     id: 'rakete',
@@ -113,7 +127,25 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
     ],
     membershipProduct: 'premium',
     directPurchase: false,
+    mode: 'payment',
   },
 };
 
+// Zusatzleistung: Einzel-Session (paketübergreifend)
+export const ADDON_SESSION = {
+  name: 'Einzel-Session',
+  price: '199 €/Stunde',
+  priceCents: 19900,
+  description: 'Individuelle 1:1 Session – buchbar zu jedem Paket.',
+};
+
 export const STRIPE_PRODUCTS_LIST = Object.values(STRIPE_PRODUCTS);
+
+// Map Stripe product IDs to membership tiers
+export const PRODUCT_ID_TO_TIER: Record<string, string> = {
+  'prod_UDUDyr4KjEJQB4': 'basic',
+  'prod_UDTIV8upy908ms': 'starter',
+  'prod_UDTImKXl8RdXyL': 'growth',
+  'prod_UDTJx9P04DYXgB': 'premium',
+  'prod_UDTJ6NcsaVWjb8': 'premium',
+};
