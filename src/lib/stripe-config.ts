@@ -12,7 +12,8 @@ export interface StripeProduct {
   features: string[];
   highlighted?: boolean;
   badge?: string;
-  membershipProduct?: 'starter' | 'growth' | 'premium'; // Maps to internal membership tier
+  membershipProduct?: 'starter' | 'growth' | 'premium';
+  directPurchase: boolean; // true = Stripe Checkout, false = Angebot erforderlich
 }
 
 export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
