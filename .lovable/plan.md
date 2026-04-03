@@ -1,90 +1,157 @@
 
 
-# Plan: Maximale SEO-Erreichbarkeit + Conversion-Optimierung der Startseite
+# Plan: Startseite CRO/SEO/UX-Optimierung — Veröffentlichungsreife Version
 
 ## Zusammenfassung
 
-Die Seite hat aktuell **keine SEO-Infrastruktur** (kein react-helmet-async, keine sitemap.xml, kein JSON-LD, `lang="en"` statt `"de"`, robots.txt blockt `/app/` nicht, keine dynamischen Meta-Tags). Ausserdem fehlen Conversion-Elemente wie ein schwebendes CTA-Widget und Urgency-Trigger. Der Content auf der Homepage muss die Kernbotschaften schaerfen: "Automatisierung = Ueberleben", "Dein Steuerberater kann dich in 3 Wochen ausschalten", "Wenn du die KI-Chance nutzen willst, musst du sicherstellen, dass du alles weisst."
+Komplette Neustrukturierung der MasterHome-Startseite: neue Seitenarchitektur, geschärfte Copy nach exaktem Briefing, vereinheitlichtes CTA-System, verbesserte SEO-Meta-Tags und neue Sektionen (Branchen-Links, Prozess-Sektion). Bestehende Komponenten werden überarbeitet, nicht neu erfunden.
 
 ---
 
-## Phase 1: SEO-Infrastruktur
+## Seitenarchitektur (neue Reihenfolge in MasterHome.tsx)
 
-### 1.1 index.html bereinigen
-- `lang="en"` auf `lang="de"` aendern
-- `meta author` von "Lovable" auf "KRS Signature" aendern
-- Bessere Title/Description mit Keywords: "Automatisierung fuer Unternehmen", "KI-Systeme", "Prozesse digitalisieren"
-- `og:url` hinzufuegen
+```text
+Header
+ └ Hero (komplett neu strukturiert)
+ └ TrustLogosSection (bleibt, nur Überschrift anpassen)
+ └ ProblemSection (EmotionalHookSection → komplett neue Copy)
+ └ VulnerabilitySection (radikal geschärft)
+ └ AiRealitySection (auf Kernthema "eigene Informationen" gedreht)
+ └ ResultsSection (Outcome-Sektion neu formuliert)
+ └ ProcessSection (neue 5-Schritte-Sektion)
+ └ BranchenSection (NEU — interne Links für SEO)
+ └ CaseStudiesSection (bleibt)
+ └ FAQSection (komplett neue Fragen)
+ └ FinalCtaSection (vereinheitlicht)
+Footer
+ └ StickyCtaBanner (optimiert)
+```
 
-### 1.2 react-helmet-async installieren + SEO-Komponente
-- Dependency `react-helmet-async` hinzufuegen
-- `HelmetProvider` in `main.tsx` wrappen
-- Wiederverwendbare `<SEOHead>` Komponente erstellen
-- Pro oeffentliche Seite individuelle Meta-Tags (Title, Description, canonical, og:*)
-
-### 1.3 Sitemap + robots.txt
-- `public/sitemap.xml` erstellen mit allen oeffentlichen Routen (/, /handwerk, /praxen, /dienstleister, /immobilien, /kurzzeitvermietung, /qualifizierung, /community, /agb, /widerruf)
-- `robots.txt` anpassen: `/app/` und `/auth` per Disallow blocken, Sitemap-URL referenzieren
-
-### 1.4 JSON-LD Structured Data
-- FAQ-Schema auf MasterHome (bereits FAQ-Daten vorhanden)
-- Organization-Schema mit KRS Signature Infos
-- LocalBusiness oder ProfessionalService Schema
+**Entfernte Sektionen**: FivePillarsSection, SolutionSection, CompetitionSection, OfferSection, AiAnalysisWidget, TransformationFinancingSection, AboutFounderSection, FloatingCTA (zu aggressiv mit Sticky), ExitIntentPopup.
 
 ---
 
-## Phase 2: Conversion-Optimierung
+## Schritt-für-Schritt Änderungen
 
-### 2.1 Schwebendes CTA-Widget (FloatingCTA)
-- Festes Widget unten rechts auf allen Landing-Seiten
-- Gruender-Bild + "Potenzial-Analyse sichern" Button
-- Erscheint nach 3 Sekunden Scroll, verschwindet im Footer-Bereich
+### Step 01 — Header CTA vereinheitlichen
+**Datei**: `src/components/landing/Header.tsx`
+- CTA-Text von "Potenzial-Analyse buchen" → "Kostenlose Potenzial-Analyse"
+- Mobile CTA-Button ebenso anpassen
+- "Anmelden" bleibt als sekundärer Textlink
 
-### 2.2 Urgency-Messaging in HeroSection + Sections verschaerfen
-- **Hero**: Neue Sub-Headline integrieren: "Dein Steuerberater kann dich in 3 Wochen ausschalten — wenn du deine Prozesse nicht im Griff hast."
-- **EmotionalHookSection**: Neuen Punkt hinzufuegen: "Dein Steuerberater, dein Mitarbeiter, dein Kunde — alle wissen mehr ueber dein Unternehmen als du, weil nichts dokumentiert ist."
-- **AiRealitySection**: Kernaussage verstaerken: "Wenn du die KI-Chance nutzen willst, musst du zuerst sicherstellen, dass du alles ueber dein eigenes Unternehmen weisst. Automatisierungen beginnen mit deinen eigenen Informationen in deinem eigenen System."
+### Step 02 — HeroSection komplett neu
+**Datei**: `src/components/landing/home/HeroSection.tsx`
+- Neue Struktur: Eyebrow + H1 + Subheadline + Unterstützende Zeile + 1 primärer CTA + Microcopy
+- Rechts: Gründer-Trust-Modul (Bild kleiner, Name, Rolle, Positionierung)
+- 4 Nutzenpunkte-Karten unterhalb
+- Exakte Copy laut Briefing
+- Nur ein CTA: "Kostenlose Potenzial-Analyse"
+- "System verstehen"-Button entfernen
 
-### 2.3 Sticky CTA-Banner (unterhalb Header)
-- Dünner Banner unter dem Header: "Jetzt kostenlose Potenzial-Analyse sichern" mit Button
-- Erscheint nach Scroll ueber die Hero-Section hinaus
+### Step 03 — EmotionalHookSection → ProblemSection
+**Datei**: `src/components/landing/home/EmotionalHookSection.tsx`
+- Neue H2: "Das Problem ist nicht fehlende KI. Das Problem ist fehlende Systemkontrolle."
+- Neue Copy + 3 Problemkarten (statt 7 Bullet-Points)
+- CTA am Ende: "Kostenlose Potenzial-Analyse"
+
+### Step 04 — VulnerabilitySection schärfen
+**Datei**: `src/components/landing/home/VulnerabilitySection.tsx`
+- Neue H2, neue Copy, neue Leitzeile laut Briefing
+- Risiko-Karten beibehalten, aber Copy präzisieren
+- CTA: "Kostenlose Potenzial-Analyse"
+
+### Step 05 — AiRealitySection auf Kernthema drehen
+**Datei**: `src/components/landing/home/AiRealitySection.tsx`
+- Radikal vereinfachen: nur H2, Copy, 4-Punkt-Checkliste, Abschlusszeile
+- Falsch/Richtig-Vergleich, Danger-Cards, Prozess-Tags, Visual-Banner, Handwerker-Block entfernen
+- CTA: "Kostenlose Potenzial-Analyse"
+
+### Step 06 — ResultsSection als Outcome-Sektion
+**Datei**: `src/components/landing/home/ResultsSection.tsx`
+- Neue H2: "Was sich verändert, wenn dein Unternehmen systematisiert ist"
+- 4 Outcome-Blöcke mit exakter Copy laut Briefing
+- Gründer-Bild beibehalten
+- Kein CTA hier (folgt in Prozess-Sektion)
+
+### Step 07 — ProcessStepsSection auf 5 Schritte
+**Datei**: `src/components/landing/home/ProcessStepsSection.tsx`
+- 5 Schritte: Analyse → System-Mapping → Priorisierung → Umsetzung → Übergabe
+- CTA + Microcopy am Ende
+
+### Step 08 — Neue BranchenSection erstellen
+**Neue Datei**: `src/components/landing/home/BranchenSection.tsx`
+- H2: "Für diese Unternehmen ist Systematisierung besonders relevant"
+- 5 Karten mit internem Link zu /handwerk, /praxen, /dienstleister, /immobilien, /kurzzeitvermietung
+- Jede Karte: Überschrift + 1 Satz Problembezug + Link
+
+### Step 09 — FAQSection neue Inhalte
+**Datei**: `src/pages/landing/MasterHome.tsx`
+- 6 neue FAQ-Items laut Briefing ersetzen die bestehenden
+- FAQ-Schema wird automatisch aus den sichtbaren Inhalten generiert (bereits implementiert)
+
+### Step 10 — FinalCtaSection vereinheitlichen
+**Datei**: `src/components/landing/home/FinalCtaSection.tsx`
+- CTA-Text: "Kostenlose Potenzial-Analyse" (statt "Signature System aufbauen")
+- "System verstehen"-Button entfernen
+- Microcopy: "30 Minuten. Klare Prioritäten. Keine Tool-Demo."
+
+### Step 11 — MasterHome Seitenarchitektur + SEO
+**Datei**: `src/pages/landing/MasterHome.tsx`
+- Neue Section-Reihenfolge
+- Entferne: FivePillarsSection, SolutionSection, CompetitionSection, OfferSection, AiAnalysisWidget, TransformationFinancingSection, AboutFounderSection, FloatingCTA, ExitIntentPopup
+- Füge hinzu: ProcessStepsSection, BranchenSection
+- SEO-Title: "Automatisierung für Unternehmen | Informationen im eigenen System"
+- Meta Description: "KRS Signature systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können. Kostenlose Potenzial-Analyse."
+- Organization JSON-LD anpassen
+
+### Step 12 — StickyCtaBanner optimieren
+**Datei**: `src/components/landing/conversion/StickyCtaBanner.tsx`
+- Scroll-Threshold auf Hero-Höhe (~700px statt 600px)
+- CTA-Text: "Kostenlose Potenzial-Analyse"
+- Dezenter: keine Alarm-Sprache im Begleittext
+- Mobile sauber lesbar
+
+### Step 13 — FloatingCTA deaktivieren
+**Datei**: `src/pages/landing/MasterHome.tsx`
+- FloatingCTA-Import und Rendering entfernen (Sticky CTA reicht)
+
+### Step 14 — PublicLayout bereinigen
+**Datei**: `src/components/landing/PublicLayout.tsx`
+- FloatingCTA-Import entfernen falls dort eingebunden
 
 ---
 
-## Phase 3: Content-Schaerfung fuer SEO-Keywords
+## SEO-Verbesserungen
 
-### 3.1 Keyword-optimierte Headings
-Aktuelle Headings sind gut, aber muessen staerker auf Suchbegriffe ausgerichtet werden:
-- H1: "Automatisierung fuer Unternehmen" (Hauptkeyword)
-- H2s anreichern mit: "Prozesse automatisieren", "KI fuer Mittelstand", "Unternehmensautomatisierung"
-- Alt-Texte aller Bilder pruefen und mit Keywords anreichern
+- Title + Meta Description geschärft
+- Nur 1 H1 pro Seite
+- Saubere H2/H3-Hierarchie
+- FAQ-Schema mit exakt sichtbaren Inhalten
+- Interne Links auf Branchen-Seiten (neue BranchenSection)
+- Alt-Texte für Bilder verbessern
+- Canonical bleibt auf "/"
 
-### 3.2 Neue Conversion-Section: "Steuerberater-Warnung"
-Neue Section zwischen CompetitionSection und OfferSection:
-- Headline: "Dein Steuerberater kann dich in 3 Wochen ausschalten."
-- Inhalt: Wer seine Prozesse, Zahlen und Ablaeufe nicht systematisiert hat, ist verwundbar. Ein Steuerberater-Wechsel, ein Mitarbeiter-Ausfall oder ein Systemfehler reichen aus.
-- CTA: "Sicher dir ab, was du aufgebaut hast."
+## CTA-Konsistenz
+
+Einziger primärer CTA-Text überall: **"Kostenlose Potenzial-Analyse"**
 
 ---
 
-## Technischer Ueberblick
+## Dateien
 
-**Dateien die erstellt werden:**
-1. `src/components/landing/SEOHead.tsx` — Wiederverwendbare SEO-Komponente
-2. `src/components/landing/conversion/FloatingCTA.tsx` — Schwebendes CTA-Widget
-3. `src/components/landing/conversion/StickyCtaBanner.tsx` — Sticky Banner
-4. `src/components/landing/home/VulnerabilitySection.tsx` — "Steuerberater"-Section
-5. `public/sitemap.xml` — Sitemap
-
-**Dateien die geaendert werden:**
-1. `index.html` — lang, meta, author
-2. `src/main.tsx` — HelmetProvider
-3. `public/robots.txt` — Disallow /app/, Sitemap ref
-4. `src/pages/landing/MasterHome.tsx` — SEOHead + neue Sections + FloatingCTA
-5. `src/components/landing/home/HeroSection.tsx` — Urgency-Messaging
-6. `src/components/landing/home/EmotionalHookSection.tsx` — Neuer Pain-Point
-7. `src/components/landing/home/AiRealitySection.tsx` — KI-Chance Messaging
-8. `src/components/landing/FAQSection.tsx` — JSON-LD Schema einbauen
-9. `src/components/landing/PublicLayout.tsx` — FloatingCTA integrieren
-10. Alle Branchen-Landingpages — individuelle SEOHead Tags
+| Aktion | Datei |
+|--------|-------|
+| Ändern | `src/components/landing/Header.tsx` |
+| Ändern | `src/components/landing/home/HeroSection.tsx` |
+| Ändern | `src/components/landing/home/EmotionalHookSection.tsx` |
+| Ändern | `src/components/landing/home/VulnerabilitySection.tsx` |
+| Ändern | `src/components/landing/home/AiRealitySection.tsx` |
+| Ändern | `src/components/landing/home/ResultsSection.tsx` |
+| Ändern | `src/components/landing/home/ProcessStepsSection.tsx` |
+| Ändern | `src/components/landing/home/FinalCtaSection.tsx` |
+| Ändern | `src/components/landing/conversion/StickyCtaBanner.tsx` |
+| Ändern | `src/components/landing/FAQSection.tsx` (keine Änderung, nur neue Items) |
+| Ändern | `src/pages/landing/MasterHome.tsx` |
+| Ändern | `src/components/landing/PublicLayout.tsx` |
+| Erstellen | `src/components/landing/home/BranchenSection.tsx` |
 
