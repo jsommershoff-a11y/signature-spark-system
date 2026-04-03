@@ -7,11 +7,6 @@ interface FinalCtaSectionProps {
 }
 
 export const FinalCtaSection = ({ onCtaClick }: FinalCtaSectionProps) => {
-  const handleScrollDown = () => {
-    const el = document.getElementById("problem-section");
-    el?.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <section className="relative py-24 md:py-36 overflow-hidden">
       <div
@@ -37,7 +32,7 @@ export const FinalCtaSection = ({ onCtaClick }: FinalCtaSectionProps) => {
                 <li>→ Du bleibst der Engpass</li>
                 <li>→ Dein Unternehmen hängt weiter an dir</li>
                 <li>→ Wachstum bleibt begrenzt</li>
-                <li>→ Anfragen gehen unter, du arbeitest abends und am Wochenende</li>
+                <li>→ Wissen bleibt verteilt und unkontrolliert</li>
               </ul>
             </div>
             <div className="bg-primary/15 backdrop-blur-md rounded-3xl p-7 border-2 border-primary/30 ring-2 ring-primary/10 shadow-[0_0_40px_rgba(246,113,31,0.1)]">
@@ -45,29 +40,26 @@ export const FinalCtaSection = ({ onCtaClick }: FinalCtaSectionProps) => {
                 <Rocket className="w-7 h-7 text-primary" />
                 <p className="font-bold text-white text-lg">Option 2:</p>
               </div>
-              <p className="text-white/80 mb-3 font-medium">Du baust ein Signature System, das ohne dich funktioniert</p>
+              <p className="text-white/80 mb-3 font-medium">Du systematisierst dein Unternehmen</p>
               <ul className="space-y-2.5 text-white/50 text-sm">
-                <li>→ Innerhalb von 14 Tagen laufen erste Prozesse automatisiert</li>
+                <li>→ Prozesse laufen dokumentiert und nachvollziehbar</li>
                 <li>→ Dein Team arbeitet eigenständig</li>
-                <li>→ Du gewinnst Zeit und Kontrolle zurück</li>
+                <li>→ Du gewinnst Kontrolle und Skalierbarkeit</li>
               </ul>
             </div>
           </div>
 
           <p className="text-xl text-white/70 mb-10 font-medium">
-            Jeder Tag ohne System kostet dich Zeit, Geld und Energie.
+            Jeder Tag ohne System kostet dich Zeit, Geld und Kontrolle.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-            <button onClick={handleScrollDown} className="border border-white/20 text-white font-semibold text-lg px-8 py-4 rounded-xl hover:bg-white/10 transition-all duration-300">
-              System verstehen
-            </button>
+          <div className="flex flex-col items-center gap-4 mb-4">
             <button onClick={onCtaClick} className={t.ctaPrimary}>
-              Signature System aufbauen →
+              Kostenlose Potenzial-Analyse
             </button>
           </div>
           <p className="text-xs text-white/40">
-            Kostenlos und unverbindlich • Dauert nur 2 Minuten
+            30 Minuten. Klare Prioritäten. Keine Tool-Demo.
           </p>
         </div>
       </div>

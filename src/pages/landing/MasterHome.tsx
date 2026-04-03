@@ -3,49 +3,42 @@ import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { SEOHead } from "@/components/landing/SEOHead";
-import { ExitIntentPopup } from "@/components/landing/conversion/ExitIntentPopup";
-import { FloatingCTA } from "@/components/landing/conversion/FloatingCTA";
 import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
 import { HeroSection } from "@/components/landing/home/HeroSection";
 import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { EmotionalHookSection } from "@/components/landing/home/EmotionalHookSection";
-import { FivePillarsSection } from "@/components/landing/home/FivePillarsSection";
-import { SolutionSection } from "@/components/landing/home/SolutionSection";
-import { OfferSection } from "@/components/landing/home/OfferSection";
-import { AiAnalysisWidget } from "@/components/landing/home/AiAnalysisWidget";
-import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection";
-import { ResultsSection } from "@/components/landing/home/ResultsSection";
-import { AboutFounderSection } from "@/components/landing/home/AboutFounderSection";
-import { TransformationFinancingSection } from "@/components/landing/home/TransformationFinancingSection";
-import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
-import { AiRealitySection } from "@/components/landing/home/AiRealitySection";
-import { CompetitionSection } from "@/components/landing/home/CompetitionSection";
 import { VulnerabilitySection } from "@/components/landing/home/VulnerabilitySection";
+import { AiRealitySection } from "@/components/landing/home/AiRealitySection";
+import { ResultsSection } from "@/components/landing/home/ResultsSection";
+import { ProcessStepsSection } from "@/components/landing/home/ProcessStepsSection";
+import { BranchenSection } from "@/components/landing/home/BranchenSection";
+import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection";
+import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
 
 const faqItems = [
   {
-    question: "Funktioniert das auch in meiner Branche?",
-    answer: "Ja. Unser Signature System ist branchenübergreifend erprobt – von Handwerk über Praxen bis zu Dienstleistern und Immobilien. Die Prozesse sind unterschiedlich, die Engpässe sind überall dieselben.",
+    question: "Was bedeutet Automatisierung für Unternehmen konkret?",
+    answer: "Automatisierung bedeutet nicht einfach Tools einzuführen, sondern Prozesse, Informationen und Entscheidungen so zu strukturieren, dass wiederkehrende Abläufe zuverlässig, nachvollziehbar und skalierbar werden.",
   },
   {
-    question: "Ich habe keine Zeit für so ein Projekt.",
-    answer: "Genau deshalb brauchst du es. Wir übernehmen Setup und Umsetzung. Dein Zeitaufwand: ca. 30 Minuten pro Woche für ein kurzes Status-Update. Alles andere läuft.",
+    question: "Warum reichen einzelne KI-Tools allein nicht aus?",
+    answer: "KI-Tools beschleunigen nur das, was bereits strukturiert vorliegt. Wenn Wissen, Zuständigkeiten und Daten nicht sauber organisiert sind, verstärkt KI eher Unklarheit als Wirkung.",
   },
   {
-    question: "Was genau bekomme ich?",
-    answer: "Ein funktionierendes operatives System: automatisierte Lead-Erfassung, Follow-ups, Aufgabenverteilung, Angebotsprozesse und Reporting. Plattform + persönliches Sparring – kein Kurs, kein Tool-Verkauf.",
+    question: "Warum müssen Informationen im eigenen System liegen?",
+    answer: "Nur wenn Prozesse, Dokumentation und Unternehmenswissen im eigenen System liegen, behältst du Kontrolle, reduzierst Abhängigkeiten und kannst Automatisierungen sinnvoll aufbauen.",
   },
   {
-    question: "Wie schnell sehe ich Ergebnisse?",
-    answer: "Erste Automatisierungen laufen innerhalb von 7–14 Tagen. Messbare Einsparungen bei Zeit und Kosten sind typischerweise nach 30–60 Tagen sichtbar.",
+    question: "Für welche Unternehmen ist KRS Signature geeignet?",
+    answer: "Für Unternehmen, die operative Abhängigkeiten reduzieren, Prozesse dokumentieren, Übergaben verbessern und KI oder Automatisierung auf einer belastbaren Struktur aufbauen wollen.",
   },
   {
-    question: "Ist das nicht zu teuer?",
-    answer: "Die Frage ist: Was kosten dich manuelle Prozesse jeden Monat? Die meisten Unternehmer verlieren 2.000–5.000 € monatlich durch Ineffizienz. Ein System, das das stoppt, ist keine Ausgabe – es ist eine Investition.",
+    question: "Was passiert in der kostenlosen Potenzial-Analyse?",
+    answer: "In der Analyse schauen wir auf Engpässe, Abhängigkeiten, Informationsflüsse und mögliche Hebel. Du bekommst klare Prioritäten statt einer generischen Tool-Empfehlung.",
   },
   {
-    question: "Ich habe schon Tools ausprobiert, die nichts gebracht haben.",
-    answer: "Tools allein lösen kein Problem. Wir verkaufen keine Tools – wir bauen Systeme. Der Unterschied: Alles ist vernetzt, automatisiert und auf dein Unternehmen zugeschnitten. Kein weiteres Tool im Regal.",
+    question: "Wie schnell kann man erste Verbesserungen sehen?",
+    answer: "Erste Klarheit entsteht meist sofort in der Analyse. Die Geschwindigkeit der Umsetzung hängt davon ab, wie verteilt Informationen, Prozesse und Verantwortlichkeiten aktuell sind.",
   },
 ];
 
@@ -54,7 +47,7 @@ const organizationJsonLd = {
   "@type": "ProfessionalService",
   name: "KRS Signature",
   url: "https://krs-signature.de",
-  description: "Automatisierung für Unternehmen – operative Systeme für Handwerk, Praxen, Dienstleister und Mittelstand.",
+  description: "KRS Signature systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können.",
   founder: {
     "@type": "Person",
     name: "Jan Sommershoff",
@@ -63,7 +56,7 @@ const organizationJsonLd = {
     "@type": "Country",
     name: "Germany",
   },
-  serviceType: ["Unternehmensautomatisierung", "KI-Integration", "Prozessoptimierung"],
+  serviceType: ["Unternehmensautomatisierung", "Prozesssystematisierung", "KI-Integration"],
 };
 
 const MasterHome = () => {
@@ -73,8 +66,8 @@ const MasterHome = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="KRS Signature – Automatisierung für Unternehmen | Prozesse digitalisieren & KI nutzen"
-        description="Prozesse automatisieren, Mitarbeiter entlasten, Umsatz steigern. KRS Signature baut operative Systeme für Handwerk, Praxen, Dienstleister und Mittelstand. Keine Chatbots – echte Ergebnisse."
+        title="Automatisierung für Unternehmen | Informationen im eigenen System"
+        description="KRS Signature systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können. Kostenlose Potenzial-Analyse."
         canonical="/"
         jsonLd={organizationJsonLd}
       />
@@ -84,18 +77,13 @@ const MasterHome = () => {
       <main className="flex-1 pt-16">
         <HeroSection onCtaClick={handleCTAClick} />
         <TrustLogosSection />
-        <EmotionalHookSection />
-        <FivePillarsSection />
-        <SolutionSection />
-        <AiRealitySection />
-        <CompetitionSection />
+        <EmotionalHookSection onCtaClick={handleCTAClick} />
         <VulnerabilitySection onCtaClick={handleCTAClick} />
-        <OfferSection onCtaClick={handleCTAClick} />
-        <AiAnalysisWidget />
-        <CaseStudiesSection />
+        <AiRealitySection onCtaClick={handleCTAClick} />
         <ResultsSection />
-        <TransformationFinancingSection />
-        <AboutFounderSection />
+        <ProcessStepsSection onCtaClick={handleCTAClick} />
+        <BranchenSection />
+        <CaseStudiesSection />
 
         <FAQSection
           headline="Häufige Fragen – ehrlich beantwortet"
@@ -106,8 +94,6 @@ const MasterHome = () => {
       </main>
 
       <Footer />
-      <FloatingCTA />
-      <ExitIntentPopup />
     </div>
   );
 };

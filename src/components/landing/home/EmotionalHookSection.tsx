@@ -1,60 +1,58 @@
-import { X } from "lucide-react";
+import { Brain, GitBranch, Eye } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
+interface EmotionalHookSectionProps {
+  onCtaClick: () => void;
+}
+
 const problems = [
-  "Kundenanfragen liegen in WhatsApp, E-Mail und Excel verteilt",
-  "Follow-ups werden vergessen, weil niemand sie trackt",
-  "Dein Team fragt dich bei jeder Kleinigkeit, weil es keine klaren Abläufe gibt",
-  "Angebote werden zu spät geschickt, weil der Prozess manuell ist",
-  "Informationen stecken in Köpfen statt in Systemen",
-  "Dein Steuerberater, dein Mitarbeiter, dein Kunde — alle wissen mehr über dein Unternehmen als du, weil nichts dokumentiert ist",
-  "Ohne dich steht alles still",
+  {
+    icon: Brain,
+    title: "Wissen steckt in Personen statt in Prozessen",
+    text: "Wenn Wissen nicht dokumentiert ist, wird jede Veränderung zum Risiko.",
+  },
+  {
+    icon: GitBranch,
+    title: "Übergaben erzeugen Reibung statt Geschwindigkeit",
+    text: "Manuelle Abstimmungen kosten Zeit, Qualität und Marge.",
+  },
+  {
+    icon: Eye,
+    title: "Zahlen, Zuständigkeiten und Entscheidungen sind verteilt",
+    text: "Wer sein Unternehmen nicht im eigenen System abbildet, führt im Blindflug.",
+  },
 ];
 
-export const EmotionalHookSection = () => {
+export const EmotionalHookSection = ({ onCtaClick }: EmotionalHookSectionProps) => {
   return (
     <section id="problem-section" className={t.sectionPadding}>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <h2 className={`${t.headline.h2} text-foreground text-center mb-5`}>
-          Du bist nicht gestartet, um der beste Mitarbeiter in deinem eigenen Unternehmen zu sein.
-        </h2>
-        <p className="text-center text-lg text-muted-foreground mb-12">
-          Aber genau das ist passiert:
-        </p>
+      <div className={t.container}>
+        <div className="max-w-3xl mx-auto text-center mb-14">
+          <h2 className={`${t.headline.h2} text-foreground mb-5`}>
+            Das Problem ist nicht fehlende KI. Das Problem ist fehlende Systemkontrolle.
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+            In vielen Unternehmen liegt entscheidendes Wissen nicht im Prozess, sondern in Köpfen, Postfächern, WhatsApp-Nachrichten, Excel-Dateien oder bei externen Dienstleistern. Genau dadurch entstehen Rückfragen, Verzögerungen, Abhängigkeiten und operative Blindheit.
+          </p>
+        </div>
 
-        <div className="space-y-3 mb-12">
-          {problems.map((problem) => (
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
+          {problems.map((p) => (
             <div
-              key={problem}
-              className="flex items-start gap-4 p-5 bg-gradient-to-r from-destructive/5 to-transparent rounded-2xl border border-destructive/15"
+              key={p.title}
+              className="rounded-2xl border border-border/40 bg-card p-7 flex flex-col"
             >
-              <X className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-              <p className="text-foreground text-lg font-medium">{problem}</p>
+              <p.icon className="w-8 h-8 text-primary mb-4" />
+              <h3 className="text-lg font-bold text-foreground mb-2">{p.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">{p.text}</p>
             </div>
           ))}
         </div>
 
-        <p className="text-center text-lg text-muted-foreground mb-2">
-          Und egal wie viel du arbeitest – es wird nicht wirklich leichter.
-        </p>
-        <div className="text-center space-y-1">
-          <p className="text-lg text-muted-foreground">Das Problem ist nicht dein Einsatz.</p>
-          <p className="text-2xl md:text-4xl font-bold text-foreground mt-5">
-            Das Problem ist: Dir fehlt ein funktionierendes System.
-          </p>
-          <p className="text-lg text-muted-foreground mt-3">
-            Und jeder Tag ohne System kostet dich bares Geld.
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Unternehmen, die wir begleiten, gewinnen jede Woche mehrere Stunden zurück.
-          </p>
-        </div>
-
-        {/* Pattern Break */}
-        <div className="mt-12 bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] text-white rounded-3xl py-10 px-8 text-center shadow-[0_0_60px_rgba(246,113,31,0.08)]">
-          <p className="text-2xl md:text-4xl font-bold">
-            Ohne System bist du der Engpass.
-          </p>
+        <div className="text-center">
+          <button onClick={onCtaClick} className={t.ctaPrimary}>
+            Kostenlose Potenzial-Analyse
+          </button>
         </div>
       </div>
     </section>

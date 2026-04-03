@@ -1,48 +1,64 @@
-import { ArrowRight } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
+
+interface ProcessStepsSectionProps {
+  onCtaClick: () => void;
+}
 
 const steps = [
   {
     num: "1",
-    title: "Kostenlose Potenzial-Analyse (45 Min.)",
-    text: "In einem direkten Gespräch analysieren wir dein Unternehmen, decken die größten Wachstumshebel und Systemlücken auf und definieren ein klares Ziel.",
+    title: "Analyse",
+    text: "Wir identifizieren Engpässe, Abhängigkeiten und Datenbrüche.",
   },
   {
     num: "2",
-    title: "Strategie-Entwicklung",
-    text: "Basierend auf der Analyse entwickle ich eine maßgeschneiderte Strategie, die auf den 5 Säulen aufbaut und dir einen klaren 90-Tage-Plan an die Hand gibt.",
+    title: "System-Mapping",
+    text: "Wir erfassen, wie Informationen, Prozesse und Zuständigkeiten tatsächlich laufen.",
   },
   {
     num: "3",
-    title: "Umsetzung & Begleitung",
-    text: "Wir setzen den Plan gemeinsam um. Du erhältst nicht nur die Systeme, sondern auch das Wissen, um sie selbstständig zu steuern und dein Unternehmen auf das nächste Level zu heben.",
+    title: "Priorisierung",
+    text: "Wir definieren, was zuerst systematisiert und automatisiert werden muss.",
+  },
+  {
+    num: "4",
+    title: "Umsetzung",
+    text: "Wir bauen klare Abläufe, Dokumentation und sinnvolle Automatisierungen.",
+  },
+  {
+    num: "5",
+    title: "Übergabe",
+    text: "Du bekommst ein System, das nachvollziehbar, nutzbar und skalierbar ist.",
   },
 ];
 
-export const ProcessStepsSection = () => {
+export const ProcessStepsSection = ({ onCtaClick }: ProcessStepsSectionProps) => {
   return (
-    <section className={t.sectionPadding}>
+    <section className={`${t.sectionPadding} bg-gradient-to-b from-background to-muted/20`}>
       <div className={t.container}>
         <h2 className={`${t.headline.h2} text-foreground text-center mb-14`}>
-          In 3 Schritten zu einem systemgesteuerten Unternehmen
+          So läuft die Zusammenarbeit
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          {steps.map((s, i) => (
-            <div key={s.num} className="relative flex flex-col items-center text-center">
-              {/* Number badge */}
-              <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mb-4 shadow-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-5xl mx-auto mb-14">
+          {steps.map((s) => (
+            <div key={s.num} className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold mb-4 shadow-lg">
                 {s.num}
               </div>
               <h3 className="font-semibold text-foreground mb-2">{s.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">{s.text}</p>
-
-              {/* Arrow between steps (desktop only) */}
-              {i < steps.length - 1 && (
-                <ArrowRight className="hidden md:block absolute -right-3 top-7 w-6 h-6 text-primary" />
-              )}
+              <p className="text-sm text-muted-foreground leading-relaxed">{s.text}</p>
             </div>
           ))}
+        </div>
+
+        <div className="text-center">
+          <button onClick={onCtaClick} className={t.ctaPrimary}>
+            Kostenlose Potenzial-Analyse
+          </button>
+          <p className="text-xs text-muted-foreground mt-3">
+            Kein Agentur-Theater. Klare Prioritäten und umsetzbare Struktur.
+          </p>
         </div>
       </div>
     </section>

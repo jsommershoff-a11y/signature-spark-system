@@ -9,7 +9,7 @@ export const StickyCtaBanner = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setVisible(window.scrollY > 600);
+      setVisible(window.scrollY > 700);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -21,7 +21,7 @@ export const StickyCtaBanner = () => {
     <div className="fixed top-16 left-0 right-0 z-40 bg-primary text-primary-foreground py-2.5 px-4 shadow-md animate-in slide-in-from-top-2 duration-300">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <p className="text-sm font-medium hidden sm:block">
-          Dein Unternehmen verliert jeden Tag Geld durch manuelle Prozesse.
+          Prozesse, Wissen und Übergaben systematisieren – kostenlose Analyse starten.
         </p>
         <div className="flex items-center gap-3 mx-auto sm:mx-0">
           <button

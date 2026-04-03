@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
-import { FloatingCTA } from "@/components/landing/conversion/FloatingCTA";
 import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
 
 interface PublicLayoutProps {
@@ -17,7 +16,6 @@ export const PublicLayout = ({ children }: PublicLayoutProps) => {
         {children}
       </main>
       <Footer />
-      <FloatingCTA />
     </div>
   );
 };

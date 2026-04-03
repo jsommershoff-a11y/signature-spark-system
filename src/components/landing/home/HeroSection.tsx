@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Shield, Zap, GitBranch, TrendingUp } from "lucide-react";
 import founderPortrait from "@/assets/founder-hero.jpeg";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
@@ -6,63 +6,75 @@ interface HeroSectionProps {
   onCtaClick: () => void;
 }
 
+const benefits = [
+  { icon: Shield, text: "Weniger operative Abhängigkeit von einzelnen Personen" },
+  { icon: Zap, text: "Schnellere Reaktionszeiten in Vertrieb und Service" },
+  { icon: GitBranch, text: "Saubere Prozesse statt manueller Übergaben" },
+  { icon: TrendingUp, text: "Mehr Planbarkeit für Wachstum und Skalierung" },
+];
+
 export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
-  const handleScrollDown = () => {
-    const el = document.getElementById("problem-section");
-    el?.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
-    <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
-        style={{ backgroundImage: `url(${founderPortrait})` }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f1419]/85 via-[#0f1419]/70 to-[#0f1419]/95" />
+    <section className="relative bg-gradient-to-b from-[#0f1419] via-[#0f1419] to-[#1a1a2e] overflow-hidden">
+      <div className={`${t.container} relative z-10 py-20 md:py-28`}>
+        <div className="grid md:grid-cols-[1fr_320px] gap-12 items-center max-w-6xl mx-auto">
+          {/* Left: Copy */}
+          <div>
+            <span className="inline-block text-primary text-sm font-semibold tracking-wide uppercase mb-4">
+              Automatisierung für Unternehmen
+            </span>
 
-      <div className={`${t.container} relative z-10 py-24`}>
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] text-white mb-7">
-            Automatisierung für Unternehmen: Jeder Tag ohne System kostet dich Geld, Kunden und Wachstum.
-          </h1>
-          <p className="text-lg md:text-xl text-white/75 max-w-2xl mx-auto mb-3 leading-relaxed">
-            Die meisten Unternehmen verlieren 2.000–5.000 € monatlich durch ineffiziente Prozesse. Jede Stunde, die du mit manuellen Abläufen verbringst, fehlt dir für Umsatz, Führung und strategische Entscheidungen.
-          </p>
-          <p className="text-base text-white/50 max-w-2xl mx-auto mb-5">
-            Dein Steuerberater kann dich in 3 Wochen ausschalten — wenn du deine Prozesse nicht im Griff hast.
-          </p>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.12] text-white mb-6">
+              Automatisierung für Unternehmen funktioniert erst, wenn deine Informationen im eigenen System liegen.
+            </h1>
 
-          <p className="text-xl md:text-2xl font-bold text-white mb-3">
-            Dein Unternehmen funktioniert nur, solange du es tust.
-            <br />
-            <span className="text-primary">Genau das ist das Problem.</span>
-          </p>
+            <p className="text-base md:text-lg text-white/70 leading-relaxed mb-4 max-w-2xl">
+              Solange Wissen, Prozesse und Entscheidungen in Köpfen, Chats oder bei externen Partnern hängen, beschleunigt KI nur Chaos. Wir systematisieren dein Unternehmen so, dass du Kontrolle, Geschwindigkeit und Skalierbarkeit zurückgewinnst.
+            </p>
 
-          <p className="text-sm text-white/40 mb-10 tracking-wide">
-            Keine Chatbots. Keine Tools. Ein System, das funktioniert.
-          </p>
+            <p className="text-sm text-white/45 mb-8 max-w-2xl">
+              Ein Steuerberater-Wechsel, ein Mitarbeiterausfall oder fehlende Dokumentation können dein Unternehmen in kurzer Zeit ausbremsen.
+            </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-5">
-            <button onClick={handleScrollDown} className="border border-white/20 text-white font-semibold text-lg px-8 py-4 rounded-xl hover:bg-white/10 transition-all duration-300">
-              System verstehen
-            </button>
-            <button onClick={onCtaClick} className={t.ctaPrimary}>
-              Signature System aufbauen
-            </button>
-          </div>
-
-          <p className="text-xs text-white/40 mb-10">
-            Kostenlos und unverbindlich • Dauert nur 2 Minuten
-          </p>
-
-          <div className="flex items-center justify-center gap-2 text-sm text-white/60">
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-              ))}
+            <div className="flex flex-col sm:flex-row items-start gap-4 mb-3">
+              <button onClick={onCtaClick} className={t.ctaPrimary}>
+                Kostenlose Potenzial-Analyse
+              </button>
             </div>
-            <span>Bereits über 150+ Unternehmern geholfen, ihre Prozesse zu systematisieren.</span>
+            <p className="text-xs text-white/40">
+              30 Minuten. Klare Prioritäten. Keine Tool-Demo.
+            </p>
           </div>
+
+          {/* Right: Founder Trust Module */}
+          <div className="hidden md:flex flex-col items-center">
+            <img
+              src={founderPortrait}
+              alt="Jan Sommershoff – Gründer KRS Signature"
+              className="w-48 h-48 rounded-2xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.3)] mb-5"
+              width={192}
+              height={192}
+              loading="eager"
+            />
+            <p className="text-white font-semibold text-base">Jan Sommershoff</p>
+            <p className="text-primary text-sm font-medium">KRS Signature</p>
+            <p className="text-white/50 text-xs text-center mt-2 max-w-[260px] leading-relaxed">
+              Systematisierung, Automatisierung und Skalierung für Unternehmen
+            </p>
+          </div>
+        </div>
+
+        {/* Benefit Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-14 max-w-5xl mx-auto">
+          {benefits.map((b) => (
+            <div
+              key={b.text}
+              className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 text-center"
+            >
+              <b.icon className="w-6 h-6 text-primary mx-auto mb-3" />
+              <p className="text-white/80 text-sm font-medium leading-snug">{b.text}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

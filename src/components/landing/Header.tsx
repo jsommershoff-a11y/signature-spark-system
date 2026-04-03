@@ -41,8 +41,10 @@ export const Header = () => {
           <Link to="/" className="flex items-center">
             <img 
               src={logoSignature} 
-              alt="KRS Signature Logo" 
+              alt="KRS Signature – Automatisierung für Unternehmen" 
               className="h-10 w-auto"
+              width={160}
+              height={40}
             />
           </Link>
           
@@ -68,7 +70,7 @@ export const Header = () => {
                 size="sm" 
                 className="bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary text-primary-foreground font-semibold shadow-[0_0_20px_rgba(246,113,31,0.2)] hover:shadow-[0_0_30px_rgba(246,113,31,0.35)] transition-all duration-300"
               >
-                Potenzial-Analyse buchen
+                Kostenlose Potenzial-Analyse
               </Button>
             </Link>
 
@@ -113,14 +115,6 @@ export const Header = () => {
                 </Collapsible>
 
                 <Link
-                  to="/qualifizierung"
-                  onClick={() => setIsOpen(false)}
-                  className="py-2 text-lg font-medium hover:text-primary transition-colors"
-                >
-                  Qualifizierung
-                </Link>
-
-                <Link
                   to="/auth"
                   onClick={() => setIsOpen(false)}
                   className="py-2 text-lg font-medium hover:text-primary transition-colors flex items-center gap-2"
@@ -138,7 +132,7 @@ export const Header = () => {
                     size="lg" 
                     className="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary"
                   >
-                    Potenzial-Analyse buchen
+                    Kostenlose Potenzial-Analyse
                   </Button>
                 </Link>
               </nav>
