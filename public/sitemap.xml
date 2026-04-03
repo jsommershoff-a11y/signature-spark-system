@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://krs-signature.de/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://krs-signature.de/handwerk</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://krs-signature.de/praxen</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://krs-signature.de/dienstleister</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://krs-signature.de/immobilien</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://krs-signature.de/kurzzeitvermietung</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://krs-signature.de/qualifizierung</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://krs-signature.de/community</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://krs-signature.de/agb</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://krs-signature.de/widerruf</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
