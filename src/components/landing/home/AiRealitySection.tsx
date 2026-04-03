@@ -50,11 +50,15 @@ export const AiRealitySection = () => {
         {/* Opener */}
         <div className="max-w-3xl mx-auto text-center mb-8">
           <span className={`${t.badgeAccent} mb-5`}>KI-Realitätscheck</span>
-          <h2 className={`${t.headline.h2} text-foreground mt-5 mb-5`}>
+           <h2 className={`${t.headline.h2} text-foreground mt-5 mb-5`}>
             Die meisten Unternehmen setzen KI komplett falsch ein.
           </h2>
-          <p className="text-lg text-muted-foreground font-medium">
+          <p className="text-lg text-muted-foreground font-medium mb-3">
             Wir bauen keine Chatbots. Wir verkaufen keine Tools. Wir bauen Systeme, die funktionieren.
+          </p>
+          <p className="text-base text-muted-foreground">
+            Wenn du die KI-Chance nutzen willst, musst du zuerst sicherstellen, dass du alles über dein eigenes Unternehmen weißt.
+            Automatisierungen beginnen mit deinen eigenen Informationen in deinem eigenen System.
           </p>
         </div>
 

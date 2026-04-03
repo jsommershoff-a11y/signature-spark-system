@@ -7,6 +7,7 @@ const problems = [
   "Dein Team fragt dich bei jeder Kleinigkeit, weil es keine klaren Abläufe gibt",
   "Angebote werden zu spät geschickt, weil der Prozess manuell ist",
   "Informationen stecken in Köpfen statt in Systemen",
+  "Dein Steuerberater, dein Mitarbeiter, dein Kunde — alle wissen mehr über dein Unternehmen als du, weil nichts dokumentiert ist",
   "Ohne dich steht alles still",
 ];
 

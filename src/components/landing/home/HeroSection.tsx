@@ -23,10 +23,13 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
       <div className={`${t.container} relative z-10 py-24`}>
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] text-white mb-7">
-            Jeder Tag ohne Automatisierung kostet dich Geld, Kunden und Wachstum.
+            Automatisierung für Unternehmen: Jeder Tag ohne System kostet dich Geld, Kunden und Wachstum.
           </h1>
-          <p className="text-lg md:text-xl text-white/75 max-w-2xl mx-auto mb-5 leading-relaxed">
+          <p className="text-lg md:text-xl text-white/75 max-w-2xl mx-auto mb-3 leading-relaxed">
             Die meisten Unternehmen verlieren 2.000–5.000 € monatlich durch ineffiziente Prozesse. Jede Stunde, die du mit manuellen Abläufen verbringst, fehlt dir für Umsatz, Führung und strategische Entscheidungen.
+          </p>
+          <p className="text-base text-white/50 max-w-2xl mx-auto mb-5">
+            Dein Steuerberater kann dich in 3 Wochen ausschalten — wenn du deine Prozesse nicht im Griff hast.
           </p>
 
           <p className="text-xl md:text-2xl font-bold text-white mb-3">
