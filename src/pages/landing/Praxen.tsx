@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { Hero } from "@/components/landing/Hero";
 import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
 import { RootCauseSection } from "@/components/landing/RootCauseSection";
@@ -52,6 +53,11 @@ const Praxen = () => {
 
   return (
     <PublicLayout>
+      <SEOHead
+        title="Automatisierung für Praxen | KRS Signature"
+        description="Praxisprozesse systematisieren: Terminausfälle reduzieren, Verwaltung automatisieren und Personal entlasten. Kostenlose Potenzial-Analyse für Praxisinhaber."
+        canonical="/praxen"
+      />
       <Hero
         headline="Ihre Praxis läuft – aber nicht planbar?"
         problem="Medizinisch stark. Unternehmerisch ungeführt."

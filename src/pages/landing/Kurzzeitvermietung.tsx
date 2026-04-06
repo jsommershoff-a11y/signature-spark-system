@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { Hero } from "@/components/landing/Hero";
 import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
 import { RootCauseSection } from "@/components/landing/RootCauseSection";
@@ -52,6 +53,11 @@ const Kurzzeitvermietung = () => {
 
   return (
     <PublicLayout>
+      <SEOHead
+        title="Automatisierung für Kurzzeitvermietung | KRS Signature"
+        description="Anfragen, Reinigung und Check-in automatisieren. Skalierbare Prozesse für Kurzzeitvermieter mit 3+ Objekten. Kostenlose Potenzial-Analyse."
+        canonical="/kurzzeitvermietung"
+      />
       <Hero
         headline="Mehr Einheiten = mehr Stress?"
         problem="Skalierung ohne Prozesse ist Chaos."

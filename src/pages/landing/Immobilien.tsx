@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { Hero } from "@/components/landing/Hero";
 import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
 import { RootCauseSection } from "@/components/landing/RootCauseSection";
@@ -52,6 +53,11 @@ const Immobilien = () => {
 
   return (
     <PublicLayout>
+      <SEOHead
+        title="Automatisierung für Immobilienunternehmen | KRS Signature"
+        description="Lead-Qualifizierung, Follow-up und Objektakquise systematisieren. Vertrieb planbar machen statt Portal-Abhängigkeit. Kostenlose Potenzial-Analyse."
+        canonical="/immobilien"
+      />
       <Hero
         headline="Leads sind keine Abschlüsse."
         problem="Portale machen abhängig. Systeme machen frei."

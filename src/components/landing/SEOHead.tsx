@@ -24,6 +24,12 @@ export const SEOHead = ({
 }: SEOHeadProps) => {
   const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : undefined;
 
+  const jsonLdItems = jsonLd
+    ? Array.isArray(jsonLd)
+      ? jsonLd
+      : [jsonLd]
+    : [];
+
   return (
     <Helmet>
       <title>{title}</title>
@@ -42,11 +48,11 @@ export const SEOHead = ({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
 
-      {jsonLd && (
-        <script type="application/ld+json">
-          {JSON.stringify(Array.isArray(jsonLd) ? jsonLd : jsonLd)}
+      {jsonLdItems.map((item, index) => (
+        <script key={index} type="application/ld+json">
+          {JSON.stringify(item)}
         </script>
-      )}
+      ))}
     </Helmet>
   );
 };

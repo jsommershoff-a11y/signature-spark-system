@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { Hero } from "@/components/landing/Hero";
 import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
 import { RootCauseSection } from "@/components/landing/RootCauseSection";
@@ -52,6 +53,11 @@ const Handwerk = () => {
 
   return (
     <PublicLayout>
+      <SEOHead
+        title="Automatisierung für Handwerksbetriebe | KRS Signature"
+        description="Prozesse im Handwerk systematisieren: Terminplanung, Angebotswesen und Mitarbeiterführung automatisieren. Kostenlose Potenzial-Analyse für Handwerksmeister."
+        canonical="/handwerk"
+      />
       <Hero
         headline="Volle Auftragsbücher – aber der Betrieb frisst dich auf?"
         problem="Ihr Problem ist nicht Arbeit. Ihr Problem ist fehlende Struktur."
