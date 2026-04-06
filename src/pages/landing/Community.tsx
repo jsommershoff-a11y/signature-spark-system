@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { FAQSection } from "@/components/landing/FAQSection";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { Users, MessageCircle, Video, Zap, ArrowDown, CheckCircle, XCircle, Shield, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +114,11 @@ const Community = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="KI-Community für Unternehmer | KRS Signature"
+        description="Exklusive Community für Unternehmer: Wöchentliche Live-Calls, direkter Gründer-Kontakt und praxiserprobte KI-Strategien. Jetzt Founder-Preis sichern."
+        canonical="/community"
+      />
       <Header />
 
       <main className="flex-1">

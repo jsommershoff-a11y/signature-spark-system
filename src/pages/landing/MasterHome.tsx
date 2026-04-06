@@ -42,22 +42,45 @@ const faqItems = [
   },
 ];
 
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  name: "KRS Signature",
-  url: "https://krs-signature.de",
-  description: "KRS Signature systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können.",
-  founder: {
-    "@type": "Person",
-    name: "Jan Sommershoff",
+const BASE_URL = "https://krs-signature.de";
+
+const jsonLdSchemas: Record<string, unknown>[] = [
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: "KRS Signature",
+    url: BASE_URL,
+    description: "KRS Signature systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können.",
+    founder: { "@type": "Person", name: "Jan Sommershoff" },
+    areaServed: { "@type": "Country", name: "Germany" },
+    serviceType: ["Unternehmensautomatisierung", "Prozesssystematisierung", "KI-Integration"],
   },
-  areaServed: {
-    "@type": "Country",
-    name: "Germany",
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "KRS Signature",
+    url: BASE_URL,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${BASE_URL}/?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
   },
-  serviceType: ["Unternehmensautomatisierung", "Prozesssystematisierung", "KI-Integration"],
-};
+  {
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    name: "Hauptnavigation",
+    hasPart: [
+      { "@type": "WebPage", name: "Handwerk", url: `${BASE_URL}/handwerk` },
+      { "@type": "WebPage", name: "Praxen", url: `${BASE_URL}/praxen` },
+      { "@type": "WebPage", name: "Dienstleister", url: `${BASE_URL}/dienstleister` },
+      { "@type": "WebPage", name: "Immobilien", url: `${BASE_URL}/immobilien` },
+      { "@type": "WebPage", name: "Kurzzeitvermietung", url: `${BASE_URL}/kurzzeitvermietung` },
+      { "@type": "WebPage", name: "Kostenlose Potenzial-Analyse", url: `${BASE_URL}/qualifizierung` },
+      { "@type": "WebPage", name: "Community", url: `${BASE_URL}/community` },
+    ],
+  },
+];
 
 const MasterHome = () => {
   const navigate = useNavigate();
@@ -69,7 +92,7 @@ const MasterHome = () => {
         title="Automatisierung für Unternehmen | Informationen im eigenen System"
         description="KRS Signature systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können. Kostenlose Potenzial-Analyse."
         canonical="/"
-        jsonLd={organizationJsonLd}
+        jsonLd={jsonLdSchemas}
       />
       <Header />
       <StickyCtaBanner />

@@ -1,4 +1,5 @@
 import { PublicLayout } from '@/components/landing/PublicLayout';
+import { SEOHead } from '@/components/landing/SEOHead';
 import { DEFAULT_AGB, VARIABLE_OFFER_AGB_ADDENDUM } from '@/lib/legal-templates';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,12 @@ const SKOOL_FEATURES = [
 export default function AGB() {
   return (
     <PublicLayout>
+      <SEOHead
+        title="Allgemeine Geschäftsbedingungen | KRS Signature"
+        description="AGB für alle Produkte und Dienstleistungen von KRS Signature. Transparente Vertragsbedingungen für Mitgliedschaften und Beratungspakete."
+        canonical="/agb"
+        noIndex
+      />
       <div className="container mx-auto px-4 sm:px-6 py-10 md:py-16 max-w-4xl space-y-10 md:space-y-16">
 
         {/* Einstiegsangebot – Skool */}

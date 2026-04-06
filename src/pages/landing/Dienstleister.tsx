@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/landing/PublicLayout";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { Hero } from "@/components/landing/Hero";
 import { TargetAudienceSection } from "@/components/landing/TargetAudienceSection";
 import { RootCauseSection } from "@/components/landing/RootCauseSection";
@@ -52,6 +53,11 @@ const Dienstleister = () => {
 
   return (
     <PublicLayout>
+      <SEOHead
+        title="Automatisierung für Dienstleister | KRS Signature"
+        description="Vertrieb und Prozesse für Agenturen und Berater systematisieren. Planbare Umsätze statt Auf und Ab. Kostenlose Potenzial-Analyse."
+        canonical="/dienstleister"
+      />
       <Hero
         headline="Wenn Umsatz von Ihnen abhängt, ist es kein Unternehmen."
         problem="Jeder Monat neu. Jeder Abschluss hängt an Ihnen."
