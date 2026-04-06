@@ -6,6 +6,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Header } from "@/components/landing/Header";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { Footer } from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,6 +88,11 @@ const Qualifizierung = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Kostenlose Potenzial-Analyse | KRS Signature"
+        description="In 30 Minuten analysieren wir Engpässe, Abhängigkeiten und Automatisierungspotenzial in deinem Unternehmen. Klare Prioritäten statt Tool-Demo."
+        canonical="/qualifizierung"
+      />
       <Header />
 
       <main className="flex-1 pt-16">
