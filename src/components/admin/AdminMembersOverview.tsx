@@ -63,7 +63,7 @@ function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         .select('id, first_name, last_name, email, company, pipeline_item:pipeline_items(stage)')
         .or(`first_name.ilike.${term},last_name.ilike.${term},email.ilike.${term},company.ilike.${term}`)
         .limit(10);
-      setLeadResults((data as LeadOption[]) || []);
+      setLeadResults((data as unknown as LeadOption[]) || []);
       setSearchLoading(false);
     }, 350);
     return () => clearTimeout(timer);
