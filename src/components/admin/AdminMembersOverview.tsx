@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminMembers } from '@/hooks/useAdminMembers';
 import {
-  Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus,
+  Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus, UserPlus,
   Pencil, Trash2, Loader2, Search, Eye, ChevronRight, BarChart3,
   FolderOpen, FileText, Play, CheckSquare, HelpCircle, ArrowUpDown,
   Save, X, LayoutGrid, List
@@ -28,10 +28,78 @@ import {
 // ──────────────────────────────────────────────
 // Sub-Tab: Mitglieder-Übersicht
 // ──────────────────────────────────────────────
+function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [role, setRole] = useState<string>('member_basic');
+  const [sending, setSending] = useState(false);
+  const { toast } = useToast();
+
+  const handleInvite = async () => {
+    if (!email) return;
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('invite-member', {
+        body: { email, role, name: name || undefined },
+      });
+      if (error) throw error;
+      toast({ title: 'Einladung versendet', description: `Einladung an ${email} gesendet.` });
+      setEmail('');
+      setName('');
+      setRole('member_basic');
+      onOpenChange(false);
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Fehler', description: err.message || 'Einladung konnte nicht versendet werden.' });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Mitglied einladen</DialogTitle>
+          <DialogDescription>Sende eine Einladung per E-Mail an ein neues Mitglied.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <div>
+            <Label>E-Mail *</Label>
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@firma.de" />
+          </div>
+          <div>
+            <Label>Name (optional)</Label>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Vor- und Nachname" />
+          </div>
+          <div>
+            <Label>Mitgliedschafts-Stufe</Label>
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member_basic">Basic</SelectItem>
+                <SelectItem value="member_starter">Starter</SelectItem>
+                <SelectItem value="member_pro">Pro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button onClick={handleInvite} disabled={!email || sending} className="gap-1.5">
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+            Einladen
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function MembersListSection() {
   const { members, atRiskMembers, topPerformers, isLoading, updateStatus } = useAdminMembers();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [inviteOpen, setInviteOpen] = useState(false);
   const { toast } = useToast();
 
   const filtered = members.filter((m) => {
@@ -100,7 +168,12 @@ function MembersListSection() {
             <SelectItem value="churned">Gekündigt</SelectItem>
           </SelectContent>
         </Select>
+        <Button size="sm" className="gap-1.5" onClick={() => setInviteOpen(true)}>
+          <UserPlus className="h-4 w-4" /> Mitglied einladen
+        </Button>
       </div>
+
+      <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
 
       {/* Table */}
       <Card>
