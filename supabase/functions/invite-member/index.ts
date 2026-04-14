@@ -13,6 +13,7 @@ const bodySchema = z.object({
   email: z.string().email(),
   role: z.enum(['member_basic', 'member_starter', 'member_pro']).default('member_basic'),
   name: z.string().max(255).optional(),
+  lead_id: z.string().uuid().optional(),
 });
 
 serve(async (req) => {
@@ -56,7 +57,26 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: parsed.error.flatten().fieldErrors }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { email, role, name } = parsed.data;
+    let { email, role, name, lead_id } = parsed.data;
+
+    // If lead_id provided, fetch lead data and use its email
+    if (lead_id) {
+      const { data: leadData, error: leadError } = await supabase
+        .from('crm_leads')
+        .select('email, first_name, last_name')
+        .eq('id', lead_id)
+        .single();
+
+      if (leadError || !leadData) {
+        return new Response(JSON.stringify({ error: 'Lead nicht gefunden' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+
+      // Use lead email/name as source of truth
+      email = leadData.email;
+      if (!name) {
+        name = [leadData.first_name, leadData.last_name].filter(Boolean).join(' ');
+      }
+    }
 
     // Generate token
     const token_str = crypto.randomUUID();
@@ -85,6 +105,33 @@ serve(async (req) => {
     if (invError) {
       console.error('Invitation insert error:', invError);
       return new Response(JSON.stringify({ error: invError.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Lead conversion: update CRM status + pipeline + activity
+    if (lead_id) {
+      // 1. Set lead status to qualified
+      await supabase
+        .from('crm_leads')
+        .update({ status: 'qualified' })
+        .eq('id', lead_id);
+
+      // 2. Set pipeline stage to won
+      await supabase
+        .from('pipeline_items')
+        .update({ stage: 'won', stage_updated_at: new Date().toISOString() })
+        .eq('lead_id', lead_id);
+
+      // 3. Log activity
+      await supabase
+        .from('activities')
+        .insert({
+          type: 'status_change',
+          user_id: inviterProfile?.id || userData.user.id,
+          lead_id,
+          content: `Lead zu Mitglied konvertiert und Einladung versendet (${role})`,
+        });
+
+      console.log('Lead converted:', lead_id);
     }
 
     // Build invitation link
@@ -142,7 +189,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, invitation_id: invitation.id, invite_link: inviteLink }),
+      JSON.stringify({ success: true, invitation_id: invitation.id, invite_link: inviteLink, lead_converted: !!lead_id }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
