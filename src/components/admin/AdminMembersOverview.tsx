@@ -28,25 +28,79 @@ import {
 // ──────────────────────────────────────────────
 // Sub-Tab: Mitglieder-Übersicht
 // ──────────────────────────────────────────────
+interface LeadOption {
+  id: string;
+  first_name: string;
+  last_name?: string | null;
+  email: string;
+  company?: string | null;
+  pipeline_item?: { stage: string }[];
+}
+
 function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState<string>('member_basic');
   const [sending, setSending] = useState(false);
+  const [mode, setMode] = useState<'new' | 'lead'>('lead');
+  const [leadSearch, setLeadSearch] = useState('');
+  const [leadResults, setLeadResults] = useState<LeadOption[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<LeadOption | null>(null);
   const { toast } = useToast();
+
+  // Debounced lead search
+  useEffect(() => {
+    if (mode !== 'lead' || leadSearch.length < 2) {
+      setLeadResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSearchLoading(true);
+      const term = `%${leadSearch}%`;
+      const { data } = await supabase
+        .from('crm_leads')
+        .select('id, first_name, last_name, email, company, pipeline_item:pipeline_items(stage)')
+        .or(`first_name.ilike.${term},last_name.ilike.${term},email.ilike.${term},company.ilike.${term}`)
+        .limit(10);
+      setLeadResults((data as unknown as LeadOption[]) || []);
+      setSearchLoading(false);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [leadSearch, mode]);
+
+  const selectLead = (lead: LeadOption) => {
+    setSelectedLead(lead);
+    setEmail(lead.email);
+    setName([lead.first_name, lead.last_name].filter(Boolean).join(' '));
+    setLeadSearch('');
+    setLeadResults([]);
+  };
+
+  const clearLead = () => {
+    setSelectedLead(null);
+    setEmail('');
+    setName('');
+  };
 
   const handleInvite = async () => {
     if (!email) return;
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke('invite-member', {
-        body: { email, role, name: name || undefined },
+        body: {
+          email,
+          role,
+          name: name || undefined,
+          lead_id: selectedLead?.id || undefined,
+        },
       });
       if (error) throw error;
-      toast({ title: 'Einladung versendet', description: `Einladung an ${email} gesendet.` });
+      toast({ title: 'Einladung versendet', description: `Einladung an ${email} gesendet.${selectedLead ? ' Lead wurde konvertiert.' : ''}` });
       setEmail('');
       setName('');
       setRole('member_basic');
+      setSelectedLead(null);
       onOpenChange(false);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Fehler', description: err.message || 'Einladung konnte nicht versendet werden.' });
@@ -55,21 +109,85 @@ function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChang
     }
   };
 
+  const stageLabel = (stage?: string) => {
+    const map: Record<string, string> = {
+      new_lead: 'Neuer Lead', setter_call_scheduled: 'Call geplant', setter_call_done: 'Call erledigt',
+      analysis_ready: 'Analyse fertig', offer_draft: 'Angebot Entwurf', offer_sent: 'Angebot gesendet',
+      payment_unlocked: 'Zahlung freigeschaltet', won: 'Gewonnen', lost: 'Verloren',
+    };
+    return stage ? map[stage] || stage : '';
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Mitglied einladen</DialogTitle>
-          <DialogDescription>Sende eine Einladung per E-Mail an ein neues Mitglied.</DialogDescription>
+          <DialogDescription>Aus Lead-Datenbank auswählen oder manuell einladen.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
+
+        {/* Mode Toggle */}
+        <div className="flex gap-2 border rounded-md p-1 bg-muted/30">
+          <Button variant={mode === 'lead' ? 'default' : 'ghost'} size="sm" className="flex-1 gap-1.5" onClick={() => { setMode('lead'); clearLead(); }}>
+            <Search className="h-3.5 w-3.5" /> Aus Leads
+          </Button>
+          <Button variant={mode === 'new' ? 'default' : 'ghost'} size="sm" className="flex-1 gap-1.5" onClick={() => { setMode('new'); clearLead(); }}>
+            <UserPlus className="h-3.5 w-3.5" /> Neues Mitglied
+          </Button>
+        </div>
+
+        <div className="space-y-3 py-1">
+          {/* Lead search */}
+          {mode === 'lead' && !selectedLead && (
+            <div className="space-y-2">
+              <Label>Lead suchen</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Name, E-Mail oder Firma..." value={leadSearch} onChange={e => setLeadSearch(e.target.value)} className="pl-9" />
+              </div>
+              {searchLoading && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-3 w-3 animate-spin" /> Suche...</div>}
+              {leadResults.length > 0 && (
+                <div className="border rounded-md max-h-48 overflow-y-auto divide-y">
+                  {leadResults.map(lead => {
+                    const stage = lead.pipeline_item?.[0]?.stage;
+                    return (
+                      <button key={lead.id} className="w-full text-left px-3 py-2 hover:bg-accent/50 transition-colors" onClick={() => selectLead(lead)}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">{lead.first_name} {lead.last_name || ''}</p>
+                            <p className="text-xs text-muted-foreground">{lead.email}{lead.company ? ` · ${lead.company}` : ''}</p>
+                          </div>
+                          {stage && <Badge variant="outline" className="text-[10px]">{stageLabel(stage)}</Badge>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {leadSearch.length >= 2 && !searchLoading && leadResults.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-2">Keine Leads gefunden</p>
+              )}
+            </div>
+          )}
+
+          {/* Selected lead chip */}
+          {selectedLead && (
+            <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-md px-3 py-2">
+              <div>
+                <p className="text-sm font-medium">{selectedLead.first_name} {selectedLead.last_name || ''}</p>
+                <p className="text-xs text-muted-foreground">{selectedLead.email}{selectedLead.company ? ` · ${selectedLead.company}` : ''}</p>
+              </div>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={clearLead}><X className="h-3.5 w-3.5" /></Button>
+            </div>
+          )}
+
           <div>
             <Label>E-Mail *</Label>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@firma.de" />
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@firma.de" readOnly={!!selectedLead} className={selectedLead ? 'bg-muted' : ''} />
           </div>
           <div>
             <Label>Name (optional)</Label>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Vor- und Nachname" />
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Vor- und Nachname" readOnly={!!selectedLead} className={selectedLead ? 'bg-muted' : ''} />
           </div>
           <div>
             <Label>Mitgliedschafts-Stufe</Label>
@@ -87,7 +205,7 @@ function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChang
           <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
           <Button onClick={handleInvite} disabled={!email || sending} className="gap-1.5">
             {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-            Einladen
+            {selectedLead ? 'Einladen & Konvertieren' : 'Einladen'}
           </Button>
         </DialogFooter>
       </DialogContent>
