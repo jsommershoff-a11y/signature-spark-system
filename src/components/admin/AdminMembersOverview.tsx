@@ -168,7 +168,12 @@ function MembersListSection() {
             <SelectItem value="churned">Gekündigt</SelectItem>
           </SelectContent>
         </Select>
+        <Button size="sm" className="gap-1.5" onClick={() => setInviteOpen(true)}>
+          <UserPlus className="h-4 w-4" /> Mitglied einladen
+        </Button>
       </div>
+
+      <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
 
       {/* Table */}
       <Card>
