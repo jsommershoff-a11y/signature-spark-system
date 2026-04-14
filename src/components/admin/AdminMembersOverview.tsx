@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminMembers } from '@/hooks/useAdminMembers';
 import {
-  Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus,
+  Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus, UserPlus,
   Pencil, Trash2, Loader2, Search, Eye, ChevronRight, BarChart3,
   FolderOpen, FileText, Play, CheckSquare, HelpCircle, ArrowUpDown,
   Save, X, LayoutGrid, List
