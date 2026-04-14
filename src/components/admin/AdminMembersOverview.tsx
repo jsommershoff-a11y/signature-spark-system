@@ -34,7 +34,7 @@ interface LeadOption {
   last_name?: string | null;
   email: string;
   company?: string | null;
-  pipeline_item?: { stage: string }[] | null;
+  pipeline_item?: { stage: string }[];
 }
 
 function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
