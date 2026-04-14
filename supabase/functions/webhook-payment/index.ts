@@ -489,12 +489,72 @@ serve(async (req) => {
       }
     }
 
+    // ── Auto-invite: send welcome/invitation email after successful payment ──
+    const recipientEmail = userEmail || (leadId ? (await supabase.from('crm_leads').select('email, first_name').eq('id', leadId).single()).data?.email : undefined);
+    const recipientName = leadId ? (await supabase.from('crm_leads').select('first_name').eq('id', leadId).single()).data?.first_name : undefined;
+
+    if (recipientEmail) {
+      const resendKey = Deno.env.get('RESEND_API_KEY');
+      const lovableKey = Deno.env.get('LOVABLE_API_KEY');
+      const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend';
+
+      if (resendKey && lovableKey) {
+        const appUrl = 'https://signature-spark-system.lovable.app';
+        const greeting = recipientName ? `Hallo ${recipientName}` : 'Hallo';
+
+        const welcomeHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+            <h1 style="color: #1a1a2e; font-size: 24px;">Willkommen bei KRS Signature!</h1>
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              ${greeting},<br><br>
+              Deine Zahlung wurde bestätigt. Du hast jetzt Zugang zum KRS Signature Mitgliederbereich.
+            </p>
+            <a href="${appUrl}/auth" style="display: inline-block; background-color: #F6711F; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 16px 0;">
+              Jetzt einloggen
+            </a>
+            <p style="color: #666; font-size: 14px; line-height: 1.5; margin-top: 24px;">
+              Falls du noch kein Konto hast, kannst du dich mit dieser E-Mail-Adresse registrieren.
+            </p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+            <p style="color: #999; font-size: 12px;">KRS Signature – Automatisierung für Unternehmen</p>
+          </div>
+        `;
+
+        try {
+          const emailRes = await fetch(`${GATEWAY_URL}/emails`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${lovableKey}`,
+              'X-Connection-Api-Key': resendKey,
+            },
+            body: JSON.stringify({
+              from: 'KRS Signature <info@krs-signature.de>',
+              to: [recipientEmail],
+              subject: 'Willkommen bei KRS Signature – Dein Zugang ist bereit',
+              html: welcomeHtml,
+            }),
+          });
+
+          if (!emailRes.ok) {
+            console.error('Auto-invite email failed:', await emailRes.text());
+          } else {
+            console.log('Auto-invite email sent to:', recipientEmail);
+          }
+        } catch (emailErr) {
+          console.error('Auto-invite email error:', emailErr);
+        }
+      } else {
+        console.warn('RESEND_API_KEY or LOVABLE_API_KEY not set, skipping auto-invite email');
+      }
+    }
+
     // Pipeline update happens via trigger (update_pipeline_after_payment)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        order_id: orderRecord.id,
+        order_id: orderRecord?.id,
         message: 'Payment processed successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
