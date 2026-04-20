@@ -89,10 +89,33 @@ serve(async (req) => {
       });
     }
 
-    // For click tracking, redirect or return OK
+    // For click tracking, redirect or return OK — validate destination against allow-list
     const redirectUrl = url.searchParams.get("url");
     if (redirectUrl) {
-      return Response.redirect(redirectUrl, 302);
+      const ALLOWED_REDIRECT_PREFIXES = [
+        "https://krsimmobilien.de",
+        "https://www.krsimmobilien.de",
+        "https://krs-signature.de",
+        "https://www.krs-signature.de",
+        "https://ki-automationen.io",
+        "https://www.ki-automationen.io",
+        "https://signature-spark-system.lovable.app",
+      ];
+      try {
+        const parsed = new URL(redirectUrl);
+        if (parsed.protocol !== "https:") {
+          return new Response("Invalid redirect", { status: 400 });
+        }
+        const isAllowed = ALLOWED_REDIRECT_PREFIXES.some((prefix) =>
+          redirectUrl.startsWith(prefix + "/") || redirectUrl === prefix
+        );
+        if (!isAllowed) {
+          return new Response("Invalid redirect", { status: 400 });
+        }
+        return Response.redirect(redirectUrl, 302);
+      } catch {
+        return new Response("Invalid redirect", { status: 400 });
+      }
     }
 
     return new Response("OK", { status: 200 });

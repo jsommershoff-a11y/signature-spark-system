@@ -2714,6 +2714,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_offer_by_token: {
+        Args: { _signature_data: string; _signer_name: string; _token: string }
+        Returns: string
+      }
       calculate_pipeline_priority: {
         Args: {
           _icp_score: number
@@ -2739,6 +2743,25 @@ export type Database = {
           phone: string
         }[]
       }
+      get_offer_by_public_token: {
+        Args: { _token: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          lead_company: string
+          lead_email: string
+          lead_first_name: string
+          lead_id: string
+          lead_last_name: string
+          offer_json: Json
+          payment_unlocked: boolean
+          public_token: string
+          status: string
+          updated_at: string
+          viewed_at: string
+        }[]
+      }
       get_team_member_ids: { Args: { _user_id: string }; Returns: string[] }
       get_user_profile_id: { Args: { _user_id: string }; Returns: string }
       get_user_team_id: { Args: { _user_id: string }; Returns: string }
@@ -2756,6 +2779,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      mark_offer_viewed: { Args: { _token: string }; Returns: undefined }
       match_lead_by_phone: {
         Args: { search_suffix: string }
         Returns: {
