@@ -54,22 +54,11 @@ export default function PublicOffer() {
   const isPaid = offer.status === 'paid';
 
   const handleAcceptOffer = async (acceptanceData: { signer_name: string; signature_data: string }) => {
-    const updatedJson = {
-      ...(offer.offer_json as unknown as Record<string, unknown>),
-      contract_accepted: true,
-      contract_accepted_at: new Date().toISOString(),
-      signer_name: acceptanceData.signer_name,
-      signature_data: acceptanceData.signature_data,
-    };
-
-    const { error: updateError } = await supabase
-      .from('offers')
-      .update({
-        status: 'accepted' as any,
-        offer_json: updatedJson,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', offer.id);
+    const { error: updateError } = await supabase.rpc('accept_offer_by_token', {
+      _token: token || '',
+      _signer_name: acceptanceData.signer_name,
+      _signature_data: acceptanceData.signature_data,
+    });
 
     if (updateError) {
       toast({
