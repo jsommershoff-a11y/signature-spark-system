@@ -337,43 +337,33 @@ export function useOffers(leadId?: string) {
   };
 }
 
-// Hook for public offer view
+// Hook for public offer view — uses token-validated RPC (no broad SELECT exposure)
 export function usePublicOffer(token: string) {
   return useQuery({
     queryKey: ['public-offer', token],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('offers')
-        .select(`
-          *,
-          crm_leads (
-            id,
-            first_name,
-            last_name,
-            email,
-            company
-          )
-        `)
-        .eq('public_token', token)
-        .single();
+        .rpc('get_offer_by_public_token', { _token: token });
 
       if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) throw new Error('Offer not found');
 
-      // Mark as viewed
-      if (data && data.status === 'sent') {
-        await supabase
-          .from('offers')
-          .update({
-            status: 'viewed' as const,
-            viewed_at: new Date().toISOString(),
-          })
-          .eq('id', data.id);
+      // Mark as viewed via RPC (token-validated, only transitions sent -> viewed)
+      if (row.status === 'sent') {
+        await supabase.rpc('mark_offer_viewed', { _token: token });
       }
 
       return {
-        ...data,
-        offer_json: data.offer_json as unknown as OfferContent,
-        lead: data.crm_leads,
+        ...row,
+        offer_json: row.offer_json as unknown as OfferContent,
+        lead: {
+          id: row.lead_id,
+          first_name: row.lead_first_name,
+          last_name: row.lead_last_name,
+          email: row.lead_email,
+          company: row.lead_company,
+        },
       } as unknown as Offer;
     },
     enabled: !!token,
