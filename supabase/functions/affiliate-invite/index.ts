@@ -82,6 +82,7 @@ serve(async (req) => {
     if (!stripeAccountId) {
       const account = await stripe.accounts.create({
         type: "express",
+        country: "DE",
         email: profile.email,
         capabilities: {
           transfers: { requested: true },
