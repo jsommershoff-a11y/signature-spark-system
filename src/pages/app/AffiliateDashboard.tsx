@@ -79,16 +79,45 @@ export default function AffiliateDashboard() {
     return <div className="flex items-center justify-center p-12"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
+  const handleSelfEnroll = async () => {
+    setOpening(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('affiliate-self-enroll', { body: {} });
+      if (error) throw error;
+      if (data?.onboarding_url) {
+        window.location.href = data.onboarding_url;
+      } else {
+        await refetch();
+      }
+    } catch (e) {
+      toast({ title: 'Fehler', description: e instanceof Error ? e.message : String(e), variant: 'destructive' });
+    } finally {
+      setOpening(false);
+    }
+  };
+
   if (!affiliate) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Kein Affiliate-Zugang</CardTitle>
-          <CardDescription>
-            Du wurdest noch nicht als Affiliate freigeschaltet. Bitte kontaktiere einen Administrator.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Affiliate Dashboard</h1>
+          <p className="text-muted-foreground">Empfehle KRS Signature und verdiene Provision pro Verkauf.</p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Affiliate-Programm freischalten</CardTitle>
+            <CardDescription>
+              Werde jetzt Affiliate-Partner. Nach dem Stripe-Onboarding (Bankdaten, Identität) erhältst du deinen persönlichen Empfehlungslink und verdienst Provision pro vermitteltem Kunden.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleSelfEnroll} disabled={opening} size="lg">
+              {opening ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4" />}
+              Jetzt freischalten
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
