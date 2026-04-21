@@ -2731,6 +2731,88 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          ai_summary: string | null
+          assigned_to: string | null
+          body: string | null
+          closed_at: string | null
+          created_at: string
+          created_by: string | null
+          email_message_id: string | null
+          id: string
+          internal_notes: string | null
+          lead_id: string | null
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          sender_email: string | null
+          sender_name: string | null
+          source: Database["public"]["Enums"]["ticket_source"]
+          status: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          assigned_to?: string | null
+          body?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          email_message_id?: string | null
+          id?: string
+          internal_notes?: string | null
+          lead_id?: string | null
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          sender_email?: string | null
+          sender_name?: string | null
+          source?: Database["public"]["Enums"]["ticket_source"]
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          ai_summary?: string | null
+          assigned_to?: string | null
+          body?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          email_message_id?: string | null
+          id?: string
+          internal_notes?: string | null
+          lead_id?: string | null
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          sender_email?: string | null
+          sender_name?: string | null
+          source?: Database["public"]["Enums"]["ticket_source"]
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sync_errors: {
         Row: {
           entity: string | null
@@ -3073,6 +3155,9 @@ export type Database = {
       structogram_type: "red" | "green" | "blue" | "mixed" | "unknown"
       task_status: "open" | "done" | "blocked"
       task_type: "call" | "followup" | "review_offer" | "intervention"
+      ticket_priority: "low" | "normal" | "high" | "urgent"
+      ticket_source: "email" | "mail" | "manual" | "phone"
+      ticket_status: "open" | "in_progress" | "waiting" | "closed"
       transcript_status: "pending" | "processing" | "done" | "failed"
     }
     CompositeTypes: {
@@ -3274,6 +3359,9 @@ export const Constants = {
       structogram_type: ["red", "green", "blue", "mixed", "unknown"],
       task_status: ["open", "done", "blocked"],
       task_type: ["call", "followup", "review_offer", "intervention"],
+      ticket_priority: ["low", "normal", "high", "urgent"],
+      ticket_source: ["email", "mail", "manual", "phone"],
+      ticket_status: ["open", "in_progress", "waiting", "closed"],
       transcript_status: ["pending", "processing", "done", "failed"],
     },
   },
