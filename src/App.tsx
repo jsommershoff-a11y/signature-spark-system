@@ -33,7 +33,7 @@ import Customers from "./pages/app/Customers";
 import Tasks from "./pages/app/Tasks";
 import Courses from "./pages/app/Courses";
 import Academy from "./pages/app/Academy";
-import Members from "./pages/app/Members";
+
 import Reports from "./pages/app/Reports";
 import Settings from "./pages/app/Settings";
 import Admin from "./pages/app/Admin";
@@ -172,7 +172,7 @@ const App = () => (
               } />
               <Route path="members" element={
                 <ProtectedRoute requireMinRole="vertriebspartner">
-                  <Members />
+                  <Customers />
                 </ProtectedRoute>
               } />
               <Route path="reports" element={

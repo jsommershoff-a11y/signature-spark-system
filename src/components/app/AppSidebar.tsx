@@ -57,7 +57,6 @@ const navItems: NavItem[] = [
   { label: 'Calls', href: '/app/calls', icon: Phone, staffOnly: true },
   { label: 'Angebote', href: '/app/offers', icon: FileText, staffOnly: true },
   { label: 'Kunden', href: '/app/customers', icon: Users, staffOnly: true },
-  { label: 'Mitglieder', href: '/app/members', icon: UserCheck, staffOnly: true },
   { label: 'Mitgliederbereich', href: '/app/member-management', icon: GraduationCap, minRole: 'gruppenbetreuer' },
   { label: 'Aufgaben', href: '/app/tasks', icon: CheckSquare },
   { label: 'Ziele', href: '/app/goals', icon: Target, staffOnly: true },
