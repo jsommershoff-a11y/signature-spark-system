@@ -53,6 +53,8 @@ import CooCockpit from "./pages/app/CooCockpit";
 import PromptLibrary from "./pages/app/PromptLibrary";
 import ToolsDirectory from "./pages/app/ToolsDirectory";
 import LiveCallsCalendar from "./pages/app/LiveCallsCalendar";
+import AffiliateDashboard from "./pages/app/AffiliateDashboard";
+import { ReferralTracker } from "./components/affiliate/ReferralTracker";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +74,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ReferralTracker />
           <Routes>
             {/* Public landing routes */}
             <Route path="/" element={<MasterHome />} />
@@ -161,6 +164,7 @@ const App = () => (
               <Route path="tools" element={<ToolsDirectory />} />
               <Route path="welcome" element={<Welcome />} />
               <Route path="calendar" element={<LiveCallsCalendar />} />
+              <Route path="affiliate" element={<AffiliateDashboard />} />
               <Route path="member-management" element={
                 <ProtectedRoute requireMinRole="gruppenbetreuer">
                   <MemberManagement />
