@@ -157,3 +157,72 @@ export async function getMailFileUrl(path: string) {
     .createSignedUrl(path, 3600);
   return data?.signedUrl;
 }
+
+export interface MailSyncSettings {
+  id: string;
+  user_id: string;
+  provider: string;
+  source_folder_path: string;
+  processed_folder_path: string;
+  sort_by_category: boolean;
+  last_sync_at: string | null;
+  last_sync_count: number | null;
+  last_sync_error: string | null;
+}
+
+export function useMailSyncSettings() {
+  return useQuery({
+    queryKey: ["mail_sync_settings"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return null;
+      const { data, error } = await supabase
+        .from("mail_sync_settings")
+        .select("*")
+        .eq("user_id", u.user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as MailSyncSettings | null;
+    },
+  });
+}
+
+export function useSaveMailSyncSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (patch: Partial<MailSyncSettings>) => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("mail_sync_settings")
+        .upsert({ user_id: u.user.id, ...patch }, { onConflict: "user_id" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["mail_sync_settings"] });
+      toast.success("Einstellungen gespeichert");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useSyncOneDrive() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("onedrive-mail-sync", {
+        body: {},
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return data as { ok: true; scanned: number; imported: number; skipped: number; errors: string[] };
+    },
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["incoming_mail"] });
+      qc.invalidateQueries({ queryKey: ["mail_sync_settings"] });
+      const errSuffix = r.errors.length ? ` · ${r.errors.length} Fehler` : "";
+      toast.success(`OneDrive synchronisiert: ${r.imported} neu, ${r.skipped} übersprungen${errSuffix}`);
+    },
+    onError: (e: Error) => toast.error(`Sync fehlgeschlagen: ${e.message}`),
+  });
+}

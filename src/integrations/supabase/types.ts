@@ -1492,6 +1492,8 @@ export type Database = {
           processed_at: string | null
           received_date: string | null
           sender: string | null
+          source_item_id: string | null
+          source_provider: string | null
           status: string
           subject: string | null
           task_id: string | null
@@ -1513,6 +1515,8 @@ export type Database = {
           processed_at?: string | null
           received_date?: string | null
           sender?: string | null
+          source_item_id?: string | null
+          source_provider?: string | null
           status?: string
           subject?: string | null
           task_id?: string | null
@@ -1534,6 +1538,8 @@ export type Database = {
           processed_at?: string | null
           received_date?: string | null
           sender?: string | null
+          source_item_id?: string | null
+          source_provider?: string | null
           status?: string
           subject?: string | null
           task_id?: string | null
@@ -1958,6 +1964,51 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      mail_sync_settings: {
+        Row: {
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          last_sync_count: number | null
+          last_sync_error: string | null
+          meta: Json | null
+          processed_folder_path: string
+          provider: string
+          sort_by_category: boolean
+          source_folder_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_count?: number | null
+          last_sync_error?: string | null
+          meta?: Json | null
+          processed_folder_path?: string
+          provider?: string
+          sort_by_category?: boolean
+          source_folder_path?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_count?: number | null
+          last_sync_error?: string | null
+          meta?: Json | null
+          processed_folder_path?: string
+          provider?: string
+          sort_by_category?: boolean
+          source_folder_path?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
