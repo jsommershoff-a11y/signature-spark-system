@@ -1477,6 +1477,101 @@ export type Database = {
           },
         ]
       }
+      incoming_mail: {
+        Row: {
+          ai_summary: string | null
+          category: string | null
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          lead_id: string | null
+          meta: Json | null
+          ocr_text: string | null
+          priority: string
+          processed_at: string | null
+          received_date: string | null
+          sender: string | null
+          status: string
+          subject: string | null
+          task_id: string | null
+          ticket_id: string | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          ai_summary?: string | null
+          category?: string | null
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          lead_id?: string | null
+          meta?: Json | null
+          ocr_text?: string | null
+          priority?: string
+          processed_at?: string | null
+          received_date?: string | null
+          sender?: string | null
+          status?: string
+          subject?: string | null
+          task_id?: string | null
+          ticket_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          ai_summary?: string | null
+          category?: string | null
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          lead_id?: string | null
+          meta?: Json | null
+          ocr_text?: string | null
+          priority?: string
+          processed_at?: string | null
+          received_date?: string | null
+          sender?: string | null
+          status?: string
+          subject?: string | null
+          task_id?: string | null
+          ticket_id?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incoming_mail_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_mail_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "crm_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_mail_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_mail_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
