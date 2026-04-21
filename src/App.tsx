@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/app/AppLayout";
 
-// Public pages
+// Public landing pages
 import MasterHome from "./pages/landing/MasterHome";
 import Handwerk from "./pages/landing/Handwerk";
 import Praxen from "./pages/landing/Praxen";
