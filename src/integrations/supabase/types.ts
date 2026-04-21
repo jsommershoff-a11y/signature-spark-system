@@ -62,6 +62,71 @@ export type Database = {
           },
         ]
       }
+      affiliates: {
+        Row: {
+          activated_at: string | null
+          charges_enabled: boolean
+          commission_rate: number
+          created_at: string
+          details_submitted: boolean
+          id: string
+          invited_at: string
+          invited_by: string | null
+          meta: Json | null
+          payouts_enabled: boolean
+          profile_id: string
+          referral_code: string
+          status: Database["public"]["Enums"]["affiliate_status"]
+          stripe_account_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          charges_enabled?: boolean
+          commission_rate?: number
+          created_at?: string
+          details_submitted?: boolean
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          meta?: Json | null
+          payouts_enabled?: boolean
+          profile_id: string
+          referral_code: string
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          stripe_account_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          charges_enabled?: boolean
+          commission_rate?: number
+          created_at?: string
+          details_submitted?: boolean
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          meta?: Json | null
+          payouts_enabled?: boolean
+          profile_id?: string
+          referral_code?: string
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          stripe_account_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliates_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_analyses: {
         Row: {
           analysis_json: Json
@@ -374,6 +439,84 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commissions: {
+        Row: {
+          affiliate_id: string
+          commission_cents: number
+          commission_rate: number
+          created_at: string
+          currency: string
+          customer_email: string | null
+          failure_reason: string | null
+          gross_amount_cents: number
+          id: string
+          meta: Json | null
+          paid_at: string | null
+          product_name: string | null
+          referral_id: string | null
+          status: Database["public"]["Enums"]["commission_status"]
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_transfer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          commission_cents: number
+          commission_rate: number
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          failure_reason?: string | null
+          gross_amount_cents: number
+          id?: string
+          meta?: Json | null
+          paid_at?: string | null
+          product_name?: string | null
+          referral_id?: string | null
+          status?: Database["public"]["Enums"]["commission_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_transfer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          commission_cents?: number
+          commission_rate?: number
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          failure_reason?: string | null
+          gross_amount_cents?: number
+          id?: string
+          meta?: Json | null
+          paid_at?: string | null
+          product_name?: string | null
+          referral_id?: string | null
+          status?: Database["public"]["Enums"]["commission_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_transfer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
             referencedColumns: ["id"]
           },
         ]
@@ -2338,6 +2481,66 @@ export type Database = {
           },
         ]
       }
+      referrals: {
+        Row: {
+          affiliate_id: string
+          clicked_at: string
+          converted_at: string | null
+          customer_email: string | null
+          customer_user_id: string | null
+          id: string
+          ip_hash: string | null
+          landing_path: string | null
+          lead_id: string | null
+          meta: Json | null
+          referral_code: string
+          user_agent: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          clicked_at?: string
+          converted_at?: string | null
+          customer_email?: string | null
+          customer_user_id?: string | null
+          id?: string
+          ip_hash?: string | null
+          landing_path?: string | null
+          lead_id?: string | null
+          meta?: Json | null
+          referral_code: string
+          user_agent?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          clicked_at?: string
+          converted_at?: string | null
+          customer_email?: string | null
+          customer_user_id?: string | null
+          id?: string
+          ip_hash?: string | null
+          landing_path?: string | null
+          lead_id?: string | null
+          meta?: Json | null
+          referral_code?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       revenue_summary: {
         Row: {
           bereich: string | null
@@ -2728,6 +2931,7 @@ export type Database = {
         Returns: number
       }
       can_view_profile: { Args: { _profile_id: string }; Returns: boolean }
+      generate_referral_code: { Args: never; Returns: string }
       get_customers: {
         Args: never
         Returns: {
@@ -2794,6 +2998,7 @@ export type Database = {
     }
     Enums: {
       activity_type: "anruf" | "email" | "meeting" | "notiz" | "fehler"
+      affiliate_status: "pending" | "onboarding" | "active" | "disabled"
       app_role:
         | "admin"
         | "moderator"
@@ -2819,6 +3024,12 @@ export type Database = {
         | "analyzed"
         | "failed"
       call_type: "phone" | "zoom" | "teams" | "other"
+      commission_status:
+        | "pending"
+        | "paid"
+        | "failed"
+        | "refunded"
+        | "cancelled"
       course_price_tier: "freebie" | "low_budget" | "mid_range" | "high_class"
       lead_discovered_by: "daily_ai" | "manual" | "inbound"
       lead_source_type:
@@ -2988,6 +3199,7 @@ export const Constants = {
   public: {
     Enums: {
       activity_type: ["anruf", "email", "meeting", "notiz", "fehler"],
+      affiliate_status: ["pending", "onboarding", "active", "disabled"],
       app_role: [
         "admin",
         "moderator",
@@ -3015,6 +3227,7 @@ export const Constants = {
         "failed",
       ],
       call_type: ["phone", "zoom", "teams", "other"],
+      commission_status: ["pending", "paid", "failed", "refunded", "cancelled"],
       course_price_tier: ["freebie", "low_budget", "mid_range", "high_class"],
       lead_discovered_by: ["daily_ai", "manual", "inbound"],
       lead_source_type: [
