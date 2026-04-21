@@ -25,6 +25,7 @@ export default function Admin() {
           <TabsTrigger value="members" className="gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> Mitglieder</TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5"><Activity className="h-3.5 w-3.5" /> Logs</TabsTrigger>
           <TabsTrigger value="templates" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> E-Mail</TabsTrigger>
+          <TabsTrigger value="outlook" className="gap-1.5"><Inbox className="h-3.5 w-3.5" /> Outlook</TabsTrigger>
           <TabsTrigger value="integrations" className="gap-1.5"><Plug className="h-3.5 w-3.5" /> Integrationen</TabsTrigger>
           <TabsTrigger value="export" className="gap-1.5 col-span-2 sm:col-span-1"><Download className="h-3.5 w-3.5" /> Backup</TabsTrigger>
         </TabsList>
