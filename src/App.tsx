@@ -54,6 +54,8 @@ import PromptLibrary from "./pages/app/PromptLibrary";
 import ToolsDirectory from "./pages/app/ToolsDirectory";
 import LiveCallsCalendar from "./pages/app/LiveCallsCalendar";
 import AffiliateDashboard from "./pages/app/AffiliateDashboard";
+import Outlook from "./pages/app/Outlook";
+import Tickets from "./pages/app/Tickets";
 import { ReferralTracker } from "./components/affiliate/ReferralTracker";
 
 const queryClient = new QueryClient({
@@ -189,6 +191,16 @@ const App = () => (
               <Route path="admin" element={
                 <ProtectedRoute requiredRole="admin">
                   <Admin />
+                </ProtectedRoute>
+              } />
+              <Route path="outlook" element={
+                <ProtectedRoute requiredRole="admin">
+                  <Outlook />
+                </ProtectedRoute>
+              } />
+              <Route path="tickets" element={
+                <ProtectedRoute requiredRole="admin">
+                  <Tickets />
                 </ProtectedRoute>
               } />
               <Route path="unauthorized" element={<Unauthorized />} />
