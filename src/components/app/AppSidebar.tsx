@@ -24,6 +24,7 @@ import {
   Sparkles,
   Wrench,
   Video,
+  Handshake,
 } from 'lucide-react';
 
 interface NavItem {
@@ -64,6 +65,7 @@ const navItems: NavItem[] = [
   { label: 'Email Kampagnen', href: '/app/email-kampagnen', icon: Mail, staffOnly: true },
   { label: 'Reports', href: '/app/reports', icon: BarChart3, minRole: 'gruppenbetreuer' },
   { label: 'Einstellungen', href: '/app/settings', icon: Settings },
+  { label: 'Affiliate', href: '/app/affiliate', icon: Handshake },
   { label: 'COO Cockpit', href: '/app/coo-cockpit', icon: Gauge, exactRole: 'admin' },
   { label: 'Admin', href: '/app/admin', icon: Shield, exactRole: 'admin' },
 ];

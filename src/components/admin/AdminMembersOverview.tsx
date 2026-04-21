@@ -17,7 +17,7 @@ import {
   Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus, UserPlus,
   Pencil, Trash2, Loader2, Search, Eye, ChevronRight, BarChart3,
   FolderOpen, FileText, Play, CheckSquare, HelpCircle, ArrowUpDown,
-  Save, X, LayoutGrid, List
+  Save, X, LayoutGrid, List, Handshake
 } from 'lucide-react';
 import {
   MEMBER_STATUS_LABELS, MEMBER_STATUS_COLORS,
@@ -336,20 +336,23 @@ function MembersListSection() {
                       {member.onboarded_at ? new Date(member.onboarded_at).toLocaleDateString('de-DE') : '–'}
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={member.status}
-                        onValueChange={(val) => {
-                          updateStatus({ memberId: member.id, status: val as MemberStatus });
-                          toast({ title: 'Status aktualisiert' });
-                        }}
-                      >
-                        <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Aktiv</SelectItem>
-                          <SelectItem value="paused">Pausiert</SelectItem>
-                          <SelectItem value="churned">Gekündigt</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1.5">
+                        <Select
+                          value={member.status}
+                          onValueChange={(val) => {
+                            updateStatus({ memberId: member.id, status: val as MemberStatus });
+                            toast({ title: 'Status aktualisiert' });
+                          }}
+                        >
+                          <SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Aktiv</SelectItem>
+                            <SelectItem value="paused">Pausiert</SelectItem>
+                            <SelectItem value="churned">Gekündigt</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <InviteAffiliateButton profileId={member.profile_id} />
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -373,6 +376,51 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function InviteAffiliateButton({ profileId }: { profileId?: string | null }) {
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  if (!profileId) return null;
+
+  const handleClick = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('affiliate-invite', {
+        body: { profile_id: profileId },
+      });
+      if (error) throw error;
+      toast({
+        title: 'Affiliate eingeladen',
+        description: `Code: ${data?.referral_code ?? '—'}. Onboarding-Link wurde generiert.`,
+      });
+      if (data?.onboarding_url) {
+        navigator.clipboard?.writeText(data.onboarding_url).catch(() => {});
+      }
+    } catch (e) {
+      toast({
+        title: 'Fehler',
+        description: e instanceof Error ? e.message : String(e),
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="h-8 w-8"
+      title="Als Affiliate einladen"
+      onClick={handleClick}
+      disabled={loading}
+    >
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Handshake className="h-4 w-4" />}
+    </Button>
   );
 }
 
