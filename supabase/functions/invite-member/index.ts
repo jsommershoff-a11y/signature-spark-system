@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend';
+const GATEWAY_URL = 'https://connector-gateway.lovable.dev/microsoft_outlook';
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -23,7 +23,7 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const resendKey = Deno.env.get('RESEND_API_KEY');
+  const outlookKey = Deno.env.get('MICROSOFT_OUTLOOK_API_KEY');
   const lovableKey = Deno.env.get('LOVABLE_API_KEY');
   const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
@@ -138,8 +138,8 @@ serve(async (req) => {
     const appUrl = 'https://signature-spark-system.lovable.app';
     const inviteLink = `${appUrl}/auth?token=${token_str}`;
 
-    // Send email via Resend
-    if (resendKey && lovableKey) {
+    // Send email via Microsoft Outlook
+    if (outlookKey && lovableKey) {
       const greeting = name ? `Hallo ${name}` : 'Hallo';
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
@@ -161,31 +161,34 @@ serve(async (req) => {
       `;
 
       try {
-        const emailRes = await fetch(`${GATEWAY_URL}/emails`, {
+        const emailRes = await fetch(`${GATEWAY_URL}/me/sendMail`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${lovableKey}`,
-            'X-Connection-Api-Key': resendKey,
+            'X-Connection-Api-Key': outlookKey,
           },
           body: JSON.stringify({
-            from: 'KRS Signature <info@krs-signature.de>',
-            to: [email],
-            subject: 'Deine Einladung zum KRS Signature Mitgliederbereich',
-            html: emailHtml,
+            message: {
+              subject: 'Deine Einladung zum KRS Signature Mitgliederbereich',
+              body: { contentType: 'HTML', content: emailHtml },
+              toRecipients: [{ emailAddress: { address: email } }],
+            },
+            saveToSentItems: true,
           }),
         });
 
         if (!emailRes.ok) {
-          console.error('Email send failed:', await emailRes.text());
+          const errText = await emailRes.text();
+          console.error('Outlook send failed:', emailRes.status, errText);
         } else {
-          console.log('Invitation email sent to:', email);
+          console.log('Invitation email sent via Outlook to:', email);
         }
       } catch (emailErr) {
-        console.error('Email send error:', emailErr);
+        console.error('Outlook send error:', emailErr);
       }
     } else {
-      console.warn('RESEND_API_KEY or LOVABLE_API_KEY not set, skipping email');
+      console.warn('MICROSOFT_OUTLOOK_API_KEY or LOVABLE_API_KEY not set, skipping email');
     }
 
     return new Response(
