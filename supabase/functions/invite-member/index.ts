@@ -96,7 +96,7 @@ serve(async (req) => {
         email,
         role,
         token: token_str,
-        invited_by: inviterProfile?.id || userData.user.id,
+        invited_by: userData.user.id,
         expires_at: expiresAt,
       })
       .select()
