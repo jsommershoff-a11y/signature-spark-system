@@ -33,7 +33,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { priceId, mode } = await req.json();
+    const { priceId, mode, refCode } = await req.json();
     if (!priceId || typeof priceId !== "string" || !priceId.startsWith("price_")) {
       throw new Error("Invalid priceId");
     }
@@ -54,6 +54,14 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://signature-spark-system.lovable.app";
 
+    const metadata: Record<string, string> = {
+      user_id: user.id,
+      user_email: user.email,
+    };
+    if (refCode && typeof refCode === "string" && /^[A-Z0-9]{4,16}$/i.test(refCode)) {
+      metadata.ref_code = refCode.toUpperCase();
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -61,10 +69,7 @@ serve(async (req) => {
       mode: checkoutMode,
       success_url: `${origin}/app?payment=success`,
       cancel_url: `${origin}/app/pricing?payment=cancelled`,
-      metadata: {
-        user_id: user.id,
-        user_email: user.email,
-      },
+      metadata,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
