@@ -262,6 +262,58 @@ export default function Posteingang() {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>OneDrive Sync-Einstellungen</DialogTitle>
+            <DialogDescription>
+              Briefe werden aus dem Quell-Ordner gelesen, per KI verarbeitet und in den
+              Ziel-Ordner verschoben.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="src">Quell-Ordner (OneDrive)</Label>
+              <Input
+                id="src"
+                value={src}
+                onChange={(e) => setSrc(e.target.value)}
+                placeholder="/Posteingang"
+              />
+              <p className="text-xs text-muted-foreground">
+                Pfad ab Root deines OneDrive, z.B. /Scans/Briefe
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dst">Ziel-Ordner (verarbeitet)</Label>
+              <Input
+                id="dst"
+                value={dst}
+                onChange={(e) => setDst(e.target.value)}
+                placeholder="/Posteingang/Verarbeitet"
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="bycat">Nach Kategorie sortieren</Label>
+                <p className="text-xs text-muted-foreground">
+                  Unterordner je KI-Kategorie (Rechnungen, Verträge, …)
+                </p>
+              </div>
+              <Switch id="bycat" checked={byCat} onCheckedChange={setByCat} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setSettingsOpen(false)}>
+              Abbrechen
+            </Button>
+            <Button onClick={handleSaveSettings} disabled={saveSettings.isPending}>
+              Speichern
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
