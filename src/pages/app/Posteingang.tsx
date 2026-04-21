@@ -34,6 +34,7 @@ export default function Posteingang() {
   const upload = useUploadMail();
   const classify = useClassifyMail();
   const del = useDeleteMail();
+  const process = useProcessMail();
   const fileInput = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<{ mail: IncomingMail; url: string } | null>(null);
 
@@ -141,10 +142,46 @@ export default function Posteingang() {
                   </div>
                 </div>
               </CardHeader>
-              {mail.ai_summary && (
-                <CardContent className="pt-0">
-                  <p className="text-sm">{mail.ai_summary}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
+              {(mail.ai_summary || mail.status !== "processed") && (
+                <CardContent className="pt-0 space-y-3">
+                  {mail.ai_summary && <p className="text-sm">{mail.ai_summary}</p>}
+                  <div className="flex items-center gap-2 flex-wrap pt-2 border-t">
+                    <span className="text-xs text-muted-foreground mr-1">Aktionen:</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => process.mutate({ mail_id: mail.id, action: "task" })}
+                      disabled={process.isPending}
+                    >
+                      <CheckSquare className="h-3.5 w-3.5 mr-1" />
+                      Aufgabe
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => process.mutate({ mail_id: mail.id, action: "ticket" })}
+                      disabled={process.isPending}
+                    >
+                      <Ticket className="h-3.5 w-3.5 mr-1" />
+                      Ticket
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => process.mutate({ mail_id: mail.id, action: "deal" })}
+                      disabled={process.isPending}
+                    >
+                      <Target className="h-3.5 w-3.5 mr-1" />
+                      Deal
+                    </Button>
+                    {mail.lead_id && (
+                      <Badge variant="secondary" className="ml-auto">
+                        <Link2 className="h-3 w-3 mr-1" />
+                        Lead verknüpft
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
                     Hochgeladen{" "}
                     {format(new Date(mail.created_at), "dd. MMM yyyy HH:mm", { locale: de })}
                   </p>
