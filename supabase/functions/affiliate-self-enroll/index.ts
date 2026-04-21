@@ -39,10 +39,14 @@ serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!profile.email) {
-      return new Response(JSON.stringify({ error: "Profile has no email" }), {
+    let email = profile.email ?? userData.user.email ?? null;
+    if (!email) {
+      return new Response(JSON.stringify({ error: "No email available for this user" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+    if (!profile.email) {
+      await admin.from("profiles").update({ email }).eq("id", profile.id);
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
