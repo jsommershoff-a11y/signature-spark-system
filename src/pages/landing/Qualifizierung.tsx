@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { getStoredRefCode } from "@/components/affiliate/ReferralTracker";
 import { Header } from "@/components/landing/Header";
 import { SEOHead } from "@/components/landing/SEOHead";
 import { Footer } from "@/components/landing/Footer";
@@ -49,6 +50,7 @@ const Qualifizierung = () => {
   const onSubmit = async (data: QualifizierungFormData) => {
     setIsSubmitting(true);
 
+    const refCode = getStoredRefCode();
     try {
       const { error } = await supabase.from("leads").insert({
         name: data.name,
@@ -56,6 +58,7 @@ const Qualifizierung = () => {
         phone: data.phone || null,
         message: data.message || null,
         source: "qualifizierung",
+        ref_code: refCode,
       });
 
       if (error) throw error;

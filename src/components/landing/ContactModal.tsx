@@ -5,6 +5,7 @@ import { z } from "zod";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { getStoredRefCode } from "@/components/affiliate/ReferralTracker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,6 +53,7 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     
+    const refCode = getStoredRefCode();
     try {
       const { error } = await supabase.from("leads").insert({
         name: data.name,
@@ -59,6 +61,7 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
         phone: data.phone || null,
         message: data.message || null,
         source,
+        ref_code: refCode,
       });
 
       if (error) {
