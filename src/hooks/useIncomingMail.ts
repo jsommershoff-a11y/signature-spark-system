@@ -124,6 +124,33 @@ export function useDeleteMail() {
   });
 }
 
+export type MailAction = "task" | "ticket" | "deal" | "link_lead";
+
+export function useProcessMail() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { mail_id: string; action: MailAction; lead_id?: string }) => {
+      const { data, error } = await supabase.functions.invoke("mail-process-action", {
+        body: params,
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return data as { ok: true; kind: MailAction; id?: string; leadId?: string | null };
+    },
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ["incoming_mail"] });
+      const labels: Record<MailAction, string> = {
+        task: "Aufgabe erstellt",
+        ticket: "Ticket erstellt",
+        deal: "Deal in Pipeline platziert",
+        link_lead: "Lead verknüpft",
+      };
+      toast.success(labels[res.kind]);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
 export async function getMailFileUrl(path: string) {
   const { data } = await supabase.storage
     .from("incoming-mail")

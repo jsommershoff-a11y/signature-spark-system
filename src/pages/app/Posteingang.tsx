@@ -14,10 +14,11 @@ import {
   useUploadMail,
   useClassifyMail,
   useDeleteMail,
+  useProcessMail,
   getMailFileUrl,
   type IncomingMail,
 } from "@/hooks/useIncomingMail";
-import { Upload, Sparkles, Trash2, FileText, Eye, Mail } from "lucide-react";
+import { Upload, Sparkles, Trash2, FileText, Eye, Mail, CheckSquare, Ticket, Target, Link2 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
