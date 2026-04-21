@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { STRIPE_PRODUCTS_LIST, ADDON_SESSION } from '@/lib/stripe-config';
 import { TierProgressHint } from '@/components/app/LockedContent';
+import { getStoredRefCode } from '@/components/affiliate/ReferralTracker';
 import { toast } from 'sonner';
 import {
   Gift,
@@ -41,8 +42,9 @@ export default function Pricing() {
   const handleCheckout = async (priceId: string, productId: string, mode: string) => {
     setLoadingId(productId);
     try {
+      const refCode = getStoredRefCode();
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId, mode },
+        body: { priceId, mode, refCode },
       });
       if (error) throw error;
       if (data?.url) {
