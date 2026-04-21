@@ -39,10 +39,14 @@ serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!profile.email) {
-      return new Response(JSON.stringify({ error: "Profile has no email" }), {
+    let email = profile.email ?? userData.user.email ?? null;
+    if (!email) {
+      return new Response(JSON.stringify({ error: "No email available for this user" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+    if (!profile.email) {
+      await admin.from("profiles").update({ email }).eq("id", profile.id);
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
@@ -62,7 +66,7 @@ serve(async (req) => {
       const account = await stripe.accounts.create({
         type: "express",
         country: "DE",
-        email: profile.email,
+        email,
         capabilities: { transfers: { requested: true } },
         business_type: "individual",
         metadata: { profile_id: profile.id, user_id: profile.user_id },
