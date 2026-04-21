@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Inbox, Send, RefreshCw, Mail as MailIcon, Loader2 } from 'lucide-react';
+import { Inbox, Send, RefreshCw, Mail as MailIcon, Loader2, CheckSquare, Ticket as TicketIcon, Kanban } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -168,28 +168,70 @@ function MessageList({ messages }: { messages: OutlookMessage[] }) {
     );
   }
   return (
-    <ScrollArea className="h-[500px] rounded-md border">
+    <ScrollArea className="h-[600px] rounded-md border">
       <div className="divide-y">
         {messages.map((m) => (
-          <div key={m.id} className="p-3 hover:bg-muted/50">
-            <div className="flex justify-between items-start gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  {!m.isRead && <Badge variant="default" className="h-1.5 w-1.5 p-0 rounded-full" />}
-                  <p className="font-medium truncate">{m.subject || '(kein Betreff)'}</p>
-                </div>
-                <p className="text-sm text-muted-foreground truncate">
-                  {m.from?.emailAddress?.name || m.from?.emailAddress?.address || '—'}
-                </p>
-                <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{m.bodyPreview}</p>
-              </div>
-              <span className="text-xs text-muted-foreground shrink-0">
-                {formatDistanceToNow(new Date(m.receivedDateTime), { addSuffix: true, locale: de })}
-              </span>
-            </div>
-          </div>
+          <MessageRow key={m.id} message={m} />
         ))}
       </div>
     </ScrollArea>
+  );
+}
+
+function MessageRow({ message: m }: { message: OutlookMessage }) {
+  const action = useMutation({
+    mutationFn: async (kind: 'task' | 'ticket' | 'deal') => {
+      const { data, error } = await supabase.functions.invoke('outlook-process-action', {
+        body: {
+          action: kind,
+          email: {
+            messageId: m.id,
+            subject: m.subject,
+            bodyPreview: m.bodyPreview,
+            fromName: m.from?.emailAddress?.name,
+            fromAddress: m.from?.emailAddress?.address,
+          },
+        },
+      });
+      if (error) throw error;
+      if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+      return data;
+    },
+    onSuccess: (_, kind) => {
+      const labels = { task: 'Aufgabe erstellt', ticket: 'Ticket erstellt', deal: 'Lead/Deal in Pipeline' };
+      toast.success(labels[kind]);
+    },
+    onError: (e: Error) => toast.error(e.message ?? 'Aktion fehlgeschlagen'),
+  });
+
+  return (
+    <div className="p-3 hover:bg-muted/50">
+      <div className="flex justify-between items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            {!m.isRead && <Badge variant="default" className="h-1.5 w-1.5 p-0 rounded-full" />}
+            <p className="font-medium truncate">{m.subject || '(kein Betreff)'}</p>
+          </div>
+          <p className="text-sm text-muted-foreground truncate">
+            {m.from?.emailAddress?.name || m.from?.emailAddress?.address || '—'}
+          </p>
+          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{m.bodyPreview}</p>
+        </div>
+        <span className="text-xs text-muted-foreground shrink-0">
+          {formatDistanceToNow(new Date(m.receivedDateTime), { addSuffix: true, locale: de })}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2 mt-2">
+        <Button size="sm" variant="outline" disabled={action.isPending} onClick={() => action.mutate('task')}>
+          <CheckSquare className="h-3.5 w-3.5 mr-1.5" /> Aufgabe
+        </Button>
+        <Button size="sm" variant="outline" disabled={action.isPending} onClick={() => action.mutate('ticket')}>
+          <TicketIcon className="h-3.5 w-3.5 mr-1.5" /> Ticket
+        </Button>
+        <Button size="sm" variant="outline" disabled={action.isPending} onClick={() => action.mutate('deal')}>
+          <Kanban className="h-3.5 w-3.5 mr-1.5" /> Pipeline-Deal
+        </Button>
+      </div>
+    </div>
   );
 }
