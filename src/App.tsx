@@ -172,7 +172,7 @@ const App = () => (
               } />
               <Route path="members" element={
                 <ProtectedRoute requireMinRole="vertriebspartner">
-                  <Members />
+                  <Customers />
                 </ProtectedRoute>
               } />
               <Route path="reports" element={
