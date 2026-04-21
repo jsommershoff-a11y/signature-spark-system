@@ -56,6 +56,7 @@ import LiveCallsCalendar from "./pages/app/LiveCallsCalendar";
 import AffiliateDashboard from "./pages/app/AffiliateDashboard";
 import Outlook from "./pages/app/Outlook";
 import Tickets from "./pages/app/Tickets";
+import Posteingang from "./pages/app/Posteingang";
 import { ReferralTracker } from "./components/affiliate/ReferralTracker";
 
 const queryClient = new QueryClient({
@@ -201,6 +202,11 @@ const App = () => (
               <Route path="tickets" element={
                 <ProtectedRoute requiredRole="admin">
                   <Tickets />
+                </ProtectedRoute>
+              } />
+              <Route path="posteingang" element={
+                <ProtectedRoute requiredRole="admin">
+                  <Posteingang />
                 </ProtectedRoute>
               } />
               <Route path="unauthorized" element={<Unauthorized />} />
