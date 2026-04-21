@@ -232,6 +232,8 @@ serve(async (req) => {
         currency = session.currency?.toUpperCase() || 'EUR';
         providerOrderId = session.id;
         providerCustomerId = session.customer;
+        // capture for affiliate logic below
+        (globalThis as any).__refCode = session.metadata?.ref_code;
       }
     }
     // CopeCart format
