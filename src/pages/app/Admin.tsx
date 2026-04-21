@@ -82,6 +82,18 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="outlook">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Inbox className="h-5 w-5" /> Outlook Postfach</CardTitle>
+              <CardDescription>E-Mails über das verbundene Microsoft-Konto empfangen und senden</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AdminOutlookMailbox />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="integrations">
           <Card>
             <CardHeader>
