@@ -1636,6 +1636,7 @@ export type Database = {
           name: string
           phone: string | null
           qualification_score: number | null
+          ref_code: string | null
           source: string
         }
         Insert: {
@@ -1652,6 +1653,7 @@ export type Database = {
           name: string
           phone?: string | null
           qualification_score?: number | null
+          ref_code?: string | null
           source: string
         }
         Update: {
@@ -1668,6 +1670,7 @@ export type Database = {
           name?: string
           phone?: string | null
           qualification_score?: number | null
+          ref_code?: string | null
           source?: string
         }
         Relationships: []
