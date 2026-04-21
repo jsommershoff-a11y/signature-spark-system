@@ -38,10 +38,10 @@ serve(async (req) => {
     // Insert referral (idempotent on lead+affiliate)
     const insertPayload: Record<string, unknown> = {
       affiliate_id: affiliate.id,
-      ref_code: ref_code.toUpperCase(),
+      referral_code: ref_code.toUpperCase(),
     };
     if (lead_id) insertPayload.lead_id = lead_id;
-    if (email) insertPayload.email = email;
+    if (email) insertPayload.customer_email = email;
 
     const { data, error } = await supabase
       .from("referrals")
