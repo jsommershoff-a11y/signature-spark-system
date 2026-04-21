@@ -553,6 +553,98 @@ serve(async (req) => {
 
     // Pipeline update happens via trigger (update_pipeline_after_payment)
 
+    // ── Affiliate commission (30% gross, immediate transfer) ─────────────
+    try {
+      const refCode = (globalThis as any).__refCode as string | undefined;
+      if (refCode && amountCents && amountCents > 0) {
+        const { data: aff } = await supabase
+          .from('affiliates')
+          .select('id, stripe_account_id, commission_rate, status, charges_enabled, payouts_enabled')
+          .eq('referral_code', refCode.toUpperCase())
+          .maybeSingle();
+
+        if (aff && aff.status === 'active' && aff.payouts_enabled && aff.stripe_account_id) {
+          const commissionCents = Math.floor(amountCents * Number(aff.commission_rate));
+
+          // Resolve referral_id (best-effort)
+          let referralId: string | undefined;
+          if (recipientEmail) {
+            const { data: ref } = await supabase
+              .from('referrals')
+              .select('id')
+              .eq('affiliate_id', aff.id)
+              .or(`customer_email.eq.${recipientEmail},lead_id.eq.${leadId ?? '00000000-0000-0000-0000-000000000000'}`)
+              .maybeSingle();
+            if (ref) referralId = ref.id;
+          }
+
+          // Insert commission as pending
+          const { data: commission, error: cErr } = await supabase
+            .from('commissions')
+            .insert({
+              affiliate_id: aff.id,
+              referral_id: referralId,
+              gross_amount_cents: amountCents,
+              commission_rate: Number(aff.commission_rate),
+              commission_cents: commissionCents,
+              currency: (currency || 'eur').toLowerCase(),
+              customer_email: recipientEmail ?? userEmail ?? null,
+              stripe_checkout_session_id: providerOrderId ?? null,
+              status: 'pending',
+            })
+            .select('id')
+            .single();
+
+          if (cErr) {
+            console.error('Commission insert failed:', cErr);
+          } else if (commission && commissionCents > 0) {
+            // Trigger Stripe transfer
+            try {
+              const Stripe = (await import('https://esm.sh/stripe@18.5.0')).default;
+              const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+                apiVersion: '2025-08-27.basil',
+              });
+              const transfer = await stripe.transfers.create({
+                amount: commissionCents,
+                currency: (currency || 'eur').toLowerCase(),
+                destination: aff.stripe_account_id,
+                description: `Affiliate commission ${refCode}`,
+                metadata: { commission_id: commission.id, ref_code: refCode },
+              });
+              await supabase
+                .from('commissions')
+                .update({
+                  status: 'paid',
+                  paid_at: new Date().toISOString(),
+                  stripe_transfer_id: transfer.id,
+                })
+                .eq('id', commission.id);
+
+              // Mark referral converted
+              if (referralId) {
+                await supabase
+                  .from('referrals')
+                  .update({ converted_at: new Date().toISOString() })
+                  .eq('id', referralId);
+              }
+              console.log(`Commission paid: ${commissionCents} cents to ${aff.stripe_account_id}`);
+            } catch (transferErr) {
+              const msg = transferErr instanceof Error ? transferErr.message : String(transferErr);
+              console.error('Stripe transfer failed:', msg);
+              await supabase
+                .from('commissions')
+                .update({ status: 'failed', failure_reason: msg })
+                .eq('id', commission.id);
+            }
+          }
+        } else {
+          console.log(`Skipping commission: ref_code=${refCode}, affiliate not active or missing payout setup`);
+        }
+      }
+    } catch (affErr) {
+      console.error('Affiliate processing error:', affErr);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
