@@ -3,11 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   useIncomingMail,
@@ -15,10 +20,13 @@ import {
   useClassifyMail,
   useDeleteMail,
   useProcessMail,
+  useMailSyncSettings,
+  useSaveMailSyncSettings,
+  useSyncOneDrive,
   getMailFileUrl,
   type IncomingMail,
 } from "@/hooks/useIncomingMail";
-import { Upload, Sparkles, Trash2, FileText, Eye, Mail, CheckSquare, Ticket, Target, Link2 } from "lucide-react";
+import { Upload, Sparkles, Trash2, FileText, Eye, Mail, CheckSquare, Ticket, Target, Link2, Cloud, Settings, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -31,19 +39,41 @@ const priorityColors: Record<string, string> = {
 
 export default function Posteingang() {
   const { data: mails, isLoading } = useIncomingMail();
+  const { data: settings } = useMailSyncSettings();
+  const saveSettings = useSaveMailSyncSettings();
+  const syncOneDrive = useSyncOneDrive();
   const upload = useUploadMail();
   const classify = useClassifyMail();
   const del = useDeleteMail();
   const process = useProcessMail();
   const fileInput = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<{ mail: IncomingMail; url: string } | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [src, setSrc] = useState("");
+  const [dst, setDst] = useState("");
+  const [byCat, setByCat] = useState(true);
+
+  const openSettings = () => {
+    setSrc(settings?.source_folder_path || "/Posteingang");
+    setDst(settings?.processed_folder_path || "/Posteingang/Verarbeitet");
+    setByCat(settings?.sort_by_category ?? true);
+    setSettingsOpen(true);
+  };
+
+  const handleSaveSettings = async () => {
+    await saveSettings.mutateAsync({
+      source_folder_path: src.trim() || "/Posteingang",
+      processed_folder_path: dst.trim() || "/Posteingang/Verarbeitet",
+      sort_by_category: byCat,
+    });
+    setSettingsOpen(false);
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     for (const f of Array.from(files)) {
       const created = await upload.mutateAsync(f);
-      // Auto-classify after upload
       classify.mutate(created.id);
     }
     if (fileInput.current) fileInput.current.value = "";
@@ -66,10 +96,28 @@ export default function Posteingang() {
             Eingangsbriefe scannen, KI-OCR und Klassifizierung
           </p>
         </div>
-        <Button onClick={() => fileInput.current?.click()} disabled={upload.isPending}>
-          <Upload className="h-4 w-4 mr-2" />
-          Brief hochladen
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" onClick={openSettings}>
+            <Settings className="h-4 w-4 mr-2" />
+            Einstellungen
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => syncOneDrive.mutate()}
+            disabled={syncOneDrive.isPending}
+          >
+            {syncOneDrive.isPending ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Cloud className="h-4 w-4 mr-2" />
+            )}
+            OneDrive Sync
+          </Button>
+          <Button onClick={() => fileInput.current?.click()} disabled={upload.isPending}>
+            <Upload className="h-4 w-4 mr-2" />
+            Brief hochladen
+          </Button>
+        </div>
         <input
           ref={fileInput}
           type="file"
@@ -79,6 +127,18 @@ export default function Posteingang() {
           onChange={handleUpload}
         />
       </div>
+
+      {settings?.last_sync_at && (
+        <p className="text-xs text-muted-foreground">
+          Letzter OneDrive-Sync:{" "}
+          {format(new Date(settings.last_sync_at), "dd. MMM yyyy HH:mm", { locale: de })}
+          {" · "}
+          {settings.last_sync_count ?? 0} importiert
+          {settings.last_sync_error && (
+            <span className="text-destructive"> · Fehler: {settings.last_sync_error}</span>
+          )}
+        </p>
+      )}
 
       {isLoading ? (
         <div className="space-y-3">
