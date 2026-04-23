@@ -1923,13 +1923,18 @@ export type Database = {
           description: string | null
           duration_minutes: number
           event_date: string
+          external_calendar_id: string | null
+          external_event_id: string | null
           id: string
           is_recurring: boolean | null
+          last_synced_at: string | null
           max_participants: number | null
           meeting_provider: string | null
           meeting_url: string | null
           recurrence_rule: string | null
           status: string
+          sync_source: string | null
+          sync_status: string | null
           title: string
           updated_at: string
         }
@@ -1939,13 +1944,18 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           event_date: string
+          external_calendar_id?: string | null
+          external_event_id?: string | null
           id?: string
           is_recurring?: boolean | null
+          last_synced_at?: string | null
           max_participants?: number | null
           meeting_provider?: string | null
           meeting_url?: string | null
           recurrence_rule?: string | null
           status?: string
+          sync_source?: string | null
+          sync_status?: string | null
           title: string
           updated_at?: string
         }
@@ -1955,13 +1965,18 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           event_date?: string
+          external_calendar_id?: string | null
+          external_event_id?: string | null
           id?: string
           is_recurring?: boolean | null
+          last_synced_at?: string | null
           max_participants?: number | null
           meeting_provider?: string | null
           meeting_url?: string | null
           recurrence_rule?: string | null
           status?: string
+          sync_source?: string | null
+          sync_status?: string | null
           title?: string
           updated_at?: string
         }
