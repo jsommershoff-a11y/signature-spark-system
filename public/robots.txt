@@ -19,4 +19,4 @@ Allow: /
 Disallow: /app/
 Disallow: /auth
 
-Sitemap: https://krs-signature.de/sitemap.xml
+Sitemap: https://ki-automationen.io/sitemap.xml

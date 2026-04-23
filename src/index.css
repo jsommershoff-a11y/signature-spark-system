@@ -23,9 +23,9 @@
     --muted: 220 18% 96%;
     --muted-foreground: 220 10% 46%;
 
-    /* Accent = Warm Light */
-    --accent: 30 20% 96%;
-    --accent-foreground: 222 47% 11%;
+    /* Accent = KI Automationen Deep Green */
+    --accent: 160 61% 15%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -104,7 +104,7 @@
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 160 50% 44%;
+    --accent: 160 61% 25%;
     --accent-foreground: 160 70% 8%;
 
     --destructive: 0 63% 31%;
