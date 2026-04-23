@@ -51,7 +51,7 @@ export const ResultsSection = () => {
           <div className="hidden md:block">
             <img
               src={founderAbout}
-              alt="Ergebnisse durch Systematisierung – KRS Signature"
+              alt="Ergebnisse durch Systematisierung – KI Automationen"
               className="rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] w-full object-cover aspect-square"
               width={480}
               height={480}

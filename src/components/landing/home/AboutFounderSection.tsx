@@ -10,7 +10,7 @@ export const AboutFounderSection = () => {
           <div className="relative">
             <img
               src={founderPersonal}
-              alt="Gründer KRS Signature"
+              alt="Gründer KI Automationen"
               className="rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] w-full object-cover aspect-[4/5]"
             />
             <div className="absolute -bottom-4 -right-4 bg-gradient-to-r from-primary to-primary-light text-primary-foreground font-bold text-sm px-5 py-3 rounded-xl shadow-lg">

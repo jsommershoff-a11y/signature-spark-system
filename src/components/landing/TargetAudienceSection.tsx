@@ -32,7 +32,7 @@ export const TargetAudienceSection = ({
             Ist das hier für dich?
           </h2>
           <p className={`${landingTokens.text.body} max-w-2xl mx-auto`}>
-            KRS Signature ist nicht für jeden. Wir arbeiten nur mit Unternehmern,
+            KI Automationen ist nicht für jeden. Wir arbeiten nur mit Unternehmern,
             die bereit sind, echte Veränderung zuzulassen.
           </p>
         </div>
