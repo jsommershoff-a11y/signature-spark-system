@@ -20,7 +20,7 @@ export function OfferPreview({ content, companyLogo }: OfferPreviewProps) {
         {companyLogo ? (
           <img src={companyLogo} alt="Logo" className="h-12" />
         ) : (
-          <div className="text-2xl font-bold text-primary">KRS Signature</div>
+          <div className="text-2xl font-bold text-primary">KI Automationen</div>
         )}
         <div className="text-right">
           <p className="text-sm text-muted-foreground">{isVariable ? 'Kurzangebot' : 'Angebot'}</p>
