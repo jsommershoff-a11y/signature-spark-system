@@ -212,6 +212,11 @@ const App = () => (
                   <Posteingang />
                 </ProtectedRoute>
               } />
+              <Route path="email-log" element={
+                <ProtectedRoute requiredRole="admin">
+                  <EmailLog />
+                </ProtectedRoute>
+              } />
               <Route path="unauthorized" element={<Unauthorized />} />
             </Route>
 
