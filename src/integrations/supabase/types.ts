@@ -991,6 +991,42 @@ export type Database = {
           },
         ]
       }
+      email_send_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string
+          metadata: Json | null
+          recipient_email: string
+          status: string
+          subject: string | null
+          template_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id: string
+          metadata?: Json | null
+          recipient_email: string
+          status?: string
+          subject?: string | null
+          template_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string
+          metadata?: Json | null
+          recipient_email?: string
+          status?: string
+          subject?: string | null
+          template_name?: string | null
+        }
+        Relationships: []
+      }
       email_sequence_steps: {
         Row: {
           conditions: Json | null
