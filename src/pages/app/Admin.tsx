@@ -94,6 +94,10 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="slot-rules">
+          <AdminSlotClassificationRules />
+        </TabsContent>
+
         <TabsContent value="export">
           <Card>
             <CardHeader>
