@@ -96,6 +96,10 @@ const App = () => (
             <Route path="/widerruf" element={<Widerruf />} />
             <Route path="/community" element={<Community />} />
 
+            {/* Public consent (Double Opt-In) */}
+            <Route path="/email-consent/confirm" element={<EmailConsentConfirm />} />
+            <Route path="/email-consent/revoke" element={<EmailConsentRevoke />} />
+
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -217,6 +221,11 @@ const App = () => (
               <Route path="email-log" element={
                 <ProtectedRoute requiredRole="admin">
                   <EmailLog />
+                </ProtectedRoute>
+              } />
+              <Route path="email-consents" element={
+                <ProtectedRoute requiredRole="admin">
+                  <EmailConsents />
                 </ProtectedRoute>
               } />
               <Route path="unauthorized" element={<Unauthorized />} />
