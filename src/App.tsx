@@ -59,6 +59,8 @@ import Tickets from "./pages/app/Tickets";
 import Posteingang from "./pages/app/Posteingang";
 import Katalog from "./pages/app/Katalog";
 import EmailLog from "./pages/app/EmailLog";
+import EmailConsents from "./pages/app/EmailConsents";
+import { EmailConsentConfirm, EmailConsentRevoke } from "./pages/EmailConsent";
 import { ReferralTracker } from "./components/affiliate/ReferralTracker";
 
 const queryClient = new QueryClient({
@@ -93,6 +95,10 @@ const App = () => (
             <Route path="/agb" element={<AGB />} />
             <Route path="/widerruf" element={<Widerruf />} />
             <Route path="/community" element={<Community />} />
+
+            {/* Public consent (Double Opt-In) */}
+            <Route path="/email-consent/confirm" element={<EmailConsentConfirm />} />
+            <Route path="/email-consent/revoke" element={<EmailConsentRevoke />} />
 
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
@@ -215,6 +221,11 @@ const App = () => (
               <Route path="email-log" element={
                 <ProtectedRoute requiredRole="admin">
                   <EmailLog />
+                </ProtectedRoute>
+              } />
+              <Route path="email-consents" element={
+                <ProtectedRoute requiredRole="admin">
+                  <EmailConsents />
                 </ProtectedRoute>
               } />
               <Route path="unauthorized" element={<Unauthorized />} />

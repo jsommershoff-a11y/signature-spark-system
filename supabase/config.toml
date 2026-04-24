@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.generate-offer-pdf]
 verify_jwt = false
+
+[functions.email-consent-request]
+verify_jwt = false
+
+[functions.email-consent-action]
+verify_jwt = false

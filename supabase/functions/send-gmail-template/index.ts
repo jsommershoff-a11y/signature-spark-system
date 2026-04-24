@@ -207,6 +207,12 @@ Deno.serve(async (req) => {
     const bcc = body?.bcc as string | undefined;
     const data = (body?.data ?? {}) as Record<string, string>;
     const subjectOverride = body?.subject_override as string | undefined;
+    // GDPR: skip consent check only for transactional templates (confirmation/invitation
+    // are responses to a user-initiated action). For 'notification' and 'reminder'
+    // (broadcast-style messages) we require an active opt-in.
+    const requireConsent = template === 'notification' || template === 'reminder';
+    const consentPurpose = (body?.consent_purpose as string | undefined) || 'notifications';
+    const skipConsent = body?.skip_consent === true;
 
     if (!template || !['invitation', 'confirmation', 'notification', 'reminder'].includes(template)) {
       return new Response(JSON.stringify({ error: 'invalid template' }), {
@@ -223,6 +229,26 @@ Deno.serve(async (req) => {
 
     logTo = to;
     logTemplate = template;
+
+    // GDPR consent gate
+    if (requireConsent && !skipConsent && adminClient) {
+      const { data: consentOk } = await adminClient.rpc('has_email_consent', {
+        _email: to,
+        _purpose: consentPurpose,
+      });
+      if (!consentOk) {
+        await logEmail('blocked_no_consent', {
+          template_name: template,
+          recipient_email: to,
+          error_message: `No active consent for purpose "${consentPurpose}"`,
+          metadata: { user_id: user.id, purpose: consentPurpose },
+        });
+        return new Response(
+          JSON.stringify({ success: false, error: 'no_consent', purpose: consentPurpose }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      }
+    }
 
     const built = buildTemplate(template, data);
     const subject = subjectOverride || built.subject;
