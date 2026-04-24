@@ -230,6 +230,57 @@ export type Database = {
         }
         Relationships: []
       }
+      availability_slots: {
+        Row: {
+          conflict_reason: string | null
+          created_at: string
+          created_by: string | null
+          end_at: string
+          google_calendar_id: string | null
+          google_event_id: string | null
+          google_event_summary: string | null
+          id: string
+          notes: string | null
+          profile_id: string
+          source: Database["public"]["Enums"]["slot_source"]
+          start_at: string
+          status: Database["public"]["Enums"]["slot_status"]
+          updated_at: string
+        }
+        Insert: {
+          conflict_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_at: string
+          google_calendar_id?: string | null
+          google_event_id?: string | null
+          google_event_summary?: string | null
+          id?: string
+          notes?: string | null
+          profile_id: string
+          source?: Database["public"]["Enums"]["slot_source"]
+          start_at: string
+          status?: Database["public"]["Enums"]["slot_status"]
+          updated_at?: string
+        }
+        Update: {
+          conflict_reason?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_at?: string
+          google_calendar_id?: string | null
+          google_event_id?: string | null
+          google_event_summary?: string | null
+          id?: string
+          notes?: string | null
+          profile_id?: string
+          source?: Database["public"]["Enums"]["slot_source"]
+          start_at?: string
+          status?: Database["public"]["Enums"]["slot_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_queue_items: {
         Row: {
           completed_at: string | null
@@ -1570,6 +1621,69 @@ export type Database = {
           },
         ]
       }
+      google_calendar_accounts: {
+        Row: {
+          access_token: string
+          created_at: string
+          email: string
+          google_sub: string | null
+          id: string
+          is_active: boolean
+          last_sync_at: string | null
+          last_sync_error: string | null
+          primary_calendar_id: string
+          profile_id: string
+          refresh_token: string
+          scope: string | null
+          sync_token: string | null
+          token_expires_at: string | null
+          updated_at: string
+          watch_channel_id: string | null
+          watch_expires_at: string | null
+          watch_resource_id: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          email: string
+          google_sub?: string | null
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          primary_calendar_id?: string
+          profile_id: string
+          refresh_token: string
+          scope?: string | null
+          sync_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          watch_channel_id?: string | null
+          watch_expires_at?: string | null
+          watch_resource_id?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          email?: string
+          google_sub?: string | null
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          primary_calendar_id?: string
+          profile_id?: string
+          refresh_token?: string
+          scope?: string | null
+          sync_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          watch_channel_id?: string | null
+          watch_expires_at?: string | null
+          watch_resource_id?: string | null
+        }
+        Relationships: []
+      }
       incoming_mail: {
         Row: {
           ai_summary: string | null
@@ -2834,6 +2948,81 @@ export type Database = {
         }
         Relationships: []
       }
+      slot_bookings: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          google_calendar_id: string | null
+          google_event_id: string | null
+          id: string
+          lead_id: string | null
+          meta: Json | null
+          notification_sent_at: string | null
+          profile_id: string
+          slot_id: string
+          status: Database["public"]["Enums"]["booking_status"]
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          google_calendar_id?: string | null
+          google_event_id?: string | null
+          id?: string
+          lead_id?: string | null
+          meta?: Json | null
+          notification_sent_at?: string | null
+          profile_id: string
+          slot_id: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          google_calendar_id?: string | null
+          google_event_id?: string | null
+          id?: string
+          lead_id?: string | null
+          meta?: Json | null
+          notification_sent_at?: string | null
+          profile_id?: string
+          slot_id?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slot_bookings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slot_bookings_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "availability_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_library_items: {
         Row: {
           content: string | null
@@ -3260,6 +3449,17 @@ export type Database = {
         Args: { _signature_data: string; _signer_name: string; _token: string }
         Returns: string
       }
+      book_slot_public: {
+        Args: {
+          _contact_email: string
+          _contact_name: string
+          _contact_phone?: string
+          _lead_id?: string
+          _slot_id: string
+          _topic?: string
+        }
+        Returns: string
+      }
       calculate_pipeline_priority: {
         Args: {
           _icp_score: number
@@ -3326,6 +3526,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_free_slots_public: {
+        Args: { _from?: string; _profile_id: string; _to?: string }
+        Returns: {
+          end_at: string
+          id: string
+          start_at: string
+        }[]
+      }
       mark_offer_viewed: { Args: { _token: string }; Returns: undefined }
       match_lead_by_phone: {
         Args: { search_suffix: string }
@@ -3337,6 +3545,30 @@ export type Database = {
           phone: string
           status: string
         }[]
+      }
+      release_slot_for_google_event: {
+        Args: {
+          _google_event_id: string
+          _profile_id: string
+          _reason?: string
+        }
+        Returns: {
+          booking_id: string
+          contact_email: string
+          contact_name: string
+          slot_id: string
+          start_at: string
+        }[]
+      }
+      update_slot_for_google_event: {
+        Args: {
+          _google_event_id: string
+          _new_end: string
+          _new_start: string
+          _profile_id: string
+          _summary?: string
+        }
+        Returns: string
       }
     }
     Enums: {
@@ -3357,6 +3589,13 @@ export type Database = {
         | "member_pro"
         | "guest"
       application_status: "pending" | "reviewing" | "accepted" | "rejected"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "cancelled"
+        | "cancelled_by_organizer"
+        | "no_show"
+        | "completed"
       call_provider: "zoom" | "twilio" | "sipgate" | "manual"
       call_status:
         | "scheduled"
@@ -3411,6 +3650,8 @@ export type Database = {
         | "won"
         | "lost"
       progress_status: "not_started" | "in_progress" | "completed"
+      slot_source: "manual" | "google_busy" | "recurring"
+      slot_status: "free" | "held" | "booked" | "blocked" | "cancelled"
       structogram_type: "red" | "green" | "blue" | "mixed" | "unknown"
       task_status: "open" | "done" | "blocked"
       task_type: "call" | "followup" | "review_offer" | "intervention"
@@ -3563,6 +3804,14 @@ export const Constants = {
         "guest",
       ],
       application_status: ["pending", "reviewing", "accepted", "rejected"],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "cancelled",
+        "cancelled_by_organizer",
+        "no_show",
+        "completed",
+      ],
       call_provider: ["zoom", "twilio", "sipgate", "manual"],
       call_status: [
         "scheduled",
@@ -3616,6 +3865,8 @@ export const Constants = {
         "lost",
       ],
       progress_status: ["not_started", "in_progress", "completed"],
+      slot_source: ["manual", "google_busy", "recurring"],
+      slot_status: ["free", "held", "booked", "blocked", "cancelled"],
       structogram_type: ["red", "green", "blue", "mixed", "unknown"],
       task_status: ["open", "done", "blocked"],
       task_type: ["call", "followup", "review_offer", "intervention"],
