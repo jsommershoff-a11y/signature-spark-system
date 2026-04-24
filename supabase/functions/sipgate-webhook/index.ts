@@ -124,7 +124,7 @@ serve(async (req) => {
 
         if (leadMatches.length > 1) {
           console.warn(
-            `[${requestId}] Multiple leads matched for ${suffix}: ${leadMatches.map((l) => `${l.id} (${l.first_name} ${l.last_name})`).join(", ")}. Using: ${bestMatch!.id}`
+            `[${requestId}] Multiple leads matched for ${suffix}: ${leadMatches.map((l: any) => `${l.id} (${l.first_name} ${l.last_name})`).join(", ")}. Using: ${bestMatch!.id}`
           );
         }
 
