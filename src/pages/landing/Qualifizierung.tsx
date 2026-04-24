@@ -92,7 +92,7 @@ const Qualifizierung = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="Kostenlose Potenzial-Analyse | KRS Signature"
+        title="Kostenlose Potenzial-Analyse | KI Automationen"
         description="In 30 Minuten analysieren wir Engpässe, Abhängigkeiten und Automatisierungspotenzial in deinem Unternehmen. Klare Prioritäten statt Tool-Demo."
         canonical="/qualifizierung"
       />
