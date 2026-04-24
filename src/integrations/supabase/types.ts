@@ -232,6 +232,7 @@ export type Database = {
       }
       availability_slots: {
         Row: {
+          auto_classified: boolean
           conflict_reason: string | null
           created_at: string
           created_by: string | null
@@ -240,14 +241,17 @@ export type Database = {
           google_event_id: string | null
           google_event_summary: string | null
           id: string
+          matched_rule_id: string | null
           notes: string | null
           profile_id: string
+          slot_category: Database["public"]["Enums"]["slot_category"] | null
           source: Database["public"]["Enums"]["slot_source"]
           start_at: string
           status: Database["public"]["Enums"]["slot_status"]
           updated_at: string
         }
         Insert: {
+          auto_classified?: boolean
           conflict_reason?: string | null
           created_at?: string
           created_by?: string | null
@@ -256,14 +260,17 @@ export type Database = {
           google_event_id?: string | null
           google_event_summary?: string | null
           id?: string
+          matched_rule_id?: string | null
           notes?: string | null
           profile_id: string
+          slot_category?: Database["public"]["Enums"]["slot_category"] | null
           source?: Database["public"]["Enums"]["slot_source"]
           start_at: string
           status?: Database["public"]["Enums"]["slot_status"]
           updated_at?: string
         }
         Update: {
+          auto_classified?: boolean
           conflict_reason?: string | null
           created_at?: string
           created_by?: string | null
@@ -272,8 +279,10 @@ export type Database = {
           google_event_id?: string | null
           google_event_summary?: string | null
           id?: string
+          matched_rule_id?: string | null
           notes?: string | null
           profile_id?: string
+          slot_category?: Database["public"]["Enums"]["slot_category"] | null
           source?: Database["public"]["Enums"]["slot_source"]
           start_at?: string
           status?: Database["public"]["Enums"]["slot_status"]
@@ -3023,6 +3032,45 @@ export type Database = {
           },
         ]
       }
+      slot_classification_rules: {
+        Row: {
+          applies_to_source: string
+          category: Database["public"]["Enums"]["slot_category"]
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          keywords: string[]
+          name: string
+          priority: number
+          updated_at: string
+        }
+        Insert: {
+          applies_to_source?: string
+          category: Database["public"]["Enums"]["slot_category"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          keywords?: string[]
+          name: string
+          priority?: number
+          updated_at?: string
+        }
+        Update: {
+          applies_to_source?: string
+          category?: Database["public"]["Enums"]["slot_category"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          keywords?: string[]
+          name?: string
+          priority?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_library_items: {
         Row: {
           content: string | null
@@ -3470,6 +3518,13 @@ export type Database = {
         Returns: number
       }
       can_view_profile: { Args: { _profile_id: string }; Returns: boolean }
+      classify_slot_event: {
+        Args: { _description: string; _source: string; _title: string }
+        Returns: {
+          category: Database["public"]["Enums"]["slot_category"]
+          rule_id: string
+        }[]
+      }
       generate_referral_code: { Args: never; Returns: string }
       get_customers: {
         Args: never
@@ -3650,6 +3705,16 @@ export type Database = {
         | "won"
         | "lost"
       progress_status: "not_started" | "in_progress" | "completed"
+      slot_category:
+        | "discovery_call"
+        | "closing"
+        | "strategy"
+        | "demo"
+        | "onboarding"
+        | "internal"
+        | "personal"
+        | "blocker"
+        | "other"
       slot_source: "manual" | "google_busy" | "recurring"
       slot_status: "free" | "held" | "booked" | "blocked" | "cancelled"
       structogram_type: "red" | "green" | "blue" | "mixed" | "unknown"
@@ -3865,6 +3930,17 @@ export const Constants = {
         "lost",
       ],
       progress_status: ["not_started", "in_progress", "completed"],
+      slot_category: [
+        "discovery_call",
+        "closing",
+        "strategy",
+        "demo",
+        "onboarding",
+        "internal",
+        "personal",
+        "blocker",
+        "other",
+      ],
       slot_source: ["manual", "google_busy", "recurring"],
       slot_status: ["free", "held", "booked", "blocked", "cancelled"],
       structogram_type: ["red", "green", "blue", "mixed", "unknown"],
