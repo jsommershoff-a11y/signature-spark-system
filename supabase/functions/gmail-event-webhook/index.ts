@@ -26,8 +26,8 @@ const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_mail/gmail/v1'
 
 const BRAND = {
   name: 'KI-Automationen',
-  primary: '#0F172A',
-  accent: '#F97316',
+  primary: '#F6711F',
+  accent: '#0F6B4A',
   url: 'https://www.krs-signature.de',
 };
 
