@@ -28,10 +28,10 @@ const BRAND = {
   name: 'KI-Automationen',
   primary: '#F6711F',
   accent: '#0F6B4A',
-  url: 'https://www.krs-signature.de',
+  url: 'https://ki-automationen.io',
 };
 
-type Template = 'invitation' | 'confirmation' | 'reminder';
+type Template = 'invitation' | 'confirmation' | 'notification' | 'reminder';
 
 // Map event types → template + sensible default data merger
 const EVENT_MAP: Record<
@@ -60,20 +60,31 @@ const EVENT_MAP: Record<
     }),
   },
   'task.assigned': {
-    template: 'reminder',
+    template: 'notification',
     build: (d) => ({
       name: d.name || 'dort',
-      event: d.event || `neue Aufgabe: ${d.title || 'Aufgabe'}`,
-      when: d.when || (d.due_at ? `bis ${d.due_at}` : 'so bald wie möglich'),
+      headline: d.headline || `Neue Aufgabe: ${d.title || 'Aufgabe'}`,
+      message: d.message || (d.due_at ? `Fällig bis <strong>${d.due_at}</strong>.` : 'Bitte zeitnah erledigen.'),
       url: d.url || `${BRAND.url}/app/tasks`,
+      cta: d.cta || 'Aufgabe öffnen',
     }),
   },
   'member.invited': {
     template: 'invitation',
     build: (d) => ({
       name: d.name || 'dort',
-      inviter: d.inviter || 'Das KRS Team',
+      inviter: d.inviter || `Das ${BRAND.name} Team`,
       invite_url: d.invite_url || `${BRAND.url}/auth`,
+    }),
+  },
+  'notification.generic': {
+    template: 'notification',
+    build: (d) => ({
+      name: d.name || 'dort',
+      headline: d.headline || 'Neue Benachrichtigung',
+      message: d.message || '',
+      url: d.url || BRAND.url,
+      cta: d.cta || 'Im System öffnen',
     }),
   },
 };
@@ -108,7 +119,7 @@ function buildTemplate(name: Template, data: Record<string, string>) {
   const recipient = data.name || 'dort';
   switch (name) {
     case 'invitation': {
-      const inviter = data.inviter || 'Das KRS Team';
+      const inviter = data.inviter || `Das ${BRAND.name} Team`;
       const inviteUrl = data.invite_url || `${BRAND.url}/auth`;
       return {
         subject: `${inviter} hat dich zu ${BRAND.name} eingeladen`,
@@ -127,6 +138,21 @@ function buildTemplate(name: Template, data: Record<string, string>) {
         html: layout(
           'Wir haben deine Anfrage erhalten',
           `<p>Hallo ${recipient},</p><p>vielen Dank — wir haben <strong>${topic}</strong> erhalten und bestätigen den Eingang.</p><p>Du hörst zeitnah von uns.</p>`,
+        ),
+      };
+    }
+    case 'notification': {
+      const headline = data.headline || 'Neue Benachrichtigung';
+      const message = data.message || '';
+      const url = data.url;
+      const cta = data.cta || 'Im System öffnen';
+      return {
+        subject: headline,
+        html: layout(
+          headline,
+          `<p>Hallo ${recipient},</p>${message ? `<p>${message}</p>` : ''}`,
+          url ? cta : undefined,
+          url,
         ),
       };
     }
@@ -250,7 +276,7 @@ Deno.serve(async (req) => {
       (template_override as Template) ||
       mapping?.template ||
       'confirmation';
-    if (!['invitation', 'confirmation', 'reminder'].includes(template)) {
+    if (!['invitation', 'confirmation', 'notification', 'reminder'].includes(template)) {
       return new Response(JSON.stringify({ error: 'invalid template' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
