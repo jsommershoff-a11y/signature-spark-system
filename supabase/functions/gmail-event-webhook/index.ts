@@ -311,6 +311,14 @@ Deno.serve(async (req) => {
     const merged = mapping ? mapping.build(data) : { name: data.name || 'dort', topic: data.topic || event };
     const { subject, html } = buildTemplate(template, merged);
     const raw = encodeRaw({ to, cc, bcc, subject, html });
+    logTo = to; logTemplate = template; logSubject = subject; logEvent = event;
+
+    await logEmail('pending', {
+      template_name: template,
+      recipient_email: to,
+      subject,
+      metadata: { event, cc, bcc, source: 'webhook' },
+    });
 
     const response = await fetch(`${GATEWAY_URL}/users/me/messages/send`, {
       method: 'POST',
@@ -329,6 +337,13 @@ Deno.serve(async (req) => {
 
     console.log(`gmail-event-webhook: event=${event} template=${template} to=${to} message_id=${result.id}`);
 
+    await logEmail('sent', {
+      template_name: template,
+      recipient_email: to,
+      subject,
+      metadata: { event, gmail_message_id: result.id, source: 'webhook' },
+    });
+
     return new Response(
       JSON.stringify({ success: true, event, template, message_id: result.id, subject }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
@@ -336,6 +351,13 @@ Deno.serve(async (req) => {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('gmail-event-webhook error:', message);
+    await logEmail('failed', {
+      template_name: logTemplate || null,
+      recipient_email: logTo || 'unknown',
+      subject: logSubject,
+      error_message: message,
+      metadata: { event: logEvent, source: 'webhook' },
+    });
     return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
