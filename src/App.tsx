@@ -57,6 +57,7 @@ import AffiliateDashboard from "./pages/app/AffiliateDashboard";
 import Outlook from "./pages/app/Outlook";
 import Tickets from "./pages/app/Tickets";
 import Posteingang from "./pages/app/Posteingang";
+import Katalog from "./pages/app/Katalog";
 import { ReferralTracker } from "./components/affiliate/ReferralTracker";
 
 const queryClient = new QueryClient({
@@ -91,11 +92,11 @@ const App = () => (
             <Route path="/agb" element={<AGB />} />
             <Route path="/widerruf" element={<Widerruf />} />
             <Route path="/community" element={<Community />} />
-            
+
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            
+
             {/* Protected app routes */}
             <Route path="/app" element={
               <ProtectedRoute>
@@ -103,6 +104,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
+              <Route path="katalog" element={<Katalog />} />
               <Route path="crm" element={
                 <ProtectedRoute requireMinRole="vertriebspartner">
                   <CRM />
@@ -211,10 +213,10 @@ const App = () => (
               } />
               <Route path="unauthorized" element={<Unauthorized />} />
             </Route>
-            
+
             {/* Public offer page */}
             <Route path="/offer/:token" element={<PublicOffer />} />
-            
+
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
