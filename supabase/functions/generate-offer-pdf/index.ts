@@ -57,7 +57,7 @@ function generateOfferHTML(offer: any): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${json.title || "Angebot"} - KRS Signature</title>
+  <title>${json.title || "Angebot"} - KI Automationen</title>
   <style>
     @media print {
       body { margin: 0; }
@@ -109,7 +109,7 @@ function generateOfferHTML(offer: any): string {
 
   <div class="header">
     <div>
-      <div class="logo">KRS Signature</div>
+      <div class="logo">KI Automationen</div>
       ${json.company_info ? `<div style="font-size:12px;color:#6b7280;margin-top:4px;">${json.company_info.address || ""}<br/>${json.company_info.ust_id || ""}</div>` : ""}
     </div>
     <div class="meta">
@@ -208,7 +208,7 @@ function generateOfferHTML(offer: any): string {
   </div>` : ""}
 
   <div class="footer">
-    <p>KRS Signature${json.company_info ? ` · ${json.company_info.geschaeftsfuehrer || ""} · ${json.company_info.hrb || ""}` : ""}</p>
+    <p>KI Automationen${json.company_info ? ` · ${json.company_info.geschaeftsfuehrer || ""} · ${json.company_info.hrb || ""}` : ""}</p>
     <p>Dieses Angebot wurde digital erstellt.</p>
   </div>
 </body>
