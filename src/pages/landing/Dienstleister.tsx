@@ -54,7 +54,7 @@ const Dienstleister = () => {
   return (
     <PublicLayout>
       <SEOHead
-        title="Automatisierung für Dienstleister | KRS Signature"
+        title="Automatisierung für Dienstleister | KI Automationen"
         description="Vertrieb und Prozesse für Agenturen und Berater systematisieren. Planbare Umsätze statt Auf und Ab. Kostenlose Potenzial-Analyse."
         canonical="/dienstleister"
       />
