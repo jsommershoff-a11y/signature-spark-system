@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Activity, Mail, Plug, Download, GraduationCap } from 'lucide-react';
+import { Shield, Activity, Mail, Plug, Download, GraduationCap, Tags } from 'lucide-react';
 import AdminUserManagement from '@/components/admin/AdminUserManagement';
 import AdminLeadsTable from '@/components/admin/AdminLeadsTable';
 import AdminSystemLogs from '@/components/admin/AdminSystemLogs';
@@ -8,6 +8,7 @@ import AdminEmailTemplates from '@/components/admin/AdminEmailTemplates';
 import AdminIntegrations from '@/components/admin/AdminIntegrations';
 import AdminBackupExport from '@/components/admin/AdminBackupExport';
 import AdminMembersOverview from '@/components/admin/AdminMembersOverview';
+import AdminSlotClassificationRules from '@/components/admin/AdminSlotClassificationRules';
 
 export default function Admin() {
   return (
