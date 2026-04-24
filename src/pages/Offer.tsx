@@ -166,7 +166,7 @@ export default function PublicOffer() {
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-muted-foreground">
           <p>Bei Fragen erreichen Sie uns unter:</p>
-          <p className="font-medium">info@krs-signature.de</p>
+          <p className="font-medium">hi-there@ki-automationen.io</p>
         </div>
       </div>
     </div>
