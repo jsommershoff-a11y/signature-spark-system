@@ -70,6 +70,7 @@ const navItems: NavItem[] = [
   { label: 'Affiliate', href: '/app/affiliate', icon: Handshake },
   { label: 'Outlook', href: '/app/outlook', icon: Inbox, exactRole: 'admin' },
   { label: 'Posteingang', href: '/app/posteingang', icon: Mailbox, exactRole: 'admin' },
+  { label: 'E-Mail Log', href: '/app/email-log', icon: Mail, exactRole: 'admin' },
   { label: 'Tickets', href: '/app/tickets', icon: Ticket, exactRole: 'admin' },
   { label: 'COO Cockpit', href: '/app/coo-cockpit', icon: Gauge, exactRole: 'admin' },
   { label: 'Admin', href: '/app/admin', icon: Shield, exactRole: 'admin' },
