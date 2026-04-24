@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <tr><td style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:32px 40px;text-align:center;">
-          <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:700;">KRS Signature System</h1>
+          <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:700;">KI Automationen</h1>
         </td></tr>
         <tr><td style="padding:40px;">
           <p style="font-size:16px;color:#18181b;margin:0 0 16px;">Hallo ${trimmedName},</p>
@@ -113,9 +113,9 @@ Deno.serve(async (req) => {
           <hr style="border:none;border-top:1px solid #e4e4e7;margin:24px 0;" />
           <p style="font-size:13px;color:#a1a1aa;margin:0;line-height:1.5;">
             Bei dringenden Fragen erreichst du uns unter
-            <a href="mailto:info@krs-signature.de" style="color:#6366f1;">info@krs-signature.de</a>.<br/><br/>
+            <a href="mailto:info@ki-automationen.io" style="color:#6366f1;">info@ki-automationen.io</a>.<br/><br/>
             Mit freundlichen Grüßen,<br/>
-            <strong>Dein KRS Team</strong>
+            <strong>KI-Automationen Team</strong>
           </p>
         </td></tr>
       </table>
@@ -161,14 +161,14 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify([
         {
-          from: "KRS Signature System <info@krs-signature.de>",
+          from: "KI Automationen <info@ki-automationen.io>",
           to: [email.trim()],
-          subject: "Danke für deine Anfrage – KRS Signature System",
+          subject: "Danke für deine Anfrage – KI Automationen",
           html: customerHtml,
         },
         {
-          from: "KRS Signature System <info@krs-signature.de>",
-          to: ["info@krs-signature.de"],
+          from: "KI Automationen <info@ki-automationen.io>",
+          to: ["info@ki-automationen.io"],
           subject: `Neuer Lead: ${trimmedName} (${sourceLabel})`,
           html: teamHtml,
         },

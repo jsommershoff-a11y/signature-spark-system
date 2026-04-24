@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
         <tr><td style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:32px 40px;text-align:center;">
-          <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:700;">KRS Signature System</h1>
+          <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:700;">KI Automationen</h1>
         </td></tr>
         <tr><td style="padding:40px;">
           <p style="font-size:16px;color:#18181b;margin:0 0 16px;">Hallo ${leadName},</p>
@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
           <p style="font-size:13px;color:#a1a1aa;margin:0;line-height:1.5;">
             Bei Fragen erreichen Sie uns jederzeit.<br/>
             Mit freundlichen Grüßen,<br/>
-            <strong>Ihr KRS Team</strong>
+            <strong>KI-Automationen Team</strong>
           </p>
         </td></tr>
       </table>
@@ -181,9 +181,9 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "KRS Signature System <onboarding@resend.dev>",
+        from: "KI Automationen <onboarding@resend.dev>",
         to: [lead.email],
-        subject: `Ihr Angebot von KRS${lead.company ? ` für ${lead.company}` : ""}`,
+        subject: `Ihr Angebot von KI Automationen —${lead.company ? ` für ${lead.company}` : ""}`,
         html: htmlBody,
       }),
     });

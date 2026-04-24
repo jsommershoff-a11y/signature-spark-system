@@ -13,7 +13,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `Du bist ein Social-Media-Content-Stratege für KRS Signature, eine Premium-Unternehmensberatung für Handwerk, Praxen und Dienstleister. 
+    const systemPrompt = `Du bist ein Social-Media-Content-Stratege für KI Automationen, eine Premium-Unternehmensberatung für Handwerk, Praxen und Dienstleister. 
 Du erstellst conversionstarken Content auf Deutsch. Tonalität: ${tonality}. Zielgruppe: Unternehmer und Geschäftsführer.`;
 
     const userPrompt = `Erstelle Content für ${platform} (${content_type}).
