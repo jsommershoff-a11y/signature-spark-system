@@ -54,7 +54,7 @@ const Immobilien = () => {
   return (
     <PublicLayout>
       <SEOHead
-        title="Automatisierung für Immobilienunternehmen | KRS Signature"
+        title="Automatisierung für Immobilienunternehmen | KI-Automationen"
         description="Lead-Qualifizierung, Follow-up und Objektakquise systematisieren. Vertrieb planbar machen statt Portal-Abhängigkeit. Kostenlose Potenzial-Analyse."
         canonical="/immobilien"
       />

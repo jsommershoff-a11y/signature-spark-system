@@ -50,14 +50,14 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
           <div className="hidden md:flex flex-col items-center">
             <img
               src={founderPortrait}
-              alt="Jan Sommershoff – Gründer KRS Signature"
+              alt="Jan Sommershoff – Gründer KI-Automationen"
               className="w-48 h-48 rounded-2xl object-cover shadow-[0_8px_32px_rgba(0,0,0,0.3)] mb-5"
               width={192}
               height={192}
               loading="eager"
             />
             <p className="text-white font-semibold text-base">Jan Sommershoff</p>
-            <p className="text-primary text-sm font-medium">KRS Signature</p>
+            <p className="text-primary text-sm font-medium">KI-Automationen</p>
             <p className="text-white/50 text-xs text-center mt-2 max-w-[260px] leading-relaxed">
               Systematisierung, Automatisierung und Skalierung für Unternehmen
             </p>

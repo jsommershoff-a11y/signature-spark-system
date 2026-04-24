@@ -8,12 +8,12 @@ import { OFFER_MODULES, type ModuleDefinition } from './offer-modules';
 // =============================================
 
 export const DEFAULT_AGB = `ALLGEMEINE GESCHÄFTSBEDINGUNGEN (AGB)
-KRS Immobilien GmbH – KRS Signature
+KRS Immobilien GmbH – KI-Automationen
 
 Stand: Februar 2026
 
 § 1 Geltungsbereich
-(1) Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen der KRS Immobilien GmbH, Westerwaldstr. 146, 53773 Hennef (nachfolgend „Anbieter") und dem Auftraggeber (nachfolgend „Kunde") über Beratungs- und Systemaufbau-Dienstleistungen im Rahmen des Programms „KRS Signature".
+(1) Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen der KRS Immobilien GmbH, Westerwaldstr. 146, 53773 Hennef (nachfolgend „Anbieter") und dem Auftraggeber (nachfolgend „Kunde") über Beratungs- und Systemaufbau-Dienstleistungen im Rahmen des Programms „KI-Automationen".
 (2) Abweichende Bedingungen des Kunden werden nicht anerkannt, es sei denn, der Anbieter stimmt ihrer Geltung ausdrücklich schriftlich zu.
 
 § 2 Vertragsgegenstand
@@ -126,7 +126,7 @@ export function generateServiceDescription(mode: OfferMode, selectedModuleIds: s
   const modeLabel = mode === 'performance' ? 'Performance' : 'Rocket Performance';
   const selectedModules = OFFER_MODULES.filter(m => selectedModuleIds.includes(m.id));
 
-  let text = `LEISTUNGSBESCHREIBUNG\nKRS Signature – ${modeLabel} (6 Monate)\n\n`;
+  let text = `LEISTUNGSBESCHREIBUNG\nKI-Automationen – ${modeLabel} (6 Monate)\n\n`;
   text += `Programmmodus: ${modeLabel}\n`;
   text += `Laufzeit: 6 Monate ab Startdatum\n\n`;
 

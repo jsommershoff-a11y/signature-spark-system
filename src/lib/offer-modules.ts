@@ -236,7 +236,7 @@ export function generateIntroText(mode: OfferMode, customerName: string): string
     return `Sehr geehrte/r ${customerName},\n\nanbei erhalten Sie unser Angebot für die nachfolgend beschriebene Leistung.`;
   }
   if (mode === 'performance') {
-    return `Sehr geehrte/r ${customerName},\n\nwie besprochen erhalten Sie hier unser Angebot für KRS Signature – Performance. Ein strukturierter Eingriff in Ihr Unternehmen zur Herstellung von Kontrolle, Planbarkeit und Entlastung.`;
+    return `Sehr geehrte/r ${customerName},\n\nwie besprochen erhalten Sie hier unser Angebot für KI-Automationen – Performance. Ein strukturierter Eingriff in Ihr Unternehmen zur Herstellung von Kontrolle, Planbarkeit und Entlastung.`;
   }
-  return `Sehr geehrte/r ${customerName},\n\nwie besprochen erhalten Sie hier unser Angebot für KRS Signature – Rocket Performance. Die Premium-Betreuung mit vollständigem Systemaufbau und maximaler Unterstützung für Ihr Unternehmen.`;
+  return `Sehr geehrte/r ${customerName},\n\nwie besprochen erhalten Sie hier unser Angebot für KI-Automationen – Rocket Performance. Die Premium-Betreuung mit vollständigem Systemaufbau und maximaler Unterstützung für Ihr Unternehmen.`;
 }
