@@ -6,8 +6,8 @@ export default function Widerruf() {
   return (
     <PublicLayout>
       <SEOHead
-        title="Widerrufsbelehrung | KRS Signature"
-        description="Widerrufsbelehrung und Widerrufsformular für Verträge mit KRS Signature."
+        title="Widerrufsbelehrung | KI Automationen"
+        description="Widerrufsbelehrung und Widerrufsformular für Verträge mit KI Automationen."
         canonical="/widerruf"
         noIndex
       />

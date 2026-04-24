@@ -65,7 +65,7 @@ export default function Pricing() {
       <div className="text-center space-y-3">
         <Badge variant="secondary" className="gap-1">
           <Sparkles className="h-3 w-3" />
-          KRS Signature System
+          KI Automationen
         </Badge>
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
           Finde das passende Paket für dich

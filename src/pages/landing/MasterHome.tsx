@@ -29,7 +29,7 @@ const faqItems = [
     answer: "Nur wenn Prozesse, Dokumentation und Unternehmenswissen im eigenen System liegen, behältst du Kontrolle, reduzierst Abhängigkeiten und kannst Automatisierungen sinnvoll aufbauen.",
   },
   {
-    question: "Für welche Unternehmen ist KRS Signature geeignet?",
+    question: "Für welche Unternehmen ist KI Automationen geeignet?",
     answer: "Für Unternehmen, die operative Abhängigkeiten reduzieren, Prozesse dokumentieren, Übergaben verbessern und KI oder Automatisierung auf einer belastbaren Struktur aufbauen wollen.",
   },
   {
@@ -42,15 +42,15 @@ const faqItems = [
   },
 ];
 
-const BASE_URL = "https://krs-signature.de";
+const BASE_URL = "https://ki-automationen.io";
 
 const jsonLdSchemas: Record<string, unknown>[] = [
   {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    name: "KRS Signature",
+    name: "KI Automationen",
     url: BASE_URL,
-    description: "KRS Signature systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können.",
+    description: "KI Automationen systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können.",
     founder: { "@type": "Person", name: "Jan Sommershoff" },
     areaServed: { "@type": "Country", name: "Germany" },
     serviceType: ["Unternehmensautomatisierung", "Prozesssystematisierung", "KI-Integration"],
@@ -58,7 +58,7 @@ const jsonLdSchemas: Record<string, unknown>[] = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "KRS Signature",
+    name: "KI Automationen",
     url: BASE_URL,
     potentialAction: {
       "@type": "SearchAction",
@@ -90,7 +90,7 @@ const MasterHome = () => {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="Automatisierung für Unternehmen | Informationen im eigenen System"
-        description="KRS Signature systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können. Kostenlose Potenzial-Analyse."
+        description="KI Automationen systematisiert Prozesse, Wissen und Übergaben, damit Unternehmen Automatisierung und KI sinnvoll nutzen können. Kostenlose Potenzial-Analyse."
         canonical="/"
         jsonLd={jsonLdSchemas}
       />

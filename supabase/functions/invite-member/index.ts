@@ -143,10 +143,10 @@ serve(async (req) => {
       const greeting = name ? `Hallo ${name}` : 'Hallo';
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-          <h1 style="color: #1a1a2e; font-size: 24px;">Einladung zum KRS Signature Mitgliederbereich</h1>
+          <h1 style="color: #1a1a2e; font-size: 24px;">Einladung zum KI Automationen Mitgliederbereich</h1>
           <p style="color: #333; font-size: 16px; line-height: 1.6;">
             ${greeting},<br><br>
-            Du wurdest zum KRS Signature Mitgliederbereich eingeladen. Klicke auf den folgenden Link, um dein Konto zu erstellen und loszulegen:
+            Du wurdest zum KI Automationen Mitgliederbereich eingeladen. Klicke auf den folgenden Link, um dein Konto zu erstellen und loszulegen:
           </p>
           <a href="${inviteLink}" style="display: inline-block; background-color: #F6711F; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 16px 0;">
             Einladung annehmen
@@ -156,7 +156,7 @@ serve(async (req) => {
             Falls du diese Einladung nicht erwartet hast, kannst du diese E-Mail ignorieren.
           </p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
-          <p style="color: #999; font-size: 12px;">KRS Signature – Automatisierung für Unternehmen</p>
+          <p style="color: #999; font-size: 12px;">KI Automationen – Automatisierung für Unternehmen</p>
         </div>
       `;
 
@@ -170,7 +170,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             message: {
-              subject: 'Deine Einladung zum KRS Signature Mitgliederbereich',
+              subject: 'Deine Einladung zum KI Automationen Mitgliederbereich',
               body: { contentType: 'HTML', content: emailHtml },
               toRecipients: [{ emailAddress: { address: email } }],
             },

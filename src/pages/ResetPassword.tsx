@@ -82,7 +82,7 @@ export default function ResetPassword() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <img src={logoSignature} alt="KRS Signature" className="h-12" />
+              <img src={logoSignature} alt="KI Automationen" className="h-12" />
             </div>
             <CardTitle className="text-2xl">Ungültiger Link</CardTitle>
             <CardDescription>
@@ -122,7 +122,7 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={logoSignature} alt="KRS Signature" className="h-12" />
+            <img src={logoSignature} alt="KI Automationen" className="h-12" />
           </div>
           <CardTitle className="text-2xl">Neues Passwort setzen</CardTitle>
           <CardDescription>

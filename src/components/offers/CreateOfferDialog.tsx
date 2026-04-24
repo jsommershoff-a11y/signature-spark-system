@@ -282,7 +282,7 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
     defaultDate.setDate(defaultDate.getDate() + 30);
 
     return {
-      title: `KRS Signature – ${PROGRAM_LABELS[offerMode]}`,
+      title: `KI Automationen – ${PROGRAM_LABELS[offerMode]}`,
       subtitle: `${durationMonths} Monate Laufzeit`,
       valid_until: defaultDate.toISOString().split('T')[0],
       offer_mode: offerMode,

@@ -18,7 +18,7 @@ export const Footer = () => {
             <Link to="/" className="flex items-center mb-5">
               <img 
                 src={logoSignature} 
-                alt="KRS Signature Logo" 
+                alt="KI Automationen Logo" 
                 className="h-10 w-auto"
               />
             </Link>
@@ -69,7 +69,7 @@ export const Footer = () => {
         
         <div className="border-t border-white/10 pt-8">
           <p className="text-white/30 text-sm text-center">
-            © {new Date().getFullYear()} KRS Signature. Alle Rechte vorbehalten.
+            © {new Date().getFullYear()} KI Automationen. Alle Rechte vorbehalten.
           </p>
         </div>
       </div>
