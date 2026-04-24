@@ -1,5 +1,5 @@
 // Stripe Product & Price Configuration
-// All Stripe product/price IDs for the KRS Signature System
+// All Stripe product/price IDs for KI Automationen
 // Alle Preise inkl. 19% MwSt.
 
 export interface StripeProduct {
@@ -26,7 +26,7 @@ export const STRIPE_PRODUCTS: Record<string, StripeProduct> = {
     priceId: 'price_1TF3F5BmqjP8eJrSof3ZWh7g',
     productId: 'prod_UDUDyr4KjEJQB4',
     priceCents: 1999,
-    description: 'Dein Einstieg ins KRS System – Community, Basis-Prompts und Live-Calls.',
+    description: 'Dein Einstieg ins KI Automationen System – Community, Basis-Prompts und Live-Calls.',
     features: [
       'Zugang zur kuratieren Basis-Prompt-Bibliothek (5 Vorlagen)',
       'Erste praxisnahe Automatisierungs-Ansätze',
