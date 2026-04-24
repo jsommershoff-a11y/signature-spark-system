@@ -149,6 +149,29 @@ Deno.serve(async (req) => {
     });
   }
 
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const SUPABASE_URL_ENV = Deno.env.get('SUPABASE_URL');
+  const adminClient = SUPABASE_URL_ENV && SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(SUPABASE_URL_ENV, SUPABASE_SERVICE_ROLE_KEY)
+    : null;
+  const logId = crypto.randomUUID();
+  const logEmail = async (status: string, fields: Record<string, unknown>) => {
+    if (!adminClient) return;
+    try {
+      await adminClient.from('email_send_log').insert({
+        message_id: logId,
+        status,
+        ...fields,
+      });
+    } catch (e) {
+      console.error('email_send_log insert failed:', e);
+    }
+  };
+
+  let logTo = '';
+  let logTemplate = '';
+  let logSubject: string | undefined;
+
   try {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const GOOGLE_MAIL_API_KEY = Deno.env.get('GOOGLE_MAIL_API_KEY');
@@ -198,9 +221,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    logTo = to;
+    logTemplate = template;
+
     const built = buildTemplate(template, data);
     const subject = subjectOverride || built.subject;
+    logSubject = subject;
     const raw = encodeRaw({ to, cc, bcc, subject, html: built.html });
+
+    await logEmail('pending', {
+      template_name: template,
+      recipient_email: to,
+      subject,
+      metadata: { user_id: user.id, cc, bcc },
+    });
 
     const response = await fetch(`${GATEWAY_URL}/users/me/messages/send`, {
       method: 'POST',
@@ -219,6 +253,13 @@ Deno.serve(async (req) => {
 
     console.log(`send-gmail-template: user=${user.id} template=${template} to=${to} message_id=${result.id}`);
 
+    await logEmail('sent', {
+      template_name: template,
+      recipient_email: to,
+      subject,
+      metadata: { user_id: user.id, gmail_message_id: result.id },
+    });
+
     return new Response(
       JSON.stringify({ success: true, template, message_id: result.id, subject }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
@@ -226,6 +267,12 @@ Deno.serve(async (req) => {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('send-gmail-template error:', message);
+    await logEmail('failed', {
+      template_name: logTemplate || null,
+      recipient_email: logTo || 'unknown',
+      subject: logSubject,
+      error_message: message,
+    });
     return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
