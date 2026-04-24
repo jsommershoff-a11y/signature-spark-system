@@ -19,9 +19,9 @@ interface SendRequest {
 }
 
 const BRAND = {
-  name: 'KRS Signature',
-  primary: '#0F172A',
-  accent: '#F97316',
+  name: 'KI-Automationen',
+  primary: '#F6711F',
+  accent: '#0F6B4A',
   url: 'https://www.krs-signature.de',
 };
 

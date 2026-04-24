@@ -25,9 +25,9 @@ const corsHeaders = {
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_mail/gmail/v1';
 
 const BRAND = {
-  name: 'KRS Signature',
-  primary: '#0F172A',
-  accent: '#F97316',
+  name: 'KI-Automationen',
+  primary: '#F6711F',
+  accent: '#0F6B4A',
   url: 'https://www.krs-signature.de',
 };
 
@@ -40,7 +40,7 @@ const EVENT_MAP: Record<
 > = {
   'lead.created': {
     template: 'confirmation',
-    build: (d) => ({ name: d.name || 'dort', topic: d.topic || 'deine Anfrage bei KRS Signature' }),
+    build: (d) => ({ name: d.name || 'dort', topic: d.topic || 'deine Anfrage bei KI-Automationen' }),
   },
   'offer.accepted': {
     template: 'confirmation',

@@ -101,7 +101,7 @@ export default function AffiliateDashboard() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Affiliate Dashboard</h1>
-          <p className="text-muted-foreground">Empfehle KRS Signature und verdiene Provision pro Verkauf.</p>
+          <p className="text-muted-foreground">Empfehle KI-Automationen und verdiene Provision pro Verkauf.</p>
         </div>
         <Card>
           <CardHeader>
@@ -128,7 +128,7 @@ export default function AffiliateDashboard() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Affiliate Dashboard</h1>
-          <p className="text-muted-foreground">Empfehle KRS Signature und verdiene {(affiliate.commission_rate * 100).toFixed(0)}% Provision pro Verkauf.</p>
+          <p className="text-muted-foreground">Empfehle KI-Automationen und verdiene {(affiliate.commission_rate * 100).toFixed(0)}% Provision pro Verkauf.</p>
         </div>
         <Badge className={STATUS_COLORS[affiliate.status]}>{STATUS_LABELS[affiliate.status]}</Badge>
       </div>

@@ -30,8 +30,8 @@ export default function AGB() {
   return (
     <PublicLayout>
       <SEOHead
-        title="Allgemeine Geschäftsbedingungen | KRS Signature"
-        description="AGB für alle Produkte und Dienstleistungen von KRS Signature. Transparente Vertragsbedingungen für Mitgliedschaften und Beratungspakete."
+        title="Allgemeine Geschäftsbedingungen | KI-Automationen"
+        description="AGB für alle Produkte und Dienstleistungen von KI-Automationen. Transparente Vertragsbedingungen für Mitgliedschaften und Beratungspakete."
         canonical="/agb"
         noIndex
       />

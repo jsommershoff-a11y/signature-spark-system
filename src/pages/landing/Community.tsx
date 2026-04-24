@@ -63,7 +63,7 @@ const losses = [
   "Wöchentliche Live-Calls & Q&A Sessions",
   "Direkter Austausch mit dem Gründer",
   "Networking mit 61 anderen Unternehmern",
-  "Erste Einblicke ins KRS Signature System",
+  "Erste Einblicke ins KI-Automationen System",
 ];
 
 const faqItems = [
@@ -77,7 +77,7 @@ const faqItems = [
   },
   {
     question: "Was genau ist im Founder-Preis enthalten?",
-    answer: "Alles, was du aktuell kostenlos nutzt – Community-Zugang, wöchentliche Live-Calls, direkter Gründer-Kontakt, Networking und erste Einblicke ins KRS Signature System. Plus alle zukünftigen Inhalte und Features, die wir hinzufügen.",
+    answer: "Alles, was du aktuell kostenlos nutzt – Community-Zugang, wöchentliche Live-Calls, direkter Gründer-Kontakt, Networking und erste Einblicke ins KI-Automationen System. Plus alle zukünftigen Inhalte und Features, die wir hinzufügen.",
   },
   {
     question: "Warum wird der Preis auf 50 €/Monat erhöht?",
@@ -115,7 +115,7 @@ const Community = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="KI-Community für Unternehmer | KRS Signature"
+        title="KI-Community für Unternehmer | KI-Automationen"
         description="Exklusive Community für Unternehmer: Wöchentliche Live-Calls, direkter Gründer-Kontakt und praxiserprobte KI-Strategien. Jetzt Founder-Preis sichern."
         canonical="/community"
       />

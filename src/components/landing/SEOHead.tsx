@@ -9,8 +9,8 @@ interface SEOHeadProps {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const DEFAULT_TITLE = "KRS Signature – Automatisierung für Unternehmen | KI-Systeme & Prozesse digitalisieren";
-const DEFAULT_DESC = "Prozesse automatisieren, Mitarbeiter entlasten, Umsatz steigern. KRS Signature baut operative Systeme für Handwerk, Praxen, Dienstleister und Mittelstand. Keine Chatbots – echte Ergebnisse.";
+const DEFAULT_TITLE = "KI-Automationen – Automatisierung für Unternehmen | KI-Systeme & Prozesse digitalisieren";
+const DEFAULT_DESC = "Prozesse automatisieren, Mitarbeiter entlasten, Umsatz steigern. KI-Automationen baut operative Systeme für Handwerk, Praxen, Dienstleister und Mittelstand. Keine Chatbots – echte Ergebnisse.";
 const DEFAULT_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/XewB5AFDykeQnS9G5WcX0MUTHis1/social-images/social-1774320183281-KRS_Signature_Facebook_170x170.webp";
 const BASE_URL = "https://krs-signature.de";
 

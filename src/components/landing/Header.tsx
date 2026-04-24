@@ -41,7 +41,7 @@ export const Header = () => {
           <Link to="/" className="flex items-center">
             <img 
               src={logoSignature} 
-              alt="KRS Signature – Automatisierung für Unternehmen" 
+              alt="KI-Automationen – Automatisierung für Unternehmen" 
               className="h-10 w-auto"
               width={160}
               height={40}

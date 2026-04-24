@@ -1,5 +1,5 @@
 // Stripe Product & Price Configuration
-// All Stripe product/price IDs for the KRS Signature System
+// All Stripe product/price IDs for the KI-Automationen System
 // Alle Preise inkl. 19% MwSt.
 
 export interface StripeProduct {

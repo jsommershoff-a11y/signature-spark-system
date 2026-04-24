@@ -506,10 +506,10 @@ serve(async (req) => {
 
         const welcomeHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-            <h1 style="color: #1a1a2e; font-size: 24px;">Willkommen bei KRS Signature!</h1>
+            <h1 style="color: #1a1a2e; font-size: 24px;">Willkommen bei KI-Automationen!</h1>
             <p style="color: #333; font-size: 16px; line-height: 1.6;">
               ${greeting},<br><br>
-              Deine Zahlung wurde bestätigt. Du hast jetzt Zugang zum KRS Signature Mitgliederbereich.
+              Deine Zahlung wurde bestätigt. Du hast jetzt Zugang zum KI-Automationen Mitgliederbereich.
             </p>
             <a href="${appUrl}/auth" style="display: inline-block; background-color: #F6711F; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 16px 0;">
               Jetzt einloggen
@@ -518,7 +518,7 @@ serve(async (req) => {
               Falls du noch kein Konto hast, kannst du dich mit dieser E-Mail-Adresse registrieren.
             </p>
             <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
-            <p style="color: #999; font-size: 12px;">KRS Signature – Automatisierung für Unternehmen</p>
+            <p style="color: #999; font-size: 12px;">KI-Automationen – Automatisierung für Unternehmen</p>
           </div>
         `;
 
@@ -531,9 +531,9 @@ serve(async (req) => {
               'X-Connection-Api-Key': resendKey,
             },
             body: JSON.stringify({
-              from: 'KRS Signature <info@krs-signature.de>',
+              from: 'KI-Automationen <info@krs-signature.de>',
               to: [recipientEmail],
-              subject: 'Willkommen bei KRS Signature – Dein Zugang ist bereit',
+              subject: 'Willkommen bei KI-Automationen – Dein Zugang ist bereit',
               html: welcomeHtml,
             }),
           });

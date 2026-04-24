@@ -54,7 +54,7 @@ const Handwerk = () => {
   return (
     <PublicLayout>
       <SEOHead
-        title="Automatisierung für Handwerksbetriebe | KRS Signature"
+        title="Automatisierung für Handwerksbetriebe | KI-Automationen"
         description="Prozesse im Handwerk systematisieren: Terminplanung, Angebotswesen und Mitarbeiterführung automatisieren. Kostenlose Potenzial-Analyse für Handwerksmeister."
         canonical="/handwerk"
       />

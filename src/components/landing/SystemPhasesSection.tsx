@@ -65,7 +65,7 @@ export const SystemPhasesSection = ({
       <div className={landingTokens.container}>
         <div className="text-center mb-12">
           <span className={`${landingTokens.badgeAccent} mb-4`}>
-            Das KRS Signature System
+            Das KI-Automationen System
           </span>
           <h2 className={`${landingTokens.headline.h2} text-foreground mb-4 mt-4`}>
             6 Phasen zur operativen Freiheit

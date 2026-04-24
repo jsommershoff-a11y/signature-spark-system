@@ -1,4 +1,4 @@
-// KRS Signature Role definitions and utilities
+// KI-Automationen Role definitions and utilities
 // Staff roles: admin, vertriebspartner, gruppenbetreuer
 // Customer tiers: member_basic, member_starter, member_pro
 // Default: guest

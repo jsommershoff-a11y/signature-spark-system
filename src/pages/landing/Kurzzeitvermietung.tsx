@@ -54,7 +54,7 @@ const Kurzzeitvermietung = () => {
   return (
     <PublicLayout>
       <SEOHead
-        title="Automatisierung für Kurzzeitvermietung | KRS Signature"
+        title="Automatisierung für Kurzzeitvermietung | KI-Automationen"
         description="Anfragen, Reinigung und Check-in automatisieren. Skalierbare Prozesse für Kurzzeitvermieter mit 3+ Objekten. Kostenlose Potenzial-Analyse."
         canonical="/kurzzeitvermietung"
       />

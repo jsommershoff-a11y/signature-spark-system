@@ -54,7 +54,7 @@ const Praxen = () => {
   return (
     <PublicLayout>
       <SEOHead
-        title="Automatisierung für Praxen | KRS Signature"
+        title="Automatisierung für Praxen | KI-Automationen"
         description="Praxisprozesse systematisieren: Terminausfälle reduzieren, Verwaltung automatisieren und Personal entlasten. Kostenlose Potenzial-Analyse für Praxisinhaber."
         canonical="/praxen"
       />
