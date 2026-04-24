@@ -58,6 +58,7 @@ import Outlook from "./pages/app/Outlook";
 import Tickets from "./pages/app/Tickets";
 import Posteingang from "./pages/app/Posteingang";
 import Katalog from "./pages/app/Katalog";
+import EmailLog from "./pages/app/EmailLog";
 import { ReferralTracker } from "./components/affiliate/ReferralTracker";
 
 const queryClient = new QueryClient({
