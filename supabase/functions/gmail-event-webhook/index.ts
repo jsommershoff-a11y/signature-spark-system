@@ -219,6 +219,31 @@ Deno.serve(async (req) => {
     });
   }
 
+  const SUPABASE_URL_ENV = Deno.env.get('SUPABASE_URL');
+  const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const logId = crypto.randomUUID();
+  const logEmail = async (status: string, fields: Record<string, unknown>) => {
+    if (!SUPABASE_URL_ENV || !SERVICE_ROLE) return;
+    try {
+      await fetch(`${SUPABASE_URL_ENV}/rest/v1/email_send_log`, {
+        method: 'POST',
+        headers: {
+          'apikey': SERVICE_ROLE,
+          'Authorization': `Bearer ${SERVICE_ROLE}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({ message_id: logId, status, ...fields }),
+      });
+    } catch (e) {
+      console.error('email_send_log insert failed:', e);
+    }
+  };
+  let logTo = '';
+  let logTemplate = '';
+  let logSubject: string | undefined;
+  let logEvent: string | undefined;
+
   try {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const GOOGLE_MAIL_API_KEY = Deno.env.get('GOOGLE_MAIL_API_KEY');
