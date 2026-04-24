@@ -889,6 +889,63 @@ export type Database = {
           },
         ]
       }
+      email_consents: {
+        Row: {
+          confirmation_token: string
+          confirmed_at: string | null
+          confirmed_ip: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          metadata: Json | null
+          purpose: string
+          requested_ip: string | null
+          requested_user_agent: string | null
+          revoked_at: string | null
+          revoked_ip: string | null
+          source: string | null
+          status: Database["public"]["Enums"]["email_consent_status"]
+          updated_at: string
+        }
+        Insert: {
+          confirmation_token?: string
+          confirmed_at?: string | null
+          confirmed_ip?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          metadata?: Json | null
+          purpose?: string
+          requested_ip?: string | null
+          requested_user_agent?: string | null
+          revoked_at?: string | null
+          revoked_ip?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["email_consent_status"]
+          updated_at?: string
+        }
+        Update: {
+          confirmation_token?: string
+          confirmed_at?: string | null
+          confirmed_ip?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          metadata?: Json | null
+          purpose?: string
+          requested_ip?: string | null
+          requested_user_agent?: string | null
+          revoked_at?: string | null
+          revoked_ip?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["email_consent_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_events: {
         Row: {
           created_at: string
@@ -3251,6 +3308,10 @@ export type Database = {
       get_team_member_ids: { Args: { _user_id: string }; Returns: string[] }
       get_user_profile_id: { Args: { _user_id: string }; Returns: string }
       get_user_team_id: { Args: { _user_id: string }; Returns: string }
+      has_email_consent: {
+        Args: { _email: string; _purpose?: string }
+        Returns: boolean
+      }
       has_min_role: {
         Args: {
           _min_role: Database["public"]["Enums"]["app_role"]
@@ -3313,6 +3374,7 @@ export type Database = {
         | "refunded"
         | "cancelled"
       course_price_tier: "freebie" | "low_budget" | "mid_range" | "high_class"
+      email_consent_status: "pending" | "confirmed" | "revoked"
       lead_discovered_by: "daily_ai" | "manual" | "inbound"
       lead_source_type:
         | "inbound_paid"
@@ -3514,6 +3576,7 @@ export const Constants = {
       call_type: ["phone", "zoom", "teams", "other"],
       commission_status: ["pending", "paid", "failed", "refunded", "cancelled"],
       course_price_tier: ["freebie", "low_budget", "mid_range", "high_class"],
+      email_consent_status: ["pending", "confirmed", "revoked"],
       lead_discovered_by: ["daily_ai", "manual", "inbound"],
       lead_source_type: [
         "inbound_paid",
