@@ -2,6 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle, Info, ArrowLeft, BookOpen, Users } from "lucide-react";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { Button } from "@/components/ui/button";
 
 const Thanks = () => {
@@ -11,6 +12,12 @@ const Thanks = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title={isInfo ? "Danke für dein Interesse | KI-Automationen" : "Vielen Dank für deine Anfrage | KI-Automationen"}
+        description="Bestätigung deiner Anfrage an KI-Automationen. Wir melden uns innerhalb von 24 Stunden bei dir."
+        canonical="/danke"
+        noIndex
+      />
       <Header />
       
       <main className="flex-1 pt-16">
