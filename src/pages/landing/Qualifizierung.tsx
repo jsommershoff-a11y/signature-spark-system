@@ -192,7 +192,7 @@ const Qualifizierung = () => {
                             >
                               Ich akzeptiere die{" "}
                               <a
-                                href="https://krsimmobilien.de/datenschutz"
+                                href="/datenschutz"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="underline text-primary hover:text-primary/80"

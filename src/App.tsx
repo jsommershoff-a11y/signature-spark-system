@@ -18,6 +18,7 @@ import Qualifizierung from "./pages/landing/Qualifizierung";
 import Thanks from "./pages/landing/Thanks";
 import AGB from "./pages/landing/AGB";
 import Widerruf from "./pages/landing/Widerruf";
+import Datenschutz from "./pages/landing/Datenschutz";
 import Community from "./pages/landing/Community";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -94,6 +95,7 @@ const App = () => (
             <Route path="/danke" element={<Thanks />} />
             <Route path="/agb" element={<AGB />} />
             <Route path="/widerruf" element={<Widerruf />} />
+            <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/community" element={<Community />} />
 
             {/* Public consent (Double Opt-In) */}
