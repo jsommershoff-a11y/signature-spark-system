@@ -2439,6 +2439,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          metadata: Json | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           analysis_id: string | null
@@ -3477,6 +3513,54 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_events: {
+        Row: {
+          error: string | null
+          event_type: string | null
+          headers: Json | null
+          id: string
+          payload: Json
+          processed_at: string | null
+          received_at: string
+          replayed_at: string | null
+          replayed_count: number
+          signature: string | null
+          signature_valid: boolean | null
+          source: string
+          status: string
+        }
+        Insert: {
+          error?: string | null
+          event_type?: string | null
+          headers?: Json | null
+          id?: string
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+          replayed_at?: string | null
+          replayed_count?: number
+          signature?: string | null
+          signature_valid?: boolean | null
+          source: string
+          status?: string
+        }
+        Update: {
+          error?: string | null
+          event_type?: string | null
+          headers?: Json | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+          replayed_at?: string | null
+          replayed_count?: number
+          signature?: string | null
+          signature_valid?: boolean | null
+          source?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_current_customer_avatar: {
@@ -3600,6 +3684,17 @@ export type Database = {
           phone: string
           status: string
         }[]
+      }
+      notify_user: {
+        Args: {
+          p_body?: string
+          p_link?: string
+          p_metadata?: Json
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
       }
       release_slot_for_google_event: {
         Args: {
