@@ -113,9 +113,9 @@ Deno.serve(async (req) => {
           <hr style="border:none;border-top:1px solid #e4e4e7;margin:24px 0;" />
           <p style="font-size:13px;color:#a1a1aa;margin:0;line-height:1.5;">
             Bei dringenden Fragen erreichst du uns unter
-            <a href="mailto:info@krs-signature.de" style="color:#6366f1;">info@krs-signature.de</a>.<br/><br/>
+            <a href="mailto:hi-there@ki-automationen.io" style="color:#6366f1;">hi-there@ki-automationen.io</a>.<br/><br/>
             Mit freundlichen Grüßen,<br/>
-            <strong>Dein KRS Team</strong>
+            <strong>Dein KI-Automationen Team</strong>
           </p>
         </td></tr>
       </table>
@@ -161,14 +161,14 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify([
         {
-          from: "KI-Automationen System <info@krs-signature.de>",
+          from: "KI-Automationen <hi-there@ki-automationen.io>",
           to: [email.trim()],
           subject: "Danke für deine Anfrage – KI-Automationen System",
           html: customerHtml,
         },
         {
-          from: "KI-Automationen System <info@krs-signature.de>",
-          to: ["info@krs-signature.de"],
+          from: "KI-Automationen <hi-there@ki-automationen.io>",
+          to: ["hi-there@ki-automationen.io"],
           subject: `Neuer Lead: ${trimmedName} (${sourceLabel})`,
           html: teamHtml,
         },
