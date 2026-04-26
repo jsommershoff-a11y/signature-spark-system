@@ -57,16 +57,14 @@ export function useNotifications() {
   const unreadCount = notifications.filter((n) => n.read_at === null).length;
 
   const markRead = async (id: string) => {
-    const { error } = await supabase
-      .from("notifications" as never)
+    const { error } = await (supabase.from("notifications" as never) as any)
       .update({ read_at: new Date().toISOString() })
       .eq("id", id);
     if (!error) qc.invalidateQueries({ queryKey: QK_LIST });
   };
 
   const markAllRead = async () => {
-    const { error } = await supabase
-      .from("notifications" as never)
+    const { error } = await (supabase.from("notifications" as never) as any)
       .update({ read_at: new Date().toISOString() })
       .is("read_at", null);
     if (!error) qc.invalidateQueries({ queryKey: QK_LIST });
