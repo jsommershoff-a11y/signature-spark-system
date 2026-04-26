@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, LogIn, Menu } from "lucide-react";
-import logoSignature from "@/assets/krs-logo.png";
+import logoSignature from "@/assets/ki-automationen-logo.png";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -41,7 +41,7 @@ export const Header = () => {
           <Link to="/" className="flex items-center">
             <img 
               src={logoSignature} 
-              alt="KI-Automationen – Automatisierung für Unternehmen" 
+              alt="KI Automationen — Dein Automatisierungsberater" 
               className="h-10 w-auto"
               width={160}
               height={40}

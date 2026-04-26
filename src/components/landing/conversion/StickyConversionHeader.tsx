@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
-import logoSignature from "@/assets/krs-logo.png";
+import logoSignature from "@/assets/ki-automationen-logo.png";
 import { Button } from "@/components/ui/button";
 
 export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void }) => {
@@ -9,7 +9,7 @@ export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void 
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center">
-            <img src={logoSignature} alt="KI-Automationen" className="h-10 w-auto" />
+            <img src={logoSignature} alt="KI Automationen" className="h-10 w-auto" />
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/auth">

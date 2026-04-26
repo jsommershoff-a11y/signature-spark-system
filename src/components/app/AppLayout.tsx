@@ -6,7 +6,7 @@ import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { ViewAsBanner } from './ViewAsBanner';
 import { ProfileCompletionDialog } from './ProfileCompletionDialog';
 import { IncomingCallPopup } from '@/components/calls/IncomingCallPopup';
-import logoSignature from '@/assets/krs-logo.png';
+import logoSignature from '@/assets/ki-automationen-logo.png';
 import { Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,7 @@ export function AppLayout() {
             </SheetContent>
           </Sheet>
           <Link to="/app" className="flex items-center gap-2 flex-shrink-0">
-            <img src={logoSignature} alt="KI-Automationen" className="h-7 md:h-8" />
+            <img src={logoSignature} alt="KI Automationen" className="h-7 md:h-8" />
           </Link>
         </div>
         <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
