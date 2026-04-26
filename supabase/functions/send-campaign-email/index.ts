@@ -61,7 +61,7 @@ serve(async (req) => {
     };
 
     const resendBody: Record<string, unknown> = {
-      from: "KI-Automationen <info@krs-signature.de>",
+      from: "KI-Automationen <hi-there@ki-automationen.io>",
       to: [to_email],
       subject,
       html: htmlWithTracking,
