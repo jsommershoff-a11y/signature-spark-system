@@ -7,6 +7,8 @@ import { RootCauseSection } from "@/components/landing/RootCauseSection";
 import { SystemPhasesSection } from "@/components/landing/SystemPhasesSection";
 import { StructogramUSPSection } from "@/components/landing/StructogramUSPSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
+import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
+import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { MessageSquare, Home, TrendingDown } from "lucide-react";
 
 const Kurzzeitvermietung = () => {
@@ -53,6 +55,7 @@ const Kurzzeitvermietung = () => {
 
   return (
     <PublicLayout>
+      <StickyCtaBanner />
       <SEOHead
         title="Automatisierung für Kurzzeitvermietung | KI-Automationen"
         description="Anfragen, Reinigung und Check-in automatisieren. Skalierbare Prozesse für Kurzzeitvermieter mit 3+ Objekten. Kostenlose Potenzial-Analyse."
@@ -67,6 +70,8 @@ const Kurzzeitvermietung = () => {
         ctaText="Jetzt KI-Potenzial aufdecken"
         onCtaClick={goToQualifizierung}
       />
+
+      <TrustLogosSection />
 
       <TargetAudienceSection yesPoints={yesPoints} noPoints={noPoints} />
 

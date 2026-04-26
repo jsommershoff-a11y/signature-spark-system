@@ -7,6 +7,8 @@ import { RootCauseSection } from "@/components/landing/RootCauseSection";
 import { SystemPhasesSection } from "@/components/landing/SystemPhasesSection";
 import { StructogramUSPSection } from "@/components/landing/StructogramUSPSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
+import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
+import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { Brain, Users, TrendingDown } from "lucide-react";
 
 const Handwerk = () => {
@@ -53,6 +55,7 @@ const Handwerk = () => {
 
   return (
     <PublicLayout>
+      <StickyCtaBanner />
       <SEOHead
         title="Automatisierung für Handwerksbetriebe | KI-Automationen"
         description="Prozesse im Handwerk systematisieren: Terminplanung, Angebotswesen und Mitarbeiterführung automatisieren. Kostenlose Potenzial-Analyse für Handwerksmeister."
@@ -67,6 +70,8 @@ const Handwerk = () => {
         ctaText="Jetzt KI-Potenzial aufdecken"
         onCtaClick={goToQualifizierung}
       />
+
+      <TrustLogosSection />
 
       <TargetAudienceSection yesPoints={yesPoints} noPoints={noPoints} />
 

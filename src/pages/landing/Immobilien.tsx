@@ -7,6 +7,8 @@ import { RootCauseSection } from "@/components/landing/RootCauseSection";
 import { SystemPhasesSection } from "@/components/landing/SystemPhasesSection";
 import { StructogramUSPSection } from "@/components/landing/StructogramUSPSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
+import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
+import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { Filter, MessageSquare, Building } from "lucide-react";
 
 const Immobilien = () => {
@@ -53,6 +55,7 @@ const Immobilien = () => {
 
   return (
     <PublicLayout>
+      <StickyCtaBanner />
       <SEOHead
         title="Automatisierung für Immobilienunternehmen | KI-Automationen"
         description="Lead-Qualifizierung, Follow-up und Objektakquise systematisieren. Vertrieb planbar machen statt Portal-Abhängigkeit. Kostenlose Potenzial-Analyse."
@@ -67,6 +70,8 @@ const Immobilien = () => {
         ctaText="Jetzt KI-Potenzial aufdecken"
         onCtaClick={goToQualifizierung}
       />
+
+      <TrustLogosSection />
 
       <TargetAudienceSection yesPoints={yesPoints} noPoints={noPoints} />
 
