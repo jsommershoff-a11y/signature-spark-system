@@ -150,7 +150,7 @@ export default function GoogleCalendarStatusCard() {
                   <CheckCircle2 className="h-3 w-3" /> Aktiv
                 </Badge>
               ) : watchOk && watchExpiringSoon ? (
-                <Badge variant="outline" className="gap-1 border-yellow-500/50 text-yellow-700 dark:text-yellow-400">
+                <Badge variant="outline" className="gap-1 border-warning/50 text-warning">
                   <AlertTriangle className="h-3 w-3" /> Läuft bald ab
                 </Badge>
               ) : (
