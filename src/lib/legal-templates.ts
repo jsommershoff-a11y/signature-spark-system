@@ -80,7 +80,7 @@ Um Ihr Widerrufsrecht auszuüben, müssen Sie uns
 KRS Immobilien GmbH
 Westerwaldstr. 146
 53773 Hennef
-E-Mail: info@krs-signature.de
+E-Mail: hi-there@ki-automationen.io
 
 mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das beigefügte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.
 
@@ -102,7 +102,7 @@ An:
 KRS Immobilien GmbH
 Westerwaldstr. 146
 53773 Hennef
-E-Mail: info@krs-signature.de
+E-Mail: hi-there@ki-automationen.io
 
 Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung:
 
