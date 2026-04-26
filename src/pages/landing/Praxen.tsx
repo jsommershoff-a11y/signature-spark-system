@@ -7,6 +7,8 @@ import { RootCauseSection } from "@/components/landing/RootCauseSection";
 import { SystemPhasesSection } from "@/components/landing/SystemPhasesSection";
 import { StructogramUSPSection } from "@/components/landing/StructogramUSPSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
+import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
+import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { Clock, Users, FileText } from "lucide-react";
 
 const Praxen = () => {
@@ -17,7 +19,7 @@ const Praxen = () => {
   // Branchenspezifische Target Audience
   const yesPoints = [
     "Du bist Praxisinhaber mit Team und Verantwortung",
-    "Terminausfälle, Personal-Chaos und Verwaltung kosten dich Energie",
+    "Termin-Ausfälle, Personal-Chaos und Verwaltung kosten dich Energie",
     "Du willst Systeme, die Planbarkeit schaffen",
     "Du bist bereit, operative Gewohnheiten zu ändern",
   ];
@@ -53,6 +55,7 @@ const Praxen = () => {
 
   return (
     <PublicLayout>
+      <StickyCtaBanner />
       <SEOHead
         title="Automatisierung für Praxen | KI-Automationen"
         description="Praxisprozesse systematisieren: Terminausfälle reduzieren, Verwaltung automatisieren und Personal entlasten. Kostenlose Potenzial-Analyse für Praxisinhaber."
@@ -67,6 +70,8 @@ const Praxen = () => {
         ctaText="Jetzt KI-Potenzial aufdecken"
         onCtaClick={goToQualifizierung}
       />
+
+      <TrustLogosSection />
 
       <TargetAudienceSection yesPoints={yesPoints} noPoints={noPoints} />
 

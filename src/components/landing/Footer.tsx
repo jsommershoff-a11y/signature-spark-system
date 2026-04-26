@@ -60,9 +60,9 @@ export const Footer = () => {
               <a href="https://krsimmobilien.de/impressum" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors text-sm">
                 Impressum
               </a>
-              <a href="https://krsimmobilien.de/datenschutz" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors text-sm">
+              <Link to="/datenschutz" className="text-white/40 hover:text-white transition-colors text-sm">
                 Datenschutz
-              </a>
+              </Link>
             </nav>
           </div>
         </div>

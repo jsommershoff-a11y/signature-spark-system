@@ -42,7 +42,7 @@ const faqItems = [
   },
 ];
 
-const BASE_URL = "https://krs-signature.de";
+const BASE_URL = "https://ki-automationen.io";
 
 const jsonLdSchemas: Record<string, unknown>[] = [
   {
