@@ -5,6 +5,7 @@ import { UserMenu } from './UserMenu';
 import { AdminViewSwitcher } from './AdminViewSwitcher';
 import { ViewAsBanner } from './ViewAsBanner';
 import { ProfileCompletionDialog } from './ProfileCompletionDialog';
+import { NotificationsCenter } from './NotificationsCenter';
 import { IncomingCallPopup } from '@/components/calls/IncomingCallPopup';
 import logoSignature from '@/assets/ki-automationen-logo.png';
 import { Link } from 'react-router-dom';
@@ -42,6 +43,7 @@ export function AppLayout() {
         </div>
         <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
           <AdminViewSwitcher />
+          <NotificationsCenter />
           <UserMenu />
         </div>
       </header>
