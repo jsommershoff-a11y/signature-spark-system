@@ -51,6 +51,7 @@ export default function GoogleCalendarStatusCard() {
   const [syncing, setSyncing] = useState(false);
   const [logs, setLogs] = useState<SyncLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<SyncLog | null>(null);
 
   const loadLogs = useCallback(async () => {
     if (!profile?.id) return;
@@ -58,7 +59,7 @@ export default function GoogleCalendarStatusCard() {
     const { data, error } = await supabase
       .from("google_calendar_sync_logs")
       .select(
-        "id, created_at, status, synced_count, cancelled_count, duration_ms, error_message, calendar_id, window_from, window_to",
+        "id, created_at, status, synced_count, cancelled_count, duration_ms, error_message, calendar_id, window_from, window_to, meta",
       )
       .eq("profile_id", profile.id)
       .order("created_at", { ascending: false })
