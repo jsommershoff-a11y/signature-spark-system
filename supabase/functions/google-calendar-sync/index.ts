@@ -26,6 +26,16 @@ interface GEvent {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const startedAt = Date.now();
+  let logCtx: {
+    profile_id?: string;
+    calendar_id?: string;
+    triggered_by?: string;
+    window_from?: string;
+    window_to?: string;
+  } = {};
+  let supabaseForLog: any = null;
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const GCAL_KEY = Deno.env.get("GOOGLE_CALENDAR_API_KEY");
