@@ -50,7 +50,10 @@ export const Footer = () => {
                 Potenzial-Analyse buchen
               </Link>
               <Link to="/community" className="text-white/40 hover:text-white transition-colors text-sm">
-                KI-Community (Skool)
+                KI-Community
+              </Link>
+              <Link to="/app/pricing" className="text-white/40 hover:text-white transition-colors text-sm">
+                Preise & Pakete
               </Link>
               <Link to="/agb" className="text-white/40 hover:text-white transition-colors text-sm">
                 AGB
