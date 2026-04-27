@@ -3789,6 +3789,39 @@ export type Database = {
         }[]
       }
       get_team_member_ids: { Args: { _user_id: string }; Returns: string[] }
+      get_trial_kpis: {
+        Args: never
+        Returns: {
+          active_subs: number
+          active_trials: number
+          conversion_rate: number
+          conversions_30d: number
+          expired_trials: number
+          total_trials: number
+          trial_call_used: number
+        }[]
+      }
+      get_trial_overview: {
+        Args: never
+        Returns: {
+          converted_at: string
+          created_at: string
+          email: string
+          full_name: string
+          live_call_event_date: string
+          live_call_event_id: string
+          live_call_event_title: string
+          live_call_used_at: string
+          profile_id: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          subscription_status: string
+          trial_days_remaining: number
+          trial_ends_at: string
+          trial_started_at: string
+          user_id: string
+        }[]
+      }
       get_user_profile_id: { Args: { _user_id: string }; Returns: string }
       get_user_team_id: { Args: { _user_id: string }; Returns: string }
       has_email_consent: {
