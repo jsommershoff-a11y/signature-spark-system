@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/app/AppLayout";
+import { GtagDebugOverlay } from "@/components/dev/GtagDebugOverlay";
 
 // Public landing pages
 import MasterHome from "./pages/landing/MasterHome";
@@ -81,6 +82,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      {import.meta.env.DEV && <GtagDebugOverlay />}
       <BrowserRouter>
         <AuthProvider>
           <ReferralTracker />
