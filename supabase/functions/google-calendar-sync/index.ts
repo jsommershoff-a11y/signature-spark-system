@@ -316,10 +316,16 @@ async function maybeAlertRecurringFailures(
     const cooldownSince = new Date(Date.now() - ALERT_COOLDOWN_HOURS * 3600_000).toISOString();
     const { data: profile } = await supabase
       .from("profiles")
-      .select("user_id, full_name, email")
+      .select("user_id, full_name, email, meta")
       .eq("id", profile_id)
       .maybeSingle();
     if (!profile?.user_id) return;
+
+    // Respect user's notification channel preference (default: both)
+    const channel = (profile?.meta?.notif_channel as string) ?? "both";
+    const wantInApp = channel === "in_app" || channel === "both";
+    const wantEmail = channel === "email" || channel === "both";
+    if (!wantInApp && !wantEmail) return;
 
     const { data: recentAlert } = await supabase
       .from("notifications")
@@ -349,12 +355,14 @@ async function maybeAlertRecurringFailures(
         title: `Google-Kalender-Sync: ${failureCount} Fehler in ${ALERT_WINDOW_HOURS}h`,
         body: `Der letzte Lauf endete mit Status "${latestStatus}". Letzter Fehler: ${lastError.slice(0, 300)}`,
         link: "/app/settings",
-        email: true,
+        in_app: wantInApp,
+        email: wantEmail,
         metadata: {
           failure_count: failureCount,
           window_hours: ALERT_WINDOW_HOURS,
           latest_status: latestStatus,
           recent_log_ids: failingLogs?.map((l: any) => l.id) ?? [],
+          channel,
         },
       }),
     }).catch((e) => console.error("[google-calendar-sync] alert dispatch failed", e));
