@@ -62,7 +62,7 @@ export default function Pricing() {
   };
 
   return (
-    <div>
+    <div className="space-y-8">
       <PageHeader
         eyebrow="KI-Automationen System"
         title="Finde das passende Paket für dich"
