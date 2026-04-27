@@ -234,18 +234,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    const finalStatus = meta.errors.length > 0 ? "partial" : "success";
     await supabase.from("google_calendar_sync_logs").insert({
       profile_id: logCtx.profile_id,
       triggered_by: logCtx.triggered_by ?? null,
       calendar_id: logCtx.calendar_id,
       window_from: logCtx.window_from,
       window_to: logCtx.window_to,
-      status: meta.errors.length > 0 ? "partial" : "success",
+      status: finalStatus,
       synced_count: upserts,
       cancelled_count: cancelled,
       duration_ms: Date.now() - startedAt,
       meta,
     });
+
+    if (finalStatus !== "success") {
+      await maybeAlertRecurringFailures(supabase, logCtx.profile_id!, finalStatus);
+    }
 
     return new Response(
       JSON.stringify({
