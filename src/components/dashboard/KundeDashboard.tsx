@@ -38,6 +38,7 @@ export function KundeDashboard() {
 
   return (
     <div className="space-y-5 md:space-y-6">
+      <TrialStatusWidget />
       {/* Welcome / Progress Widget */}
       <Card className="border-border/40 bg-gradient-to-br from-muted/20 via-background to-muted/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
         <CardContent className="flex flex-col sm:flex-row items-center gap-6 py-8 px-7">
