@@ -197,7 +197,7 @@ export const AiAnalysisWidget = () => {
 
                 {/* Savings Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] text-white rounded-2xl p-5 text-center">
+                  <div className="bg-gradient-to-br from-[#0F3E2E] to-[#0a2a20] text-white rounded-2xl p-5 text-center">
                     <p className="text-xs uppercase tracking-wider opacity-60 mb-1">Pro Woche</p>
                     <p className="text-2xl md:text-3xl font-bold">{result.savingsHoursLow}–{result.savingsHoursHigh} Std.</p>
                   </div>

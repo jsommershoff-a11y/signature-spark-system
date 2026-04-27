@@ -11,7 +11,7 @@ const branches = [
 
 export const Footer = () => {
   return (
-    <footer className="py-16 bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a]">
+    <footer className="py-16 bg-gradient-to-b from-[#0F3E2E] to-[#0a2a20]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid md:grid-cols-3 gap-10 mb-10">
           <div>

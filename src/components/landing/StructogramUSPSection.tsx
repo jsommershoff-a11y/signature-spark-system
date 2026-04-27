@@ -47,12 +47,12 @@ export const StructogramUSPSection = () => {
               </p>
             </div>
 
-            {/* BLAU */}
-            <div className="rounded-2xl border-2 border-blue-500/30 bg-blue-500/5 p-6">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
-                <div className="w-6 h-6 rounded-full bg-blue-500" />
+            {/* BLAU (Analytisch) – neutral dargestellt im Brand-Charcoal */}
+            <div className="rounded-2xl border-2 border-foreground/20 bg-foreground/5 p-6">
+              <div className="w-12 h-12 rounded-full bg-foreground/15 flex items-center justify-center mb-4">
+                <div className="w-6 h-6 rounded-full bg-foreground/80" />
               </div>
-              <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-2">
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 Analytisch
               </h3>
               <p className={landingTokens.text.body}>
