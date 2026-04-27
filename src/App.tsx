@@ -38,7 +38,13 @@ import Academy from "./pages/app/Academy";
 
 import Reports from "./pages/app/Reports";
 import Settings from "./pages/app/Settings";
-import Admin from "./pages/app/Admin";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import AdminOverview from "./pages/app/admin/AdminOverview";
+import AdminUsers from "./pages/app/admin/AdminUsers";
+import AdminLeads from "./pages/app/admin/AdminLeads";
+import AdminCustomers from "./pages/app/admin/AdminCustomers";
+import AdminSubscriptions from "./pages/app/admin/AdminSubscriptions";
+import AdminSettings from "./pages/app/admin/AdminSettings";
 import AdminWebhooks from "./pages/app/AdminWebhooks";
 import Unauthorized from "./pages/app/Unauthorized";
 import Calls from "./pages/app/Calls";
@@ -205,9 +211,16 @@ const App = () => (
               } />
               <Route path="admin" element={
                 <ProtectedRoute requiredRole="admin">
-                  <Admin />
+                  <AdminLayout />
                 </ProtectedRoute>
-              } />
+              }>
+                <Route index element={<AdminOverview />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="leads" element={<AdminLeads />} />
+                <Route path="customers" element={<AdminCustomers />} />
+                <Route path="subscriptions" element={<AdminSubscriptions />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
               <Route path="webhooks" element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminWebhooks />
