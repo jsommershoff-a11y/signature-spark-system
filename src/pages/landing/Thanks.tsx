@@ -1,16 +1,23 @@
-import { useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, Info, ArrowLeft, BookOpen, Users } from "lucide-react";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { SEOHead } from "@/components/landing/SEOHead";
 import { Button } from "@/components/ui/button";
 import { trackLeadConversion } from "@/lib/analytics";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+
+const REDIRECT_SECONDS = 5;
 
 const Thanks = () => {
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
   const isInfo = status === "info";
+  const navigate = useNavigate();
+  const { user, refreshProfile } = useAuth() as any;
+  const [countdown, setCountdown] = useState(REDIRECT_SECONDS);
 
   // Fire Google Ads conversion only for qualified leads (not the "info"/disqualified path)
   useEffect(() => {
@@ -18,6 +25,34 @@ const Thanks = () => {
       trackLeadConversion();
     }
   }, [isInfo]);
+
+  // Auto-start 14-day trial + redirect logged-in users into the member area
+  useEffect(() => {
+    if (isInfo || !user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await supabase.rpc("start_member_trial" as any);
+        if (typeof refreshProfile === "function") await refreshProfile();
+      } catch (e) {
+        console.error("[thanks] start_member_trial failed", e);
+      }
+      if (cancelled) return;
+      const tick = window.setInterval(() => {
+        setCountdown((c) => {
+          if (c <= 1) {
+            window.clearInterval(tick);
+            navigate("/app/dashboard", { replace: true });
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isInfo, user, navigate, refreshProfile]);
 
   return (
     <div className="min-h-screen flex flex-col">
