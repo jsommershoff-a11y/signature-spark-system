@@ -13,6 +13,8 @@ import { Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { AppFooter } from './AppFooter';
+import { Breadcrumbs } from './Breadcrumbs';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -65,10 +67,12 @@ export function AppLayout() {
         </div>
 
         {/* Content Area — landing container width + generous padding */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto min-w-0">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto min-w-0 flex flex-col">
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+            <Breadcrumbs />
             <Outlet />
           </div>
+          <AppFooter />
         </main>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/app/AppLayout";
@@ -54,8 +54,8 @@ import OfferDetail from "./pages/app/OfferDetail";
 import MyContracts from "./pages/app/MyContracts";
 import Goals from "./pages/app/Goals";
 import SocialMedia from "./pages/app/SocialMedia";
-import EmailCampaigns from "./pages/app/EmailCampaigns";
-import MemberManagement from "./pages/app/MemberManagement";
+import EmailHub from "./pages/app/EmailHub";
+import InboxHub from "./pages/app/InboxHub";
 import Pricing from "./pages/app/Pricing";
 import Welcome from "./pages/app/Welcome";
 import CooCockpit from "./pages/app/CooCockpit";
@@ -63,12 +63,7 @@ import PromptLibrary from "./pages/app/PromptLibrary";
 import ToolsDirectory from "./pages/app/ToolsDirectory";
 import LiveCallsCalendar from "./pages/app/LiveCallsCalendar";
 import AffiliateDashboard from "./pages/app/AffiliateDashboard";
-import Outlook from "./pages/app/Outlook";
-import Tickets from "./pages/app/Tickets";
-import Posteingang from "./pages/app/Posteingang";
 import Katalog from "./pages/app/Katalog";
-import EmailLog from "./pages/app/EmailLog";
-import EmailConsents from "./pages/app/EmailConsents";
 import { EmailConsentConfirm, EmailConsentRevoke } from "./pages/EmailConsent";
 import { ReferralTracker } from "./components/affiliate/ReferralTracker";
 
@@ -174,11 +169,17 @@ const App = () => (
                   <SocialMedia />
                 </ProtectedRoute>
               } />
-              <Route path="email-kampagnen" element={
+              {/* Email-Hub (vereint Kampagnen, Log, Consents) */}
+              <Route path="email" element={
                 <ProtectedRoute requireMinRole="vertriebspartner">
-                  <EmailCampaigns />
+                  <EmailHub />
                 </ProtectedRoute>
               } />
+              {/* Legacy-Redirects auf neuen Hub */}
+              <Route path="email-kampagnen" element={<Navigate to="/app/email?tab=kampagnen" replace />} />
+              <Route path="email-log" element={<Navigate to="/app/email?tab=log" replace />} />
+              <Route path="email-consents" element={<Navigate to="/app/email?tab=consents" replace />} />
+
               <Route path="courses" element={<Courses />} />
               <Route path="academy/*" element={<Academy />} />
               <Route path="contracts" element={<MyContracts />} />
@@ -188,16 +189,11 @@ const App = () => (
               <Route path="welcome" element={<Welcome />} />
               <Route path="calendar" element={<LiveCallsCalendar />} />
               <Route path="affiliate" element={<AffiliateDashboard />} />
-              <Route path="member-management" element={
-                <ProtectedRoute requireMinRole="gruppenbetreuer">
-                  <MemberManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="members" element={
-                <ProtectedRoute requireMinRole="vertriebspartner">
-                  <Customers />
-                </ProtectedRoute>
-              } />
+
+              {/* Konsolidierung: members → customers, member-management → admin/customers */}
+              <Route path="members" element={<Navigate to="/app/customers" replace />} />
+              <Route path="member-management" element={<Navigate to="/app/admin/customers" replace />} />
+
               <Route path="reports" element={
                 <ProtectedRoute requireMinRole="gruppenbetreuer">
                   <Reports />
@@ -221,36 +217,19 @@ const App = () => (
                 <Route path="subscriptions" element={<AdminSubscriptions />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
-              <Route path="webhooks" element={
+              {/* Webhooks jetzt unter Admin-Settings als Tab */}
+              <Route path="webhooks" element={<Navigate to="/app/admin/settings" replace />} />
+
+              {/* Inbox-Hub (vereint Posteingang, Outlook, Tickets) */}
+              <Route path="inbox" element={
                 <ProtectedRoute requiredRole="admin">
-                  <AdminWebhooks />
+                  <InboxHub />
                 </ProtectedRoute>
               } />
-              <Route path="outlook" element={
-                <ProtectedRoute requiredRole="admin">
-                  <Outlook />
-                </ProtectedRoute>
-              } />
-              <Route path="tickets" element={
-                <ProtectedRoute requiredRole="admin">
-                  <Tickets />
-                </ProtectedRoute>
-              } />
-              <Route path="posteingang" element={
-                <ProtectedRoute requiredRole="admin">
-                  <Posteingang />
-                </ProtectedRoute>
-              } />
-              <Route path="email-log" element={
-                <ProtectedRoute requiredRole="admin">
-                  <EmailLog />
-                </ProtectedRoute>
-              } />
-              <Route path="email-consents" element={
-                <ProtectedRoute requiredRole="admin">
-                  <EmailConsents />
-                </ProtectedRoute>
-              } />
+              <Route path="outlook" element={<Navigate to="/app/inbox?tab=outlook" replace />} />
+              <Route path="tickets" element={<Navigate to="/app/inbox?tab=tickets" replace />} />
+              <Route path="posteingang" element={<Navigate to="/app/inbox?tab=posteingang" replace />} />
+
               <Route path="unauthorized" element={<Unauthorized />} />
             </Route>
 
