@@ -57,9 +57,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+    supabaseForLog = supabase;
 
     const timeMin = new Date().toISOString();
     const timeMax = new Date(Date.now() + days_ahead * 86400_000).toISOString();
+    logCtx = {
+      profile_id,
+      calendar_id,
+      triggered_by: body.triggered_by,
+      window_from: timeMin,
+      window_to: timeMax,
+    };
 
     // Events lesen
     const url = new URL(
