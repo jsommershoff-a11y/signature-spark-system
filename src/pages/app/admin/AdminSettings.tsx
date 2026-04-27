@@ -1,12 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/app/PageHeader";
-import { Plug, Mail, Tags, Activity, Download } from "lucide-react";
+import { Plug, Mail, Tags, Activity, Download, Webhook } from "lucide-react";
 import AdminIntegrations from "@/components/admin/AdminIntegrations";
 import AdminEmailTemplates from "@/components/admin/AdminEmailTemplates";
 import AdminSlotClassificationRules from "@/components/admin/AdminSlotClassificationRules";
 import AdminSystemLogs from "@/components/admin/AdminSystemLogs";
 import AdminBackupExport from "@/components/admin/AdminBackupExport";
+import AdminWebhooks from "../AdminWebhooks";
 
 export default function AdminSettings() {
   return (
@@ -30,6 +31,9 @@ export default function AdminSettings() {
           </TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5 rounded-xl">
             <Activity className="h-3.5 w-3.5" /> Logs
+          </TabsTrigger>
+          <TabsTrigger value="webhooks" className="gap-1.5 rounded-xl">
+            <Webhook className="h-3.5 w-3.5" /> Webhooks
           </TabsTrigger>
           <TabsTrigger value="backup" className="gap-1.5 rounded-xl">
             <Download className="h-3.5 w-3.5" /> Backup
@@ -62,6 +66,10 @@ export default function AdminSettings() {
               <AdminSystemLogs />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="webhooks" className="mt-6">
+          <AdminWebhooks />
         </TabsContent>
 
         <TabsContent value="backup" className="mt-6">
