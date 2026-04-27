@@ -5,6 +5,7 @@ import {
   UserPlus,
   Building2,
   CreditCard,
+  Clock,
   Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ const adminNav = [
   { label: "Leads", href: "/app/admin/leads", icon: UserPlus },
   { label: "Kunden", href: "/app/admin/customers", icon: Building2 },
   { label: "Abos", href: "/app/admin/subscriptions", icon: CreditCard },
+  { label: "Trials", href: "/app/admin/trials", icon: Clock },
   { label: "Einstellungen", href: "/app/admin/settings", icon: SettingsIcon },
 ];
 

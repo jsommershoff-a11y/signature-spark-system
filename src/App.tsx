@@ -44,6 +44,7 @@ import AdminUsers from "./pages/app/admin/AdminUsers";
 import AdminLeads from "./pages/app/admin/AdminLeads";
 import AdminCustomers from "./pages/app/admin/AdminCustomers";
 import AdminSubscriptions from "./pages/app/admin/AdminSubscriptions";
+import AdminTrials from "./pages/app/admin/AdminTrials";
 import AdminSettings from "./pages/app/admin/AdminSettings";
 import AdminWebhooks from "./pages/app/AdminWebhooks";
 import Unauthorized from "./pages/app/Unauthorized";
@@ -215,6 +216,7 @@ const App = () => (
                 <Route path="leads" element={<AdminLeads />} />
                 <Route path="customers" element={<AdminCustomers />} />
                 <Route path="subscriptions" element={<AdminSubscriptions />} />
+                <Route path="trials" element={<AdminTrials />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
               {/* Webhooks jetzt unter Admin-Settings als Tab */}
