@@ -2051,6 +2051,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          assigned_to: string | null
           branche: string | null
           created_at: string
           email: string
@@ -2066,8 +2067,10 @@ export type Database = {
           qualification_score: number | null
           ref_code: string | null
           source: string
+          status: string
         }
         Insert: {
+          assigned_to?: string | null
           branche?: string | null
           created_at?: string
           email: string
@@ -2083,8 +2086,10 @@ export type Database = {
           qualification_score?: number | null
           ref_code?: string | null
           source: string
+          status?: string
         }
         Update: {
+          assigned_to?: string | null
           branche?: string | null
           created_at?: string
           email?: string
@@ -2100,8 +2105,17 @@ export type Database = {
           qualification_score?: number | null
           ref_code?: string | null
           source?: string
+          status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       learning_paths: {
         Row: {
