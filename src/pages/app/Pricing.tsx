@@ -62,24 +62,18 @@ export default function Pricing() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-8 max-w-6xl">
-      {/* Header */}
-      <div className="text-center space-y-3">
-        <Badge variant="secondary" className="gap-1">
-          <Sparkles className="h-3 w-3" />
-          KI-Automationen System
-        </Badge>
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-          Finde das passende Paket für dich
-        </h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Jedes Paket ist darauf ausgerichtet, dein Unternehmen mit KI effizienter zu machen –
-          vom ersten Prompt bis zur vollständigen System-Transformation.
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        eyebrow="KI-Automationen System"
+        title="Finde das passende Paket für dich"
+        description="Jedes Paket ist darauf ausgerichtet, dein Unternehmen mit KI effizienter zu machen – vom ersten Prompt bis zur vollständigen System-Transformation."
+      />
 
       {/* Tier Progress */}
-      <TierProgressHint currentTier={tierName === 'basic' ? 'basic' : tierName === 'starter' ? 'starter' : 'none'} className="max-w-lg mx-auto" />
+      <TierProgressHint
+        currentTier={tierName === 'basic' ? 'basic' : tierName === 'starter' ? 'starter' : 'none'}
+        className="max-w-lg mb-8"
+      />
 
       {/* Pricing Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
