@@ -259,7 +259,9 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[google-calendar-sync]", msg);
+    const stack = err instanceof Error ? err.stack : undefined;
+    meta.stack = stack;
+    console.error("[google-calendar-sync]", msg, stack);
     if (supabaseForLog && logCtx.profile_id) {
       await supabaseForLog.from("google_calendar_sync_logs").insert({
         profile_id: logCtx.profile_id,
@@ -270,9 +272,10 @@ Deno.serve(async (req) => {
         status: "error",
         error_message: msg,
         duration_ms: Date.now() - startedAt,
+        meta,
       }).then(() => {}, () => {});
     }
-    return new Response(JSON.stringify({ ok: false, error: msg }), {
+    return new Response(JSON.stringify({ ok: false, error: msg, stack }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
