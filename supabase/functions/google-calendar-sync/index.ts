@@ -35,6 +35,28 @@ Deno.serve(async (req) => {
     window_to?: string;
   } = {};
   let supabaseForLog: any = null;
+  const meta: {
+    google_api: {
+      status?: number;
+      ok?: boolean;
+      url?: string;
+      total_items?: number;
+      busy_items?: number;
+      response_sample?: any;
+      error_body?: any;
+    };
+    events: {
+      synced_event_ids: string[];
+      cancelled_event_ids: string[];
+      skipped_event_ids: string[];
+    };
+    errors: Array<{ event_id?: string; phase: string; message: string }>;
+    stack?: string;
+  } = {
+    google_api: {},
+    events: { synced_event_ids: [], cancelled_event_ids: [], skipped_event_ids: [] },
+    errors: [],
+  };
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
