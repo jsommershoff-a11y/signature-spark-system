@@ -185,6 +185,9 @@ export default function Pricing() {
         })}
       </div>
 
+      {/* Vergleichstabelle */}
+      <PricingComparisonTable />
+
       {/* Addon: Einzel-Session */}
       <Card className="bg-muted/20 border-dashed">
         <CardContent className="flex flex-col md:flex-row items-center gap-4 py-6">
