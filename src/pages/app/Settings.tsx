@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +32,9 @@ export default function Settings() {
 
   // Notification prefs (local state — persisted to profile meta)
   const meta = (profile as any)?.meta || {};
+  const [notifChannel, setNotifChannel] = useState<'in_app' | 'email' | 'both'>(
+    (meta.notif_channel as 'in_app' | 'email' | 'both') ?? 'both'
+  );
   const [notifEmail, setNotifEmail] = useState<boolean>(meta.notif_email ?? true);
   const [notifTasks, setNotifTasks] = useState<boolean>(meta.notif_tasks ?? true);
   const [notifLeads, setNotifLeads] = useState<boolean>(meta.notif_leads ?? true);
@@ -94,7 +98,7 @@ export default function Settings() {
     const { error } = await supabase
       .from('profiles')
       .update({
-        meta: { ...currentMeta, notif_email: notifEmail, notif_tasks: notifTasks, notif_leads: notifLeads, notif_reports: notifReports },
+        meta: { ...currentMeta, notif_channel: notifChannel, notif_email: notifEmail, notif_tasks: notifTasks, notif_leads: notifLeads, notif_reports: notifReports },
       } as any)
       .eq('user_id', user.id);
 
@@ -263,10 +267,43 @@ export default function Settings() {
             <CardDescription>Wähle, worüber du informiert werden möchtest</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            <div className="space-y-2 rounded-lg border p-3 bg-muted/30">
+              <p className="text-sm font-medium">Benachrichtigungs-Kanal</p>
+              <p className="text-xs text-muted-foreground">
+                Wo möchtest du Warnungen und Updates erhalten?
+              </p>
+              <RadioGroup
+                value={notifChannel}
+                onValueChange={(v) => setNotifChannel(v as 'in_app' | 'email' | 'both')}
+                className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2"
+              >
+                <Label
+                  htmlFor="ch-in-app"
+                  className="flex items-center gap-2 rounded-md border p-2.5 cursor-pointer hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                >
+                  <RadioGroupItem value="in_app" id="ch-in-app" />
+                  <span className="text-sm">Nur in-App</span>
+                </Label>
+                <Label
+                  htmlFor="ch-email"
+                  className="flex items-center gap-2 rounded-md border p-2.5 cursor-pointer hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                >
+                  <RadioGroupItem value="email" id="ch-email" />
+                  <span className="text-sm">Nur E-Mail</span>
+                </Label>
+                <Label
+                  htmlFor="ch-both"
+                  className="flex items-center gap-2 rounded-md border p-2.5 cursor-pointer hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                >
+                  <RadioGroupItem value="both" id="ch-both" />
+                  <span className="text-sm">Beides</span>
+                </Label>
+              </RadioGroup>
+            </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">E-Mail-Benachrichtigungen</p>
-                <p className="text-xs text-muted-foreground">Allgemeine System-E-Mails</p>
+                <p className="text-xs text-muted-foreground">Allgemeine System-E-Mails (zusätzlich zum Kanal)</p>
               </div>
               <Switch checked={notifEmail} onCheckedChange={setNotifEmail} />
             </div>
