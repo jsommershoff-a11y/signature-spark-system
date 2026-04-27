@@ -1693,6 +1693,54 @@ export type Database = {
         }
         Relationships: []
       }
+      google_calendar_sync_logs: {
+        Row: {
+          calendar_id: string | null
+          cancelled_count: number
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          meta: Json | null
+          profile_id: string
+          status: string
+          synced_count: number
+          triggered_by: string | null
+          window_from: string | null
+          window_to: string | null
+        }
+        Insert: {
+          calendar_id?: string | null
+          cancelled_count?: number
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          meta?: Json | null
+          profile_id: string
+          status?: string
+          synced_count?: number
+          triggered_by?: string | null
+          window_from?: string | null
+          window_to?: string | null
+        }
+        Update: {
+          calendar_id?: string | null
+          cancelled_count?: number
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          meta?: Json | null
+          profile_id?: string
+          status?: string
+          synced_count?: number
+          triggered_by?: string | null
+          window_from?: string | null
+          window_to?: string | null
+        }
+        Relationships: []
+      }
       incoming_mail: {
         Row: {
           ai_summary: string | null
