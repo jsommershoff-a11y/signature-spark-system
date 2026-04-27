@@ -13,8 +13,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 160 25% 10%;
 
-    /* Primary = Brand Orange (jan-sommershoff.de CTA #F66D1E) */
-    --primary: 20 96% 54%;
+    /* Primary = Brand Orange (jan-sommershoff.de CTA, lightly deepened for WCAG AA on white text) */
+    --primary: 20 96% 48%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 160 30% 94%;
