@@ -1,14 +1,23 @@
+import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle, Info, ArrowLeft, BookOpen, Users } from "lucide-react";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { SEOHead } from "@/components/landing/SEOHead";
 import { Button } from "@/components/ui/button";
+import { trackLeadConversion } from "@/lib/analytics";
 
 const Thanks = () => {
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
   const isInfo = status === "info";
+
+  // Fire Google Ads conversion only for qualified leads (not the "info"/disqualified path)
+  useEffect(() => {
+    if (!isInfo) {
+      trackLeadConversion();
+    }
+  }, [isInfo]);
 
   return (
     <div className="min-h-screen flex flex-col">
