@@ -31,14 +31,34 @@ import {
 } from 'lucide-react';
 
 export default function LiveCallsCalendar() {
-  const { effectiveRole, user } = useAuth();
+  const { effectiveRole, user, profile } = useAuth() as any;
   const { events, isLoading, register, unregister, createEvent, deleteEvent } = useLiveEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { topics, submitTopic } = useTopicSubmissions(selectedEventId);
   const [createOpen, setCreateOpen] = useState(false);
   const [topicDialogOpen, setTopicDialogOpen] = useState(false);
+  const [canBook, setCanBook] = useState<boolean>(true);
 
   const isStaff = effectiveRole ? STAFF_ROLES.includes(effectiveRole) : false;
+
+  // Check live-call booking eligibility (trial: 1x, active: unlimited, expired: 0)
+  useEffect(() => {
+    if (!user || isStaff) {
+      setCanBook(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.rpc('can_book_live_call', { _user_id: user.id });
+      if (!cancelled && !error) setCanBook(Boolean(data));
+    })();
+    return () => { cancelled = true; };
+  }, [user, isStaff, profile?.live_call_used_at, profile?.subscription_status]);
+
+  const subStatus = (profile as any)?.subscription_status as string | undefined;
+  const trialUsed = Boolean((profile as any)?.live_call_used_at);
+  const showTrialLockBanner = !isStaff && subStatus === 'trialing' && trialUsed;
+  const showExpiredBanner = !isStaff && (subStatus === 'expired' || subStatus === 'canceled' || subStatus === 'past_due');
 
   // Form states for create event
   const [newTitle, setNewTitle] = useState('');
