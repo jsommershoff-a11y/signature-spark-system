@@ -2808,9 +2808,15 @@ export type Database = {
           id: string
           industry: string | null
           last_name: string | null
+          live_call_used_at: string | null
           phone: string | null
           primary_goal: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string
           team_id: string | null
+          trial_ends_at: string | null
+          trial_started_at: string | null
           updated_at: string
           user_id: string
         }
@@ -2825,9 +2831,15 @@ export type Database = {
           id?: string
           industry?: string | null
           last_name?: string | null
+          live_call_used_at?: string | null
           phone?: string | null
           primary_goal?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string
           team_id?: string | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -2842,9 +2854,15 @@ export type Database = {
           id?: string
           industry?: string | null
           last_name?: string | null
+          live_call_used_at?: string | null
           phone?: string | null
           primary_goal?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string
           team_id?: string | null
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -3649,6 +3667,7 @@ export type Database = {
         }
         Returns: number
       }
+      can_book_live_call: { Args: { _user_id: string }; Returns: boolean }
       can_view_profile: { Args: { _profile_id: string }; Returns: boolean }
       classify_slot_event: {
         Args: { _description: string; _source: string; _title: string }
@@ -3713,6 +3732,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_active_member: { Args: { _user_id: string }; Returns: boolean }
       list_free_slots_public: {
         Args: { _from?: string; _profile_id: string; _to?: string }
         Returns: {
