@@ -279,6 +279,7 @@ Deno.serve(async (req) => {
         duration_ms: Date.now() - startedAt,
         meta,
       }).then(() => {}, () => {});
+      await maybeAlertRecurringFailures(supabaseForLog, logCtx.profile_id, "error").catch(() => {});
     }
     return new Response(JSON.stringify({ ok: false, error: msg, stack }), {
       status: 500,
@@ -286,3 +287,78 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+// --- Alert-Logik: warnt bei ≥ALERT_THRESHOLD Fehlern in ALERT_WINDOW_HOURS, mit Cooldown ---
+const ALERT_THRESHOLD = 3;
+const ALERT_WINDOW_HOURS = 24;
+const ALERT_COOLDOWN_HOURS = 6;
+
+async function maybeAlertRecurringFailures(
+  supabase: any,
+  profile_id: string,
+  latestStatus: string,
+) {
+  try {
+    const sinceWindow = new Date(Date.now() - ALERT_WINDOW_HOURS * 3600_000).toISOString();
+    const { data: failingLogs, count } = await supabase
+      .from("google_calendar_sync_logs")
+      .select("id, status, created_at, error_message", { count: "exact" })
+      .eq("profile_id", profile_id)
+      .in("status", ["error", "partial"])
+      .gte("created_at", sinceWindow)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    const failureCount = count ?? failingLogs?.length ?? 0;
+    if (failureCount < ALERT_THRESHOLD) return;
+
+    // Cooldown: existiert bereits eine Alert-Notification der letzten N Stunden?
+    const cooldownSince = new Date(Date.now() - ALERT_COOLDOWN_HOURS * 3600_000).toISOString();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, email")
+      .eq("id", profile_id)
+      .maybeSingle();
+    if (!profile?.user_id) return;
+
+    const { data: recentAlert } = await supabase
+      .from("notifications")
+      .select("id")
+      .eq("user_id", profile.user_id)
+      .eq("type", "google_calendar.sync_failures")
+      .gte("created_at", cooldownSince)
+      .limit(1)
+      .maybeSingle();
+    if (recentAlert) return;
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const lastError = failingLogs?.find((l: any) => l.error_message)?.error_message
+      ?? "Siehe Sync-Lauf-Details in den Einstellungen.";
+
+    await fetch(`${supabaseUrl}/functions/v1/send-notification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${serviceRole}`,
+        apikey: serviceRole,
+      },
+      body: JSON.stringify({
+        user_id: profile.user_id,
+        type: "google_calendar.sync_failures",
+        title: `Google-Kalender-Sync: ${failureCount} Fehler in ${ALERT_WINDOW_HOURS}h`,
+        body: `Der letzte Lauf endete mit Status "${latestStatus}". Letzter Fehler: ${lastError.slice(0, 300)}`,
+        link: "/app/settings",
+        email: true,
+        metadata: {
+          failure_count: failureCount,
+          window_hours: ALERT_WINDOW_HOURS,
+          latest_status: latestStatus,
+          recent_log_ids: failingLogs?.map((l: any) => l.id) ?? [],
+        },
+      }),
+    }).catch((e) => console.error("[google-calendar-sync] alert dispatch failed", e));
+  } catch (e) {
+    console.error("[google-calendar-sync] maybeAlertRecurringFailures error", e);
+  }
+}
