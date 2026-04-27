@@ -25,7 +25,7 @@ const faqs: FAQ[] = [
   {
     question: "Wo sollte ich starten – was ist der nächste Schritt?",
     answer:
-      "Beginne mit Modul 1 „Fundament & Setup" in deinem Lernpfad. Jede Lektion endet mit einer konkreten Checkliste – nach 10–15 Minuten weißt du exakt, was als Nächstes zu tun ist.",
+      "Beginne mit Modul 1 "Fundament & Setup" in deinem Lernpfad. Jede Lektion endet mit einer konkreten Checkliste – nach 10–15 Minuten weißt du exakt, was als Nächstes zu tun ist.",
     cta: { label: "Nächste Lektion starten", to: "/app/academy" },
   },
   {
@@ -43,7 +43,7 @@ const faqs: FAQ[] = [
   {
     question: "Wie definiere und tracke ich meine Ziele?",
     answer:
-      "Über den Bereich „Ziele" legst du dein Quartals- und Jahresziel fest. Das System unterstützt dich dabei, große Ziele in wöchentliche Schritte herunterzubrechen.",
+      "Über den Bereich "Ziele" legst du dein Quartals- und Jahresziel fest. Das System unterstützt dich dabei, große Ziele in wöchentliche Schritte herunterzubrechen.",
     cta: { label: "Ziele definieren", to: "/app/goals" },
   },
   {
