@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
 import { UserMenu } from './UserMenu';
 import { AdminViewSwitcher } from './AdminViewSwitcher';
+import { GitHubStatusBadge } from './GitHubStatusBadge';
 import { ViewAsBanner } from './ViewAsBanner';
 import { ProfileCompletionDialog } from './ProfileCompletionDialog';
 import { NotificationsCenter } from './NotificationsCenter';
@@ -43,6 +44,7 @@ export function AppLayout() {
           </Link>
         </div>
         <div className="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
+          <GitHubStatusBadge />
           <AdminViewSwitcher />
           <NotificationsCenter />
           <UserMenu />
