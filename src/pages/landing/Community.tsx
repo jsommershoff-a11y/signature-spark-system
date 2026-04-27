@@ -44,7 +44,7 @@ const inclusions = [
 const faqItems = [
   {
     question: "Was bekomme ich mit der Mitgliedschaft?",
-    answer: "Vollen Zugang zur geschlossenen Skool-Community, wöchentliche Live-Calls und Q&A Sessions, direkten Austausch mit dem Gründer, Networking mit anderen Unternehmern und erste Einblicke ins KI-Automationen System.",
+    answer: "Vollen Zugang zum geschlossenen Mitgliederbereich auf ki-automationen.io, wöchentliche Live-Calls und Q&A Sessions, direkten Austausch mit dem Gründer, Networking mit anderen Unternehmern und erste Einblicke ins KI-Automationen System.",
   },
   {
     question: "Kann ich jederzeit kündigen?",
@@ -52,11 +52,11 @@ const faqItems = [
   },
   {
     question: "Wo finden die Live-Calls statt?",
-    answer: "In der geschlossenen Skool-Community. Termine werden in der Community angekündigt — du kannst live teilnehmen oder die Aufzeichnung im Anschluss ansehen.",
+    answer: "Direkt im Mitgliederbereich auf ki-automationen.io. Termine werden im integrierten Kalender angekündigt — du kannst live teilnehmen oder die Aufzeichnung im Anschluss ansehen.",
   },
   {
     question: "Wie geht es nach der Anfrage weiter?",
-    answer: "Nach deiner Anfrage melden wir uns innerhalb von 24 Stunden bei dir. In einem kurzen Gespräch klären wir, ob die Community zu deiner Situation passt — und du bekommst direkt Zugang zur Skool-Community samt aller Features.",
+    answer: "Nach deiner Anfrage melden wir uns innerhalb von 24 Stunden bei dir. In einem kurzen Gespräch klären wir, ob die Community zu deiner Situation passt — und du bekommst anschließend per Einladung direkten Zugang zum Mitgliederbereich auf ki-automationen.io samt aller Features.",
   },
 ];
 
