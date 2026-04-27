@@ -7,6 +7,7 @@ import { useMembershipAccess } from '@/hooks/useMembershipAccess';
 import { useLearningPaths } from '@/hooks/useLearningPaths';
 import { ProgressRing } from '@/components/lms/ProgressRing';
 import { MemberFAQ } from '@/components/dashboard/MemberFAQ';
+import { TrialStatusWidget } from '@/components/dashboard/TrialStatusWidget';
 
 export function KundeDashboard() {
   const { products, isLoading: accessLoading } = useMembershipAccess();
