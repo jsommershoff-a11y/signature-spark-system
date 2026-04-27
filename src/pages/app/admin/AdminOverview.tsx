@@ -16,6 +16,7 @@ import {
   Webhook,
   Inbox,
 } from "lucide-react";
+import { AdminKpiTiles } from "@/components/admin/AdminKpiTiles";
 
 const sections = [
   {
@@ -75,6 +76,9 @@ export default function AdminOverview() {
         title="Admin-Bereich"
         description="System-Administration, Benutzerverwaltung und Integrationen — alles an einem Ort."
       />
+
+      {/* KPI tiles */}
+      <AdminKpiTiles />
 
       {/* Section grid */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
