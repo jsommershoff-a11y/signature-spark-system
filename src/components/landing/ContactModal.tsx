@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { getStoredRefCode } from "@/components/affiliate/ReferralTracker";
+import { trackLeadConversion } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,6 +71,9 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
 
       setIsSuccess(true);
       form.reset();
+
+      // Google Ads conversion event (Lead-Formular senden)
+      trackLeadConversion();
 
       // Fire-and-forget: send notification emails
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
