@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { STRIPE_PRODUCTS_LIST, ADDON_SESSION } from '@/lib/stripe-config';
 import { TierProgressHint } from '@/components/app/LockedContent';
+import { PricingComparisonTable } from '@/components/app/PricingComparisonTable';
 import { getStoredRefCode } from '@/components/affiliate/ReferralTracker';
 import { toast } from 'sonner';
 import {
