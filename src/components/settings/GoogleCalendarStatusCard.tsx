@@ -10,6 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +28,7 @@ import {
   AlertTriangle,
   Plug,
   History,
+  Eye,
 } from "lucide-react";
 
 interface SyncLog {
@@ -33,6 +42,7 @@ interface SyncLog {
   calendar_id: string | null;
   window_from: string | null;
   window_to: string | null;
+  meta: any | null;
 }
 
 export default function GoogleCalendarStatusCard() {
@@ -41,6 +51,7 @@ export default function GoogleCalendarStatusCard() {
   const [syncing, setSyncing] = useState(false);
   const [logs, setLogs] = useState<SyncLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<SyncLog | null>(null);
 
   const loadLogs = useCallback(async () => {
     if (!profile?.id) return;
@@ -48,7 +59,7 @@ export default function GoogleCalendarStatusCard() {
     const { data, error } = await supabase
       .from("google_calendar_sync_logs")
       .select(
-        "id, created_at, status, synced_count, cancelled_count, duration_ms, error_message, calendar_id, window_from, window_to",
+        "id, created_at, status, synced_count, cancelled_count, duration_ms, error_message, calendar_id, window_from, window_to, meta",
       )
       .eq("profile_id", profile.id)
       .order("created_at", { ascending: false })
@@ -158,6 +169,7 @@ export default function GoogleCalendarStatusCard() {
                     <TableHead className="h-9 text-xs text-right">Entfernt</TableHead>
                     <TableHead className="h-9 text-xs text-right">Dauer</TableHead>
                     <TableHead className="h-9 text-xs">Details</TableHead>
+                    <TableHead className="h-9 text-xs w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -168,6 +180,11 @@ export default function GoogleCalendarStatusCard() {
                           <Badge variant="secondary" className="gap-1">
                             <CheckCircle2 className="h-3 w-3 text-success" />
                             OK
+                          </Badge>
+                        ) : log.status === "partial" ? (
+                          <Badge variant="outline" className="gap-1">
+                            <AlertTriangle className="h-3 w-3 text-warning" />
+                            Teilweise
                           </Badge>
                         ) : (
                           <Badge variant="destructive" className="gap-1">
@@ -202,6 +219,17 @@ export default function GoogleCalendarStatusCard() {
                           </span>
                         )}
                       </TableCell>
+                      <TableCell className="py-2 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => setSelectedLog(log)}
+                          title="Details anzeigen"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -210,6 +238,231 @@ export default function GoogleCalendarStatusCard() {
           )}
         </div>
       </CardContent>
+
+      <Dialog open={!!selectedLog} onOpenChange={(o) => !o && setSelectedLog(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Sync-Lauf Details
+              {selectedLog?.status === "success" && (
+                <Badge variant="secondary" className="gap-1">
+                  <CheckCircle2 className="h-3 w-3 text-success" /> OK
+                </Badge>
+              )}
+              {selectedLog?.status === "partial" && (
+                <Badge variant="outline" className="gap-1">
+                  <AlertTriangle className="h-3 w-3 text-warning" /> Teilweise
+                </Badge>
+              )}
+              {selectedLog?.status === "error" && (
+                <Badge variant="destructive" className="gap-1">
+                  <AlertTriangle className="h-3 w-3" /> Fehler
+                </Badge>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedLog && fmtTime(selectedLog.created_at)} · Kalender:{" "}
+              {selectedLog?.calendar_id ?? "primary"} · Dauer:{" "}
+              {selectedLog?.duration_ms ?? "—"} ms
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedLog && (
+            <ScrollArea className="max-h-[65vh] pr-4">
+              <div className="space-y-4 text-xs">
+                <Section title="Zeitfenster">
+                  <KV k="von" v={selectedLog.window_from ?? "—"} />
+                  <KV k="bis" v={selectedLog.window_to ?? "—"} />
+                </Section>
+
+                <Section title="Zähler">
+                  <KV k="Importiert" v={String(selectedLog.synced_count)} />
+                  <KV k="Entfernt" v={String(selectedLog.cancelled_count)} />
+                  <KV
+                    k="Fehler (Events)"
+                    v={String(selectedLog.meta?.errors?.length ?? 0)}
+                  />
+                </Section>
+
+                {selectedLog.error_message && (
+                  <Section title="Fehlermeldung">
+                    <pre className="whitespace-pre-wrap break-words text-destructive bg-destructive/10 p-2 rounded">
+                      {selectedLog.error_message}
+                    </pre>
+                  </Section>
+                )}
+
+                {selectedLog.meta?.stack && (
+                  <Section title="Stacktrace">
+                    <pre className="whitespace-pre-wrap break-words bg-muted p-2 rounded font-mono text-[11px] leading-relaxed">
+                      {selectedLog.meta.stack}
+                    </pre>
+                  </Section>
+                )}
+
+                {selectedLog.meta?.google_api && (
+                  <Section title="Google API Antwort">
+                    <KV
+                      k="Status"
+                      v={`${selectedLog.meta.google_api.status ?? "—"} ${
+                        selectedLog.meta.google_api.ok ? "OK" : ""
+                      }`}
+                    />
+                    <KV
+                      k="URL"
+                      v={selectedLog.meta.google_api.url ?? "—"}
+                      mono
+                    />
+                    <KV
+                      k="Items insgesamt"
+                      v={String(selectedLog.meta.google_api.total_items ?? 0)}
+                    />
+                    <KV
+                      k="Davon busy"
+                      v={String(selectedLog.meta.google_api.busy_items ?? 0)}
+                    />
+                    {selectedLog.meta.google_api.response_sample && (
+                      <details className="mt-2">
+                        <summary className="cursor-pointer text-muted-foreground">
+                          Response-Probe (Auszug)
+                        </summary>
+                        <pre className="mt-1 whitespace-pre-wrap break-words bg-muted p-2 rounded font-mono text-[11px]">
+                          {JSON.stringify(
+                            selectedLog.meta.google_api.response_sample,
+                            null,
+                            2,
+                          )}
+                        </pre>
+                      </details>
+                    )}
+                    {selectedLog.meta.google_api.error_body && (
+                      <details className="mt-2" open>
+                        <summary className="cursor-pointer text-destructive">
+                          Google API Fehler-Body
+                        </summary>
+                        <pre className="mt-1 whitespace-pre-wrap break-words bg-destructive/10 p-2 rounded font-mono text-[11px]">
+                          {JSON.stringify(
+                            selectedLog.meta.google_api.error_body,
+                            null,
+                            2,
+                          )}
+                        </pre>
+                      </details>
+                    )}
+                  </Section>
+                )}
+
+                {selectedLog.meta?.events && (
+                  <Section title="Betroffene Event-IDs">
+                    <EventIdList
+                      label="Importiert / aktualisiert"
+                      ids={selectedLog.meta.events.synced_event_ids ?? []}
+                      tone="success"
+                    />
+                    <EventIdList
+                      label="Entfernt"
+                      ids={selectedLog.meta.events.cancelled_event_ids ?? []}
+                      tone="muted"
+                    />
+                    <EventIdList
+                      label="Übersprungen (free/cancelled/all-day)"
+                      ids={selectedLog.meta.events.skipped_event_ids ?? []}
+                      tone="muted"
+                    />
+                  </Section>
+                )}
+
+                {selectedLog.meta?.errors?.length > 0 && (
+                  <Section title="Event-Fehler">
+                    <div className="space-y-2">
+                      {selectedLog.meta.errors.map((e: any, i: number) => (
+                        <div
+                          key={i}
+                          className="border border-destructive/30 bg-destructive/5 rounded p-2"
+                        >
+                          <div className="flex gap-2 mb-1">
+                            <Badge variant="outline" className="text-[10px]">
+                              {e.phase}
+                            </Badge>
+                            {e.event_id && (
+                              <code className="text-[10px] text-muted-foreground">
+                                {e.event_id}
+                              </code>
+                            )}
+                          </div>
+                          <div className="text-destructive break-words">
+                            {e.message}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Section>
+                )}
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wide">
+        {title}
+      </div>
+      <div className="space-y-1">{children}</div>
+    </div>
+  );
+}
+
+function KV({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
+  return (
+    <div className="flex gap-2">
+      <span className="text-muted-foreground min-w-[140px]">{k}</span>
+      <span className={mono ? "font-mono break-all" : "break-words"}>{v}</span>
+    </div>
+  );
+}
+
+function EventIdList({
+  label,
+  ids,
+  tone,
+}: {
+  label: string;
+  ids: string[];
+  tone: "success" | "muted";
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-muted-foreground">{label}</span>
+        <Badge variant="outline" className="text-[10px]">
+          {ids.length}
+        </Badge>
+      </div>
+      {ids.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {ids.slice(0, 50).map((id) => (
+            <code
+              key={id}
+              className={`text-[10px] px-1.5 py-0.5 rounded ${
+                tone === "success" ? "bg-success/10" : "bg-muted"
+              }`}
+            >
+              {id}
+            </code>
+          ))}
+          {ids.length > 50 && (
+            <span className="text-[10px] text-muted-foreground">
+              +{ids.length - 50} weitere
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

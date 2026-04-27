@@ -35,6 +35,28 @@ Deno.serve(async (req) => {
     window_to?: string;
   } = {};
   let supabaseForLog: any = null;
+  const meta: {
+    google_api: {
+      status?: number;
+      ok?: boolean;
+      url?: string;
+      total_items?: number;
+      busy_items?: number;
+      response_sample?: any;
+      error_body?: any;
+    };
+    events: {
+      synced_event_ids: string[];
+      cancelled_event_ids: string[];
+      skipped_event_ids: string[];
+    };
+    errors: Array<{ event_id?: string; phase: string; message: string }>;
+    stack?: string;
+  } = {
+    google_api: {},
+    events: { synced_event_ids: [], cancelled_event_ids: [], skipped_event_ids: [] },
+    errors: [],
+  };
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -86,13 +108,34 @@ Deno.serve(async (req) => {
       },
     });
     const gJson = await gRes.json();
+    meta.google_api.status = gRes.status;
+    meta.google_api.ok = gRes.ok;
+    meta.google_api.url = url.toString();
     if (!gRes.ok) {
+      meta.google_api.error_body = gJson;
       throw new Error(
-        `Google Calendar API failed [${gRes.status}]: ${JSON.stringify(gJson)}`,
+        `Google Calendar API failed [${gRes.status}]: ${JSON.stringify(gJson).slice(0, 1000)}`,
       );
     }
 
     const events: GEvent[] = gJson.items ?? [];
+    meta.google_api.total_items = events.length;
+    meta.google_api.response_sample = {
+      kind: gJson.kind,
+      summary: gJson.summary,
+      timeZone: gJson.timeZone,
+      updated: gJson.updated,
+      nextSyncToken: gJson.nextSyncToken ? "[present]" : null,
+      first_item: events[0]
+        ? {
+            id: events[0].id,
+            summary: events[0].summary,
+            status: events[0].status,
+            start: events[0].start,
+            end: events[0].end,
+          }
+        : null,
+    };
     const busy = events.filter(
       (e) =>
         e.status !== "cancelled" &&
@@ -100,6 +143,10 @@ Deno.serve(async (req) => {
         e.start?.dateTime &&
         e.end?.dateTime,
     );
+    meta.google_api.busy_items = busy.length;
+    for (const e of events) {
+      if (!busy.includes(e)) meta.events.skipped_event_ids.push(e.id);
+    }
 
     let upserts = 0;
     let cancelled = 0;
@@ -110,42 +157,52 @@ Deno.serve(async (req) => {
       const start_at = ev.start!.dateTime!;
       const end_at = ev.end!.dateTime!;
 
-      // Upsert per (profile_id, google_event_id)
-      const { data: existing } = await supabase
-        .from("availability_slots")
-        .select("id")
-        .eq("profile_id", profile_id)
-        .eq("google_event_id", ev.id)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
+      try {
+        const { data: existing } = await supabase
           .from("availability_slots")
-          .update({
+          .select("id")
+          .eq("profile_id", profile_id)
+          .eq("google_event_id", ev.id)
+          .maybeSingle();
+
+        if (existing) {
+          const { error: updErr } = await supabase
+            .from("availability_slots")
+            .update({
+              start_at,
+              end_at,
+              google_event_summary: ev.summary ?? null,
+              google_calendar_id: calendar_id,
+              notes: ev.description ?? null,
+              status: "blocked",
+              source: "google_busy",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existing.id);
+          if (updErr) throw updErr;
+        } else {
+          const { error: insErr } = await supabase.from("availability_slots").insert({
+            profile_id,
             start_at,
             end_at,
+            status: "blocked",
+            source: "google_busy",
+            google_event_id: ev.id,
             google_event_summary: ev.summary ?? null,
             google_calendar_id: calendar_id,
             notes: ev.description ?? null,
-            status: "blocked",
-            source: "google_busy",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing.id);
-      } else {
-        await supabase.from("availability_slots").insert({
-          profile_id,
-          start_at,
-          end_at,
-          status: "blocked",
-          source: "google_busy",
-          google_event_id: ev.id,
-          google_event_summary: ev.summary ?? null,
-          google_calendar_id: calendar_id,
-          notes: ev.description ?? null,
+          });
+          if (insErr) throw insErr;
+        }
+        upserts++;
+        meta.events.synced_event_ids.push(ev.id);
+      } catch (slotErr: any) {
+        meta.errors.push({
+          event_id: ev.id,
+          phase: "upsert_slot",
+          message: slotErr?.message ?? String(slotErr),
         });
       }
-      upserts++;
     }
 
     // Gelöschte/abgesagte Events: Slots im Zeitraum, die nicht mehr in Google sind
@@ -159,13 +216,21 @@ Deno.serve(async (req) => {
 
     for (const row of orphan ?? []) {
       if (row.google_event_id && !seenEventIds.includes(row.google_event_id)) {
-        await supabase
-          .rpc("release_slot_for_google_event", {
-            _profile_id: profile_id,
-            _google_event_id: row.google_event_id,
-            _reason: "Google-Event nicht mehr im Zeitfenster",
-          })
-          .then(() => cancelled++);
+        const { error: rpcErr } = await supabase.rpc("release_slot_for_google_event", {
+          _profile_id: profile_id,
+          _google_event_id: row.google_event_id,
+          _reason: "Google-Event nicht mehr im Zeitfenster",
+        });
+        if (rpcErr) {
+          meta.errors.push({
+            event_id: row.google_event_id,
+            phase: "release_slot",
+            message: rpcErr.message,
+          });
+        } else {
+          cancelled++;
+          meta.events.cancelled_event_ids.push(row.google_event_id);
+        }
       }
     }
 
@@ -175,10 +240,11 @@ Deno.serve(async (req) => {
       calendar_id: logCtx.calendar_id,
       window_from: logCtx.window_from,
       window_to: logCtx.window_to,
-      status: "success",
+      status: meta.errors.length > 0 ? "partial" : "success",
       synced_count: upserts,
       cancelled_count: cancelled,
       duration_ms: Date.now() - startedAt,
+      meta,
     });
 
     return new Response(
@@ -193,7 +259,9 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[google-calendar-sync]", msg);
+    const stack = err instanceof Error ? err.stack : undefined;
+    meta.stack = stack;
+    console.error("[google-calendar-sync]", msg, stack);
     if (supabaseForLog && logCtx.profile_id) {
       await supabaseForLog.from("google_calendar_sync_logs").insert({
         profile_id: logCtx.profile_id,
@@ -204,9 +272,10 @@ Deno.serve(async (req) => {
         status: "error",
         error_message: msg,
         duration_ms: Date.now() - startedAt,
+        meta,
       }).then(() => {}, () => {});
     }
-    return new Response(JSON.stringify({ ok: false, error: msg }), {
+    return new Response(JSON.stringify({ ok: false, error: msg, stack }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
