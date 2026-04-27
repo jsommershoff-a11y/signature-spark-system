@@ -24,6 +24,10 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PublicOffer from "./pages/Offer";
 
+// Agent landing pages
+import AgentsOverview from "./pages/agent/AgentsOverview";
+import AgentDetail from "./pages/agent/AgentDetail";
+
 // Protected app pages
 import Dashboard from "./pages/app/Dashboard";
 import CRM from "./pages/app/CRM";
@@ -91,6 +95,10 @@ const App = () => (
             <Route path="/agb" element={<AGB />} />
             <Route path="/widerruf" element={<Widerruf />} />
             <Route path="/community" element={<Community />} />
+            
+            {/* Agent landing pages */}
+            <Route path="/agents" element={<AgentsOverview />} />
+            <Route path="/agent/:slug" element={<AgentDetail />} />
             
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
