@@ -124,6 +124,9 @@
     --gradient-end: 28 96% 60%;
 
     --success: 160 55% 35%;
+    --success-foreground: 0 0% 100%;
+    --warning: 20 96% 56%;
+    --warning-foreground: 0 0% 100%;
 
     --brand-orange: 20 96% 56%;
     --brand-cream: 35 25% 75%;
