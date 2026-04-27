@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { FAQSection } from "@/components/landing/FAQSection";
+import { MemberAreaProof } from "@/components/landing/MemberAreaProof";
 import { SEOHead } from "@/components/landing/SEOHead";
 import { Users, MessageCircle, Video, Zap, ArrowRight, CheckCircle, Shield, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -199,6 +200,9 @@ const Community = () => {
             </div>
           </div>
         </section>
+
+        {/* ── 4b. Mitgliederbereich-Proof ── */}
+        <MemberAreaProof />
 
         {/* ── 5. CTA Card (Portal) ── */}
         <section className="py-16 md:py-24">
