@@ -1,224 +1,197 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Link } from 'react-router-dom';
-import { useMembershipAccess } from '@/hooks/useMembershipAccess';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { STRIPE_PRODUCTS_LIST, ADDON_SESSION } from '@/lib/stripe-config';
-import { TierProgressHint } from '@/components/app/LockedContent';
-import { PricingComparisonTable } from '@/components/app/PricingComparisonTable';
-import { PageHeader } from '@/components/app/PageHeader';
-import { getStoredRefCode } from '@/components/affiliate/ReferralTracker';
-import { toast } from 'sonner';
 import {
-  Gift,
-  Zap,
-  Rocket,
-  Crown,
-  Gem,
-  Check,
-  Star,
-  ArrowRight,
-  Sparkles,
+  STRIPE_AUTOMATION_PRODUCTS,
+  STRIPE_EDUCATION_PRODUCTS,
+  STRIPE_ACCOUNT_LABEL,
+  type StripeProduct,
+} from '@/lib/stripe-config';
+import { PageHeader } from '@/components/app/PageHeader';
+import {
+  ArrowUpRight,
   ShieldCheck,
-  Loader2,
-  MessageSquare,
   Clock,
+  GraduationCap,
+  Cpu,
 } from 'lucide-react';
 
-const TIER_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  mitgliedschaft: Gift,
-  starter: Zap,
-  wachstum: Rocket,
-  ernsthaft: Crown,
-  rakete: Gem,
-};
+const fmtNet = (cents: number) =>
+  new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+
+function ProductCard({ product }: { product: StripeProduct }) {
+  return (
+    <Card className="relative flex flex-col transition-shadow hover:shadow-lg">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <Badge variant="outline" className="font-mono text-[10px]">
+            {product.code}
+          </Badge>
+          {product.deliveryDays > 0 && (
+            <Badge variant="secondary" className="gap-1 text-[10px]">
+              <Clock className="h-3 w-3" />
+              {product.deliveryDays} {product.deliveryDays === 1 ? 'Tag' : 'Tage'}
+            </Badge>
+          )}
+        </div>
+        <CardTitle className="text-base mt-2">{product.name}</CardTitle>
+        <CardDescription className="text-xs">{product.subtitle}</CardDescription>
+      </CardHeader>
+
+      <Separator />
+
+      <CardContent className="flex-1 pt-4">
+        <div className="space-y-1">
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-bold">{product.priceDisplay}</span>
+            {product.pricePeriodLabel && (
+              <span className="text-sm text-muted-foreground">{product.pricePeriodLabel}</span>
+            )}
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            brutto · netto {fmtNet(product.priceNetCents)}
+            {product.pricePeriodLabel ? product.pricePeriodLabel : ''} zzgl. 19 % USt.
+          </p>
+          {product.termLabel && (
+            <p className="text-[11px] text-muted-foreground">{product.termLabel}</p>
+          )}
+        </div>
+      </CardContent>
+
+      <div className="p-4 pt-0 mt-auto space-y-2">
+        <Button asChild className="w-full">
+          <a
+            href={product.paymentLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              // einfache Tracking-Hook-Stelle, falls später analytics integriert wird
+            }}
+          >
+            <ArrowUpRight className="h-4 w-4 mr-2" />
+            {product.mode === 'subscription' ? 'Jetzt abonnieren' : 'Jetzt buchen'}
+          </a>
+        </Button>
+        <p className="text-center text-[10px] text-muted-foreground">
+          Es gelten unsere{' '}
+          <Link to="/agb" className="underline hover:text-foreground">AGB</Link>
+          {' · '}
+          <Link to="/widerruf" className="underline hover:text-foreground">Widerruf</Link>
+        </p>
+      </div>
+    </Card>
+  );
+}
 
 export default function Pricing() {
-  const { products, tierName } = useMembershipAccess();
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [tab, setTab] = useState<'automation' | 'education'>('automation');
 
-  const handleCheckout = async (priceId: string, productId: string, mode: string) => {
-    setLoadingId(productId);
-    try {
-      const refCode = getStoredRefCode();
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId, mode, refCode },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (err: any) {
-      toast.error('Checkout konnte nicht gestartet werden', {
-        description: err.message || 'Bitte versuche es erneut.',
-      });
-    } finally {
-      setLoadingId(null);
-    }
-  };
+  const totals = useMemo(() => {
+    const automationNet = STRIPE_AUTOMATION_PRODUCTS.reduce(
+      (sum, p) => sum + p.priceNetCents,
+      0,
+    );
+    const eduOneTimeNet = STRIPE_EDUCATION_PRODUCTS
+      .filter((p) => p.mode === 'one_time')
+      .reduce((sum, p) => sum + p.priceNetCents, 0);
+    const eduMonthlyNet = STRIPE_EDUCATION_PRODUCTS
+      .filter((p) => p.mode === 'subscription')
+      .reduce((sum, p) => sum + p.priceNetCents, 0);
+    const edu6MonthsNet = eduOneTimeNet + eduMonthlyNet * 6;
+    return { automationNet, edu6MonthsNet };
+  }, []);
 
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="KI-Automationen System"
-        title="Finde das passende Paket für dich"
-        description="Jedes Paket ist darauf ausgerichtet, dein Unternehmen mit KI effizienter zu machen – vom ersten Prompt bis zur vollständigen System-Transformation."
+        eyebrow="KI-Automationen Katalog"
+        title="Produkte, Preise und direkte Buchung"
+        description="Alle Automationen und das KI-Profi Programm im Überblick. Buchung erfolgt sicher über Stripe."
       />
 
-      {/* Tier Progress */}
-      <TierProgressHint
-        currentTier={tierName === 'basic' ? 'basic' : tierName === 'starter' ? 'starter' : 'none'}
-        className="max-w-lg mb-8"
-      />
+      <Tabs value={tab} onValueChange={(v) => setTab(v as 'automation' | 'education')}>
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="automation" className="gap-2">
+            <Cpu className="h-4 w-4" />
+            Automationen ({STRIPE_AUTOMATION_PRODUCTS.length})
+          </TabsTrigger>
+          <TabsTrigger value="education" className="gap-2">
+            <GraduationCap className="h-4 w-4" />
+            KI-Profi Programm
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Pricing Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {STRIPE_PRODUCTS_LIST.map((product) => {
-          const Icon = TIER_ICONS[product.id] || Zap;
-          const isActive = products.includes(product.membershipProduct || '');
-          const isLoading = loadingId === product.id;
+        <TabsContent value="automation" className="space-y-6 mt-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {STRIPE_AUTOMATION_PRODUCTS.map((p) => (
+              <ProductCard key={p.code} product={p} />
+            ))}
+          </div>
+          <Card className="bg-muted/30 border-dashed">
+            <CardContent className="py-4 text-sm text-muted-foreground flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <span>Summe aller Automationen (einmalig, netto)</span>
+              <span className="font-semibold text-foreground">
+                {fmtNet(totals.automationNet)} zzgl. 19 % USt.
+              </span>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          return (
-            <Card
-              key={product.id}
-              className={cn(
-                'relative flex flex-col transition-shadow hover:shadow-lg',
-                product.highlighted && 'border-primary shadow-md ring-2 ring-primary/20',
-                isActive && 'border-success/50 bg-success/5'
-              )}
-            >
-              {product.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="gap-1 bg-primary text-primary-foreground shadow-sm whitespace-nowrap">
-                    <Star className="h-3 w-3" />
-                    {product.badge}
-                  </Badge>
-                </div>
-              )}
+        <TabsContent value="education" className="space-y-6 mt-6">
+          <div className="grid gap-4 sm:grid-cols-2 max-w-3xl">
+            {STRIPE_EDUCATION_PRODUCTS.map((p) => (
+              <ProductCard key={p.code} product={p} />
+            ))}
+          </div>
+          <Card className="bg-muted/30 border-dashed">
+            <CardContent className="py-4 text-sm text-muted-foreground flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <span>KI-Profi Programm gesamt (6 Monate, netto)</span>
+              <span className="font-semibold text-foreground">
+                {fmtNet(totals.edu6MonthsNet)} zzgl. 19 % USt.
+              </span>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
-                  <Icon className="h-6 w-6 text-foreground" />
-                </div>
-                <CardTitle className="text-lg">{product.name}</CardTitle>
-                <div className="mt-2">
-                  {product.directPurchase ? (
-                    <>
-                      <span className="text-3xl font-bold">{product.price}</span>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {product.mode === 'subscription' ? 'monatlich' : 'einmalig'} · inkl. MwSt.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-2xl font-bold">ab {product.price}</span>
-                      <p className="text-xs text-muted-foreground mt-1">individuelles Angebot · inkl. MwSt.</p>
-                    </>
-                  )}
-                </div>
-                <CardDescription className="text-xs mt-2">
-                  {product.description}
-                </CardDescription>
-              </CardHeader>
-
-              <Separator />
-
-              <CardContent className="flex-1 pt-4">
-                <ul className="space-y-2.5">
-                  {product.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-
-              <div className="p-4 pt-0 mt-auto space-y-2">
-                {isActive ? (
-                  <Button variant="secondary" className="w-full" disabled>
-                    <ShieldCheck className="h-4 w-4 mr-2" />
-                    Aktiv
-                  </Button>
-                ) : product.directPurchase ? (
-                  <Button
-                    variant={product.highlighted ? 'default' : 'outline'}
-                    className={cn('w-full', product.highlighted && 'shadow-sm')}
-                    onClick={() => handleCheckout(product.priceId, product.id, product.mode)}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                    )}
-                    {isLoading ? 'Wird geladen...' : 'Jetzt kaufen'}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    className="w-full"
-                    onClick={() => window.location.href = '/kontakt'}
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Individuelles Angebot anfordern
-                  </Button>
-                )}
-                <p className="text-center text-[10px] text-muted-foreground">
-                  Es gelten unsere{' '}
-                  <Link to="/agb" className="underline hover:text-foreground">AGB</Link>
-                  {' · '}
-                  <Link to="/widerruf" className="underline hover:text-foreground">Widerruf</Link>
-                </p>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Vergleichstabelle */}
-      <PricingComparisonTable />
-
-      {/* Addon: Einzel-Session */}
+      {/* Trust */}
       <Card className="bg-muted/20 border-dashed">
-        <CardContent className="flex flex-col md:flex-row items-center gap-4 py-6">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted shrink-0">
-            <Clock className="h-7 w-7 text-foreground" />
-          </div>
-          <div className="text-center md:text-left flex-1">
-            <h3 className="font-semibold text-base">{ADDON_SESSION.name} – {ADDON_SESSION.price}</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {ADDON_SESSION.description} Buchbar zu jedem aktiven Paket.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Guarantee */}
-      <Card className="bg-muted/30 border-dashed">
         <CardContent className="flex flex-col md:flex-row items-center gap-4 py-6">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted shrink-0">
             <ShieldCheck className="h-7 w-7 text-foreground" />
           </div>
           <div className="text-center md:text-left">
-            <h3 className="font-semibold text-base">100% Zufriedenheitsgarantie</h3>
+            <h3 className="font-semibold text-base">Sichere Zahlung & klare Konditionen</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Du gehst kein Risiko ein. Wenn die Zusammenarbeit nicht passt, sagen wir dir das ehrlich.
-              Alle Pakete beinhalten eine persönliche Beratung vor dem Kauf.
+              Bezahlung erfolgt verschlüsselt über Stripe (Karte, SEPA, Apple/Google Pay).
+              Alle Preise verstehen sich netto zzgl. 19 % USt. {STRIPE_ACCOUNT_LABEL}.
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Legal Links */}
-      <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
         <Link to="/agb" className="underline hover:text-foreground transition-colors">AGB</Link>
         <Link to="/widerruf" className="underline hover:text-foreground transition-colors">Widerrufsbelehrung</Link>
-        <a href="https://krsimmobilien.de/datenschutz" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Datenschutz</a>
+        <a
+          href="https://krsimmobilien.de/datenschutz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground transition-colors"
+        >
+          Datenschutz
+        </a>
       </div>
     </div>
   );
