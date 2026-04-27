@@ -10,6 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +28,7 @@ import {
   AlertTriangle,
   Plug,
   History,
+  Eye,
 } from "lucide-react";
 
 interface SyncLog {
@@ -33,6 +42,7 @@ interface SyncLog {
   calendar_id: string | null;
   window_from: string | null;
   window_to: string | null;
+  meta: any | null;
 }
 
 export default function GoogleCalendarStatusCard() {
