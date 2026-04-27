@@ -131,22 +131,44 @@ const Thanks = () => {
                     In der Zwischenzeit: Schau dich gerne um und erfahre mehr über das Signature System.
                   </p>
                   
-                  {/* Community Teaser */}
-                  <div className="bg-card rounded-xl border border-primary/20 p-6 mb-10">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Users className="w-6 h-6 text-primary" />
-                      <h3 className="font-semibold text-foreground">In der Zwischenzeit: Tritt unserer Community bei</h3>
+                  {user ? (
+                    <div className="bg-primary/5 rounded-xl border border-primary/30 p-6 mb-10 text-left">
+                      <div className="flex items-center gap-3 mb-3">
+                        <CheckCircle className="w-6 h-6 text-primary" />
+                        <h3 className="font-semibold text-foreground">
+                          Dein 14-Tage-Test ist aktiviert
+                        </h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Du wirst in <span className="font-semibold text-foreground">{countdown}s</span> automatisch in deinen Mitgliederbereich weitergeleitet. Du kannst dich einmalig für einen Live-Call anmelden – danach ist die Buchung bis zum Upgrade gesperrt.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button onClick={() => navigate("/app/dashboard")} className="gap-2">
+                          Jetzt zum Dashboard
+                          <ArrowLeft className="w-4 h-4 rotate-180" />
+                        </Button>
+                        <Button variant="outline" onClick={() => navigate("/app/calendar")} className="gap-2">
+                          Live-Call buchen
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Vernetze dich mit anderen Unternehmern, sieh dir Pakete an und sichere dir deinen Platz im Mitgliederbereich.
-                    </p>
-                    <Link to="/community">
-                      <Button variant="outline" size="sm" className="gap-2">
-                        Zur KI-Community
-                        <ArrowLeft className="w-4 h-4 rotate-180" />
-                      </Button>
-                    </Link>
-                  </div>
+                  ) : (
+                    <div className="bg-card rounded-xl border border-primary/20 p-6 mb-10">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Users className="w-6 h-6 text-primary" />
+                        <h3 className="font-semibold text-foreground">In der Zwischenzeit: Tritt unserer Community bei</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Vernetze dich mit anderen Unternehmern, sieh dir Pakete an und sichere dir deinen Platz im Mitgliederbereich.
+                      </p>
+                      <Link to="/community">
+                        <Button variant="outline" size="sm" className="gap-2">
+                          Zur KI-Community
+                          <ArrowLeft className="w-4 h-4 rotate-180" />
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link to="/">
