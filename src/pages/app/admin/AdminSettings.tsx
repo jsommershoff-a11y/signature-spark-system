@@ -1,12 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/app/PageHeader";
-import { Plug, Mail, Tags, Activity, Download, Webhook } from "lucide-react";
+import { Plug, Mail, Tags, Activity, Download, Webhook, ShoppingBag } from "lucide-react";
 import AdminIntegrations from "@/components/admin/AdminIntegrations";
 import AdminEmailTemplates from "@/components/admin/AdminEmailTemplates";
 import AdminSlotClassificationRules from "@/components/admin/AdminSlotClassificationRules";
 import AdminSystemLogs from "@/components/admin/AdminSystemLogs";
 import AdminBackupExport from "@/components/admin/AdminBackupExport";
+import AdminCatalog from "@/components/admin/AdminCatalog";
 import AdminWebhooks from "../AdminWebhooks";
 
 export default function AdminSettings() {
@@ -15,7 +16,7 @@ export default function AdminSettings() {
       <PageHeader
         eyebrow="Verwaltung"
         title="Einstellungen"
-        description="Integrationen, E-Mail-Vorlagen, System-Regeln und Backup-Exporte."
+        description="Integrationen, E-Mail-Vorlagen, System-Regeln, Katalog und Backup-Exporte."
       />
 
       <Tabs defaultValue="integrations">
@@ -29,6 +30,9 @@ export default function AdminSettings() {
           <TabsTrigger value="slot-rules" className="gap-1.5 rounded-xl">
             <Tags className="h-3.5 w-3.5" /> Slot-Regeln
           </TabsTrigger>
+          <TabsTrigger value="catalog" className="gap-1.5 rounded-xl">
+            <ShoppingBag className="h-3.5 w-3.5" /> Katalog
+          </TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5 rounded-xl">
             <Activity className="h-3.5 w-3.5" /> Logs
           </TabsTrigger>
@@ -41,31 +45,23 @@ export default function AdminSettings() {
         </TabsList>
 
         <TabsContent value="integrations" className="mt-6">
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <AdminIntegrations />
-            </CardContent>
-          </Card>
+          <Card><CardContent className="p-4 md:p-6"><AdminIntegrations /></CardContent></Card>
         </TabsContent>
 
         <TabsContent value="templates" className="mt-6">
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <AdminEmailTemplates />
-            </CardContent>
-          </Card>
+          <Card><CardContent className="p-4 md:p-6"><AdminEmailTemplates /></CardContent></Card>
         </TabsContent>
 
         <TabsContent value="slot-rules" className="mt-6">
           <AdminSlotClassificationRules />
         </TabsContent>
 
+        <TabsContent value="catalog" className="mt-6">
+          <AdminCatalog />
+        </TabsContent>
+
         <TabsContent value="logs" className="mt-6">
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <AdminSystemLogs />
-            </CardContent>
-          </Card>
+          <Card><CardContent className="p-4 md:p-6"><AdminSystemLogs /></CardContent></Card>
         </TabsContent>
 
         <TabsContent value="webhooks" className="mt-6">
@@ -73,11 +69,7 @@ export default function AdminSettings() {
         </TabsContent>
 
         <TabsContent value="backup" className="mt-6">
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <AdminBackupExport />
-            </CardContent>
-          </Card>
+          <Card><CardContent className="p-4 md:p-6"><AdminBackupExport /></CardContent></Card>
         </TabsContent>
       </Tabs>
     </div>

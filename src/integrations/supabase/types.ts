@@ -454,6 +454,69 @@ export type Database = {
           },
         ]
       }
+      catalog_products: {
+        Row: {
+          active: boolean
+          category: Database["public"]["Enums"]["catalog_category"]
+          code: string
+          created_at: string
+          delivery_days: number
+          id: string
+          mode: Database["public"]["Enums"]["catalog_mode"]
+          name: string
+          payment_link: string
+          price_gross_cents: number
+          price_net_cents: number
+          price_period_label: string | null
+          sort_order: number
+          stripe_price_id: string
+          stripe_product_id: string
+          subtitle: string
+          term_label: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category: Database["public"]["Enums"]["catalog_category"]
+          code: string
+          created_at?: string
+          delivery_days?: number
+          id?: string
+          mode?: Database["public"]["Enums"]["catalog_mode"]
+          name: string
+          payment_link: string
+          price_gross_cents: number
+          price_net_cents: number
+          price_period_label?: string | null
+          sort_order?: number
+          stripe_price_id: string
+          stripe_product_id: string
+          subtitle?: string
+          term_label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: Database["public"]["Enums"]["catalog_category"]
+          code?: string
+          created_at?: string
+          delivery_days?: number
+          id?: string
+          mode?: Database["public"]["Enums"]["catalog_mode"]
+          name?: string
+          payment_link?: string
+          price_gross_cents?: number
+          price_net_cents?: number
+          price_period_label?: string | null
+          sort_order?: number
+          stripe_price_id?: string
+          stripe_product_id?: string
+          subtitle?: string
+          term_label?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       closed_customer_snapshots: {
         Row: {
           created_at: string | null
@@ -3824,6 +3887,8 @@ export type Database = {
         | "analyzed"
         | "failed"
       call_type: "phone" | "zoom" | "teams" | "other"
+      catalog_category: "automation" | "education"
+      catalog_mode: "one_time" | "subscription"
       commission_status:
         | "pending"
         | "paid"
@@ -4051,6 +4116,8 @@ export const Constants = {
         "failed",
       ],
       call_type: ["phone", "zoom", "teams", "other"],
+      catalog_category: ["automation", "education"],
+      catalog_mode: ["one_time", "subscription"],
       commission_status: ["pending", "paid", "failed", "refunded", "cancelled"],
       course_price_tier: ["freebie", "low_budget", "mid_range", "high_class"],
       email_consent_status: ["pending", "confirmed", "revoked"],
