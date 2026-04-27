@@ -1,33 +1,74 @@
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, RefreshCw, CheckCircle2, AlertTriangle, Plug } from "lucide-react";
+import {
+  Calendar,
+  RefreshCw,
+  CheckCircle2,
+  AlertTriangle,
+  Plug,
+  History,
+} from "lucide-react";
+
+interface SyncLog {
+  id: string;
+  created_at: string;
+  status: string;
+  synced_count: number;
+  cancelled_count: number;
+  duration_ms: number | null;
+  error_message: string | null;
+  calendar_id: string | null;
+  window_from: string | null;
+  window_to: string | null;
+}
 
 export default function GoogleCalendarStatusCard() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const [syncing, setSyncing] = useState(false);
-  const [lastResult, setLastResult] = useState<{
-    ok: boolean;
-    synced?: number;
-    cancelled?: number;
-    error?: string;
-    at: string;
-  } | null>(null);
+  const [logs, setLogs] = useState<SyncLog[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+
+  const loadLogs = useCallback(async () => {
+    if (!profile?.id) return;
+    setLoadingLogs(true);
+    const { data, error } = await supabase
+      .from("google_calendar_sync_logs")
+      .select(
+        "id, created_at, status, synced_count, cancelled_count, duration_ms, error_message, calendar_id, window_from, window_to",
+      )
+      .eq("profile_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (!error) setLogs((data ?? []) as SyncLog[]);
+    setLoadingLogs(false);
+  }, [profile?.id]);
+
+  useEffect(() => {
+    loadLogs();
+  }, [loadLogs]);
 
   const runSync = async () => {
     if (!profile?.id) return;
     setSyncing(true);
     try {
       const { data, error } = await supabase.functions.invoke("google-calendar-sync", {
-        body: { profile_id: profile.id, days_ahead: 30 },
+        body: { profile_id: profile.id, days_ahead: 30, triggered_by: profile.id },
       });
       if (error) throw error;
-      setLastResult({ ...(data as any), at: new Date().toISOString() });
       if ((data as any)?.ok) {
         toast({
           title: "Sync abgeschlossen",
@@ -37,12 +78,21 @@ export default function GoogleCalendarStatusCard() {
         throw new Error((data as any)?.error ?? "Unbekannter Fehler");
       }
     } catch (e: any) {
-      setLastResult({ ok: false, error: e.message ?? String(e), at: new Date().toISOString() });
       toast({ title: "Sync fehlgeschlagen", description: e.message, variant: "destructive" });
     } finally {
       setSyncing(false);
+      loadLogs();
     }
   };
+
+  const fmtTime = (iso: string) =>
+    new Date(iso).toLocaleString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <Card>
@@ -65,7 +115,7 @@ export default function GoogleCalendarStatusCard() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div className="text-sm text-muted-foreground">
             Importiert „busy"-Termine der nächsten 30 Tage und blockt die zugehörigen Slots automatisch.
           </div>
@@ -75,38 +125,90 @@ export default function GoogleCalendarStatusCard() {
           </Button>
         </div>
 
-        {lastResult && (
-          <div
-            className={`flex items-start gap-2 p-3 rounded-md border ${
-              lastResult.ok
-                ? "bg-muted/40 border-border"
-                : "bg-destructive/10 border-destructive/20"
-            }`}
-          >
-            {lastResult.ok ? (
-              <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
-            ) : (
-              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-            )}
-            <div className="text-xs space-y-0.5 min-w-0">
-              {lastResult.ok ? (
-                <>
-                  <p className="font-medium">
-                    {lastResult.synced} Termine importiert · {lastResult.cancelled ?? 0} entfernt
-                  </p>
-                  <p className="text-muted-foreground font-mono">
-                    {new Date(lastResult.at).toLocaleString("de-DE")}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="font-medium text-destructive">Fehler</p>
-                  <p className="text-destructive/80 break-words">{lastResult.error}</p>
-                </>
-              )}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <History className="h-4 w-4" />
+              Letzte Sync-Läufe
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadLogs}
+              disabled={loadingLogs}
+              className="h-7 text-xs"
+            >
+              <RefreshCw className={`h-3 w-3 mr-1 ${loadingLogs ? "animate-spin" : ""}`} />
+              Aktualisieren
+            </Button>
           </div>
-        )}
+
+          {logs.length === 0 ? (
+            <div className="text-xs text-muted-foreground p-4 text-center border rounded-md bg-muted/30">
+              Noch keine Sync-Läufe vorhanden.
+            </div>
+          ) : (
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="h-9 text-xs">Status</TableHead>
+                    <TableHead className="h-9 text-xs">Zeitpunkt</TableHead>
+                    <TableHead className="h-9 text-xs text-right">Importiert</TableHead>
+                    <TableHead className="h-9 text-xs text-right">Entfernt</TableHead>
+                    <TableHead className="h-9 text-xs text-right">Dauer</TableHead>
+                    <TableHead className="h-9 text-xs">Details</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {logs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="py-2">
+                        {log.status === "success" ? (
+                          <Badge variant="secondary" className="gap-1">
+                            <CheckCircle2 className="h-3 w-3 text-success" />
+                            OK
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive" className="gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Fehler
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-2 text-xs font-mono">
+                        {fmtTime(log.created_at)}
+                      </TableCell>
+                      <TableCell className="py-2 text-xs text-right tabular-nums">
+                        {log.synced_count}
+                      </TableCell>
+                      <TableCell className="py-2 text-xs text-right tabular-nums">
+                        {log.cancelled_count}
+                      </TableCell>
+                      <TableCell className="py-2 text-xs text-right tabular-nums text-muted-foreground">
+                        {log.duration_ms != null ? `${log.duration_ms} ms` : "—"}
+                      </TableCell>
+                      <TableCell className="py-2 text-xs max-w-xs">
+                        {log.error_message ? (
+                          <span
+                            className="text-destructive break-words line-clamp-2"
+                            title={log.error_message}
+                          >
+                            {log.error_message}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {log.calendar_id ?? "primary"}
+                          </span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
