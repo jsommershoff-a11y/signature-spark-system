@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useMembershipAccess } from '@/hooks/useMembershipAccess';
 import { useLearningPaths } from '@/hooks/useLearningPaths';
 import { ProgressRing } from '@/components/lms/ProgressRing';
+import { MemberFAQ } from '@/components/dashboard/MemberFAQ';
 
 export function KundeDashboard() {
   const { products, isLoading: accessLoading } = useMembershipAccess();
@@ -132,6 +133,9 @@ export function KundeDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* FAQ – Häufige Fragen & nächste Schritte */}
+      <MemberFAQ />
     </div>
   );
 }
