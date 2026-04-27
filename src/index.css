@@ -142,12 +142,12 @@
 
     --sidebar-background: 160 50% 5%;
     --sidebar-foreground: 30 20% 92%;
-    --sidebar-primary: 20 96% 56%;
+    --sidebar-primary: 20 96% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 160 35% 13%;
     --sidebar-accent-foreground: 30 20% 92%;
     --sidebar-border: 160 28% 15%;
-    --sidebar-ring: 20 96% 56%;
+    --sidebar-ring: 20 96% 48%;
   }
 
   .dark .app-scope {
