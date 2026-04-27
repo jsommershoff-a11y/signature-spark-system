@@ -169,6 +169,7 @@ export default function GoogleCalendarStatusCard() {
                     <TableHead className="h-9 text-xs text-right">Entfernt</TableHead>
                     <TableHead className="h-9 text-xs text-right">Dauer</TableHead>
                     <TableHead className="h-9 text-xs">Details</TableHead>
+                    <TableHead className="h-9 text-xs w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
