@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { format, isPast, isFuture, addHours, isAfter } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveEvents, useTopicSubmissions } from '@/hooks/useLiveEvents';
 import { STAFF_ROLES } from '@/lib/roles';
@@ -29,14 +31,34 @@ import {
 } from 'lucide-react';
 
 export default function LiveCallsCalendar() {
-  const { effectiveRole, user } = useAuth();
+  const { effectiveRole, user, profile } = useAuth() as any;
   const { events, isLoading, register, unregister, createEvent, deleteEvent } = useLiveEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { topics, submitTopic } = useTopicSubmissions(selectedEventId);
   const [createOpen, setCreateOpen] = useState(false);
   const [topicDialogOpen, setTopicDialogOpen] = useState(false);
+  const [canBook, setCanBook] = useState<boolean>(true);
 
   const isStaff = effectiveRole ? STAFF_ROLES.includes(effectiveRole) : false;
+
+  // Check live-call booking eligibility (trial: 1x, active: unlimited, expired: 0)
+  useEffect(() => {
+    if (!user || isStaff) {
+      setCanBook(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.rpc('can_book_live_call', { _user_id: user.id });
+      if (!cancelled && !error) setCanBook(Boolean(data));
+    })();
+    return () => { cancelled = true; };
+  }, [user, isStaff, profile?.live_call_used_at, profile?.subscription_status]);
+
+  const subStatus = (profile as any)?.subscription_status as string | undefined;
+  const trialUsed = Boolean((profile as any)?.live_call_used_at);
+  const showTrialLockBanner = !isStaff && subStatus === 'trialing' && trialUsed;
+  const showExpiredBanner = !isStaff && (subStatus === 'expired' || subStatus === 'canceled' || subStatus === 'past_due');
 
   // Form states for create event
   const [newTitle, setNewTitle] = useState('');
@@ -148,6 +170,30 @@ export default function LiveCallsCalendar() {
         )}
       </div>
 
+      {/* Trial-/Status-Banner */}
+      {(showTrialLockBanner || showExpiredBanner) && (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardContent className="p-4 flex items-start gap-3">
+            <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold mb-1">
+                {showTrialLockBanner
+                  ? 'Dein einmaliger Trial-Live-Call wurde bereits genutzt'
+                  : 'Live-Call-Buchung gesperrt'}
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                {showTrialLockBanner
+                  ? 'Während des 14-Tage-Tests ist genau ein Live-Call enthalten. Mit einem Upgrade buchst du beliebig viele weitere Calls.'
+                  : 'Dein Zugang ist nicht aktiv. Schalte alle Live-Calls und Module mit einem Upgrade wieder frei.'}
+              </p>
+              <Button asChild size="sm">
+                <Link to="/app/pricing">Jetzt upgraden</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Upcoming Events */}
       <div>
         <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
@@ -212,8 +258,14 @@ export default function LiveCallsCalendar() {
                         )}
                       </>
                     ) : (
-                      <Button size="sm" onClick={() => register(event.id)}>
-                        <Users className="h-3.5 w-3.5 mr-1.5" /> Anmelden
+                      <Button
+                        size="sm"
+                        onClick={() => register(event.id)}
+                        disabled={!canBook}
+                        title={!canBook ? 'Trial-Buchung bereits genutzt – upgrade für unbegrenzte Live-Calls' : undefined}
+                      >
+                        <Users className="h-3.5 w-3.5 mr-1.5" />
+                        {canBook ? 'Anmelden' : 'Upgrade nötig'}
                       </Button>
                     )}
 

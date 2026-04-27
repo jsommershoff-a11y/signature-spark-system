@@ -3855,6 +3855,15 @@ export type Database = {
           start_at: string
         }[]
       }
+      start_member_trial: {
+        Args: never
+        Returns: {
+          live_call_used_at: string
+          subscription_status: string
+          trial_ends_at: string
+          trial_started_at: string
+        }[]
+      }
       update_slot_for_google_event: {
         Args: {
           _google_event_id: string
