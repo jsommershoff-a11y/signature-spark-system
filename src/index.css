@@ -73,19 +73,15 @@
     --sidebar-ring: 20 96% 48%;
   }
 
-  /* App-Bereich: Warm-Neutral statt Orange */
+  /* App-Bereich: nutzt die gleichen Brand-Tokens wie die Landingpage
+     (Cream-Background, Orange Primary, Tannengrün Accent) für visuelle
+     Konsistenz zwischen Marketing und Member-/Admin-Bereich. */
   .app-scope {
-    --primary: 210 6% 25%;
-    --primary-foreground: 0 0% 100%;
-    --primary-deep: 210 6% 18%;
-    --primary-dark: 210 6% 14%;
-    --primary-light: 210 5% 40%;
-    --accent: 30 8% 94%;
-    --accent-foreground: 210 6% 20%;
-    --ring: 210 6% 45%;
-    --sidebar-primary: 210 6% 25%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-ring: 210 6% 45%;
+    /* Inherits root tokens — only subtle surface refinements below. */
+    --background: 30 25% 98%;
+    --card: 0 0% 100%;
+    --muted: 30 20% 96%;
+    --border: 30 15% 90%;
   }
 
   .dark {
@@ -151,14 +147,52 @@
   }
 
   .dark .app-scope {
-    --primary: 210 6% 75%;
-    --primary-foreground: 210 6% 10%;
-    --accent: 210 5% 20%;
-    --accent-foreground: 210 6% 85%;
-    --ring: 210 6% 55%;
-    --sidebar-primary: 210 6% 75%;
-    --sidebar-primary-foreground: 210 6% 10%;
-    --sidebar-ring: 210 6% 55%;
+    /* Dark mode also inherits root brand tokens — no overrides needed. */
+  }
+}
+
+@layer components {
+  /* ---- Landing-aligned surface system for /app ---- */
+  .app-scope .surface-card {
+    @apply rounded-3xl border border-border/30 bg-card;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.04),
+      0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+  .app-scope .surface-card-hover {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+  .app-scope .surface-card-hover:hover {
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.04),
+      0 12px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Eyebrow badge — same look as landing section badges */
+  .app-scope .eyebrow-badge {
+    @apply inline-flex items-center rounded-full border border-border/40
+           bg-background/80 backdrop-blur-sm px-4 py-1.5 text-xs
+           font-medium text-muted-foreground;
+  }
+  .app-scope .eyebrow-badge-accent {
+    @apply inline-flex items-center rounded-full border-2 border-primary/40
+           bg-primary/8 px-4 py-1.5 text-xs font-semibold text-primary;
+  }
+
+  /* Soft chip used for stats/labels in app pages */
+  .app-scope .stat-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-muted
+           px-3 py-1 text-xs font-medium text-muted-foreground;
+  }
+
+  /* Promote shadcn Cards inside /app to the landing card aesthetic
+     without touching every component file. */
+  .app-scope [data-slot="card"],
+  .app-scope .card-landing {
+    @apply rounded-3xl border-border/30;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.04),
+      0 8px 24px rgba(0, 0, 0, 0.06);
   }
 }
 
