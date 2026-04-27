@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import logoSignature from '@/assets/ki-automationen-logo.png';
+import logoSignature from '@/assets/ki-automationen-logo.svg';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -150,7 +150,7 @@ export default function Auth() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={logoSignature} alt="KI Automationen" className="h-12" />
+            <img src={logoSignature} alt="KI Automationen" className="h-12 w-12" />
           </div>
           <CardTitle className="text-2xl">Willkommen</CardTitle>
           <CardDescription>
@@ -249,7 +249,7 @@ export default function Auth() {
                   <label htmlFor="privacy" className="text-sm text-muted-foreground leading-tight cursor-pointer">
                     Ich akzeptiere die{' '}
                     <a
-                      href="https://krsimmobilien.de/datenschutz"
+                      href="/datenschutz"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline text-primary hover:text-primary/80"

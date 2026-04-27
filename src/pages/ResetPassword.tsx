@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle } from 'lucide-react';
-import logoSignature from '@/assets/ki-automationen-logo.png';
+import logoSignature from '@/assets/ki-automationen-logo.svg';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -82,7 +82,7 @@ export default function ResetPassword() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <img src={logoSignature} alt="KI Automationen" className="h-12" />
+              <img src={logoSignature} alt="KI Automationen" className="h-12 w-12" />
             </div>
             <CardTitle className="text-2xl">Ungültiger Link</CardTitle>
             <CardDescription>
@@ -122,7 +122,7 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={logoSignature} alt="KI Automationen" className="h-12" />
+            <img src={logoSignature} alt="KI Automationen" className="h-12 w-12" />
           </div>
           <CardTitle className="text-2xl">Neues Passwort setzen</CardTitle>
           <CardDescription>

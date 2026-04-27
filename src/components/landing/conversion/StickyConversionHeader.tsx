@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
-import logoSignature from "@/assets/ki-automationen-logo.png";
+import logoSignature from "@/assets/ki-automationen-logo.svg";
 import { Button } from "@/components/ui/button";
 
 export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void }) => {
@@ -8,8 +8,9 @@ export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void 
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary-deep via-primary to-primary-light shadow-md">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center">
-            <img src={logoSignature} alt="KI Automationen" className="h-10 w-auto" />
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logoSignature} alt="KI Automationen" className="h-9 w-9" />
+            <span className="text-primary-foreground font-semibold text-base hidden sm:inline">KI Automationen</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/auth">

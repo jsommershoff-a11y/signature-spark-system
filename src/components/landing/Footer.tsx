@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logoSignature from "@/assets/ki-automationen-logo.png";
+import logoSignature from "@/assets/ki-automationen-logo.svg";
 
 const branches = [
   { title: "Handwerk", path: "/handwerk" },
@@ -15,12 +15,13 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid md:grid-cols-3 gap-10 mb-10">
           <div>
-            <Link to="/" className="flex items-center mb-5">
+            <Link to="/" className="flex items-center gap-2 mb-5">
               <img 
                 src={logoSignature} 
                 alt="KI Automationen Logo" 
-                className="h-10 w-auto"
+                className="h-9 w-9"
               />
+              <span className="text-white font-semibold text-base">KI Automationen</span>
             </Link>
             <p className="text-white/40 text-sm leading-relaxed">
               Einfache Automatisierungen für Unternehmen – Struktur, Entlastung, Kontrolle.
