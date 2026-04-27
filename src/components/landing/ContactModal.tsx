@@ -53,8 +53,14 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
-    
+
     const refCode = getStoredRefCode();
+    // Eindeutige Transaktions-ID pro Submit (für Google Ads Dedup + CRM-Korrelation)
+    const transactionId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `lead_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
     try {
       const { error } = await supabase.from("leads").insert({
         name: data.name,
@@ -72,8 +78,9 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
       setIsSuccess(true);
       form.reset();
 
-      // Google Ads conversion event (Lead-Formular senden)
-      trackLeadConversion();
+      // Google Ads conversion event (Lead-Formular senden) — sauber im Erfolg-State,
+      // mit transaction_id für serverseitige Deduplizierung in Google Ads
+      trackLeadConversion({ transactionId });
 
       // Fire-and-forget: send notification emails
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -86,6 +93,7 @@ export const ContactModal = ({ isOpen, onClose, source }: ContactModalProps) => 
           phone: data.phone || null,
           message: data.message || null,
           source,
+          transaction_id: transactionId,
         }),
       }).catch((err) => console.error("Notify email failed:", err));
     } catch (error) {
