@@ -49,6 +49,7 @@ type Subscription = {
   cancel_at: string | null;
   canceled_at: string | null;
   trial_end: string | null;
+  ended_at: string | null;
   created: string;
   profile: { full_name: string | null; email: string | null; user_id: string } | null;
 };
