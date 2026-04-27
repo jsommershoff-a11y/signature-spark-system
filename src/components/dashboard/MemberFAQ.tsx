@@ -32,7 +32,7 @@ const faqs: FAQ[] = [
     question: 'Wann finden die Live-Calls statt und wo trete ich bei?',
     answer:
       'Die wöchentlichen Live-Calls findest du im Kalender im Portal. Termine, Zoom-Links und Aufzeichnungen werden dort automatisch eingetragen. Du kannst live teilnehmen oder die Aufzeichnung im Anschluss ansehen.',
-    cta: { label: 'Zum Kalender', to: '/app/live-calls' },
+    cta: { label: 'Zum Kalender', to: '/app/calendar' },
   },
   {
     question: 'Wo finde ich Vorlagen, Skripte und Prompts?',
