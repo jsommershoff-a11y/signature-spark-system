@@ -15,7 +15,7 @@ const benefits = [
 
 export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
   return (
-    <section className="relative bg-gradient-to-b from-[#0f1419] via-[#0f1419] to-[#1a1a2e] overflow-hidden">
+    <section className="relative bg-gradient-to-b from-[#0a2a20] via-[#0a2a20] to-[#0F3E2E] overflow-hidden">
       <div className={`${t.container} relative z-10 py-20 md:py-28`}>
         <div className="grid md:grid-cols-[1fr_320px] gap-12 items-center max-w-6xl mx-auto">
           {/* Left: Copy */}
