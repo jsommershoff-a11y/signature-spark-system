@@ -48,10 +48,19 @@ export function useCatalogProducts(opts?: { includeInactive?: boolean }) {
 export function useUpsertCatalogProduct() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: Partial<CatalogProduct> & { code: string }) => {
+    mutationFn: async (p: Partial<CatalogProduct> & {
+      code: string;
+      name: string;
+      category: CatalogCategory;
+      price_net_cents: number;
+      price_gross_cents: number;
+      stripe_product_id: string;
+      stripe_price_id: string;
+      payment_link: string;
+    }) => {
       const { data, error } = await supabase
         .from('catalog_products')
-        .upsert(p, { onConflict: 'code' })
+        .upsert([p], { onConflict: 'code' })
         .select()
         .single();
       if (error) throw error;
