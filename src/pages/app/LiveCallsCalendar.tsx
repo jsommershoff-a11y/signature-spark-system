@@ -258,8 +258,14 @@ export default function LiveCallsCalendar() {
                         )}
                       </>
                     ) : (
-                      <Button size="sm" onClick={() => register(event.id)}>
-                        <Users className="h-3.5 w-3.5 mr-1.5" /> Anmelden
+                      <Button
+                        size="sm"
+                        onClick={() => register(event.id)}
+                        disabled={!canBook}
+                        title={!canBook ? 'Trial-Buchung bereits genutzt – upgrade für unbegrenzte Live-Calls' : undefined}
+                      >
+                        <Users className="h-3.5 w-3.5 mr-1.5" />
+                        {canBook ? 'Anmelden' : 'Upgrade nötig'}
                       </Button>
                     )}
 
