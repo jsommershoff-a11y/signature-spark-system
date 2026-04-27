@@ -108,13 +108,34 @@ Deno.serve(async (req) => {
       },
     });
     const gJson = await gRes.json();
+    meta.google_api.status = gRes.status;
+    meta.google_api.ok = gRes.ok;
+    meta.google_api.url = url.toString();
     if (!gRes.ok) {
+      meta.google_api.error_body = gJson;
       throw new Error(
-        `Google Calendar API failed [${gRes.status}]: ${JSON.stringify(gJson)}`,
+        `Google Calendar API failed [${gRes.status}]: ${JSON.stringify(gJson).slice(0, 1000)}`,
       );
     }
 
     const events: GEvent[] = gJson.items ?? [];
+    meta.google_api.total_items = events.length;
+    meta.google_api.response_sample = {
+      kind: gJson.kind,
+      summary: gJson.summary,
+      timeZone: gJson.timeZone,
+      updated: gJson.updated,
+      nextSyncToken: gJson.nextSyncToken ? "[present]" : null,
+      first_item: events[0]
+        ? {
+            id: events[0].id,
+            summary: events[0].summary,
+            status: events[0].status,
+            start: events[0].start,
+            end: events[0].end,
+          }
+        : null,
+    };
     const busy = events.filter(
       (e) =>
         e.status !== "cancelled" &&
@@ -122,6 +143,10 @@ Deno.serve(async (req) => {
         e.start?.dateTime &&
         e.end?.dateTime,
     );
+    meta.google_api.busy_items = busy.length;
+    for (const e of events) {
+      if (!busy.includes(e)) meta.events.skipped_event_ids.push(e.id);
+    }
 
     let upserts = 0;
     let cancelled = 0;
