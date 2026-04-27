@@ -1,5 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   CheckCircle2,
   FileText,
@@ -11,6 +13,7 @@ import {
   LayoutDashboard,
   Bot,
   Users,
+  ArrowRight,
 } from "lucide-react";
 
 const highlights = [
@@ -53,10 +56,11 @@ const highlights = [
 ];
 
 export function MemberAreaProof() {
+  const navigate = useNavigate();
   return (
     <section className="py-16 md:py-24 bg-muted/20 border-y border-border/40">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12 max-w-2xl mx-auto">
+        <div className="text-center mb-10 max-w-2xl mx-auto">
           <Badge variant="secondary" className="mb-4 gap-1.5">
             <Sparkles className="w-3.5 h-3.5" />
             Blick ins Portal
@@ -68,6 +72,25 @@ export function MemberAreaProof() {
             Kein Content-Dschungel. Ein klar strukturiertes Betriebssystem mit Vorlagen,
             Checklisten und einem geführten Umsetzungspfad – damit du dein KI-System wirklich live bekommst.
           </p>
+        </div>
+
+        {/* Number strip */}
+        <div className="flex flex-wrap justify-center gap-3 md:gap-2 mb-12">
+          {[
+            { value: "47", label: "Vorlagen" },
+            { value: "21", label: "Checklisten" },
+            { value: "38", label: "Lektionen" },
+            { value: "4", label: "Kern-Module" },
+            { value: "1×/Wo", label: "Live-Call" },
+          ].map((s, i) => (
+            <div
+              key={i}
+              className="flex items-baseline gap-1.5 px-4 py-2 rounded-full bg-background border border-border/50 shadow-sm"
+            >
+              <span className="font-bold text-primary text-sm md:text-base">{s.value}</span>
+              <span className="text-xs md:text-sm text-muted-foreground">{s.label}</span>
+            </div>
+          ))}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
@@ -192,6 +215,18 @@ export function MemberAreaProof() {
                 </div>
               </div>
             ))}
+
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => navigate("/qualifizierung")}
+                className="gap-2"
+              >
+                Portal-Zugang sichern
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
