@@ -169,19 +169,43 @@ Deno.serve(async (req) => {
       }
     }
 
+    await supabase.from("google_calendar_sync_logs").insert({
+      profile_id: logCtx.profile_id,
+      triggered_by: logCtx.triggered_by ?? null,
+      calendar_id: logCtx.calendar_id,
+      window_from: logCtx.window_from,
+      window_to: logCtx.window_to,
+      status: "success",
+      synced_count: upserts,
+      cancelled_count: cancelled,
+      duration_ms: Date.now() - startedAt,
+    });
+
     return new Response(
       JSON.stringify({
         ok: true,
         synced: upserts,
         cancelled,
-        window: { from: timeMin, to: timeMax },
-        calendar_id,
+        window: { from: logCtx.window_from, to: logCtx.window_to },
+        calendar_id: logCtx.calendar_id,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[google-calendar-sync]", msg);
+    if (supabaseForLog && logCtx.profile_id) {
+      await supabaseForLog.from("google_calendar_sync_logs").insert({
+        profile_id: logCtx.profile_id,
+        triggered_by: logCtx.triggered_by ?? null,
+        calendar_id: logCtx.calendar_id,
+        window_from: logCtx.window_from,
+        window_to: logCtx.window_to,
+        status: "error",
+        error_message: msg,
+        duration_ms: Date.now() - startedAt,
+      }).then(() => {}, () => {});
+    }
     return new Response(JSON.stringify({ ok: false, error: msg }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
