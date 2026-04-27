@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { format, isPast, isFuture, addHours, isAfter } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveEvents, useTopicSubmissions } from '@/hooks/useLiveEvents';
 import { STAFF_ROLES } from '@/lib/roles';
