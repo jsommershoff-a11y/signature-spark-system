@@ -31,6 +31,7 @@ interface SendNotificationInput {
   body?: string;
   link?: string;
   metadata?: Record<string, unknown>;
+  in_app?: boolean;
   email?: boolean;
   email_to?: string;
 }
@@ -77,21 +78,26 @@ serve(async (req) => {
       );
     }
 
-    const { data: notifId, error: rpcErr } = await client.rpc("notify_user", {
-      p_user_id: input.user_id,
-      p_type: input.type,
-      p_title: input.title,
-      p_body: input.body ?? null,
-      p_link: input.link ?? null,
-      p_metadata: input.metadata ?? null,
-    });
-
-    if (rpcErr) {
-      console.error("notify_user RPC failed", rpcErr);
-      return new Response(JSON.stringify({ error: rpcErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const wantInApp = input.in_app !== false; // default true (backwards compatible)
+    let notifId: string | null = null;
+    if (wantInApp) {
+      const { data, error: rpcErr } = await client.rpc("notify_user", {
+        p_user_id: input.user_id,
+        p_type: input.type,
+        p_title: input.title,
+        p_body: input.body ?? null,
+        p_link: input.link ?? null,
+        p_metadata: input.metadata ?? null,
       });
+
+      if (rpcErr) {
+        console.error("notify_user RPC failed", rpcErr);
+        return new Response(JSON.stringify({ error: rpcErr.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      notifId = data as string | null;
     }
 
     let emailResult: unknown = null;
@@ -139,7 +145,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ notification_id: notifId, email: emailResult }),
+      JSON.stringify({ notification_id: notifId, in_app: wantInApp, email: emailResult }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
