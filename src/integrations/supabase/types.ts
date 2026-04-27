@@ -590,6 +590,7 @@ export type Database = {
           id: string
           kostenstelle: string | null
           name: string
+          sevdesk_id: string | null
           standard_konto: string | null
           telefon: string | null
           typ: string | null
@@ -604,6 +605,7 @@ export type Database = {
           id?: string
           kostenstelle?: string | null
           name: string
+          sevdesk_id?: string | null
           standard_konto?: string | null
           telefon?: string | null
           typ?: string | null
@@ -618,6 +620,7 @@ export type Database = {
           id?: string
           kostenstelle?: string | null
           name?: string
+          sevdesk_id?: string | null
           standard_konto?: string | null
           telefon?: string | null
           typ?: string | null
@@ -717,6 +720,7 @@ export type Database = {
           notes: string | null
           owner_user_id: string | null
           phone: string | null
+          sevdesk_id: string | null
           source_confidence_score: number | null
           source_detail: string | null
           source_priority_weight: number | null
@@ -744,6 +748,7 @@ export type Database = {
           notes?: string | null
           owner_user_id?: string | null
           phone?: string | null
+          sevdesk_id?: string | null
           source_confidence_score?: number | null
           source_detail?: string | null
           source_priority_weight?: number | null
@@ -771,6 +776,7 @@ export type Database = {
           notes?: string | null
           owner_user_id?: string | null
           phone?: string | null
+          sevdesk_id?: string | null
           source_confidence_score?: number | null
           source_detail?: string | null
           source_priority_weight?: number | null
@@ -1892,6 +1898,7 @@ export type Database = {
           invoice_id: string | null
           kostenstelle: string | null
           objekt: string | null
+          sevdesk_id: string | null
           status: string
           ust: number
         }
@@ -1911,6 +1918,7 @@ export type Database = {
           invoice_id?: string | null
           kostenstelle?: string | null
           objekt?: string | null
+          sevdesk_id?: string | null
           status?: string
           ust?: number
         }
@@ -1930,6 +1938,7 @@ export type Database = {
           invoice_id?: string | null
           kostenstelle?: string | null
           objekt?: string | null
+          sevdesk_id?: string | null
           status?: string
           ust?: number
         }
@@ -2540,6 +2549,7 @@ export type Database = {
           payment_unlocked_by: string | null
           public_token: string | null
           sent_at: string | null
+          sevdesk_invoice_id: string | null
           status: Database["public"]["Enums"]["offer_status"]
           updated_at: string
           version: number
@@ -2561,6 +2571,7 @@ export type Database = {
           payment_unlocked_by?: string | null
           public_token?: string | null
           sent_at?: string | null
+          sevdesk_invoice_id?: string | null
           status?: Database["public"]["Enums"]["offer_status"]
           updated_at?: string
           version?: number
@@ -2582,6 +2593,7 @@ export type Database = {
           payment_unlocked_by?: string | null
           public_token?: string | null
           sent_at?: string | null
+          sevdesk_invoice_id?: string | null
           status?: Database["public"]["Enums"]["offer_status"]
           updated_at?: string
           version?: number
