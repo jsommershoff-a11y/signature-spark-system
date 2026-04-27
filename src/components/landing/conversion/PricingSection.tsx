@@ -1,150 +1,81 @@
-import { Check } from "lucide-react";
+import { ArrowRight, Calendar, ShieldCheck, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
-const plans = [
-  {
-    name: "KI-Prozess-Kickstart",
-    price: "998",
-    installment: "oder 3× 349 €/Monat",
-    valuePrice: "2.500+",
-    savings: "1.500",
-    badge: null,
-    featured: false,
-    vip: false,
-    features: [
-      "KI-Prozessanalyse Ihres Unternehmens",
-      "Individueller Automatisierungsplan",
-      "30-Tage Umsetzungsbegleitung",
-      "Wöchentliche Effizienz-Reports",
-    ],
-  },
-  {
-    name: "KI-Komplettpaket",
-    price: "2.998",
-    installment: "oder 3× 1.049 €/Monat",
-    valuePrice: "8.000+",
-    savings: "5.000",
-    badge: "BELIEBTESTE WAHL",
-    featured: true,
-    vip: false,
-    features: [
-      "Alles aus dem Kickstart-Paket",
-      "Setup von 10 individuellen Prozessen",
-      "Automatisierte Workflows & Follow-ups",
-      "30-Tage intensive Betreuung",
-      "Persönlicher Ansprechpartner",
-      "100% Erfolgs-Garantie",
-    ],
-  },
-  {
-    name: "KI-VIP Done-for-You",
-    price: "9.998",
-    installment: "oder 6× 1.749 €/Monat",
-    valuePrice: "25.000+",
-    savings: "15.000",
-    badge: "MAXIMALER IMPACT",
-    featured: false,
-    vip: true,
-    features: [
-      "Alles aus dem Komplettpaket",
-      "Komplettes KI-Setup für Ihr Unternehmen",
-      "Sie oder ein Mitarbeiter werden zum KI-Prozess-Experten ausgebildet",
-      "Dediziertes Experten-Team an Ihrer Seite",
-      "90-Tage intensive 1:1 Betreuung",
-      "Quartalsweise Strategie-Optimierung",
-      "Direkter Draht zum Geschäftsführer",
-      "Premium-Support mit 4h Reaktionszeit",
-      "100% Erfolgs-Garantie",
-    ],
-  },
-];
-
+/**
+ * Portal-CTA Section
+ *
+ * Ersetzt die frühere öffentliche Pricing-Übersicht. Alle Preisangaben werden
+ * ausschließlich nach einem persönlichen Vorgespräch und im eingeloggten
+ * Portal kommuniziert.
+ */
 export const PricingSection = ({ onCtaClick }: { onCtaClick: () => void }) => {
   return (
-    <section className="py-16 md:py-24">
-      <div className="max-w-6xl mx-auto px-4">
+    <section className="py-20 md:py-28 bg-background">
+      <div className="container mx-auto px-4 max-w-4xl">
         <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4 uppercase tracking-wide">
+            <Sparkles className="w-3.5 h-3.5" />
+            Persönliches Vorgespräch
+          </div>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-            Wählen Sie Ihren Startpunkt
+            Dein passendes System – nach Maß
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Drei Stufen. Ein Ziel: Mehr Effizienz, weniger Aufwand.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Jedes Unternehmen ist anders. Im kostenlosen Erstgespräch analysieren wir deine
+            Situation und stimmen das passende Paket gemeinsam ab. Den vollen Überblick
+            inklusive Konditionen erhältst du direkt im Portal.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {plans.map((plan, i) => (
-            <div
-              key={i}
-              className={`relative rounded-2xl p-8 flex flex-col ${
-                plan.vip
-                  ? "bg-card shadow-[0_0_40px_rgba(218,165,32,0.3)]"
-                  : plan.featured
-                  ? "border border-primary bg-card shadow-lg ring-2 ring-primary/20"
-                  : "border border-border/40 bg-card shadow-sm"
-              }`}
-              style={plan.vip ? {
-                background: "linear-gradient(hsl(0,0%,100%), hsl(0,0%,100%)) padding-box, linear-gradient(135deg, hsl(43,80%,55%), hsl(30,90%,55%), hsl(43,80%,55%)) border-box",
-                border: "2px solid transparent",
-              } : undefined}
-            >
-              {plan.badge && (
-                <span
-                  className={`absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-4 py-1 rounded-full ${
-                    plan.vip
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-primary text-primary-foreground"
-                  }`}
-                >
-                  {plan.badge}
-                </span>
-              )}
+        <Card className="border-2 border-primary/30 shadow-xl bg-card">
+          <CardContent className="p-8 md:p-12 text-center">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              Erstgespräch sichern
+            </h3>
+            <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
+              Unverbindlich, kostenlos, ohne Verkaufsdruck. Wir prüfen, ob unser System
+              zu deinem Unternehmen passt – und du erhältst sofort einen klaren Fahrplan.
+            </p>
 
-              <h3 className="text-xl font-bold text-foreground mb-4">{plan.name}</h3>
-
-              {/* Value-First Pricing */}
-              <div className="mb-6 space-y-2">
-                <div>
-                  <span className="text-sm text-muted-foreground">Gesamtwert der Leistungen:</span>
-                  <div className="text-2xl font-bold text-muted-foreground line-through">
-                    {plan.valuePrice} €
-                  </div>
-                </div>
-                <div>
-                  <span className="text-sm text-muted-foreground">Ihre Investition:</span>
-                  <div className="text-4xl font-bold text-foreground">
-                    {plan.price} <span className="text-lg">€</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">{plan.installment}</p>
-                </div>
-                <div className="inline-block bg-primary/10 text-primary text-sm font-semibold px-3 py-1 rounded-full">
-                  Sie sparen über {plan.savings} €
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-8 flex-1">
-                {plan.features.map((f, j) => (
-                  <li key={j} className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                    <span className="text-foreground">{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+              <Button
+                size="lg"
                 onClick={onCtaClick}
-                className={`w-full font-semibold text-lg py-4 rounded-xl transition-all ${
-                  plan.vip
-                    ? "bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg hover:shadow-xl"
-                    : plan.featured
-                    ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl"
-                    : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-                }`}
+                className="gap-2 text-base font-semibold"
               >
-                Jetzt starten →
-              </button>
+                <Calendar className="w-4 h-4" />
+                Vorgespräch vereinbaren
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className="gap-2 text-base font-semibold"
+              >
+                <a href="/auth">
+                  Bereits Kunde? Zum Portal
+                </a>
+              </Button>
             </div>
-          ))}
-        </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground border-t border-border pt-6">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                100% unverbindlich
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-primary" />
+                15-Min Erstgespräch
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Persönliches Konzept
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
