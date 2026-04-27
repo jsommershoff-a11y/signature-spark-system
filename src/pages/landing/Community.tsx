@@ -200,7 +200,7 @@ const Community = () => {
           </div>
         </section>
 
-        {/* ── 5. Pricing Card ── */}
+        {/* ── 5. CTA Card (Portal) ── */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
@@ -208,20 +208,14 @@ const Community = () => {
                 Mitgliedschaft im Überblick
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Ein Paket, ein Preis. Nach dem Vorgespräch erhältst du sofort Zugang.
+                Im persönlichen Vorgespräch klären wir gemeinsam den passenden Zugang. Anschließend startest du direkt im Portal.
               </p>
             </div>
 
             <Card className="max-w-lg mx-auto border-2 border-primary shadow-xl">
               <CardContent className="p-6 md:p-8">
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-primary mb-2">MITGLIEDSCHAFT</p>
-                  <div className="flex items-baseline justify-center gap-3 mb-6">
-                    <span className="text-4xl md:text-5xl font-bold text-foreground">199 €</span>
-                    <span className="text-muted-foreground">/Jahr</span>
-                  </div>
-
-                  <Separator className="mb-6" />
+                  <p className="text-sm font-semibold text-primary mb-4">MITGLIEDSCHAFT</p>
 
                   <ul className="space-y-3 text-left mb-6">
                     {inclusions.map((item, i) => (
@@ -232,14 +226,23 @@ const Community = () => {
                     ))}
                   </ul>
 
+                  <Separator className="mb-6" />
+
                   <Button
                     size="lg"
                     onClick={goToQualifizierung}
                     className="w-full gap-2 text-base font-semibold"
                   >
-                    Jetzt anfragen
+                    Vorgespräch vereinbaren
                     <ArrowRight className="w-4 h-4" />
                   </Button>
+
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Bereits Mitglied?{" "}
+                    <a href="/auth" className="text-primary font-medium hover:underline">
+                      Zum Portal
+                    </a>
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -250,10 +253,10 @@ const Community = () => {
                 <Shield className="w-4 h-4" /> SSL-verschlüsselt
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4" /> Jederzeit kündbar
+                <Clock className="w-4 h-4" /> Persönliches Vorgespräch
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4" /> Sofortiger Zugang
+                <CheckCircle className="w-4 h-4" /> Direkter Portal-Zugang
               </span>
             </div>
           </div>
