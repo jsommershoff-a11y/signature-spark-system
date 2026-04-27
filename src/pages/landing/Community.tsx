@@ -1,27 +1,13 @@
-import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { FAQSection } from "@/components/landing/FAQSection";
 import { SEOHead } from "@/components/landing/SEOHead";
-import { Users, MessageCircle, Video, Zap, ArrowDown, CheckCircle, Shield, Clock } from "lucide-react";
+import { Users, MessageCircle, Video, Zap, ArrowRight, CheckCircle, Shield, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'stripe-pricing-table': React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement> & {
-          'pricing-table-id': string;
-          'publishable-key': string;
-        },
-        HTMLElement
-      >;
-    }
-  }
-}
 
 const benefits = [
   {
@@ -68,23 +54,20 @@ const faqItems = [
     answer: "In der geschlossenen Skool-Community. Termine werden in der Community angekündigt — du kannst live teilnehmen oder die Aufzeichnung im Anschluss ansehen.",
   },
   {
-    question: "Wie geht es nach der Buchung weiter?",
-    answer: "Nach der Buchung erhältst du sofort eine Bestätigung per E-Mail mit den Zugangsdaten zur Skool-Community. Du kannst direkt loslegen — keine Wartezeit, kein zusätzliches Onboarding nötig.",
+    question: "Wie geht es nach der Anfrage weiter?",
+    answer: "Nach deiner Anfrage melden wir uns innerhalb von 24 Stunden bei dir. In einem kurzen Gespräch klären wir, ob die Community zu deiner Situation passt — und du bekommst direkt Zugang zur Skool-Community samt aller Features.",
   },
 ];
 
 const Community = () => {
-  const checkoutRef = useRef<HTMLDivElement>(null);
-
-  const scrollToCheckout = () => {
-    checkoutRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const navigate = useNavigate();
+  const goToQualifizierung = () => navigate("/qualifizierung");
 
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="KI-Community für Unternehmer | KI-Automationen"
-        description="Geschlossene Community für Unternehmer: wöchentliche Live-Calls, direkter Gründer-Kontakt und praxiserprobte KI-Strategien. Jetzt Mitgliedschaft sichern."
+        description="Geschlossene Community für Unternehmer: wöchentliche Live-Calls, direkter Gründer-Kontakt und praxiserprobte KI-Strategien. Jetzt Mitgliedschaft anfragen."
         canonical="/community"
       />
       <Header />
@@ -110,16 +93,16 @@ const Community = () => {
 
               <Button
                 size="lg"
-                onClick={scrollToCheckout}
+                onClick={goToQualifizierung}
                 className="gap-2 text-base px-10 py-6 text-lg font-semibold shadow-lg"
               >
-                Mitgliedschaft sichern
-                <ArrowDown className="w-5 h-5" />
+                Jetzt anfragen
+                <ArrowRight className="w-5 h-5" />
               </Button>
 
               <p className="text-sm text-muted-foreground mt-4 flex items-center justify-center gap-2">
                 <Shield className="w-4 h-4" />
-                Sichere Zahlung über Stripe · Jederzeit kündbar
+                Persönliches Vorgespräch · Jederzeit kündbar
               </p>
             </div>
           </div>
@@ -209,27 +192,27 @@ const Community = () => {
                 ))}
               </ul>
 
-              <Button size="lg" onClick={scrollToCheckout} className="gap-2 text-base px-8 py-6">
-                Mitgliedschaft sichern
+              <Button size="lg" onClick={goToQualifizierung} className="gap-2 text-base px-8 py-6">
+                Jetzt anfragen
+                <ArrowRight className="w-5 h-5" />
               </Button>
             </div>
           </div>
         </section>
 
-        {/* ── 5. Pricing + Stripe Checkout ── */}
-        <section ref={checkoutRef} className="py-16 md:py-24 scroll-mt-16">
+        {/* ── 5. Pricing Card ── */}
+        <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-3">
-                Jetzt Mitgliedschaft buchen
+                Mitgliedschaft im Überblick
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Wähle dein Paket und schließe die Buchung direkt ab. Sicher, schnell und unkompliziert.
+                Ein Paket, ein Preis. Nach dem Vorgespräch erhältst du sofort Zugang.
               </p>
             </div>
 
-            {/* Membership Card */}
-            <Card className="max-w-lg mx-auto border-2 border-primary shadow-xl mb-10">
+            <Card className="max-w-lg mx-auto border-2 border-primary shadow-xl">
               <CardContent className="p-6 md:p-8">
                 <div className="text-center">
                   <p className="text-sm font-semibold text-primary mb-2">MITGLIEDSCHAFT</p>
@@ -248,17 +231,18 @@ const Community = () => {
                       </li>
                     ))}
                   </ul>
+
+                  <Button
+                    size="lg"
+                    onClick={goToQualifizierung}
+                    className="w-full gap-2 text-base font-semibold"
+                  >
+                    Jetzt anfragen
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Stripe Pricing Table */}
-            <div className="w-full max-w-4xl mx-auto overflow-x-auto">
-              <stripe-pricing-table
-                pricing-table-id="prctbl_1TA1NXBmqjP8eJrScytk6Mrj"
-                publishable-key="pk_live_51NpX6uBmqjP8eJrSMZt8bBoobLYUDo7oxVHiGHKKdrUT6fmVeA0tEltdLGuP3Rr4a8DeeilvsbNJL5cblrNCm7tR00njg6DyC5"
-              />
-            </div>
 
             {/* Trust signals */}
             <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-muted-foreground">
@@ -293,10 +277,11 @@ const Community = () => {
 
             <Button
               size="lg"
-              onClick={scrollToCheckout}
+              onClick={goToQualifizierung}
               className="gap-2 text-base px-10 py-6 text-lg font-semibold shadow-lg"
             >
-              Mitgliedschaft sichern – 199 €/Jahr
+              Jetzt anfragen
+              <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
         </section>
