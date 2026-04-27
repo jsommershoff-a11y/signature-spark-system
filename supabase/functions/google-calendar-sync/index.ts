@@ -157,42 +157,52 @@ Deno.serve(async (req) => {
       const start_at = ev.start!.dateTime!;
       const end_at = ev.end!.dateTime!;
 
-      // Upsert per (profile_id, google_event_id)
-      const { data: existing } = await supabase
-        .from("availability_slots")
-        .select("id")
-        .eq("profile_id", profile_id)
-        .eq("google_event_id", ev.id)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
+      try {
+        const { data: existing } = await supabase
           .from("availability_slots")
-          .update({
+          .select("id")
+          .eq("profile_id", profile_id)
+          .eq("google_event_id", ev.id)
+          .maybeSingle();
+
+        if (existing) {
+          const { error: updErr } = await supabase
+            .from("availability_slots")
+            .update({
+              start_at,
+              end_at,
+              google_event_summary: ev.summary ?? null,
+              google_calendar_id: calendar_id,
+              notes: ev.description ?? null,
+              status: "blocked",
+              source: "google_busy",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existing.id);
+          if (updErr) throw updErr;
+        } else {
+          const { error: insErr } = await supabase.from("availability_slots").insert({
+            profile_id,
             start_at,
             end_at,
+            status: "blocked",
+            source: "google_busy",
+            google_event_id: ev.id,
             google_event_summary: ev.summary ?? null,
             google_calendar_id: calendar_id,
             notes: ev.description ?? null,
-            status: "blocked",
-            source: "google_busy",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing.id);
-      } else {
-        await supabase.from("availability_slots").insert({
-          profile_id,
-          start_at,
-          end_at,
-          status: "blocked",
-          source: "google_busy",
-          google_event_id: ev.id,
-          google_event_summary: ev.summary ?? null,
-          google_calendar_id: calendar_id,
-          notes: ev.description ?? null,
+          });
+          if (insErr) throw insErr;
+        }
+        upserts++;
+        meta.events.synced_event_ids.push(ev.id);
+      } catch (slotErr: any) {
+        meta.errors.push({
+          event_id: ev.id,
+          phase: "upsert_slot",
+          message: slotErr?.message ?? String(slotErr),
         });
       }
-      upserts++;
     }
 
     // Gelöschte/abgesagte Events: Slots im Zeitraum, die nicht mehr in Google sind
@@ -206,13 +216,21 @@ Deno.serve(async (req) => {
 
     for (const row of orphan ?? []) {
       if (row.google_event_id && !seenEventIds.includes(row.google_event_id)) {
-        await supabase
-          .rpc("release_slot_for_google_event", {
-            _profile_id: profile_id,
-            _google_event_id: row.google_event_id,
-            _reason: "Google-Event nicht mehr im Zeitfenster",
-          })
-          .then(() => cancelled++);
+        const { error: rpcErr } = await supabase.rpc("release_slot_for_google_event", {
+          _profile_id: profile_id,
+          _google_event_id: row.google_event_id,
+          _reason: "Google-Event nicht mehr im Zeitfenster",
+        });
+        if (rpcErr) {
+          meta.errors.push({
+            event_id: row.google_event_id,
+            phase: "release_slot",
+            message: rpcErr.message,
+          });
+        } else {
+          cancelled++;
+          meta.events.cancelled_event_ids.push(row.google_event_id);
+        }
       }
     }
 
@@ -222,10 +240,11 @@ Deno.serve(async (req) => {
       calendar_id: logCtx.calendar_id,
       window_from: logCtx.window_from,
       window_to: logCtx.window_to,
-      status: "success",
+      status: meta.errors.length > 0 ? "partial" : "success",
       synced_count: upserts,
       cancelled_count: cancelled,
       duration_ms: Date.now() - startedAt,
+      meta,
     });
 
     return new Response(
