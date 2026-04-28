@@ -207,7 +207,7 @@ export default function AdminUpgradeFunnel() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(data ?? []).map((r) => (
+                  {filtered.map((r) => (
                     <TableRow key={`${r.module_type}-${r.required_tier}`}>
                       <TableCell className="font-medium">
                         {MODULE_LABEL[r.module_type] ?? r.module_type}
