@@ -118,6 +118,34 @@ export default function AdminDriveSync() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="flex flex-wrap gap-2 border-b pb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => sendTelegramTest("daily")}
+            disabled={testingTelegram !== null}
+          >
+            {testingTelegram === "daily" ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
+            Telegram: Tages-Test senden
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => sendTelegramTest("weekly")}
+            disabled={testingTelegram !== null}
+          >
+            {testingTelegram === "weekly" ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <CalendarRange className="h-4 w-4 mr-2" />
+            )}
+            Telegram: Wochen-Test senden
+          </Button>
+        </div>
         {loading ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> lade...
