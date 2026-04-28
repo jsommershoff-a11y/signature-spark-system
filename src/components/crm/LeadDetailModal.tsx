@@ -496,6 +496,13 @@ export function LeadDetailModal({
           open={createOfferOpen}
           onOpenChange={setCreateOfferOpen}
         />
+        <InviteMemberDialog
+          open={inviteOpen}
+          onOpenChange={setInviteOpen}
+          prefillEmail={lead.email || undefined}
+          prefillName={[lead.first_name, lead.last_name].filter(Boolean).join(' ')}
+          prefillLeadId={lead.id}
+        />
       </DialogContent>
     </Dialog>
   );
