@@ -92,7 +92,7 @@ export function AdminZoomAutomation() {
             <Mail className="h-5 w-5" /> Zoom-Automatisierung
           </CardTitle>
           <CardDescription>
-            Stündlich: Gmail → Zoom-Summary-Erkennung → Lead-Match → KI-Angebotsentwurf
+            Stündlich: verbundenes Google-Postfach → Meeting-Summary-Erkennung (Zoom, Fathom, Fireflies, Otter, tl;dv, Read.ai u.a.) → Lead-Match → KI-Angebotsentwurf
           </CardDescription>
         </div>
         <Button onClick={triggerSync} disabled={running} size="sm">
