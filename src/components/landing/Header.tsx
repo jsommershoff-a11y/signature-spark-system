@@ -73,6 +73,13 @@ export const Header = () => {
               Produkte
             </Link>
 
+            <Link
+              to="/eigener-bot"
+              className="text-white/80 hover:text-white transition-colors font-medium text-sm"
+            >
+              Eigener Bot
+            </Link>
+
             <Link to="/automatisierungen">
               <Button
                 size="sm"
@@ -138,6 +145,14 @@ export const Header = () => {
                   className="py-2 text-lg font-medium hover:text-primary transition-colors"
                 >
                   Produkte & Automatisierungen
+                </Link>
+
+                <Link
+                  to="/eigener-bot"
+                  onClick={() => setIsOpen(false)}
+                  className="py-2 text-lg font-medium hover:text-primary transition-colors"
+                >
+                  Eigener Bot bestellen
                 </Link>
 
                 <Link
