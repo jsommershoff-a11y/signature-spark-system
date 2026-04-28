@@ -6,7 +6,7 @@ import { SEOHead } from "@/components/landing/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AUTOMATIONS, type Automation, formatPriceEUR } from "@/data/automations";
+import { AUTOMATIONS, type Automation } from "@/data/automations";
 
 type Filter = "all" | "automation" | "education";
 
