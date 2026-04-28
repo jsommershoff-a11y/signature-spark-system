@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/app/PageHeader';
+import { TrialInlineNotice } from '@/components/app/TrialInlineNotice';
 import { useCatalogProducts, type CatalogProduct } from '@/hooks/useCatalogProducts';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildPaymentLink, trackBeginCheckout } from '@/lib/checkout-link';
@@ -190,6 +191,8 @@ export default function Pricing() {
         title="Produkte, Preise und direkte Buchung"
         description="Alle Automationen und das KI-Profi Programm im Überblick. Buchung erfolgt sicher über Stripe."
       />
+
+      <TrialInlineNotice />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as 'automation' | 'education')}>
         <TabsList className="grid w-full max-w-md grid-cols-2">
