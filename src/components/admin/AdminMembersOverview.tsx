@@ -17,7 +17,7 @@ import {
   Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus, UserPlus,
   Pencil, Trash2, Loader2, Search, Eye, ChevronRight, BarChart3,
   FolderOpen, FileText, Play, CheckSquare, HelpCircle, ArrowUpDown,
-  Save, X, LayoutGrid, List, Handshake
+  Save, X, LayoutGrid, List, Handshake, CheckCircle2, AlertCircle, Mail
 } from 'lucide-react';
 import {
   MEMBER_STATUS_LABELS, MEMBER_STATUS_COLORS,
