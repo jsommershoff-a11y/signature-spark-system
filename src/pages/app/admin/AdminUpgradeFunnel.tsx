@@ -4,10 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { Eye, MousePointerClick, Sparkles, TrendingUp } from 'lucide-react';
+import { Download, Eye, MousePointerClick, Sparkles, TrendingUp } from 'lucide-react';
+import { exportToCSV } from '@/lib/report-export';
 
 type Range = '7d' | '30d' | '90d';
 
