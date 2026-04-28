@@ -4,10 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { Eye, MousePointerClick, Sparkles, TrendingUp } from 'lucide-react';
+import { Download, Eye, MousePointerClick, Sparkles, TrendingUp } from 'lucide-react';
+import { exportToCSV } from '@/lib/report-export';
 
 type Range = '7d' | '30d' | '90d';
 
@@ -50,6 +52,8 @@ function pct(v: number | null) {
 
 export default function AdminUpgradeFunnel() {
   const [range, setRange] = useState<Range>('30d');
+  const [moduleFilter, setModuleFilter] = useState<string>('all');
+  const [tierFilter, setTierFilter] = useState<string>('all');
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['upgrade-funnel-stats', range],
@@ -64,8 +68,26 @@ export default function AdminUpgradeFunnel() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const totals = useMemo(() => {
+  const filtered = useMemo(() => {
     const rows = data ?? [];
+    return rows.filter(
+      (r) =>
+        (moduleFilter === 'all' || r.module_type === moduleFilter) &&
+        (tierFilter === 'all' || r.required_tier === tierFilter),
+    );
+  }, [data, moduleFilter, tierFilter]);
+
+  const moduleOptions = useMemo(
+    () => Array.from(new Set((data ?? []).map((r) => r.module_type))).sort(),
+    [data],
+  );
+  const tierOptions = useMemo(
+    () => Array.from(new Set((data ?? []).map((r) => r.required_tier))).sort(),
+    [data],
+  );
+
+  const totals = useMemo(() => {
+    const rows = filtered;
     const views = rows.reduce((s, r) => s + Number(r.views || 0), 0);
     const clicks = rows.reduce((s, r) => s + Number(r.cta_clicks || 0), 0);
     const upgrades = rows.reduce((s, r) => s + Number(r.upgrades || 0), 0);
@@ -77,7 +99,26 @@ export default function AdminUpgradeFunnel() {
       ctu: clicks > 0 ? Math.round((upgrades / clicks) * 1000) / 10 : null,
       vtu: views > 0 ? Math.round((upgrades / views) * 1000) / 10 : null,
     };
-  }, [data]);
+  }, [filtered]);
+
+  const handleExport = () => {
+    const rows = filtered.map((r) => ({
+      Modul: MODULE_LABEL[r.module_type] ?? r.module_type,
+      Modul_Key: r.module_type,
+      Ziel_Paket: r.required_tier,
+      Views: r.views,
+      CTA_Klicks: r.cta_clicks,
+      Upgrades: r.upgrades,
+      'View_zu_Klick_%': r.view_to_click_rate ?? '',
+      'Klick_zu_Upgrade_%': r.click_to_upgrade_rate ?? '',
+      'View_zu_Upgrade_%': r.view_to_upgrade_rate ?? '',
+    }));
+    const stamp = new Date().toISOString().slice(0, 10);
+    exportToCSV(
+      rows as Record<string, unknown>[],
+      `upgrade-funnel_${range}_${moduleFilter}_${tierFilter}_${stamp}`,
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -88,16 +129,42 @@ export default function AdminUpgradeFunnel() {
             Modul-Aufruf → CTA-Klick → Upgrade abgeschlossen, pro Modul und Ziel-Paket.
           </p>
         </div>
-        <Select value={range} onValueChange={(v) => setRange(v as Range)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {(Object.keys(RANGE_LABEL) as Range[]).map((r) => (
-              <SelectItem key={r} value={r}>{RANGE_LABEL[r]}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-2">
+          <Select value={range} onValueChange={(v) => setRange(v as Range)}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Zeitraum" /></SelectTrigger>
+            <SelectContent>
+              {(Object.keys(RANGE_LABEL) as Range[]).map((r) => (
+                <SelectItem key={r} value={r}>{RANGE_LABEL[r]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={moduleFilter} onValueChange={setModuleFilter}>
+            <SelectTrigger className="w-[170px]"><SelectValue placeholder="Modul" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Module</SelectItem>
+              {moduleOptions.map((m) => (
+                <SelectItem key={m} value={m}>{MODULE_LABEL[m] ?? m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={tierFilter} onValueChange={setTierFilter}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Ziel-Paket" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Pakete</SelectItem>
+              {tierOptions.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={filtered.length === 0}
+          >
+            <Download className="h-4 w-4 mr-1" /> CSV
+          </Button>
+        </div>
       </div>
 
       {/* KPI Tiles */}
@@ -119,12 +186,12 @@ export default function AdminUpgradeFunnel() {
             </p>
           )}
           {isLoading && <p className="text-sm text-muted-foreground py-6">Lade Daten…</p>}
-          {!isLoading && !error && (data?.length ?? 0) === 0 && (
+          {!isLoading && !error && filtered.length === 0 && (
             <p className="text-sm text-muted-foreground py-6">
-              Noch keine Events im gewählten Zeitraum.
+              Keine Daten für die gewählten Filter.
             </p>
           )}
-          {!isLoading && !error && (data?.length ?? 0) > 0 && (
+          {!isLoading && !error && filtered.length > 0 && (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -140,7 +207,7 @@ export default function AdminUpgradeFunnel() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(data ?? []).map((r) => (
+                  {filtered.map((r) => (
                     <TableRow key={`${r.module_type}-${r.required_tier}`}>
                       <TableCell className="font-medium">
                         {MODULE_LABEL[r.module_type] ?? r.module_type}
