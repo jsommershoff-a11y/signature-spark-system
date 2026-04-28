@@ -93,6 +93,15 @@ export function LockedContent({
 
   const reason = buildReason(moduleType, requiredTier, benefits);
 
+  const logUpgradeClick = (placement: 'card' | 'overlay' | 'compare') => {
+    void trackEvent('upgrade_cta_click', {
+      moduleType,
+      requiredTier,
+      placement,
+      variant,
+    });
+  };
+
   if (variant === 'card') {
     return (
       <Card className={cn('relative overflow-hidden border-dashed', className)}>
