@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/s
 import { AppFooter } from './AppFooter';
 import { Breadcrumbs } from './Breadcrumbs';
 import { TrialGuard } from '@/components/TrialGuard';
+import { TrialTopBar } from './TrialTopBar';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
