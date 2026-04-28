@@ -24,6 +24,7 @@ import Community from "./pages/landing/Community";
 import Automatisierungen from "./pages/landing/Automatisierungen";
 import AutomatisierungDetail from "./pages/landing/AutomatisierungDetail";
 import EigenerBot from "./pages/landing/EigenerBot";
+import { StartBundlePage, GrowthBundlePage } from "./pages/landing/BundleLanding";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -110,6 +111,9 @@ const App = () => (
             <Route path="/automatisierungen/:slug" element={<AutomatisierungDetail />} />
             <Route path="/eigener-bot" element={<EigenerBot />} />
             <Route path="/bot-bestellen" element={<Navigate to="/eigener-bot" replace />} />
+            {/* Bundle-Pakete */}
+            <Route path="/start" element={<StartBundlePage />} />
+            <Route path="/growth" element={<GrowthBundlePage />} />
             {/* Aliase */}
             <Route path="/produkte" element={<Navigate to="/automatisierungen" replace />} />
             <Route path="/automationen" element={<Navigate to="/automatisierungen" replace />} />
