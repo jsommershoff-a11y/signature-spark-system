@@ -98,6 +98,7 @@ const navGroups: NavGroup[] = [
     items: [
       { label: 'Reports', href: '/app/reports', icon: BarChart3, minRole: 'gruppenbetreuer' },
       { label: 'Inbox', href: '/app/inbox', icon: Inbox, exactRole: 'admin' },
+      { label: 'Mitglieder', href: '/app/admin/customers', icon: UserPlus, exactRole: 'admin' },
       { label: 'COO Cockpit', href: '/app/coo-cockpit', icon: Gauge, exactRole: 'admin' },
       { label: 'Admin', href: '/app/admin', icon: Shield, exactRole: 'admin' },
     ],

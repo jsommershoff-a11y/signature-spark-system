@@ -37,17 +37,25 @@ interface LeadOption {
   pipeline_item?: { stage: string }[];
 }
 
-function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillName, prefillLeadId }: { open: boolean; onOpenChange: (o: boolean) => void; prefillEmail?: string; prefillName?: string; prefillLeadId?: string }) {
+  const [email, setEmail] = useState(prefillEmail || '');
+  const [name, setName] = useState(prefillName || '');
   const [role, setRole] = useState<string>('member_basic');
   const [sending, setSending] = useState(false);
-  const [mode, setMode] = useState<'new' | 'lead'>('lead');
+  const [mode, setMode] = useState<'new' | 'lead'>(prefillLeadId ? 'new' : 'lead');
   const [leadSearch, setLeadSearch] = useState('');
   const [leadResults, setLeadResults] = useState<LeadOption[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedLead, setSelectedLead] = useState<LeadOption | null>(null);
   const { toast } = useToast();
+
+  // Sync prefill when dialog re-opens with new lead
+  useEffect(() => {
+    if (open) {
+      setEmail(prefillEmail || '');
+      setName(prefillName || '');
+    }
+  }, [open, prefillEmail, prefillName]);
 
   // Debounced lead search
   useEffect(() => {
@@ -92,7 +100,7 @@ function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChang
           email,
           role,
           name: name || undefined,
-          lead_id: selectedLead?.id || undefined,
+          lead_id: selectedLead?.id || prefillLeadId || undefined,
         },
       });
       if (error) throw error;
@@ -351,6 +359,7 @@ function MembersListSection() {
                             <SelectItem value="churned">Gekündigt</SelectItem>
                           </SelectContent>
                         </Select>
+                        <ReinviteButton email={member.profile?.email} name={member.profile?.full_name} />
                         <InviteAffiliateButton profileId={member.profile_id} />
                       </div>
                     </TableCell>
@@ -424,6 +433,29 @@ function InviteAffiliateButton({ profileId }: { profileId?: string | null }) {
   );
 }
 
+function ReinviteButton({ email, name }: { email?: string | null; name?: string | null }) {
+  const [open, setOpen] = useState(false);
+  if (!email) return null;
+  return (
+    <>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-8 w-8"
+        title="Portal-Einladung erneut senden"
+        onClick={() => setOpen(true)}
+      >
+        <UserPlus className="h-4 w-4" />
+      </Button>
+      <InviteMemberDialog
+        open={open}
+        onOpenChange={setOpen}
+        prefillEmail={email}
+        prefillName={name || undefined}
+      />
+    </>
+  );
+}
 // ──────────────────────────────────────────────
 // Sub-Tab: Lernpfade verwalten
 // ──────────────────────────────────────────────

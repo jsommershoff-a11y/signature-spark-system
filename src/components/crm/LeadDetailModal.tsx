@@ -53,7 +53,10 @@ import {
   Loader2,
   Plus,
   FileText,
+  UserPlus,
 } from 'lucide-react';
+import { InviteMemberDialog } from '@/components/admin/AdminMembersOverview';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LeadDetailModalProps {
   lead: CrmLead | null;
@@ -76,6 +79,9 @@ export function LeadDetailModal({
   const [hasChanges, setHasChanges] = useState(false);
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
   const [createOfferOpen, setCreateOfferOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const { effectiveRole } = useAuth();
+  const isAdmin = effectiveRole === 'admin';
 
   const { tasks, updateTask } = useTasks({ lead_id: lead?.id });
   const { calls, loading: callsLoading, createCall } = useCalls({ lead_id: lead?.id });
@@ -158,13 +164,27 @@ export function LeadDetailModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <User className="h-5 w-5" />
-            {lead.first_name} {lead.last_name || ''}
-            <Badge variant="outline" className="ml-2">
-              {SOURCE_TYPE_LABELS[lead.source_type]}
-            </Badge>
-          </DialogTitle>
+          <div className="flex items-start justify-between gap-3">
+            <DialogTitle className="flex items-center gap-3">
+              <User className="h-5 w-5" />
+              {lead.first_name} {lead.last_name || ''}
+              <Badge variant="outline" className="ml-2">
+                {SOURCE_TYPE_LABELS[lead.source_type]}
+              </Badge>
+            </DialogTitle>
+            {isAdmin && lead.email && (
+              <Button
+                size="sm"
+                variant="default"
+                className="gap-1.5 shrink-0"
+                onClick={() => setInviteOpen(true)}
+                title="Diesen Lead ins Portal einladen"
+              >
+                <UserPlus className="h-4 w-4" />
+                Ins Portal einladen
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="mt-4">
@@ -475,6 +495,13 @@ export function LeadDetailModal({
         <CreateOfferDialog
           open={createOfferOpen}
           onOpenChange={setCreateOfferOpen}
+        />
+        <InviteMemberDialog
+          open={inviteOpen}
+          onOpenChange={setInviteOpen}
+          prefillEmail={lead.email || undefined}
+          prefillName={[lead.first_name, lead.last_name].filter(Boolean).join(' ')}
+          prefillLeadId={lead.id}
         />
       </DialogContent>
     </Dialog>
