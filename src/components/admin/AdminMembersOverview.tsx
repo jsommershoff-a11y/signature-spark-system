@@ -433,6 +433,29 @@ function InviteAffiliateButton({ profileId }: { profileId?: string | null }) {
   );
 }
 
+function ReinviteButton({ email, name }: { email?: string | null; name?: string | null }) {
+  const [open, setOpen] = useState(false);
+  if (!email) return null;
+  return (
+    <>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-8 w-8"
+        title="Portal-Einladung erneut senden"
+        onClick={() => setOpen(true)}
+      >
+        <UserPlus className="h-4 w-4" />
+      </Button>
+      <InviteMemberDialog
+        open={open}
+        onOpenChange={setOpen}
+        prefillEmail={email}
+        prefillName={name || undefined}
+      />
+    </>
+  );
+}
 // ──────────────────────────────────────────────
 // Sub-Tab: Lernpfade verwalten
 // ──────────────────────────────────────────────
