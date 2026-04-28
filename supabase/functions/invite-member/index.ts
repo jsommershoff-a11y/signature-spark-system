@@ -189,6 +189,7 @@ serve(async (req) => {
 
     // Primary: Gmail (via connector gateway)
     if (gmailKey && lovableKey) {
+      triedProviders.push('gmail');
       try {
         const raw = buildGmailRaw(email, subject, emailHtml);
         const res = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
