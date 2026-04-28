@@ -11,6 +11,9 @@ import { FAQSection } from "@/components/landing/FAQSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
 import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
+import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
+import { ROICalculatorSection } from "@/components/landing/ROICalculatorSection";
+import { ObjectionFAQSection } from "@/components/landing/ObjectionFAQSection";
 import type { IndustryContent } from "@/data/industries";
 
 interface IndustryLandingTemplateProps {
@@ -62,16 +65,26 @@ export const IndustryLandingTemplate = ({ content }: IndustryLandingTemplateProp
         causes={content.problem.causes}
       />
 
+      {/* 2b. VORHER / NACHHER */}
+      <BeforeAfterSection
+        beforePoints={content.problem.causes.map((c) => c.title)}
+        afterLabel="Mit KI-Automatisierung"
+      />
+
       {/* 3. SYSTEM */}
       <SystemPhasesSection />
       <StructogramUSPSection />
+
+      {/* 3b. ROI-RECHNER */}
+      <ROICalculatorSection />
 
       {/* 4. PROOF */}
       <TrustLogosSection />
       <ProofBar />
 
-      {/* 5. FAQ */}
+      {/* 5. FAQ + Einwände */}
       <FAQSection items={content.faq} />
+      <ObjectionFAQSection />
 
       {/* 6. CTA */}
       <FinalCTA

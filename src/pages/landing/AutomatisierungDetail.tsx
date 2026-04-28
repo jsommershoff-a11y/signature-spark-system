@@ -4,10 +4,8 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  Sparkles,
   Target,
   Users,
-  TrendingUp,
   AlertTriangle,
   Zap,
   Building2,
@@ -32,6 +30,8 @@ import { AUTOMATIONS } from "@/data/automations";
 import { DeliveryRoadmap } from "@/components/landing/DeliveryRoadmap";
 import { ProofBar } from "@/components/landing/ProofBar";
 import { ProductCTA } from "@/components/landing/ProductCTA";
+import { ROICalculatorSection } from "@/components/landing/ROICalculatorSection";
+import { ObjectionFAQSection } from "@/components/landing/ObjectionFAQSection";
 
 const FAQ = [
   {
@@ -285,51 +285,12 @@ export default function AutomatisierungDetail() {
         </div>
       </section>
 
-      {/* ROI-Block */}
-      <section className="bg-[#0F3E2E] text-white py-12 md:py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8">
-            <Badge className="bg-primary/20 text-primary-light border-primary/30 mb-3">
-              Return on Investment
-            </Badge>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
-              Was du dir mit {product.code} pro Monat zurückholst
-            </h2>
-            <p className="text-white/70 text-sm md:text-base max-w-2xl mx-auto">
-              Konservativ gerechnet — die meisten Kunden liegen über diesen Werten.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-4 mb-6">
-            <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center">
-              <Clock className="h-6 w-6 text-primary-light mx-auto mb-2" />
-              <div className="text-3xl font-bold text-white mb-1">8–20 h</div>
-              <div className="text-xs text-white/70 uppercase tracking-wider">
-                Zeit gespart pro Woche
-              </div>
-            </div>
-            <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center">
-              <TrendingUp className="h-6 w-6 text-primary-light mx-auto mb-2" />
-              <div className="text-3xl font-bold text-white mb-1">1–2 FTE</div>
-              <div className="text-xs text-white/70 uppercase tracking-wider">
-                Personalentlastung pro Prozess
-              </div>
-            </div>
-            <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center">
-              <Sparkles className="h-6 w-6 text-primary-light mx-auto mb-2" />
-              <div className="text-3xl font-bold text-white mb-1">&lt; 90 Tage</div>
-              <div className="text-xs text-white/70 uppercase tracking-wider">
-                Bis zum Break-Even
-              </div>
-            </div>
-          </div>
-
-          <p className="text-xs text-white/60 text-center max-w-2xl mx-auto">
-            Berechnung basiert auf Erfahrungswerten aus &gt;50 Implementierungen. Konkrete Werte für deine
-            Situation berechnen wir im Erstgespräch.
-          </p>
-        </div>
-      </section>
+      {/* ROI-Rechner (interaktiv) */}
+      <ROICalculatorSection
+        eyebrow={`ROI · ${product.code}`}
+        headline={`Was du dir mit ${product.name} zurückholst`}
+        qualifizierungQuery={`automation=${product.slug}`}
+      />
 
       {/* Inhalte */}
       <section className="bg-background py-12 md:py-16">
@@ -439,6 +400,9 @@ export default function AutomatisierungDetail() {
           </Accordion>
         </div>
       </section>
+
+      {/* Einwand-FAQ */}
+      <ObjectionFAQSection />
 
       {/* Final CTA */}
       <section className="bg-[#FFF3EB] py-14">

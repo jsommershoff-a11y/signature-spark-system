@@ -11,6 +11,9 @@ import { FAQSection } from "@/components/landing/FAQSection";
 import { ProductCTA } from "@/components/landing/ProductCTA";
 import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
 import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
+import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
+import { ROICalculatorSection } from "@/components/landing/ROICalculatorSection";
+import { ObjectionFAQSection } from "@/components/landing/ObjectionFAQSection";
 import NotFound from "@/pages/NotFound";
 import { AUTOMATIONS } from "@/data/automations";
 import { getBundle, type Bundle } from "@/data/bundles";
@@ -216,12 +219,28 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
         </div>
       </section>
 
+      {/* 2b. VORHER / NACHHER */}
+      <BeforeAfterSection
+        afterLabel={bundle.badge}
+        beforeIntro={bundle.problem}
+        afterIntro={bundle.solution}
+        afterPoints={bundle.outcomes}
+      />
+
+      {/* 3b. ROI-RECHNER */}
+      <ROICalculatorSection
+        defaultHoursPerWeek={bundle.slug === "growth" ? 25 : 12}
+        defaultEmployees={bundle.slug === "growth" ? 4 : 2}
+        qualifizierungQuery={`automations=${bundle.automationSlugs.join(",")}`}
+      />
+
       {/* 4. PROOF */}
       <TrustLogosSection />
       <ProofBar />
 
-      {/* 5. FAQ */}
+      {/* 5. FAQ + Einwände */}
       <FAQSection items={allFaq} />
+      <ObjectionFAQSection />
 
       {/* 6. CTA */}
       <section className="bg-[#FFF3EB] py-16">
