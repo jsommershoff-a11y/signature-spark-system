@@ -68,8 +68,26 @@ export default function AdminUpgradeFunnel() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const totals = useMemo(() => {
+  const filtered = useMemo(() => {
     const rows = data ?? [];
+    return rows.filter(
+      (r) =>
+        (moduleFilter === 'all' || r.module_type === moduleFilter) &&
+        (tierFilter === 'all' || r.required_tier === tierFilter),
+    );
+  }, [data, moduleFilter, tierFilter]);
+
+  const moduleOptions = useMemo(
+    () => Array.from(new Set((data ?? []).map((r) => r.module_type))).sort(),
+    [data],
+  );
+  const tierOptions = useMemo(
+    () => Array.from(new Set((data ?? []).map((r) => r.required_tier))).sort(),
+    [data],
+  );
+
+  const totals = useMemo(() => {
+    const rows = filtered;
     const views = rows.reduce((s, r) => s + Number(r.views || 0), 0);
     const clicks = rows.reduce((s, r) => s + Number(r.cta_clicks || 0), 0);
     const upgrades = rows.reduce((s, r) => s + Number(r.upgrades || 0), 0);
@@ -81,7 +99,26 @@ export default function AdminUpgradeFunnel() {
       ctu: clicks > 0 ? Math.round((upgrades / clicks) * 1000) / 10 : null,
       vtu: views > 0 ? Math.round((upgrades / views) * 1000) / 10 : null,
     };
-  }, [data]);
+  }, [filtered]);
+
+  const handleExport = () => {
+    const rows = filtered.map((r) => ({
+      Modul: MODULE_LABEL[r.module_type] ?? r.module_type,
+      Modul_Key: r.module_type,
+      Ziel_Paket: r.required_tier,
+      Views: r.views,
+      CTA_Klicks: r.cta_clicks,
+      Upgrades: r.upgrades,
+      'View_zu_Klick_%': r.view_to_click_rate ?? '',
+      'Klick_zu_Upgrade_%': r.click_to_upgrade_rate ?? '',
+      'View_zu_Upgrade_%': r.view_to_upgrade_rate ?? '',
+    }));
+    const stamp = new Date().toISOString().slice(0, 10);
+    exportToCSV(
+      rows as Record<string, unknown>[],
+      `upgrade-funnel_${range}_${moduleFilter}_${tierFilter}_${stamp}`,
+    );
+  };
 
   return (
     <div className="space-y-6">
