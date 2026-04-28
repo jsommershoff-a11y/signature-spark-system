@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Lock, ArrowUpRight, Sparkles, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -89,6 +90,18 @@ export function LockedContent({
   moduleType = 'generic',
   benefits,
 }: LockedContentProps) {
+  // Fire view event once per mount when locked (hook must be called unconditionally)
+  const viewLogged = useRef(false);
+  useEffect(() => {
+    if (hasAccess || viewLogged.current) return;
+    viewLogged.current = true;
+    void trackEvent('view_locked_module', {
+      moduleType,
+      requiredTier,
+      variant,
+    });
+  }, [hasAccess, moduleType, requiredTier, variant]);
+
   if (hasAccess) return <>{children}</>;
 
   const reason = buildReason(moduleType, requiredTier, benefits);
