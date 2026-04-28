@@ -210,6 +210,28 @@ Deno.serve(async (req) => {
     results.push(r);
   }
 
+  // Telegram notify: only when new leads or errors
+  try {
+    const totalInserted = results.reduce((a, r) => a + (r.inserted ?? 0), 0);
+    const failed = results.filter((r) => r.status === "failed" || r.status === "completed_with_errors");
+    if (!body.dry_run && (totalInserted > 0 || failed.length > 0)) {
+      const lines = [
+        `<b>📥 Drive-Sync (${triggeredBy})</b>`,
+        `Sheets: ${results.length} · Neu: <b>${totalInserted}</b>`,
+      ];
+      for (const r of results) {
+        lines.push(
+          `• <code>${(r.sheet_id ?? "").slice(0, 10)}…</code> ${r.status} · ins:${r.inserted ?? 0} dup:${r.skippedDedupe ?? 0} inv:${r.skippedInvalid ?? 0}`,
+        );
+        if (r.errors?.length) lines.push(`  ⚠️ ${String(r.errors[0]).slice(0, 160)}`);
+        if (r.error) lines.push(`  ❌ ${String(r.error).slice(0, 160)}`);
+      }
+      await sendTelegram(lines.join("\n"));
+    }
+  } catch (e) {
+    console.error("telegram notify failed:", e);
+  }
+
   return new Response(JSON.stringify({ ok: true, results }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
