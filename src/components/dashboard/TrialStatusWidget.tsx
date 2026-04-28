@@ -4,8 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, AlertTriangle, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
+import { Clock, CheckCircle2, AlertTriangle, Sparkles, ArrowRight, Loader2, Ticket, Calendar as CalendarIcon, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLiveCallEligibility } from '@/hooks/useLiveCallEligibility';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -26,6 +27,7 @@ function formatRemaining(ms: number): string {
 
 export function TrialStatusWidget() {
   const { profile } = useAuth();
+  const { eligibility } = useLiveCallEligibility();
   const [now, setNow] = useState<number>(() => Date.now());
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
