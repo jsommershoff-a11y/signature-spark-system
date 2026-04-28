@@ -134,6 +134,10 @@ export function TrialStatusWidget() {
               </p>
             </div>
           </div>
+
+          {/* Live-Call Status */}
+          <LiveCallStatusRow eligibility={eligibility} compact />
+
           <Progress value={view.percent} className="h-1.5" />
           <div className="flex flex-wrap gap-2 pt-1">
             <Button
