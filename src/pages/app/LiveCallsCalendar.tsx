@@ -5,6 +5,8 @@ import { de } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveEvents, useTopicSubmissions } from '@/hooks/useLiveEvents';
+import { useLiveCallEligibility } from '@/hooks/useLiveCallEligibility';
+import { useQueryClient } from '@tanstack/react-query';
 import { STAFF_ROLES } from '@/lib/roles';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,37 +30,45 @@ import {
   Loader2,
   Trash2,
   CalendarDays,
+  Ticket,
+  Sparkles,
+  Lock,
 } from 'lucide-react';
 
 export default function LiveCallsCalendar() {
   const { effectiveRole, user, profile } = useAuth() as any;
   const { events, isLoading, register, unregister, createEvent, deleteEvent } = useLiveEvents();
+  const queryClient = useQueryClient();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { topics, submitTopic } = useTopicSubmissions(selectedEventId);
   const [createOpen, setCreateOpen] = useState(false);
   const [topicDialogOpen, setTopicDialogOpen] = useState(false);
-  const [canBook, setCanBook] = useState<boolean>(true);
 
   const isStaff = effectiveRole ? STAFF_ROLES.includes(effectiveRole) : false;
+  const { eligibility, refetch: refetchEligibility } = useLiveCallEligibility();
 
-  // Check live-call booking eligibility (trial: 1x, active: unlimited, expired: 0)
+  // Staff bypasses all booking limits
+  const canBook = isStaff ? true : eligibility.can_book;
+  const reason = eligibility.reason;
+
+  // Refetch eligibility whenever events list changes (after register/unregister)
   useEffect(() => {
-    if (!user || isStaff) {
-      setCanBook(true);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const { data, error } = await supabase.rpc('can_book_live_call', { _user_id: user.id });
-      if (!cancelled && !error) setCanBook(Boolean(data));
-    })();
-    return () => { cancelled = true; };
-  }, [user, isStaff, profile?.live_call_used_at, profile?.subscription_status]);
+    refetchEligibility();
+  }, [events.length, refetchEligibility]);
 
-  const subStatus = (profile as any)?.subscription_status as string | undefined;
-  const trialUsed = Boolean((profile as any)?.live_call_used_at);
-  const showTrialLockBanner = !isStaff && subStatus === 'trialing' && trialUsed;
-  const showExpiredBanner = !isStaff && (subStatus === 'expired' || subStatus === 'canceled' || subStatus === 'past_due');
+  const handleRegister = async (eventId: string) => {
+    try {
+      await register(eventId);
+      // Re-fetch eligibility & profile so the trial-used flag propagates immediately
+      await Promise.all([
+        refetchEligibility(),
+        queryClient.invalidateQueries({ queryKey: ['profile'] }),
+      ]);
+    } catch (err) {
+      // toast handled inside the mutation
+    }
+  };
+
 
   // Form states for create event
   const [newTitle, setNewTitle] = useState('');
