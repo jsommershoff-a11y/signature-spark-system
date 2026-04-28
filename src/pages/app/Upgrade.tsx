@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
+import { useLiveCallEligibility } from '@/hooks/useLiveCallEligibility';
 import { SEOHead } from '@/components/landing/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,8 @@ import {
   Mail,
   Phone,
   BarChart3,
+  Ticket,
+  CheckCircle2,
 } from 'lucide-react';
 
 const LOCKED_FEATURES = [
