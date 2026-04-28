@@ -61,6 +61,7 @@ import EmailHub from "./pages/app/EmailHub";
 import InboxHub from "./pages/app/InboxHub";
 import Pricing from "./pages/app/Pricing";
 import Welcome from "./pages/app/Welcome";
+import Upgrade from "./pages/app/Upgrade";
 import CooCockpit from "./pages/app/CooCockpit";
 import PromptLibrary from "./pages/app/PromptLibrary";
 import ToolsDirectory from "./pages/app/ToolsDirectory";
@@ -192,6 +193,7 @@ const App = () => (
               <Route path="academy/*" element={<Academy />} />
               <Route path="contracts" element={<MyContracts />} />
               <Route path="pricing" element={<Pricing />} />
+              <Route path="upgrade" element={<Upgrade />} />
               <Route path="prompts" element={<PromptLibrary />} />
               <Route path="tools" element={<ToolsDirectory />} />
               <Route path="welcome" element={<Welcome />} />
