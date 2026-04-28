@@ -188,7 +188,7 @@ function ProductCard({ a }: { a: Automation }) {
               </Link>
             </Button>
             <Button asChild size="sm">
-              <Link to="/qualifizierung">
+              <Link to={`/qualifizierung?automation=${a.slug}`}>
                 Anfragen
                 <ArrowRight className="ml-1 h-3.5 w-3.5" />
               </Link>
