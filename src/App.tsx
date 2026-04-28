@@ -71,6 +71,8 @@ import ToolsDirectory from "./pages/app/ToolsDirectory";
 import LiveCallsCalendar from "./pages/app/LiveCallsCalendar";
 import AffiliateDashboard from "./pages/app/AffiliateDashboard";
 import Katalog from "./pages/app/Katalog";
+import ProductsHub from "./pages/app/ProductsHub";
+import ProductWorkspace from "./pages/app/ProductWorkspace";
 import { EmailConsentConfirm, EmailConsentRevoke } from "./pages/EmailConsent";
 import { ReferralTracker } from "./components/affiliate/ReferralTracker";
 
@@ -207,6 +209,8 @@ const App = () => (
               <Route path="welcome" element={<Welcome />} />
               <Route path="calendar" element={<LiveCallsCalendar />} />
               <Route path="affiliate" element={<AffiliateDashboard />} />
+              <Route path="produkte" element={<ProductsHub />} />
+              <Route path="produkte/:id" element={<ProductWorkspace />} />
 
               {/* Konsolidierung: members → customers */}
               <Route path="members" element={<Navigate to="/app/customers" replace />} />
