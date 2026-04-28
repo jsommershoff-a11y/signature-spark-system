@@ -38,16 +38,24 @@ interface LeadOption {
 }
 
 export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillName, prefillLeadId }: { open: boolean; onOpenChange: (o: boolean) => void; prefillEmail?: string; prefillName?: string; prefillLeadId?: string }) {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState(prefillEmail || '');
+  const [name, setName] = useState(prefillName || '');
   const [role, setRole] = useState<string>('member_basic');
   const [sending, setSending] = useState(false);
-  const [mode, setMode] = useState<'new' | 'lead'>('lead');
+  const [mode, setMode] = useState<'new' | 'lead'>(prefillLeadId ? 'new' : 'lead');
   const [leadSearch, setLeadSearch] = useState('');
   const [leadResults, setLeadResults] = useState<LeadOption[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedLead, setSelectedLead] = useState<LeadOption | null>(null);
   const { toast } = useToast();
+
+  // Sync prefill when dialog re-opens with new lead
+  useEffect(() => {
+    if (open) {
+      setEmail(prefillEmail || '');
+      setName(prefillName || '');
+    }
+  }, [open, prefillEmail, prefillName]);
 
   // Debounced lead search
   useEffect(() => {
