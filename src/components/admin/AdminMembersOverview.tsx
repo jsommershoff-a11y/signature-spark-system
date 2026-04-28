@@ -327,10 +327,35 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
                     Gmail war nicht verfügbar – {lastResult.provider === 'resend' ? 'Resend' : 'Outlook'} wurde als Fallback verwendet.
                   </p>
                 )}
-                {!lastResult.emailSent && lastResult.inviteLink && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Einladungslink wurde in die Zwischenablage kopiert.
-                  </p>
+                {lastResult.inviteLink && (
+                  <div className="mt-3 space-y-1">
+                    <Label className="text-xs">
+                      {lastResult.emailSent ? 'Einladungslink (zur Sicherheit)' : 'Einladungslink – bitte manuell weiterleiten'}
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={lastResult.inviteLink}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="text-xs font-mono bg-background"
+                      />
+                      <Button
+                        type="button"
+                        variant={linkCopied ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => copyLink(lastResult.inviteLink!)}
+                        className="gap-1.5 shrink-0"
+                      >
+                        {linkCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {linkCopied ? 'Kopiert' : 'Kopieren'}
+                      </Button>
+                    </div>
+                    {!lastResult.emailSent && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Link ist 7 Tage gültig. Versende ihn z. B. via WhatsApp, SMS oder persönlich.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
