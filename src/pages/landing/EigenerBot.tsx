@@ -19,6 +19,7 @@ import {
   Calendar, Phone, Wrench, Rocket, Repeat, ShieldCheck, Clock,
 } from 'lucide-react';
 import { getStoredRefCode } from '@/components/affiliate/ReferralTracker';
+import { DeliveryRoadmap } from '@/components/landing/DeliveryRoadmap';
 
 // ============================================================
 // Datenmodell für die 3 Wizard-Schritte
