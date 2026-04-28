@@ -242,6 +242,13 @@ Deno.serve(async (req) => {
         const body = extractBody(msg.payload);
         if (!body || body.length < 100) continue;
 
+        // Plausibility: must look like a meeting summary (saves AI tokens on false positives)
+        const lc = (subject + " " + from + " " + body.slice(0, 4000)).toLowerCase();
+        const isMeetingSummary =
+          /(zoom|fathom|fireflies|otter|tl;?dv|read\.ai|granola|krisp|avoma|loom|teams)/i.test(from) ||
+          /(meeting summary|zusammenfassung|besprechungs|action items|next steps|nächste schritte|ai companion|teilnehmer|participants|transcript|aufzeichnung)/i.test(lc);
+        if (!isMeetingSummary) continue;
+
         // AI extract
         const { extraction, tokens } = await aiExtract(body, subject);
         stats.parsed++;
