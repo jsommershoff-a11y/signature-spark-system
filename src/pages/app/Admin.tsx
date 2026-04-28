@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Activity, Mail, Plug, Download, GraduationCap, Tags, FileSpreadsheet } from 'lucide-react';
+import { Shield, Activity, Mail, Plug, Download, GraduationCap, Tags, FileSpreadsheet, Bot } from 'lucide-react';
 import AdminUserManagement from '@/components/admin/AdminUserManagement';
 import AdminLeadsTable from '@/components/admin/AdminLeadsTable';
 import AdminSystemLogs from '@/components/admin/AdminSystemLogs';
@@ -10,6 +10,7 @@ import AdminBackupExport from '@/components/admin/AdminBackupExport';
 import AdminMembersOverview from '@/components/admin/AdminMembersOverview';
 import AdminSlotClassificationRules from '@/components/admin/AdminSlotClassificationRules';
 import AdminDriveSync from '@/components/admin/AdminDriveSync';
+import { AdminZoomAutomation } from '@/components/admin/AdminZoomAutomation';
 
 export default function Admin() {
   return (
@@ -29,6 +30,7 @@ export default function Admin() {
           <TabsTrigger value="integrations" className="gap-1.5"><Plug className="h-3.5 w-3.5" /> Integrationen</TabsTrigger>
           <TabsTrigger value="slot-rules" className="gap-1.5"><Tags className="h-3.5 w-3.5" /> Slot-Regeln</TabsTrigger>
           <TabsTrigger value="drive-sync" className="gap-1.5"><FileSpreadsheet className="h-3.5 w-3.5" /> Drive-Sync</TabsTrigger>
+          <TabsTrigger value="zoom-auto" className="gap-1.5"><Bot className="h-3.5 w-3.5" /> Zoom-Auto</TabsTrigger>
           <TabsTrigger value="export" className="gap-1.5 col-span-2 sm:col-span-1"><Download className="h-3.5 w-3.5" /> Backup</TabsTrigger>
         </TabsList>
 
@@ -102,6 +104,10 @@ export default function Admin() {
 
         <TabsContent value="drive-sync">
           <AdminDriveSync />
+        </TabsContent>
+
+        <TabsContent value="zoom-auto">
+          <AdminZoomAutomation />
         </TabsContent>
 
         <TabsContent value="export">
