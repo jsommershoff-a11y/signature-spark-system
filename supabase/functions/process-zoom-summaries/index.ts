@@ -252,9 +252,9 @@ Deno.serve(async (req) => {
         for (const p of extraction.participants || []) {
           if (p.email) candidateEmails.add(p.email.toLowerCase());
         }
-        // body emails (filtered: skip zoom/fireflies/fathom internals)
+        // body emails (filtered: skip tool internals + own domains)
         extractEmails(body)
-          .filter((e) => !/(zoom\.us|fireflies\.ai|fathom\.video|fyi\.fyi|googleapis|noreply|no-reply)/i.test(e))
+          .filter((e) => !/(zoom\.us|fireflies\.ai|fathom\.video|fyi\.fyi|otter\.ai|tldv\.io|read\.ai|granola\.ai|krisp\.ai|avoma\.com|loom\.com|microsoft\.com|googleapis|noreply|no-reply|mailer-daemon|postmaster|ki-automationen\.io|krs-signature\.de)/i.test(e))
           .slice(0, 10)
           .forEach((e) => candidateEmails.add(e));
 
