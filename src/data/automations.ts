@@ -199,11 +199,11 @@ export const AUTOMATIONS: Automation[] = [
     stripeProduct: "prod_UOOZYMvZ1vXOCW",
     stripePrice: "price_1TPbmjGfeNRIZPeJ4fcdB50m",
     payLink: "https://buy.stripe.com/bJebJ1fxu4PI9Vpb6Gebu0g",
-    bundleNote: "Pflicht-Produkt vor EDU02. Monatsgebühr 899 €/Monat über 6 Monate"
+    bundleNote: "Pflicht-Produkt vor EDU02. Monatsbeitrag separat – Konditionen nach Erstgespräch."
   },
   {
     code: "EDU02", slug: "ki-profi-monatsbeitrag", name: "KI-Profi Programm — Monatsbeitrag",
-    subtitle: "6-monatiges Intensivprogramm · 899 €/Monat · Mindestlaufzeit 6 Monate",
+    subtitle: "6-monatiges Intensivprogramm · monatlicher Beitrag · Mindestlaufzeit 6 Monate",
     priceNet: 899, priceGrossVAT: 1070, leadDays: 0, category: "education", icon: "calendar",
     recurring: true, minMonths: 6,
     pain: "Online-Kurse sind passiv, Coachings oberflächlich, YouTube veraltet. Sie brauchen strukturierten Lernweg mit Use Cases aus Ihrem Alltag.",
