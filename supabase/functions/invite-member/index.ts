@@ -217,6 +217,7 @@ serve(async (req) => {
 
     // Fallback 1: Resend
     if (!emailSent && resendKey) {
+      triedProviders.push('resend');
       try {
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
