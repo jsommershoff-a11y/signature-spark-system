@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format, isPast, isFuture, addHours, isAfter } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { supabase } from '@/integrations/supabase/client';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveEvents, useTopicSubmissions } from '@/hooks/useLiveEvents';
+import { useLiveCallEligibility } from '@/hooks/useLiveCallEligibility';
+import { useQueryClient } from '@tanstack/react-query';
 import { STAFF_ROLES } from '@/lib/roles';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,37 +30,45 @@ import {
   Loader2,
   Trash2,
   CalendarDays,
+  Ticket,
+  Sparkles,
+  Lock,
 } from 'lucide-react';
 
 export default function LiveCallsCalendar() {
   const { effectiveRole, user, profile } = useAuth() as any;
   const { events, isLoading, register, unregister, createEvent, deleteEvent } = useLiveEvents();
+  const queryClient = useQueryClient();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { topics, submitTopic } = useTopicSubmissions(selectedEventId);
   const [createOpen, setCreateOpen] = useState(false);
   const [topicDialogOpen, setTopicDialogOpen] = useState(false);
-  const [canBook, setCanBook] = useState<boolean>(true);
 
   const isStaff = effectiveRole ? STAFF_ROLES.includes(effectiveRole) : false;
+  const { eligibility, refetch: refetchEligibility } = useLiveCallEligibility();
 
-  // Check live-call booking eligibility (trial: 1x, active: unlimited, expired: 0)
+  // Staff bypasses all booking limits
+  const canBook = isStaff ? true : eligibility.can_book;
+  const reason = eligibility.reason;
+
+  // Refetch eligibility whenever events list changes (after register/unregister)
   useEffect(() => {
-    if (!user || isStaff) {
-      setCanBook(true);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const { data, error } = await supabase.rpc('can_book_live_call', { _user_id: user.id });
-      if (!cancelled && !error) setCanBook(Boolean(data));
-    })();
-    return () => { cancelled = true; };
-  }, [user, isStaff, profile?.live_call_used_at, profile?.subscription_status]);
+    refetchEligibility();
+  }, [events.length, refetchEligibility]);
 
-  const subStatus = (profile as any)?.subscription_status as string | undefined;
-  const trialUsed = Boolean((profile as any)?.live_call_used_at);
-  const showTrialLockBanner = !isStaff && subStatus === 'trialing' && trialUsed;
-  const showExpiredBanner = !isStaff && (subStatus === 'expired' || subStatus === 'canceled' || subStatus === 'past_due');
+  const handleRegister = async (eventId: string) => {
+    try {
+      await register(eventId);
+      // Re-fetch eligibility & profile so the trial-used flag propagates immediately
+      await Promise.all([
+        refetchEligibility(),
+        queryClient.invalidateQueries({ queryKey: ['profile'] }),
+      ]);
+    } catch (err) {
+      // toast handled inside the mutation
+    }
+  };
+
 
   // Form states for create event
   const [newTitle, setNewTitle] = useState('');
@@ -170,24 +180,84 @@ export default function LiveCallsCalendar() {
         )}
       </div>
 
-      {/* Trial-/Status-Banner */}
-      {(showTrialLockBanner || showExpiredBanner) && (
+      {/* Eligibility-/Status-Banner */}
+      {!isStaff && reason === 'active' && (
+        <Card className="border-emerald-500/30 bg-emerald-500/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold">Mitgliedschaft aktiv – unbegrenzte Live-Calls</div>
+              <p className="text-xs text-muted-foreground">
+                Du kannst dich für alle aktuellen und kommenden Live-Sessions anmelden.
+              </p>
+            </div>
+            <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-600">Aktiv</Badge>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isStaff && reason === 'trial_available' && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4 flex items-start gap-3">
+            <Ticket className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold mb-0.5 flex items-center gap-2 flex-wrap">
+                Dein Trial-Ticket ist verfügbar
+                <Badge variant="secondary">1 Live-Call inklusive</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Du kannst dich während des 14-Tage-Trials für genau einen Live-Call anmelden.
+                Nach Upgrade auf 99 €/Monat sind alle Calls dauerhaft freigeschaltet.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isStaff && reason === 'trial_used' && (
         <Card className="border-amber-500/40 bg-amber-500/5">
           <CardContent className="p-4 flex items-start gap-3">
-            <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold mb-1">
-                {showTrialLockBanner
-                  ? 'Dein einmaliger Trial-Live-Call wurde bereits genutzt'
-                  : 'Live-Call-Buchung gesperrt'}
+                Dein Trial-Live-Call ist eingelöst
               </div>
-              <p className="text-xs text-muted-foreground mb-3">
-                {showTrialLockBanner
-                  ? 'Während des 14-Tage-Tests ist genau ein Live-Call enthalten. Mit einem Upgrade buchst du beliebig viele weitere Calls.'
-                  : 'Dein Zugang ist nicht aktiv. Schalte alle Live-Calls und Module mit einem Upgrade wieder frei.'}
+              <p className="text-xs text-muted-foreground mb-2">
+                {eligibility.used_event_title && eligibility.used_event_date
+                  ? <>Du bist für <span className="font-medium text-foreground">{eligibility.used_event_title}</span> am{' '}
+                      <span className="font-medium text-foreground">
+                        {format(new Date(eligibility.used_event_date), 'dd.MM.yyyy HH:mm', { locale: de })}
+                      </span> Uhr angemeldet. </>
+                  : null}
+                Mit einem Upgrade buchst du beliebig viele weitere Live-Calls.
               </p>
               <Button asChild size="sm">
-                <Link to="/app/pricing">Jetzt upgraden</Link>
+                <Link to="/app/dashboard">
+                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  Auf 99 €/Monat upgraden
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isStaff && (reason === 'expired' || reason === 'no_access') && (
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardContent className="p-4 flex items-start gap-3">
+            <Lock className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold mb-1">Live-Call-Buchung gesperrt</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                {reason === 'expired'
+                  ? 'Dein Trial bzw. deine Mitgliedschaft ist nicht mehr aktiv.'
+                  : 'Für die Buchung von Live-Calls brauchst du eine aktive Mitgliedschaft oder einen Trial-Zugang.'}
+              </p>
+              <Button asChild size="sm">
+                <Link to="/app/dashboard">
+                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  Mitgliedschaft starten
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -248,6 +318,11 @@ export default function LiveCallsCalendar() {
                         <Badge variant="outline" className="text-emerald-600 border-emerald-300">
                           <CheckCircle2 className="h-3 w-3 mr-1" /> Angemeldet
                         </Badge>
+                        {!isStaff && reason === 'trial_used' && eligibility.used_event_id === event.id && (
+                          <Badge variant="secondary" className="gap-1">
+                            <Ticket className="h-3 w-3" /> Trial-Ticket eingelöst
+                          </Badge>
+                        )}
                         <Button variant="ghost" size="sm" onClick={() => unregister(event.id)}>Abmelden</Button>
                         {event.meeting_url && event.status === 'live' && (
                           <Button size="sm" asChild>
@@ -257,17 +332,38 @@ export default function LiveCallsCalendar() {
                           </Button>
                         )}
                       </>
+                    ) : canBook ? (
+                      <Button size="sm" onClick={() => handleRegister(event.id)}>
+                        {!isStaff && reason === 'trial_available' ? (
+                          <>
+                            <Ticket className="h-3.5 w-3.5 mr-1.5" />
+                            Trial-Ticket einlösen
+                          </>
+                        ) : (
+                          <>
+                            <Users className="h-3.5 w-3.5 mr-1.5" />
+                            Anmelden
+                          </>
+                        )}
+                      </Button>
                     ) : (
                       <Button
                         size="sm"
-                        onClick={() => register(event.id)}
-                        disabled={!canBook}
-                        title={!canBook ? 'Trial-Buchung bereits genutzt – upgrade für unbegrenzte Live-Calls' : undefined}
+                        variant="outline"
+                        asChild
+                        title={
+                          reason === 'trial_used'
+                            ? 'Trial-Ticket bereits eingelöst – upgrade für unbegrenzte Live-Calls'
+                            : 'Aktive Mitgliedschaft erforderlich'
+                        }
                       >
-                        <Users className="h-3.5 w-3.5 mr-1.5" />
-                        {canBook ? 'Anmelden' : 'Upgrade nötig'}
+                        <Link to="/app/dashboard">
+                          <Lock className="h-3.5 w-3.5 mr-1.5" />
+                          Upgrade nötig
+                        </Link>
                       </Button>
                     )}
+
 
                     {canSubmitTopic(event.event_date) && (
                       <Dialog open={topicDialogOpen && selectedEventId === event.id} onOpenChange={(open) => { setTopicDialogOpen(open); if (open) setSelectedEventId(event.id); }}>
