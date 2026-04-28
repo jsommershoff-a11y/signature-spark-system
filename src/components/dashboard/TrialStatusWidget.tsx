@@ -94,15 +94,18 @@ export function TrialStatusWidget() {
   if (view.kind === 'active') {
     return (
       <Card className="border-green-500/20 bg-green-500/5">
-        <CardContent className="p-4 flex items-center gap-3">
-          <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium">Mitgliedschaft aktiv</div>
-            <div className="text-xs text-muted-foreground">
-              Voller Zugriff auf alle Module, Live-Calls und Inhalte.
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium">Mitgliedschaft aktiv</div>
+              <div className="text-xs text-muted-foreground">
+                Voller Zugriff auf alle Module, Live-Calls und Inhalte.
+              </div>
             </div>
+            <Badge variant="default" className="bg-green-600 hover:bg-green-600">Aktiv</Badge>
           </div>
-          <Badge variant="default" className="bg-green-600 hover:bg-green-600">Aktiv</Badge>
+          <LiveCallStatusRow eligibility={eligibility} compact />
         </CardContent>
       </Card>
     );
