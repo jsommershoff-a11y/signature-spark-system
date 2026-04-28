@@ -77,6 +77,7 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
       setEmail(prefillEmail || '');
       setName(prefillName || '');
       setLastResult(null);
+      setLinkCopied(false);
     }
   }, [open, prefillEmail, prefillName]);
 
