@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.stripe-subscription-webhook]
 verify_jwt = false
+
+[functions.sync-drive-leads]
+verify_jwt = false
