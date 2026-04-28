@@ -183,11 +183,38 @@ serve(async (req) => {
     `;
 
     let emailSent = false;
-    let emailProvider: 'resend' | 'outlook' | null = null;
+    let emailProvider: 'gmail' | 'resend' | 'outlook' | null = null;
     let emailError: string | null = null;
 
-    // Primary: Resend
-    if (resendKey) {
+    // Primary: Gmail (via connector gateway)
+    if (gmailKey && lovableKey) {
+      try {
+        const raw = buildGmailRaw(email, subject, emailHtml);
+        const res = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${lovableKey}`,
+            'X-Connection-Api-Key': gmailKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ raw }),
+        });
+        if (res.ok) {
+          emailSent = true;
+          emailProvider = 'gmail';
+          console.log('Invitation email sent via Gmail to:', email);
+        } else {
+          emailError = `Gmail ${res.status}: ${await res.text()}`;
+          console.error(emailError);
+        }
+      } catch (err) {
+        emailError = err instanceof Error ? err.message : String(err);
+        console.error('Gmail send error:', emailError);
+      }
+    }
+
+    // Fallback 1: Resend
+    if (!emailSent && resendKey) {
       try {
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -216,10 +243,10 @@ serve(async (req) => {
       }
     }
 
-    // Fallback: Outlook
+    // Fallback 2: Outlook
     if (!emailSent && outlookKey && lovableKey) {
       try {
-        const emailRes = await fetch(`${GATEWAY_URL}/me/sendMail`, {
+        const emailRes = await fetch(`${OUTLOOK_GATEWAY}/me/sendMail`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
