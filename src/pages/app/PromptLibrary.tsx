@@ -97,6 +97,7 @@ export default function PromptLibrary() {
                       key={prompt.id}
                       hasAccess={accessible}
                       requiredTier={prompt.min_tier === 'starter' ? 'Starter' : 'Growth'}
+                      moduleType="prompts"
                       variant="overlay"
                     >
                       <Card className={cn(

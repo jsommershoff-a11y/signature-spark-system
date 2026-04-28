@@ -65,6 +65,7 @@ export default function ToolsDirectory() {
                   key={tool.id}
                   hasAccess={accessible}
                   requiredTier={tool.min_tier === 'starter' ? 'Starter' : 'Growth'}
+                  moduleType="tools"
                   variant="overlay"
                 >
                   <Card className={cn(
