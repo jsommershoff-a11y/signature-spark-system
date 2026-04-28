@@ -310,9 +310,9 @@ export default function AutomatisierungDetail() {
             </div>
             <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center">
               <TrendingUp className="h-6 w-6 text-primary-light mx-auto mb-2" />
-              <div className="text-3xl font-bold text-white mb-1">2.000–5.000 €</div>
+              <div className="text-3xl font-bold text-white mb-1">1–2 FTE</div>
               <div className="text-xs text-white/70 uppercase tracking-wider">
-                Wertäquivalent / Monat
+                Personalentlastung pro Prozess
               </div>
             </div>
             <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-center">
