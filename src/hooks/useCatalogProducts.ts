@@ -23,6 +23,54 @@ export interface CatalogProduct {
   sort_order: number;
   created_at: string;
   updated_at: string;
+  // Workspace fields
+  description: string | null;
+  offer_template: string | null;
+  offer_prompt: string | null;
+  required_connectors: string[];
+  optional_connectors: string[];
+}
+
+export function useCatalogProduct(id?: string) {
+  return useQuery({
+    queryKey: ['catalog_products', 'one', id],
+    enabled: !!id,
+    queryFn: async (): Promise<CatalogProduct | null> => {
+      const { data, error } = await supabase
+        .from('catalog_products')
+        .select('*')
+        .eq('id', id!)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as unknown as CatalogProduct) ?? null;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+export function useUpdateProductWorkspace() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id: string;
+      description?: string | null;
+      offer_template?: string | null;
+      offer_prompt?: string | null;
+      required_connectors?: string[];
+      optional_connectors?: string[];
+    }) => {
+      const { id, ...patch } = input;
+      const { error } = await supabase
+        .from('catalog_products')
+        .update(patch)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['catalog_products'] });
+      qc.invalidateQueries({ queryKey: ['catalog_products', 'one', vars.id] });
+    },
+  });
 }
 
 const QK = ['catalog_products'] as const;
