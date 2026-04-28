@@ -292,6 +292,7 @@ serve(async (req) => {
         lead_converted: !!lead_id,
         email_sent: emailSent,
         email_provider: emailProvider,
+        tried_providers: triedProviders,
         email_error: emailSent ? null : emailError,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
