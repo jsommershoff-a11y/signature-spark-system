@@ -27,32 +27,32 @@ interface ObjectionFAQSectionProps {
  */
 export const COMMON_OBJECTIONS: ObjectionItem[] = [
   {
-    objection: "„Das ist mir zu teuer."",
+    objection: '\u201EDas ist mir zu teuer.\u201C',
     answer:
       "Verständlich – aber rechne ehrlich gegen: Eine MFA / Vorarbeiter / Sachbearbeiter kostet dich 4.000–6.000 € pro Monat – inklusive Lohnnebenkosten, Krankheitstage und Einarbeitung. Unsere Lösungen amortisieren sich in der Regel in weniger als 90 Tagen über die gesparten Personalstunden.",
   },
   {
-    objection: "„Wir haben gerade keine Zeit für so ein Projekt."",
+    objection: '\u201EWir haben gerade keine Zeit für so ein Projekt.\u201C',
     answer:
       "Genau dafür ist die Lösung gebaut. Dein Team-Aufwand liegt bei 1–2 h Onboarding und einer halben Stunde pro Woche. Wir bauen, wir testen, wir schulen – ihr nutzt nur das Ergebnis. Wer keine Zeit für Automatisierung hat, hat in 12 Monaten noch weniger.",
   },
   {
-    objection: "„Wir warten lieber, bis sich KI etabliert hat."",
+    objection: '\u201EWir warten lieber, bis sich KI etabliert hat.\u201C',
     answer:
       "Die Technologie ist seit über zwei Jahren produktionsreif. Wer jetzt nicht startet, verschiebt nicht das Risiko – sondern den Wettbewerbsvorsprung an die Konkurrenz, die schon umsetzt. In 12 Monaten ist KI in deiner Branche kein Vorteil mehr, sondern Pflicht.",
   },
   {
-    objection: "„Unsere Prozesse sind zu individuell für KI."",
+    objection: '\u201EUnsere Prozesse sind zu individuell für KI.\u201C',
     answer:
       "Genau das ist der häufigste Trugschluss. 80 % der Prozesse sind in jedem Mittelstand identisch (Anfragen, Termine, Angebote, Rechnungen, Service). Die restlichen 20 % bilden wir als Custom-Modul ab – das ist genau unsere Spezialität.",
   },
   {
-    objection: "„Was, wenn die KI Fehler macht?"",
+    objection: '\u201EWas, wenn die KI Fehler macht?\u201C',
     answer:
       "Jede produktive Automatisierung hat ein klares Eskalationsmodell: Bei Unsicherheit eskaliert die KI an einen Menschen, statt selbst zu entscheiden. Du behältst volle Kontrolle und alle Logs. Außerdem: 30 Tage Optimierungssupport sind inklusive.",
   },
   {
-    objection: "„Wir haben schon mal mit einer Agentur gearbeitet – das war ein Reinfall."",
+    objection: '\u201EWir haben schon mal mit einer Agentur gearbeitet – das war ein Reinfall.\u201C',
     answer:
       "Klassisch. Der Unterschied: Wir liefern Festpreis (kein Stundenfass), klare Roadmap (Tag 0–20), produktiven Code (kein PoC, der versandet) – und du bist in 7 Tagen live. Falls wir nicht liefern, zahlst du nicht.",
   },
