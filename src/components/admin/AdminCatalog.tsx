@@ -55,7 +55,8 @@ import {
   type CatalogCategory,
   type CatalogMode,
 } from '@/hooks/useCatalogProducts';
-import { Pencil, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { Pencil, Plus, Trash2, ExternalLink, Wand2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface FormState {
@@ -346,6 +347,11 @@ export default function AdminCatalog() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" asChild title="Arbeitsbereich öffnen (Prompt, Konnektoren)">
+                          <Link to={`/app/produkte/${p.id}`}>
+                            <Wand2 className="h-4 w-4" />
+                          </Link>
+                        </Button>
                         <Button variant="ghost" size="icon" asChild>
                           <a href={p.payment_link} target="_blank" rel="noopener noreferrer" title="Payment Link öffnen">
                             <ExternalLink className="h-4 w-4" />
