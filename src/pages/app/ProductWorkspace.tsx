@@ -41,7 +41,7 @@ export default function ProductWorkspace() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { hasMinRole } = useAuth();
-  const isStaff = hasMinRole('mitarbeiter');
+  const isStaff = hasMinRole('gruppenbetreuer');
 
   const { data: product, isLoading } = useCatalogProduct(id);
   const update = useUpdateProductWorkspace();

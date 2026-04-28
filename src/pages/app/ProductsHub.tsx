@@ -12,7 +12,7 @@ function fmtEUR(cents: number) {
 
 export default function ProductsHub() {
   const { hasMinRole } = useAuth();
-  const isStaff = hasMinRole('mitarbeiter');
+  const isStaff = hasMinRole('gruppenbetreuer');
   const { data: products = [], isLoading } = useCatalogProducts({ includeInactive: isStaff });
 
   if (isLoading) {
