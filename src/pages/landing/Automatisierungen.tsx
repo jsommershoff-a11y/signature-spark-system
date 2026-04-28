@@ -42,7 +42,7 @@ export default function Automatisierungen() {
     <PublicLayout>
       <SEOHead
         title="KI-Automationen bestellen – 13 fertige Produkte für KMU & Mittelstand"
-        description="Fertige KI-Automatisierungen für Praxen, Kanzleien, Handwerk und Dienstleister: Terminbot, Mail-Assistent, Lead-Qualifizierung, Voice-Agent. Festpreis, in 5–14 Tagen produktiv."
+        description="Fertige KI-Automatisierungen für Praxen, Kanzleien, Handwerk und Dienstleister: Terminbot, Mail-Assistent, Lead-Qualifizierung, Voice-Agent. Inklusive Einrichtung, in 5–14 Tagen produktiv. Preis auf Anfrage."
         canonical="/automatisierungen"
         jsonLd={itemListJsonLd}
       />
@@ -58,18 +58,19 @@ export default function Automatisierungen() {
               Automatisierungen, die ab Tag 1 entlasten.
             </h1>
             <p className="text-lg text-white/80 leading-relaxed mb-8">
-              Festpreis. Inklusive Einrichtung. In 5 bis 14 Tagen produktiv.
+              Inklusive Einrichtung. In 5 bis 14 Tagen produktiv.
               Du wählst aus, wir bauen ein – inklusive 30 Tagen Optimierungssupport.
+              Preis individuell auf Anfrage.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-primary hover:bg-primary-deep text-primary-foreground">
-                <a href="#katalog">
-                  Katalog ansehen
+                <Link to="/qualifizierung">
+                  Jetzt anfragen
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
+                </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10">
-                <Link to="/qualifizierung">Unverbindliche Analyse</Link>
+                <a href="#katalog">Katalog ansehen</a>
               </Button>
             </div>
           </div>
