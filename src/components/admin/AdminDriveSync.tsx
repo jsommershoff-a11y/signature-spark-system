@@ -86,6 +86,26 @@ export default function AdminDriveSync() {
     }
   }
 
+  async function sendTelegramTest(kind: "daily" | "weekly") {
+    setTestingTelegram(kind);
+    try {
+      const fnName = kind === "daily" ? "telegram-daily-summary" : "telegram-weekly-summary";
+      const { data, error } = await supabase.functions.invoke(fnName, {
+        body: { triggered_by: "manual" },
+      });
+      if (error) throw error;
+      if ((data as any)?.ok) {
+        toast.success(`${kind === "daily" ? "Tages" : "Wochen"}-Zusammenfassung verschickt`);
+      } else {
+        toast.error("Telegram-Test fehlgeschlagen: " + JSON.stringify(data));
+      }
+    } catch (e) {
+      toast.error("Fehler: " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setTestingTelegram(null);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
