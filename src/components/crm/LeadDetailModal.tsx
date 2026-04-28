@@ -213,16 +213,95 @@ export function LeadDetailModal({
               </Badge>
             </DialogTitle>
             {isAdmin && lead.email && (
-              <Button
-                size="sm"
-                variant="default"
-                className="gap-1.5 shrink-0"
-                onClick={() => setInviteOpen(true)}
-                title="Diesen Lead ins Portal einladen"
-              >
-                <UserPlus className="h-4 w-4" />
-                Ins Portal einladen
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="gap-1.5"
+                  onClick={() => setInviteOpen(true)}
+                  title="Diesen Lead ins Portal einladen"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Ins Portal einladen
+                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      title="Einladungs-Historie anzeigen"
+                    >
+                      <History className="h-4 w-4" />
+                      {invitations.length > 0 && (
+                        <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                          {invitations.length}
+                        </Badge>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-80 p-0">
+                    <div className="px-3 py-2 border-b">
+                      <p className="text-sm font-medium">Einladungs-Historie</p>
+                      <p className="text-xs text-muted-foreground">Letzte 10 Einladungen</p>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto">
+                      {invitesLoading ? (
+                        <div className="flex items-center justify-center py-6 text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
+                      ) : invitations.length === 0 ? (
+                        <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                          Noch keine Einladungen versendet
+                        </div>
+                      ) : (
+                        <ul className="divide-y">
+                          {invitations.map((inv) => {
+                            const { label, tone, Icon } = getInviteStatus(inv);
+                            const toneClass =
+                              tone === 'success'
+                                ? 'text-green-600 dark:text-green-500'
+                                : tone === 'warning'
+                                ? 'text-amber-600 dark:text-amber-500'
+                                : tone === 'destructive'
+                                ? 'text-destructive'
+                                : 'text-muted-foreground';
+                            return (
+                              <li key={inv.id} className="px-3 py-2 text-xs">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-medium truncate" title={inv.email}>
+                                    {inv.email}
+                                  </span>
+                                  <span className={`inline-flex items-center gap-1 ${toneClass}`}>
+                                    <Icon className="h-3 w-3" />
+                                    {label}
+                                  </span>
+                                </div>
+                                <div className="mt-1 flex items-center justify-between text-muted-foreground">
+                                  <span>
+                                    {new Date(inv.created_at).toLocaleString('de-DE', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </span>
+                                  {inv.accepted_at && (
+                                    <span>
+                                      ✓ {new Date(inv.accepted_at).toLocaleDateString('de-DE')}
+                                    </span>
+                                  )}
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             )}
           </div>
         </DialogHeader>
