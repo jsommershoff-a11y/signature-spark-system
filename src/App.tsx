@@ -245,6 +245,7 @@ const App = () => (
                 <Route path="subscriptions" element={<AdminSubscriptions />} />
                 <Route path="trials" element={<AdminTrials />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="upgrade-funnel" element={<AdminUpgradeFunnel />} />
               </Route>
               {/* Webhooks jetzt unter Admin-Settings als Tab */}
               <Route path="webhooks" element={<Navigate to="/app/admin/settings" replace />} />
