@@ -8,7 +8,26 @@ const corsHeaders = {
 };
 
 const RESEND_FROM = 'KI-Automationen <info@krs-signature.de>';
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/microsoft_outlook';
+const GMAIL_GATEWAY = 'https://connector-gateway.lovable.dev/google_mail/gmail/v1';
+const OUTLOOK_GATEWAY = 'https://connector-gateway.lovable.dev/microsoft_outlook';
+
+// Build RFC 2822 message and base64url-encode for Gmail
+function buildGmailRaw(to: string, subject: string, html: string, fromLabel = 'KI-Automationen'): string {
+  const headers = [
+    `From: ${fromLabel}`,
+    `To: ${to}`,
+    `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+  ].join('\r\n');
+  const message = `${headers}\r\n\r\n${html}`;
+  // Base64url encode (UTF-8 safe)
+  const bytes = new TextEncoder().encode(message);
+  let binary = '';
+  bytes.forEach((b) => { binary += String.fromCharCode(b); });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -25,6 +44,7 @@ serve(async (req) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const resendKey = Deno.env.get('RESEND_API_KEY');
+  const gmailKey = Deno.env.get('GOOGLE_MAIL_API_KEY');
   const outlookKey = Deno.env.get('MICROSOFT_OUTLOOK_API_KEY');
   const lovableKey = Deno.env.get('LOVABLE_API_KEY');
   const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
@@ -163,11 +183,38 @@ serve(async (req) => {
     `;
 
     let emailSent = false;
-    let emailProvider: 'resend' | 'outlook' | null = null;
+    let emailProvider: 'gmail' | 'resend' | 'outlook' | null = null;
     let emailError: string | null = null;
 
-    // Primary: Resend
-    if (resendKey) {
+    // Primary: Gmail (via connector gateway)
+    if (gmailKey && lovableKey) {
+      try {
+        const raw = buildGmailRaw(email, subject, emailHtml);
+        const res = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${lovableKey}`,
+            'X-Connection-Api-Key': gmailKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ raw }),
+        });
+        if (res.ok) {
+          emailSent = true;
+          emailProvider = 'gmail';
+          console.log('Invitation email sent via Gmail to:', email);
+        } else {
+          emailError = `Gmail ${res.status}: ${await res.text()}`;
+          console.error(emailError);
+        }
+      } catch (err) {
+        emailError = err instanceof Error ? err.message : String(err);
+        console.error('Gmail send error:', emailError);
+      }
+    }
+
+    // Fallback 1: Resend
+    if (!emailSent && resendKey) {
       try {
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -196,10 +243,10 @@ serve(async (req) => {
       }
     }
 
-    // Fallback: Outlook
+    // Fallback 2: Outlook
     if (!emailSent && outlookKey && lovableKey) {
       try {
-        const emailRes = await fetch(`${GATEWAY_URL}/me/sendMail`, {
+        const emailRes = await fetch(`${OUTLOOK_GATEWAY}/me/sendMail`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
