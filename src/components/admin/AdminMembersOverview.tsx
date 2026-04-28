@@ -359,6 +359,7 @@ function MembersListSection() {
                             <SelectItem value="churned">Gekündigt</SelectItem>
                           </SelectContent>
                         </Select>
+                        <ReinviteButton email={member.profile?.email} name={member.profile?.full_name} />
                         <InviteAffiliateButton profileId={member.profile_id} />
                       </div>
                     </TableCell>
