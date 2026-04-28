@@ -115,6 +115,24 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(supabaseUrl, serviceKey);
+
+  // Cron fires at multiple UTC slots; only proceed when Berlin hour == 18 (skip for cron, allow manual)
+  if (triggeredBy === "cron") {
+    const berlinHour = Number(
+      new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/Berlin",
+        hour: "2-digit",
+        hour12: false,
+      }).format(new Date()),
+    );
+    if (berlinHour !== 18) {
+      return new Response(
+        JSON.stringify({ ok: true, skipped: true, reason: `berlin_hour=${berlinHour}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+  }
+
   const sinceISO = startOfBerlinDayUTC();
 
   // Aggregate today's runs
