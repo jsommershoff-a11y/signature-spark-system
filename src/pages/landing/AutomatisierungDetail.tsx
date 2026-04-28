@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import NotFound from "@/pages/NotFound";
-import { AUTOMATIONS, formatPriceEUR } from "@/data/automations";
+import { AUTOMATIONS } from "@/data/automations";
 
 export default function AutomatisierungDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -26,7 +26,13 @@ export default function AutomatisierungDetail() {
       "@type": "Offer",
       url: `https://ki-automationen.io/automatisierungen/${product.slug}`,
       priceCurrency: "EUR",
-      price: product.priceNet,
+      price: "0",
+      priceSpecification: {
+        "@type": "PriceSpecification",
+        priceCurrency: "EUR",
+        valueAddedTaxIncluded: false,
+        description: "Preis auf Anfrage",
+      },
       availability: "https://schema.org/InStock",
       seller: { "@type": "Organization", name: "KRS Immobilien GmbH" },
     },
@@ -98,28 +104,25 @@ export default function AutomatisierungDetail() {
               </div>
             </div>
 
-            {/* Price card */}
+            {/* Anfrage-Karte */}
             <Card className="w-full md:w-72 bg-white text-foreground">
               <CardContent className="p-5">
-                <div className="text-xs text-muted-foreground mb-1">Festpreis</div>
-                <div className="text-3xl font-bold mb-0.5">
-                  {formatPriceEUR(product.priceNet)}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">
-                    netto{product.recurring ? " / Monat" : ""}
-                  </span>
+                <div className="text-xs text-muted-foreground mb-1">Investition</div>
+                <div className="text-2xl font-bold mb-1">
+                  Auf Anfrage
                 </div>
                 <div className="text-xs text-muted-foreground mb-4">
-                  ({formatPriceEUR(product.priceGrossVAT)} brutto, inkl. 19 % USt.)
+                  Individuelles Angebot nach kurzer Bedarfsanalyse.
                 </div>
                 <Button asChild size="lg" className="w-full bg-primary hover:bg-primary-deep">
-                  <a href={product.payLink} target="_blank" rel="noopener noreferrer">
-                    Jetzt bestellen
+                  <Link to="/qualifizierung">
+                    Jetzt anfragen
                     <ArrowRight className="ml-1.5 h-4 w-4" />
-                  </a>
+                  </Link>
                 </Button>
                 <p className="text-xs text-muted-foreground mt-3 text-center">
-                  Sichere Zahlung über Stripe.<br />
-                  Lastschrift, Kreditkarte, SEPA.
+                  Unverbindlich.<br />
+                  Antwort innerhalb von 24 h.
                 </p>
               </CardContent>
             </Card>
@@ -202,17 +205,13 @@ export default function AutomatisierungDetail() {
           {/* Final CTA */}
           <div className="text-center pt-4">
             <Button asChild size="lg" className="bg-primary hover:bg-primary-deep">
-              <a href={product.payLink} target="_blank" rel="noopener noreferrer">
-                {product.name} bestellen
+              <Link to="/qualifizierung">
+                {product.name} anfragen
                 <ArrowRight className="ml-1.5 h-4 w-4" />
-              </a>
+              </Link>
             </Button>
             <p className="text-xs text-muted-foreground mt-3">
-              Unsicher?{" "}
-              <Link to="/qualifizierung" className="underline hover:text-primary">
-                Buche eine kostenlose Analyse
-              </Link>
-              .
+              Du erhältst nach kurzer Bedarfsanalyse ein individuelles Angebot.
             </p>
           </div>
         </div>

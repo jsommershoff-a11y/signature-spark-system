@@ -6,7 +6,7 @@ import { SEOHead } from "@/components/landing/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AUTOMATIONS, type Automation, formatPriceEUR } from "@/data/automations";
+import { AUTOMATIONS, type Automation } from "@/data/automations";
 
 type Filter = "all" | "automation" | "education";
 
@@ -175,20 +175,24 @@ function ProductCard({ a }: { a: Automation }) {
 
         <div className="mt-auto pt-4 border-t flex items-end justify-between gap-3">
           <div>
-            <div className="text-xs text-muted-foreground">ab</div>
-            <div className="text-xl font-bold text-foreground">
-              {formatPriceEUR(a.priceNet)}
-              <span className="text-xs font-normal text-muted-foreground ml-1">
-                netto{a.recurring ? " / Monat" : ""}
-              </span>
+            <div className="text-xs text-muted-foreground">Investition</div>
+            <div className="text-base font-semibold text-foreground">
+              auf Anfrage
             </div>
           </div>
-          <Button asChild size="sm">
-            <Link to={`/automatisierungen/${a.slug}`}>
-              Details
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to={`/automatisierungen/${a.slug}`}>
+                Details
+              </Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link to="/qualifizierung">
+                Anfragen
+                <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
