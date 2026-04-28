@@ -251,6 +251,34 @@ Deno.serve(async (req) => {
       }
       await sendTelegram(lines.join("\n"));
     }
+
+    // Eskalation: 2+ failed runs in Folge pro Sheet
+    if (!body.dry_run) {
+      for (const r of results) {
+        if (r.status !== "failed") continue;
+        const { data: prev } = await supabase
+          .from("drive_sync_runs")
+          .select("status")
+          .eq("sheet_id", r.sheet_id)
+          .order("started_at", { ascending: false })
+          .limit(3);
+        const recent = (prev ?? []).map((x: any) => x.status);
+        // Most recent (this run) is included; check if last 2 are 'failed'
+        const last2Failed = recent.length >= 2 && recent[0] === "failed" && recent[1] === "failed";
+        if (last2Failed) {
+          await sendTelegram(
+            [
+              `<b>🚨 ESKALATION: 2x Drive-Sync fehlgeschlagen</b>`,
+              `Sheet: <code>${String(r.sheet_id).slice(0, 16)}…</code>`,
+              `Letzter Fehler:`,
+              `<code>${String(r.error ?? r.errors?.[0] ?? "unbekannt").slice(0, 400)}</code>`,
+              ``,
+              `Bitte prüfen: AdminDriveSync im Cockpit.`,
+            ].join("\n"),
+          );
+        }
+      }
+    }
   } catch (e) {
     console.error("telegram notify failed:", e);
   }
