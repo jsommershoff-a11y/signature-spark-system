@@ -28,6 +28,7 @@ import {
   Inbox,
   Lock,
   Rocket,
+  Package,
 } from 'lucide-react';
 
 interface NavItem {
@@ -75,6 +76,7 @@ const navGroups: NavGroup[] = [
       { label: 'Calls', href: '/app/calls', icon: Phone, staffOnly: true },
       { label: 'Angebote', href: '/app/offers', icon: FileText, staffOnly: true },
       { label: 'Kunden', href: '/app/customers', icon: Users, staffOnly: true },
+      { label: 'Produkte', href: '/app/produkte', icon: Package, staffOnly: true },
       { label: 'Ziele', href: '/app/goals', icon: Target, staffOnly: true },
     ],
   },
