@@ -58,11 +58,13 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Copy,
 } from 'lucide-react';
 import { InviteMemberDialog } from '@/components/admin/AdminMembersOverview';
 import { useAuth } from '@/contexts/AuthContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
+import { toast as sonnerToast } from 'sonner';
 
 type InvitationRow = {
   id: string;
