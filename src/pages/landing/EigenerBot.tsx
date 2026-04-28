@@ -19,6 +19,7 @@ import {
   Calendar, Phone, Wrench, Rocket, Repeat, ShieldCheck, Clock,
 } from 'lucide-react';
 import { getStoredRefCode } from '@/components/affiliate/ReferralTracker';
+import { DeliveryRoadmap } from '@/components/landing/DeliveryRoadmap';
 
 // ============================================================
 // Datenmodell für die 3 Wizard-Schritte
@@ -88,10 +89,10 @@ const CALL_PREFERENCES = [
 ];
 
 const ROADMAP = [
-  { day: 0, icon: Phone, title: 'Call 1 — Integration & Anbindung', desc: 'Wir legen gemeinsam fest, welche Systeme wir verbinden, Zugänge prüfen und den Tech-Setup starten.' },
-  { day: 5, icon: Rocket, title: 'Call 2 — Delivery & Planung', desc: 'Bot ist live in deiner Umgebung. Wir testen End-to-End und planen Rollout, Schulung und KPIs.' },
-  { day: 19, icon: Repeat, title: 'Call 3 — Prüfung & Optimierung', desc: 'Erste 2 Wochen Praxisdaten: was läuft, was hakt? Wir schärfen Prompts, Regeln und Trigger.' },
-  { day: 33, icon: ShieldCheck, title: 'Call 4 — Finale Abnahme', desc: 'Stabilität bestätigen, letzte Tunings, Dokumentation übergeben, ggf. Erweiterungen besprechen.' },
+  { day: 0, icon: Rocket, title: 'Call 1 — Kickoff & Anbindung', desc: 'Wir legen Systeme, Zugänge und Use-Case fest. Bau startet sofort.' },
+  { day: 7, icon: Phone, title: 'Call 2 — Delivery', desc: 'Bot ist live in deiner Umgebung. End-to-End getestet, einsatzbereit.' },
+  { day: 10, icon: Repeat, title: 'Call 3 — Setup-Check', desc: 'Wir prüfen den Setup gemeinsam und passen Prompts, Regeln, Trigger an.' },
+  { day: 20, icon: ShieldCheck, title: 'Call 4 — Optimierung', desc: 'Praxisdaten ausgewertet, finale Anpassungen, Dokumentation übergeben.' },
 ];
 
 const STEPS = ['Bot wählen', 'Systeme & Aufgabe', 'Kontakt & Call'];
@@ -207,10 +208,11 @@ export default function EigenerBot() {
         `**Wunsch-Zeitfenster Call 1:** ${state.callPreference}`,
         '',
         '— Roadmap (vom System auto-geplant): —',
-        '• Call 1 (Tag 0): Integration & Anbindung',
-        '• Call 2 (Tag 5): Delivery & Planung',
-        '• Call 3 (Tag ~19): Prüfung & Optimierung',
-        '• Call 4 (Tag ~33): Finale Abnahme',
+        '• Call 1 (Tag 0): Kickoff & Anbindung',
+        '• Call 2 (Tag 7): Delivery',
+        '• Call 3 (Tag 10): Setup-Check',
+        '• Call 4 (Tag 20): Optimierung',
+        '• Bugfixes innerhalb der Termine inklusive',
         '',
         '<!-- BOT_ORDER_JSON',
         JSON.stringify({
@@ -297,25 +299,10 @@ export default function EigenerBot() {
         </div>
 
         {/* Roadmap-Vorschau */}
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardContent className="p-5 md:p-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-primary mb-3">
-              Deine 4-Call-Roadmap
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              {ROADMAP.map((r, i) => (
-                <div key={i} className="rounded-xl bg-card border border-border/60 p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <r.icon className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-semibold">Tag {r.day === 0 ? '0' : `+${r.day}`}</span>
-                  </div>
-                  <div className="text-sm font-semibold">{r.title.split('—')[1]?.trim()}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{r.desc}</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <DeliveryRoadmap
+          title="Deine 4-Call-Roadmap"
+          subtitle="Tag 0 Kickoff → Tag 7 live → Tag 10 Check → Tag 20 Optimierung. Bugfixes inklusive."
+        />
 
         {/* Stepper */}
         <div className="space-y-2">
