@@ -140,28 +140,64 @@ serve(async (req) => {
     const appUrl = 'https://signature-spark-system.lovable.app';
     const inviteLink = `${appUrl}/auth?token=${token_str}`;
 
-    // Send email via Microsoft Outlook
-    if (outlookKey && lovableKey) {
-      const greeting = name ? `Hallo ${name}` : 'Hallo';
-      const emailHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-          <h1 style="color: #1a1a2e; font-size: 24px;">Einladung zum KI-Automationen Mitgliederbereich</h1>
-          <p style="color: #333; font-size: 16px; line-height: 1.6;">
-            ${greeting},<br><br>
-            Du wurdest zum KI-Automationen Mitgliederbereich eingeladen. Klicke auf den folgenden Link, um dein Konto zu erstellen und loszulegen:
-          </p>
-          <a href="${inviteLink}" style="display: inline-block; background-color: #F6711F; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 16px 0;">
-            Einladung annehmen
-          </a>
-          <p style="color: #666; font-size: 14px; line-height: 1.5; margin-top: 24px;">
-            Dieser Link ist 7 Tage gültig.<br>
-            Falls du diese Einladung nicht erwartet hast, kannst du diese E-Mail ignorieren.
-          </p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
-          <p style="color: #999; font-size: 12px;">KI-Automationen – Automatisierung für Unternehmen</p>
-        </div>
-      `;
+    // Build email content (shared by Resend + Outlook)
+    const greeting = name ? `Hallo ${name}` : 'Hallo';
+    const subject = 'Deine Einladung zum KI-Automationen Mitgliederbereich';
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+        <h1 style="color: #1a1a2e; font-size: 24px;">Einladung zum KI-Automationen Mitgliederbereich</h1>
+        <p style="color: #333; font-size: 16px; line-height: 1.6;">
+          ${greeting},<br><br>
+          Du wurdest zum KI-Automationen Mitgliederbereich eingeladen. Klicke auf den folgenden Link, um dein Konto zu erstellen und loszulegen:
+        </p>
+        <a href="${inviteLink}" style="display: inline-block; background-color: #F6711F; color: white; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 16px 0;">
+          Einladung annehmen
+        </a>
+        <p style="color: #666; font-size: 14px; line-height: 1.5; margin-top: 24px;">
+          Dieser Link ist 7 Tage gültig.<br>
+          Falls du diese Einladung nicht erwartet hast, kannst du diese E-Mail ignorieren.
+        </p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+        <p style="color: #999; font-size: 12px;">KI-Automationen – Automatisierung für Unternehmen</p>
+      </div>
+    `;
 
+    let emailSent = false;
+    let emailProvider: 'resend' | 'outlook' | null = null;
+    let emailError: string | null = null;
+
+    // Primary: Resend
+    if (resendKey) {
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: RESEND_FROM,
+            to: [email],
+            subject,
+            html: emailHtml,
+          }),
+        });
+        if (res.ok) {
+          emailSent = true;
+          emailProvider = 'resend';
+          console.log('Invitation email sent via Resend to:', email);
+        } else {
+          emailError = `Resend ${res.status}: ${await res.text()}`;
+          console.error(emailError);
+        }
+      } catch (err) {
+        emailError = err instanceof Error ? err.message : String(err);
+        console.error('Resend send error:', emailError);
+      }
+    }
+
+    // Fallback: Outlook
+    if (!emailSent && outlookKey && lovableKey) {
       try {
         const emailRes = await fetch(`${GATEWAY_URL}/me/sendMail`, {
           method: 'POST',
@@ -172,29 +208,41 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             message: {
-              subject: 'Deine Einladung zum KI-Automationen Mitgliederbereich',
+              subject,
               body: { contentType: 'HTML', content: emailHtml },
               toRecipients: [{ emailAddress: { address: email } }],
             },
             saveToSentItems: true,
           }),
         });
-
-        if (!emailRes.ok) {
-          const errText = await emailRes.text();
-          console.error('Outlook send failed:', emailRes.status, errText);
-        } else {
+        if (emailRes.ok) {
+          emailSent = true;
+          emailProvider = 'outlook';
           console.log('Invitation email sent via Outlook to:', email);
+        } else {
+          emailError = `Outlook ${emailRes.status}: ${await emailRes.text()}`;
+          console.error(emailError);
         }
       } catch (emailErr) {
-        console.error('Outlook send error:', emailErr);
+        emailError = emailErr instanceof Error ? emailErr.message : String(emailErr);
+        console.error('Outlook send error:', emailError);
       }
-    } else {
-      console.warn('MICROSOFT_OUTLOOK_API_KEY or LOVABLE_API_KEY not set, skipping email');
+    }
+
+    if (!emailSent) {
+      console.warn('No email provider available or all failed. Returning invite_link for manual delivery.');
     }
 
     return new Response(
-      JSON.stringify({ success: true, invitation_id: invitation.id, invite_link: inviteLink, lead_converted: !!lead_id }),
+      JSON.stringify({
+        success: true,
+        invitation_id: invitation.id,
+        invite_link: inviteLink,
+        lead_converted: !!lead_id,
+        email_sent: emailSent,
+        email_provider: emailProvider,
+        email_error: emailSent ? null : emailError,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
