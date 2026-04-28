@@ -180,24 +180,84 @@ export default function LiveCallsCalendar() {
         )}
       </div>
 
-      {/* Trial-/Status-Banner */}
-      {(showTrialLockBanner || showExpiredBanner) && (
+      {/* Eligibility-/Status-Banner */}
+      {!isStaff && reason === 'active' && (
+        <Card className="border-emerald-500/30 bg-emerald-500/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold">Mitgliedschaft aktiv – unbegrenzte Live-Calls</div>
+              <p className="text-xs text-muted-foreground">
+                Du kannst dich für alle aktuellen und kommenden Live-Sessions anmelden.
+              </p>
+            </div>
+            <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-600">Aktiv</Badge>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isStaff && reason === 'trial_available' && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4 flex items-start gap-3">
+            <Ticket className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold mb-0.5 flex items-center gap-2 flex-wrap">
+                Dein Trial-Ticket ist verfügbar
+                <Badge variant="secondary">1 Live-Call inklusive</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Du kannst dich während des 14-Tage-Trials für genau einen Live-Call anmelden.
+                Nach Upgrade auf 99 €/Monat sind alle Calls dauerhaft freigeschaltet.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isStaff && reason === 'trial_used' && (
         <Card className="border-amber-500/40 bg-amber-500/5">
           <CardContent className="p-4 flex items-start gap-3">
-            <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold mb-1">
-                {showTrialLockBanner
-                  ? 'Dein einmaliger Trial-Live-Call wurde bereits genutzt'
-                  : 'Live-Call-Buchung gesperrt'}
+                Dein Trial-Live-Call ist eingelöst
               </div>
-              <p className="text-xs text-muted-foreground mb-3">
-                {showTrialLockBanner
-                  ? 'Während des 14-Tage-Tests ist genau ein Live-Call enthalten. Mit einem Upgrade buchst du beliebig viele weitere Calls.'
-                  : 'Dein Zugang ist nicht aktiv. Schalte alle Live-Calls und Module mit einem Upgrade wieder frei.'}
+              <p className="text-xs text-muted-foreground mb-2">
+                {eligibility.used_event_title && eligibility.used_event_date
+                  ? <>Du bist für <span className="font-medium text-foreground">{eligibility.used_event_title}</span> am{' '}
+                      <span className="font-medium text-foreground">
+                        {format(new Date(eligibility.used_event_date), 'dd.MM.yyyy HH:mm', { locale: de })}
+                      </span> Uhr angemeldet. </>
+                  : null}
+                Mit einem Upgrade buchst du beliebig viele weitere Live-Calls.
               </p>
               <Button asChild size="sm">
-                <Link to="/app/pricing">Jetzt upgraden</Link>
+                <Link to="/app/dashboard">
+                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  Auf 99 €/Monat upgraden
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isStaff && (reason === 'expired' || reason === 'no_access') && (
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardContent className="p-4 flex items-start gap-3">
+            <Lock className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold mb-1">Live-Call-Buchung gesperrt</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                {reason === 'expired'
+                  ? 'Dein Trial bzw. deine Mitgliedschaft ist nicht mehr aktiv.'
+                  : 'Für die Buchung von Live-Calls brauchst du eine aktive Mitgliedschaft oder einen Trial-Zugang.'}
+              </p>
+              <Button asChild size="sm">
+                <Link to="/app/dashboard">
+                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  Mitgliedschaft starten
+                </Link>
               </Button>
             </div>
           </CardContent>
