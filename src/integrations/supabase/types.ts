@@ -2890,6 +2890,8 @@ export type Database = {
           primary_goal: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          subscription_cancel_at: string | null
+          subscription_current_period_end: string | null
           subscription_status: string
           team_id: string | null
           trial_ends_at: string | null
@@ -2913,6 +2915,8 @@ export type Database = {
           primary_goal?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_cancel_at?: string | null
+          subscription_current_period_end?: string | null
           subscription_status?: string
           team_id?: string | null
           trial_ends_at?: string | null
@@ -2936,6 +2940,8 @@ export type Database = {
           primary_goal?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_cancel_at?: string | null
+          subscription_current_period_end?: string | null
           subscription_status?: string
           team_id?: string | null
           trial_ends_at?: string | null
@@ -3896,6 +3902,19 @@ export type Database = {
           trial_ends_at: string
           trial_started_at: string
         }[]
+      }
+      sync_stripe_subscription: {
+        Args: {
+          _cancel_at: string
+          _current_period_end: string
+          _email: string
+          _status: string
+          _stripe_customer_id: string
+          _stripe_subscription_id: string
+          _trial_end: string
+          _trial_start: string
+        }
+        Returns: string
       }
       update_slot_for_google_event: {
         Args: {
