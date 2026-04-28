@@ -403,6 +403,9 @@ export default function AutomatisierungDetail() {
         </div>
       </section>
 
+      {/* Einwand-FAQ */}
+      <ObjectionFAQSection />
+
       {/* Final CTA */}
       <section className="bg-[#FFF3EB] py-14">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
