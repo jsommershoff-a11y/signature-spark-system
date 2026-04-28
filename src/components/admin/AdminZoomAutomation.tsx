@@ -179,6 +179,7 @@ export function AdminZoomAutomation() {
                               Öffnen
                             </Button>
                           </div>
+                        </div>
                       ))}
                     </div>
                   )}
