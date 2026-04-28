@@ -40,6 +40,7 @@ export default function AdminDriveSync() {
   const [runs, setRuns] = useState<SyncRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [testingTelegram, setTestingTelegram] = useState<"daily" | "weekly" | null>(null);
 
   async function load() {
     setLoading(true);
