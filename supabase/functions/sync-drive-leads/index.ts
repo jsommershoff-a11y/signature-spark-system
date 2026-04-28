@@ -122,6 +122,29 @@ async function callSheets(path: string, init?: RequestInit) {
   return text ? JSON.parse(text) : {};
 }
 
+async function sendTelegram(text: string): Promise<void> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const TELEGRAM_API_KEY = Deno.env.get("TELEGRAM_API_KEY");
+  const chatId = Deno.env.get("TELEGRAM_NOTIFY_CHAT_ID");
+  if (!LOVABLE_API_KEY || !TELEGRAM_API_KEY || !chatId) {
+    console.warn("telegram notify skipped: missing env");
+    return;
+  }
+  const res = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "X-Connection-Api-Key": TELEGRAM_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`telegram ${res.status}: ${t.slice(0, 300)}`);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST")
@@ -208,6 +231,28 @@ Deno.serve(async (req) => {
   for (const cfg of sheetsToSync) {
     const r = await syncOneSheet(supabase, cfg.sheet_id, cfg.tab_name, triggeredBy, !!body.dry_run);
     results.push(r);
+  }
+
+  // Telegram notify: only when new leads or errors
+  try {
+    const totalInserted = results.reduce((a, r) => a + (r.inserted ?? 0), 0);
+    const failed = results.filter((r) => r.status === "failed" || r.status === "completed_with_errors");
+    if (!body.dry_run && (totalInserted > 0 || failed.length > 0)) {
+      const lines = [
+        `<b>📥 Drive-Sync (${triggeredBy})</b>`,
+        `Sheets: ${results.length} · Neu: <b>${totalInserted}</b>`,
+      ];
+      for (const r of results) {
+        lines.push(
+          `• <code>${(r.sheet_id ?? "").slice(0, 10)}…</code> ${r.status} · ins:${r.inserted ?? 0} dup:${r.skippedDedupe ?? 0} inv:${r.skippedInvalid ?? 0}`,
+        );
+        if (r.errors?.length) lines.push(`  ⚠️ ${String(r.errors[0]).slice(0, 160)}`);
+        if (r.error) lines.push(`  ❌ ${String(r.error).slice(0, 160)}`);
+      }
+      await sendTelegram(lines.join("\n"));
+    }
+  } catch (e) {
+    console.error("telegram notify failed:", e);
   }
 
   return new Response(JSON.stringify({ ok: true, results }), {
