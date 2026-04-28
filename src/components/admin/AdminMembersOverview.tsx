@@ -37,7 +37,7 @@ interface LeadOption {
   pipeline_item?: { stage: string }[];
 }
 
-function InviteMemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillName, prefillLeadId }: { open: boolean; onOpenChange: (o: boolean) => void; prefillEmail?: string; prefillName?: string; prefillLeadId?: string }) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState<string>('member_basic');
