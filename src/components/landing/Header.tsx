@@ -65,13 +65,30 @@ export const Header = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            
-            <Link to="/qualifizierung">
-              <Button 
-                size="sm" 
+
+            <Link
+              to="/automatisierungen"
+              className="text-white/80 hover:text-white transition-colors font-medium text-sm"
+            >
+              Produkte
+            </Link>
+
+            <Link to="/automatisierungen">
+              <Button
+                size="sm"
                 className="bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary text-primary-foreground font-semibold shadow-[0_0_20px_rgba(246,113,31,0.2)] hover:shadow-[0_0_30px_rgba(246,113,31,0.35)] transition-all duration-300"
               >
-                Kostenlose Potenzial-Analyse
+                Automatisierungen bestellen
+              </Button>
+            </Link>
+
+            <Link to="/qualifizierung">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white/80 hover:text-white hover:bg-white/10 font-medium"
+              >
+                Kostenlose Analyse
               </Button>
             </Link>
 
@@ -116,6 +133,14 @@ export const Header = () => {
                 </Collapsible>
 
                 <Link
+                  to="/automatisierungen"
+                  onClick={() => setIsOpen(false)}
+                  className="py-2 text-lg font-medium hover:text-primary transition-colors"
+                >
+                  Produkte & Automatisierungen
+                </Link>
+
+                <Link
                   to="/auth"
                   onClick={() => setIsOpen(false)}
                   className="py-2 text-lg font-medium hover:text-primary transition-colors flex items-center gap-2"
@@ -124,16 +149,29 @@ export const Header = () => {
                   Anmelden
                 </Link>
 
-                <Link 
-                  to="/qualifizierung" 
+                <Link
+                  to="/automatisierungen"
                   onClick={() => setIsOpen(false)}
                   className="mt-4"
                 >
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary-deep hover:to-primary"
                   >
-                    Kostenlose Potenzial-Analyse
+                    Automatisierungen bestellen
+                  </Button>
+                </Link>
+
+                <Link
+                  to="/qualifizierung"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Kostenlose Analyse
                   </Button>
                 </Link>
               </nav>

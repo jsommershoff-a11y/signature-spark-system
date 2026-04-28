@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://ki-automationen.io/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen</loc><changefreq>weekly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-terminbot</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-email-assistent</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-lead-qualifizierer</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-angebots-generator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-call-summary</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-dokumenten-extraktion</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-content-maschine</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-bewerber-screening</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-kundenservice-bot</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-reporting-bot</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-rechnungs-assistent</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-voice-assistent-empfang</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-post-assistent</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-profi-kickoff</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ki-automationen.io/automatisierungen/ki-profi-monatsbeitrag</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://ki-automationen.io/handwerk</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://ki-automationen.io/praxen</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://ki-automationen.io/dienstleister</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
