@@ -52,6 +52,8 @@ function pct(v: number | null) {
 
 export default function AdminUpgradeFunnel() {
   const [range, setRange] = useState<Range>('30d');
+  const [moduleFilter, setModuleFilter] = useState<string>('all');
+  const [tierFilter, setTierFilter] = useState<string>('all');
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['upgrade-funnel-stats', range],
