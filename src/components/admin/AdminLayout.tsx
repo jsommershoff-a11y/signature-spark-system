@@ -7,6 +7,7 @@ import {
   CreditCard,
   Clock,
   Settings as SettingsIcon,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ const adminNav = [
   { label: "Kunden", href: "/app/admin/customers", icon: Building2 },
   { label: "Abos", href: "/app/admin/subscriptions", icon: CreditCard },
   { label: "Trials", href: "/app/admin/trials", icon: Clock },
+  { label: "Upgrade-Funnel", href: "/app/admin/upgrade-funnel", icon: TrendingUp },
   { label: "Einstellungen", href: "/app/admin/settings", icon: SettingsIcon },
 ];
 
