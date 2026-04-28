@@ -70,6 +70,10 @@ type InvitationRow = {
   created_at: string;
   expires_at: string | null;
   accepted_at: string | null;
+  invite_link: string | null;
+  email_provider: string | null;
+  email_sent: boolean | null;
+  email_error: string | null;
 };
 
 function getInviteStatus(inv: InvitationRow): { label: string; tone: 'success' | 'warning' | 'destructive' | 'muted'; Icon: typeof CheckCircle2 } {
