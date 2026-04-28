@@ -4,8 +4,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
+import { Clock, CheckCircle2, AlertTriangle, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const TRIAL_LENGTH_DAYS = 14; // Standard-Trial-Länge (für Fortschrittsbalken)
 
@@ -25,12 +27,32 @@ function formatRemaining(ms: number): string {
 export function TrialStatusWidget() {
   const { profile } = useAuth();
   const [now, setNow] = useState<number>(() => Date.now());
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   // Tick once per second so the countdown updates live
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, []);
+
+  const startCheckout = async (skipTrial: boolean) => {
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('start-membership-checkout', {
+        body: { skipTrial },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('Keine Checkout-URL erhalten');
+      }
+    } catch (err: any) {
+      console.error('[TrialStatusWidget] Checkout error', err);
+      toast.error(err?.message || 'Checkout konnte nicht gestartet werden');
+      setCheckoutLoading(false);
+    }
+  };
 
   const status = (profile as any)?.subscription_status as string | undefined;
   const trialEndsAt = (profile as any)?.trial_ends_at as string | null | undefined;
@@ -112,12 +134,19 @@ export function TrialStatusWidget() {
           </div>
           <Progress value={view.percent} className="h-1.5" />
           <div className="flex flex-wrap gap-2 pt-1">
-            <Button asChild size="sm" variant={urgent ? 'default' : 'outline'}>
-              <Link to="/app/pricing">
+            <Button
+              size="sm"
+              variant={urgent ? 'default' : 'outline'}
+              onClick={() => startCheckout(false)}
+              disabled={checkoutLoading}
+            >
+              {checkoutLoading ? (
+                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+              ) : (
                 <Sparkles className="h-4 w-4 mr-1.5" />
-                Jetzt upgraden
-                <ArrowRight className="h-3.5 w-3.5 ml-1" />
-              </Link>
+              )}
+              Jetzt für 99 €/Monat sichern
+              <ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
             <Button asChild size="sm" variant="ghost">
               <Link to="/app/calendar">Letzten Live-Call buchen</Link>
@@ -145,17 +174,19 @@ export function TrialStatusWidget() {
                     {new Date(view.endIso).toLocaleDateString('de-DE')}
                   </span>. </>
                 : null}
-              Schalte alle Module, Live-Calls und Vorlagen mit einem Upgrade wieder frei.
+              Schalte alle Module, Live-Calls und Vorlagen für 99 €/Monat wieder frei.
             </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm">
-            <Link to="/app/pricing">
+          <Button size="sm" onClick={() => startCheckout(true)} disabled={checkoutLoading}>
+            {checkoutLoading ? (
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+            ) : (
               <Sparkles className="h-4 w-4 mr-1.5" />
-              Pakete ansehen & upgraden
-              <ArrowRight className="h-3.5 w-3.5 ml-1" />
-            </Link>
+            )}
+            Mitgliedschaft starten – 99 €/Monat
+            <ArrowRight className="h-3.5 w-3.5 ml-1" />
           </Button>
         </div>
       </CardContent>
