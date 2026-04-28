@@ -57,7 +57,19 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
     recipient: string;
     timestamp: number;
   } | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const { toast } = useToast();
+
+  const copyLink = async (link: string) => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setLinkCopied(true);
+      sonnerToast.success('Einladungslink kopiert');
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      sonnerToast.error('Kopieren fehlgeschlagen – Link bitte manuell markieren.');
+    }
+  };
 
   // Sync prefill when dialog re-opens with new lead
   useEffect(() => {
