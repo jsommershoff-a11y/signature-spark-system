@@ -299,6 +299,35 @@ export function LeadDetailModal({
                                     </span>
                                   )}
                                 </div>
+                                <div className="mt-1.5 flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                    {inv.email_sent === false ? (
+                                      <span className="text-destructive">Mail nicht versendet</span>
+                                    ) : inv.email_provider ? (
+                                      <span>via {inv.email_provider}</span>
+                                    ) : null}
+                                  </div>
+                                  {inv.invite_link && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-2 gap-1 text-[10px]"
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        try {
+                                          await navigator.clipboard.writeText(inv.invite_link!);
+                                          sonnerToast.success('Einladungslink kopiert');
+                                        } catch {
+                                          sonnerToast.error('Kopieren fehlgeschlagen');
+                                        }
+                                      }}
+                                    >
+                                      <Copy className="h-3 w-3" />
+                                      Link kopieren
+                                    </Button>
+                                  )}
+                                </div>
                               </li>
                             );
                           })}
