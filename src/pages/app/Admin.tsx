@@ -100,6 +100,10 @@ export default function Admin() {
           <AdminSlotClassificationRules />
         </TabsContent>
 
+        <TabsContent value="drive-sync">
+          <AdminDriveSync />
+        </TabsContent>
+
         <TabsContent value="export">
           <Card>
             <CardHeader>
