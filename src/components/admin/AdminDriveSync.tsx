@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { RefreshCw, ExternalLink, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { RefreshCw, ExternalLink, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2, Send, CalendarRange } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -40,6 +40,7 @@ export default function AdminDriveSync() {
   const [runs, setRuns] = useState<SyncRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [testingTelegram, setTestingTelegram] = useState<"daily" | "weekly" | null>(null);
 
   async function load() {
     setLoading(true);
@@ -85,6 +86,26 @@ export default function AdminDriveSync() {
     }
   }
 
+  async function sendTelegramTest(kind: "daily" | "weekly") {
+    setTestingTelegram(kind);
+    try {
+      const fnName = kind === "daily" ? "telegram-daily-summary" : "telegram-weekly-summary";
+      const { data, error } = await supabase.functions.invoke(fnName, {
+        body: { triggered_by: "manual" },
+      });
+      if (error) throw error;
+      if ((data as any)?.ok) {
+        toast.success(`${kind === "daily" ? "Tages" : "Wochen"}-Zusammenfassung verschickt`);
+      } else {
+        toast.error("Telegram-Test fehlgeschlagen: " + JSON.stringify(data));
+      }
+    } catch (e) {
+      toast.error("Fehler: " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setTestingTelegram(null);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -97,6 +118,34 @@ export default function AdminDriveSync() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="flex flex-wrap gap-2 border-b pb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => sendTelegramTest("daily")}
+            disabled={testingTelegram !== null}
+          >
+            {testingTelegram === "daily" ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
+            Telegram: Tages-Test senden
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => sendTelegramTest("weekly")}
+            disabled={testingTelegram !== null}
+          >
+            {testingTelegram === "weekly" ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <CalendarRange className="h-4 w-4 mr-2" />
+            )}
+            Telegram: Wochen-Test senden
+          </Button>
+        </div>
         {loading ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> lade...
