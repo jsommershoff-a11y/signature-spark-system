@@ -3775,6 +3775,19 @@ export type Database = {
           phone: string
         }[]
       }
+      get_live_call_eligibility: {
+        Args: { _user_id?: string }
+        Returns: {
+          can_book: boolean
+          live_call_used_at: string
+          reason: string
+          subscription_status: string
+          trial_ends_at: string
+          used_event_date: string
+          used_event_id: string
+          used_event_title: string
+        }[]
+      }
       get_offer_by_public_token: {
         Args: { _token: string }
         Returns: {
