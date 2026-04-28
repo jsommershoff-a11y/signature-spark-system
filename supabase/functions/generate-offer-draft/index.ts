@@ -299,6 +299,9 @@ ${(catalog || []).map((p: any) => {
 
     const status = qaPassed ? "review_required" : "correction";
 
+    const ps = draft.pricing_strategy || {};
+    const breakdown = Array.isArray(draft.price_breakdown) ? draft.price_breakdown : [];
+
     const { data: inserted } = await supabase
       .from("offer_drafts")
       .insert({
@@ -311,10 +314,14 @@ ${(catalog || []).map((p: any) => {
         is_custom_solution: draft.is_custom_solution,
         required_connectors: draft.required_connectors,
         internal_cost_analysis: draft.internal_cost_analysis,
-        pricing_strategy: draft.pricing_strategy,
-        suggested_price_cents: Math.round((draft.pricing_strategy.suggested_price_eur || 0) * 100),
-        min_price_cents: Math.round((draft.pricing_strategy.min_price_eur || 0) * 100),
-        margin_percent: draft.pricing_strategy.margin_percent,
+        pricing_strategy: ps,
+        price_breakdown: breakdown,
+        catalog_subtotal_cents: Math.round((ps.catalog_subtotal_eur || 0) * 100),
+        adjustments_subtotal_cents: Math.round((ps.adjustments_subtotal_eur || 0) * 100),
+        custom_subtotal_cents: Math.round((ps.custom_subtotal_eur || 0) * 100),
+        suggested_price_cents: Math.round((ps.suggested_price_eur || 0) * 100),
+        min_price_cents: Math.round((ps.min_price_eur || 0) * 100),
+        margin_percent: ps.margin_percent,
         benefit_analysis: draft.benefit_analysis,
         client_inputs_required: draft.client_inputs_required,
         qa_checks: draft.qa_checks,
