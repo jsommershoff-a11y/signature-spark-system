@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 
 type ModuleType = 'prompts' | 'tools' | 'lessons' | 'community' | 'generic';
 
@@ -92,6 +93,15 @@ export function LockedContent({
 
   const reason = buildReason(moduleType, requiredTier, benefits);
 
+  const logUpgradeClick = (placement: 'card' | 'overlay' | 'compare') => {
+    void trackEvent('upgrade_cta_click', {
+      moduleType,
+      requiredTier,
+      placement,
+      variant,
+    });
+  };
+
   if (variant === 'card') {
     return (
       <Card className={cn('relative overflow-hidden border-dashed', className)}>
@@ -119,13 +129,13 @@ export function LockedContent({
 
           <div className="flex flex-col sm:flex-row gap-2 justify-center pt-1">
             <Button asChild size="sm" variant="default">
-              <Link to="/app/pricing">
+              <Link to="/app/pricing" onClick={() => logUpgradeClick('card')}>
                 <Sparkles className="h-4 w-4 mr-1" />
                 {reason.cta}
               </Link>
             </Button>
             <Button asChild size="sm" variant="ghost">
-              <Link to="/app/pricing">
+              <Link to="/app/pricing" onClick={() => logUpgradeClick('compare')}>
                 Pakete vergleichen
                 <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
               </Link>
@@ -169,13 +179,14 @@ export function LockedContent({
 
           <div className="flex flex-col gap-1.5 w-full">
             <Button asChild size="sm" variant="default" className="w-full">
-              <Link to="/app/pricing">
+              <Link to="/app/pricing" onClick={() => logUpgradeClick('overlay')}>
                 <Sparkles className="h-3.5 w-3.5 mr-1" />
                 {reason.cta}
               </Link>
             </Button>
             <Link
               to="/app/pricing"
+              onClick={() => logUpgradeClick('compare')}
               className="text-[11px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
             >
               Pakete vergleichen →
