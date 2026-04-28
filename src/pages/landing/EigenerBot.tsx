@@ -298,25 +298,10 @@ export default function EigenerBot() {
         </div>
 
         {/* Roadmap-Vorschau */}
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardContent className="p-5 md:p-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-primary mb-3">
-              Deine 4-Call-Roadmap
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              {ROADMAP.map((r, i) => (
-                <div key={i} className="rounded-xl bg-card border border-border/60 p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <r.icon className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-semibold">Tag {r.day === 0 ? '0' : `+${r.day}`}</span>
-                  </div>
-                  <div className="text-sm font-semibold">{r.title.split('—')[1]?.trim()}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{r.desc}</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <DeliveryRoadmap
+          title="Deine 4-Call-Roadmap"
+          subtitle="Tag 0 Kickoff → Tag 7 live → Tag 10 Check → Tag 20 Optimierung. Bugfixes inklusive."
+        />
 
         {/* Stepper */}
         <div className="space-y-2">
