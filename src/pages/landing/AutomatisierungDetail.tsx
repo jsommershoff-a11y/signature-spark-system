@@ -205,17 +205,13 @@ export default function AutomatisierungDetail() {
           {/* Final CTA */}
           <div className="text-center pt-4">
             <Button asChild size="lg" className="bg-primary hover:bg-primary-deep">
-              <a href={product.payLink} target="_blank" rel="noopener noreferrer">
-                {product.name} bestellen
+              <Link to="/qualifizierung">
+                {product.name} anfragen
                 <ArrowRight className="ml-1.5 h-4 w-4" />
-              </a>
+              </Link>
             </Button>
             <p className="text-xs text-muted-foreground mt-3">
-              Unsicher?{" "}
-              <Link to="/qualifizierung" className="underline hover:text-primary">
-                Buche eine kostenlose Analyse
-              </Link>
-              .
+              Du erhältst nach kurzer Bedarfsanalyse ein individuelles Angebot.
             </p>
           </div>
         </div>
