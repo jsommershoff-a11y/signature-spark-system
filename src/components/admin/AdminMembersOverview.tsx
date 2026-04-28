@@ -63,6 +63,7 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
     if (open) {
       setEmail(prefillEmail || '');
       setName(prefillName || '');
+      setLastResult(null);
     }
   }, [open, prefillEmail, prefillName]);
 
