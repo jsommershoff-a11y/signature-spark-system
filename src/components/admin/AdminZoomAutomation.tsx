@@ -82,6 +82,18 @@ export function AdminZoomAutomation() {
     }
   };
 
+  const approveDraft = async (draftId: string) => {
+    try {
+      const { data, error } = await supabase.rpc("approve_offer_draft", { _draft_id: draftId });
+      if (error) throw error;
+      toast.success(`Angebot freigegeben — Pipeline aktualisiert, Follow-up in 3 Tagen geplant`);
+      await load();
+      return data;
+    } catch (e: any) {
+      toast.error(`Freigabe fehlgeschlagen: ${e.message}`);
+    }
+  };
+
   const lastRun = runs[0];
 
   return (
@@ -154,9 +166,19 @@ export function AdminZoomAutomation() {
                               {formatDistanceToNow(new Date(d.created_at), { addSuffix: true, locale: de })}
                             </div>
                           </div>
-                          <Button size="sm" variant="ghost" onClick={() => window.open(`/app/leads?lead=${d.lead_id}`, "_blank")}>
-                            Öffnen
-                          </Button>
+                          <div className="flex flex-col gap-1 ml-2">
+                            <Button
+                              size="sm"
+                              onClick={() => approveDraft(d.id)}
+                              disabled={!d.qa_passed}
+                              title={d.qa_passed ? "Freigeben & Pipeline fortschreiben" : "QA fehlgeschlagen — erst korrigieren"}
+                            >
+                              <CheckCircle2 className="h-4 w-4 mr-1" /> Freigeben
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => window.open(`/app/leads?lead=${d.lead_id}`, "_blank")}>
+                              Öffnen
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
