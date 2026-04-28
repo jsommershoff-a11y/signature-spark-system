@@ -50,6 +50,7 @@ import AdminCustomers from "./pages/app/admin/AdminCustomers";
 import AdminSubscriptions from "./pages/app/admin/AdminSubscriptions";
 import AdminTrials from "./pages/app/admin/AdminTrials";
 import AdminSettings from "./pages/app/admin/AdminSettings";
+import AdminUpgradeFunnel from "./pages/app/admin/AdminUpgradeFunnel";
 import AdminWebhooks from "./pages/app/AdminWebhooks";
 import Unauthorized from "./pages/app/Unauthorized";
 import Calls from "./pages/app/Calls";
