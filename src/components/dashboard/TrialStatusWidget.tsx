@@ -199,3 +199,73 @@ export function TrialStatusWidget() {
     </Card>
   );
 }
+
+/**
+ * Inline-Statuszeile für Live-Call: zeigt verfügbar / eingelöst / gesperrt.
+ */
+function LiveCallStatusRow({
+  eligibility,
+  compact = false,
+}: {
+  eligibility: ReturnType<typeof useLiveCallEligibility>['eligibility'];
+  compact?: boolean;
+}) {
+  const reason = eligibility.reason;
+
+  if (reason === 'no_access') return null;
+
+  const variants = {
+    active: {
+      icon: CheckCircle2,
+      tone: 'text-green-700 dark:text-green-400 bg-green-500/10 border-green-500/30',
+      label: 'Live-Calls unbegrenzt verfügbar',
+      hint: 'Voller Zugriff auf alle kommenden Calls.',
+    },
+    trial_available: {
+      icon: Ticket,
+      tone: 'text-primary bg-primary/10 border-primary/30',
+      label: '1 Trial-Live-Call verfügbar',
+      hint: 'Wähle deinen Wunsch-Termin im Kalender.',
+    },
+    trial_used: {
+      icon: CalendarIcon,
+      tone: 'text-muted-foreground bg-muted/40 border-border',
+      label: 'Trial-Live-Call eingelöst',
+      hint: eligibility.used_event_title
+        ? `Gebucht: ${eligibility.used_event_title}`
+        : 'Du bist für deinen Live-Call angemeldet.',
+    },
+    expired: {
+      icon: Lock,
+      tone: 'text-destructive bg-destructive/10 border-destructive/30',
+      label: 'Live-Calls gesperrt',
+      hint: 'Upgrade benötigt für weitere Anmeldungen.',
+    },
+  } as const;
+
+  const v = variants[reason];
+  const Icon = v.icon;
+
+  return (
+    <div
+      className={`rounded-lg border px-3 py-2 flex items-center gap-2.5 ${v.tone}`}
+      role="status"
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-semibold leading-tight">{v.label}</div>
+        {!compact && (
+          <div className="text-[11px] opacity-80 leading-tight mt-0.5">{v.hint}</div>
+        )}
+      </div>
+      {(reason === 'trial_available' || reason === 'trial_used') && (
+        <Link
+          to="/app/calendar"
+          className="text-[11px] font-semibold hover:underline shrink-0"
+        >
+          {reason === 'trial_available' ? 'Buchen →' : 'Anzeigen →'}
+        </Link>
+      )}
+    </div>
+  );
+}
