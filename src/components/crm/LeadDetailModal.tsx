@@ -54,9 +54,29 @@ import {
   Plus,
   FileText,
   UserPlus,
+  History,
+  CheckCircle2,
+  Clock,
+  XCircle,
 } from 'lucide-react';
 import { InviteMemberDialog } from '@/components/admin/AdminMembersOverview';
 import { useAuth } from '@/contexts/AuthContext';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { supabase } from '@/integrations/supabase/client';
+
+type InvitationRow = {
+  id: string;
+  email: string;
+  created_at: string;
+  expires_at: string | null;
+  accepted_at: string | null;
+};
+
+function getInviteStatus(inv: InvitationRow): { label: string; tone: 'success' | 'warning' | 'destructive' | 'muted'; Icon: typeof CheckCircle2 } {
+  if (inv.accepted_at) return { label: 'Angenommen', tone: 'success', Icon: CheckCircle2 };
+  if (inv.expires_at && new Date(inv.expires_at) < new Date()) return { label: 'Abgelaufen', tone: 'destructive', Icon: XCircle };
+  return { label: 'Ausstehend', tone: 'warning', Icon: Clock };
+}
 
 interface LeadDetailModalProps {
   lead: CrmLead | null;
