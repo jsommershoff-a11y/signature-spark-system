@@ -37,7 +37,7 @@ export default function AutomatisierungDetail() {
       seller: { "@type": "Organization", name: "KRS Immobilien GmbH" },
       potentialAction: {
         "@type": "RequestQuoteAction",
-        target: "https://ki-automationen.io/qualifizierung",
+        target: `https://ki-automationen.io/qualifizierung?automation=${product.slug}`,
         name: "Angebot anfragen",
       },
     },
