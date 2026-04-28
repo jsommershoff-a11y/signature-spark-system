@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import NotFound from "@/pages/NotFound";
-import { AUTOMATIONS, formatPriceEUR } from "@/data/automations";
+import { AUTOMATIONS } from "@/data/automations";
 
 export default function AutomatisierungDetail() {
   const { slug } = useParams<{ slug: string }>();
