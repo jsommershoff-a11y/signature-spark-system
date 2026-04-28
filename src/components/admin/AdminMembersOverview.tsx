@@ -100,7 +100,7 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
           email,
           role,
           name: name || undefined,
-          lead_id: selectedLead?.id || undefined,
+          lead_id: selectedLead?.id || prefillLeadId || undefined,
         },
       });
       if (error) throw error;
