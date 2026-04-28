@@ -160,8 +160,19 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
         toast({
           variant: 'destructive',
           title: 'Mail nicht versendet',
-          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert.`,
+          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert und steht im Dialog bereit.`,
         });
+        // Persistenter Sonner-Toast mit Copy-Action, damit Admin den Link auch nach Dialog-Schließen hat
+        if (inviteLink) {
+          sonnerToast.error('Einladungs-Mail nicht zugestellt', {
+            description: `Empfänger: ${email}. Bitte den Link manuell weiterleiten.`,
+            duration: 30000,
+            action: {
+              label: 'Link kopieren',
+              onClick: () => { navigator.clipboard.writeText(inviteLink).catch(() => {}); },
+            },
+          });
+        }
       }
     } catch (err: any) {
       setLastResult({
