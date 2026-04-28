@@ -17,10 +17,10 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const APP_URL = "https://www.ki-automationen.io";
 
-async function sendTelegram(text: string) {
-  if (!TELEGRAM_API_KEY || !TELEGRAM_NOTIFY_CHAT_ID) return;
+async function sendTelegram(text: string, replyMarkup?: Record<string, unknown>): Promise<{ message_id?: number; chat_id?: number } | null> {
+  if (!TELEGRAM_API_KEY || !TELEGRAM_NOTIFY_CHAT_ID) return null;
   try {
-    await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
+    const r = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -32,10 +32,18 @@ async function sendTelegram(text: string) {
         text,
         parse_mode: "HTML",
         disable_web_page_preview: true,
+        ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
       }),
     });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      console.error("Telegram failed:", data);
+      return null;
+    }
+    return { message_id: data?.result?.message_id, chat_id: data?.result?.chat?.id };
   } catch (e) {
     console.error("Telegram failed:", e);
+    return null;
   }
 }
 
