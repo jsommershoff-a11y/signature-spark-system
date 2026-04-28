@@ -104,28 +104,25 @@ export default function AutomatisierungDetail() {
               </div>
             </div>
 
-            {/* Price card */}
+            {/* Anfrage-Karte */}
             <Card className="w-full md:w-72 bg-white text-foreground">
               <CardContent className="p-5">
-                <div className="text-xs text-muted-foreground mb-1">Festpreis</div>
-                <div className="text-3xl font-bold mb-0.5">
-                  {formatPriceEUR(product.priceNet)}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">
-                    netto{product.recurring ? " / Monat" : ""}
-                  </span>
+                <div className="text-xs text-muted-foreground mb-1">Investition</div>
+                <div className="text-2xl font-bold mb-1">
+                  Auf Anfrage
                 </div>
                 <div className="text-xs text-muted-foreground mb-4">
-                  ({formatPriceEUR(product.priceGrossVAT)} brutto, inkl. 19 % USt.)
+                  Individuelles Angebot nach kurzer Bedarfsanalyse.
                 </div>
                 <Button asChild size="lg" className="w-full bg-primary hover:bg-primary-deep">
-                  <a href={product.payLink} target="_blank" rel="noopener noreferrer">
-                    Jetzt bestellen
+                  <Link to="/qualifizierung">
+                    Jetzt anfragen
                     <ArrowRight className="ml-1.5 h-4 w-4" />
-                  </a>
+                  </Link>
                 </Button>
                 <p className="text-xs text-muted-foreground mt-3 text-center">
-                  Sichere Zahlung über Stripe.<br />
-                  Lastschrift, Kreditkarte, SEPA.
+                  Unverbindlich.<br />
+                  Antwort innerhalb von 24 h.
                 </p>
               </CardContent>
             </Card>
