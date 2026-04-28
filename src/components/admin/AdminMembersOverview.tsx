@@ -47,6 +47,15 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
   const [leadResults, setLeadResults] = useState<LeadOption[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedLead, setSelectedLead] = useState<LeadOption | null>(null);
+  const [lastResult, setLastResult] = useState<{
+    success: boolean;
+    emailSent: boolean;
+    provider: 'gmail' | 'resend' | 'outlook' | null;
+    triedProviders?: string[];
+    inviteLink?: string;
+    recipient: string;
+    timestamp: number;
+  } | null>(null);
   const { toast } = useToast();
 
   // Sync prefill when dialog re-opens with new lead
