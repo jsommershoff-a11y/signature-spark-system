@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +39,6 @@ Liefere ein JSON-Objekt mit den Feldern: title, summary, scope[], deliverables[]
 
 export default function ProductWorkspace() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { hasMinRole } = useAuth();
   const isStaff = hasMinRole('gruppenbetreuer');
 
@@ -57,7 +56,7 @@ export default function ProductWorkspace() {
   const [copied, setCopied] = useState(false);
 
   // Hydrate state once product is loaded
-  useMemo(() => {
+  useEffect(() => {
     if (!product) return;
     setDescription(product.description ?? '');
     setTemplate(product.offer_template ?? '');
