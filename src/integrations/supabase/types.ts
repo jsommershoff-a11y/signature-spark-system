@@ -1910,31 +1910,49 @@ export type Database = {
           accepted_at: string | null
           created_at: string
           email: string
+          email_error: string | null
+          email_provider: string | null
+          email_sent: boolean
           expires_at: string
           id: string
+          invite_link: string | null
           invited_by: string
+          last_attempt_at: string | null
           role: Database["public"]["Enums"]["app_role"]
           token: string
+          tried_providers: string[]
         }
         Insert: {
           accepted_at?: string | null
           created_at?: string
           email: string
+          email_error?: string | null
+          email_provider?: string | null
+          email_sent?: boolean
           expires_at?: string
           id?: string
+          invite_link?: string | null
           invited_by: string
+          last_attempt_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           token?: string
+          tried_providers?: string[]
         }
         Update: {
           accepted_at?: string | null
           created_at?: string
           email?: string
+          email_error?: string | null
+          email_provider?: string | null
+          email_sent?: boolean
           expires_at?: string
           id?: string
+          invite_link?: string | null
           invited_by?: string
+          last_attempt_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           token?: string
+          tried_providers?: string[]
         }
         Relationships: []
       }

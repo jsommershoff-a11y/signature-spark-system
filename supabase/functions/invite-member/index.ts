@@ -284,6 +284,22 @@ serve(async (req) => {
       console.warn('No email provider available or all failed. Returning invite_link for manual delivery.');
     }
 
+    // Persist send result on the invitation row so admins can retrieve the link later
+    const { error: updateErr } = await supabase
+      .from('invitations')
+      .update({
+        invite_link: inviteLink,
+        email_provider: emailProvider,
+        email_sent: emailSent,
+        email_error: emailSent ? null : emailError,
+        tried_providers: triedProviders,
+        last_attempt_at: new Date().toISOString(),
+      })
+      .eq('id', invitation.id);
+    if (updateErr) {
+      console.error('Failed to persist invitation send result:', updateErr.message);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

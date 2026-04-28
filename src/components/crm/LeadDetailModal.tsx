@@ -58,11 +58,13 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Copy,
 } from 'lucide-react';
 import { InviteMemberDialog } from '@/components/admin/AdminMembersOverview';
 import { useAuth } from '@/contexts/AuthContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
+import { toast as sonnerToast } from 'sonner';
 
 type InvitationRow = {
   id: string;
@@ -70,6 +72,10 @@ type InvitationRow = {
   created_at: string;
   expires_at: string | null;
   accepted_at: string | null;
+  invite_link: string | null;
+  email_provider: string | null;
+  email_sent: boolean | null;
+  email_error: string | null;
 };
 
 function getInviteStatus(inv: InvitationRow): { label: string; tone: 'success' | 'warning' | 'destructive' | 'muted'; Icon: typeof CheckCircle2 } {
@@ -109,7 +115,7 @@ export function LeadDetailModal({
     setInvitesLoading(true);
     const { data } = await supabase
       .from('invitations')
-      .select('id,email,created_at,expires_at,accepted_at')
+      .select('id,email,created_at,expires_at,accepted_at,invite_link,email_provider,email_sent,email_error')
       .ilike('email', email)
       .order('created_at', { ascending: false })
       .limit(10);
@@ -291,6 +297,35 @@ export function LeadDetailModal({
                                     <span>
                                       ✓ {new Date(inv.accepted_at).toLocaleDateString('de-DE')}
                                     </span>
+                                  )}
+                                </div>
+                                <div className="mt-1.5 flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                    {inv.email_sent === false ? (
+                                      <span className="text-destructive">Mail nicht versendet</span>
+                                    ) : inv.email_provider ? (
+                                      <span>via {inv.email_provider}</span>
+                                    ) : null}
+                                  </div>
+                                  {inv.invite_link && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-2 gap-1 text-[10px]"
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        try {
+                                          await navigator.clipboard.writeText(inv.invite_link!);
+                                          sonnerToast.success('Einladungslink kopiert');
+                                        } catch {
+                                          sonnerToast.error('Kopieren fehlgeschlagen');
+                                        }
+                                      }}
+                                    >
+                                      <Copy className="h-3 w-3" />
+                                      Link kopieren
+                                    </Button>
                                   )}
                                 </div>
                               </li>
