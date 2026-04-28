@@ -186,12 +186,12 @@ export default function AdminUpgradeFunnel() {
             </p>
           )}
           {isLoading && <p className="text-sm text-muted-foreground py-6">Lade Daten…</p>}
-          {!isLoading && !error && (data?.length ?? 0) === 0 && (
+          {!isLoading && !error && filtered.length === 0 && (
             <p className="text-sm text-muted-foreground py-6">
-              Noch keine Events im gewählten Zeitraum.
+              Keine Daten für die gewählten Filter.
             </p>
           )}
-          {!isLoading && !error && (data?.length ?? 0) > 0 && (
+          {!isLoading && !error && filtered.length > 0 && (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
