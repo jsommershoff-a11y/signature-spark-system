@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { RefreshCw, ExternalLink, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { RefreshCw, ExternalLink, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2, Send, CalendarRange } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
