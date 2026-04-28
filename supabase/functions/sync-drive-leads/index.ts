@@ -122,6 +122,29 @@ async function callSheets(path: string, init?: RequestInit) {
   return text ? JSON.parse(text) : {};
 }
 
+async function sendTelegram(text: string): Promise<void> {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const TELEGRAM_API_KEY = Deno.env.get("TELEGRAM_API_KEY");
+  const chatId = Deno.env.get("TELEGRAM_NOTIFY_CHAT_ID");
+  if (!LOVABLE_API_KEY || !TELEGRAM_API_KEY || !chatId) {
+    console.warn("telegram notify skipped: missing env");
+    return;
+  }
+  const res = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "X-Connection-Api-Key": TELEGRAM_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`telegram ${res.status}: ${t.slice(0, 300)}`);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST")
