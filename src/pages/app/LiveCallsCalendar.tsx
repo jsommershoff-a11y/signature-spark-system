@@ -232,9 +232,9 @@ export default function LiveCallsCalendar() {
                 Mit einem Upgrade buchst du beliebig viele weitere Live-Calls.
               </p>
               <Button asChild size="sm">
-                <Link to="/app/dashboard">
+                <Link to="/app/upgrade">
                   <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                  Auf 99 €/Monat upgraden
+                  Jetzt upgraden
                 </Link>
               </Button>
             </div>
@@ -254,7 +254,7 @@ export default function LiveCallsCalendar() {
                   : 'Für die Buchung von Live-Calls brauchst du eine aktive Mitgliedschaft oder einen Trial-Zugang.'}
               </p>
               <Button asChild size="sm">
-                <Link to="/app/dashboard">
+                <Link to="/app/upgrade">
                   <Sparkles className="h-3.5 w-3.5 mr-1.5" />
                   Mitgliedschaft starten
                 </Link>
