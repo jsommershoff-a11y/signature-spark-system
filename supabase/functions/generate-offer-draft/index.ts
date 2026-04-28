@@ -79,26 +79,30 @@ Deno.serve(async (req) => {
       summary = data;
     }
 
-    // Load active catalog products
+    // Load active catalog products (full pricing context)
     const { data: catalog } = await supabase
       .from("catalog_products")
-      .select("id, name, description, price_cents, category")
-      .eq("status", "active")
-      .limit(50);
+      .select("id, code, name, subtitle, description, category, mode, price_net_cents, price_period_label, term_label, required_connectors, optional_connectors")
+      .eq("active", true)
+      .order("sort_order", { ascending: true })
+      .limit(80);
 
     // Build AI prompt
     const sys = `Du bist Senior Sales Engineer für ein deutsches KI-Automatisierungsunternehmen.
 Du erstellst strukturierte Angebotsentwürfe (NICHT versendet, intern für Berater-Review).
 
-REGELN:
-1. Nutze IMMER zuerst passende Produkte aus dem Katalog. Match per Name/Kategorie/Beschreibung.
-2. Wenn keines passt: erstelle "Individueller Entwurf" und markiere is_custom_solution=true.
-3. Kalkuliere INTERNE Kosten realistisch (Setup, Tools, API, Wartung, Risiko).
-4. Verkaufspreis = interne Kosten × (2.5–4× Marge je nach Komplexität).
-5. Mindestpreis = interne Kosten × 1.8.
-6. Alle Preise als VORSCHLAG. Berater entscheidet final.
-7. Konnektoren-Liste: nur die wirklich nötigen (Email/Calendar/CRM/Drive/OneDrive/Zoom/sevDesk/Supabase/n8n/APIs/Webhooks).
-8. Antworte AUSSCHLIESSLICH via Tool-Call.`;
+REGELN PREISFINDUNG (transparent & nachvollziehbar):
+1. Mappe IMMER zuerst eine ODER mehrere Katalog-Positionen, die zur Lösung passen (per id).
+2. Für jede gewählte Katalog-Position gib an:
+   - base_price_eur (Netto-Preis aus Katalog)
+   - adjustment_percent (Aufschlag in % gegenüber Katalog, z.B. +25 für komplexere Variante, -10 für Volumenrabatt)
+   - adjustment_reason (z.B. "Mehraufwand durch 3 Standorte", "Sonderkonnektor sevDesk", "Erweiterte Auswertungslogik")
+   - quantity (Standard 1)
+3. Wenn Lösungsbestandteile NICHT im Katalog: füge "custom_addon"-Positionen hinzu mit cost_eur + rationale.
+4. Aufschläge sollen REALISTISCH und ARGUMENTIERBAR sein (Komplexität, Datenvolumen, Sonder-APIs, Risiko, Compliance).
+5. Marge = (final_price - internal_cost) / final_price · 100. Ziel 60-75%, min 45%.
+6. Konnektoren: nur die wirklich nötigen (Email/Calendar/CRM/Drive/OneDrive/Zoom/sevDesk/Supabase/n8n/APIs/Webhooks).
+7. Antworte AUSSCHLIESSLICH via Tool-Call.`;
 
     const userMsg = `LEAD:
 Name: ${lead.first_name} ${lead.last_name || ""}
@@ -119,8 +123,11 @@ Dringlichkeit: ${summary.ai_extraction?.urgency || "?"}
 Budget-Signal: ${summary.ai_extraction?.budget_signal || "—"}
 Entscheider anwesend: ${summary.ai_extraction?.decision_maker_present ? "ja" : "nein"}` : "Keine Call-Daten — erstelle Entwurf basierend auf Lead-Info."}
 
-VERFÜGBARER KATALOG (Auswahl):
-${(catalog || []).map((p: any) => `- ${p.name} (${p.category || "—"}): ${(p.description || "").slice(0, 120)} | Preis: ${p.price_cents ? (p.price_cents / 100).toFixed(0) + "€" : "individuell"}`).join("\n")}`;
+VERFÜGBARER KATALOG (id | code | name | mode | netto-preis):
+${(catalog || []).map((p: any) => {
+  const price = p.price_net_cents ? `${(p.price_net_cents / 100).toFixed(0)}€${p.price_period_label ? "/" + p.price_period_label : ""}` : "individuell";
+  return `[${p.id}] ${p.code || "—"} · ${p.name} (${p.mode || "—"}, ${p.category || "—"}) — ${price}${p.subtitle ? " · " + p.subtitle : ""}`;
+}).join("\n")}`;
 
     const r = await fetch(AI_URL, {
       method: "POST",
@@ -192,17 +199,41 @@ ${(catalog || []).map((p: any) => `- ${p.name} (${p.category || "—"}): ${(p.de
                   },
                   required: ["total_internal_cost_eur", "rationale"],
                 },
+                price_breakdown: {
+                  type: "array",
+                  description: "Transparente Preisherleitung: jede Position zeigt Katalog-Basis + Aufschlag mit Begründung ODER Custom-Add-on.",
+                  items: {
+                    type: "object",
+                    properties: {
+                      kind: { type: "string", enum: ["catalog_item", "custom_addon"] },
+                      catalog_product_id: { type: "string", description: "Nur bei kind=catalog_item, exakte id aus Katalog-Liste" },
+                      catalog_code: { type: "string" },
+                      label: { type: "string", description: "Anzeige-Name der Position" },
+                      quantity: { type: "number" },
+                      base_price_eur: { type: "number", description: "Bei catalog_item: Netto-Katalogpreis. Bei custom_addon: 0" },
+                      adjustment_percent: { type: "number", description: "+25 = +25% Aufschlag, -10 = 10% Rabatt. 0 wenn keiner" },
+                      adjustment_eur: { type: "number", description: "Absoluter Aufschlag/Rabatt zusätzlich (kann 0 sein)" },
+                      adjustment_reason: { type: "string", description: "Klare Begründung für jeden Aufschlag/Rabatt" },
+                      cost_eur: { type: "number", description: "Bei custom_addon: voller Preis dieser Position" },
+                      line_total_eur: { type: "number", description: "Endpreis dieser Position nach Anpassung × Menge" },
+                    },
+                    required: ["kind", "label", "quantity", "line_total_eur"],
+                  },
+                },
                 pricing_strategy: {
                   type: "object",
                   properties: {
-                    suggested_price_eur: { type: "number" },
+                    catalog_subtotal_eur: { type: "number", description: "Summe Katalog-Basispreise vor Aufschlägen" },
+                    adjustments_subtotal_eur: { type: "number", description: "Summe aller Aufschläge auf Katalog-Positionen" },
+                    custom_subtotal_eur: { type: "number", description: "Summe der Custom-Add-ons" },
+                    suggested_price_eur: { type: "number", description: "Endpreis = catalog_subtotal + adjustments + custom" },
                     min_price_eur: { type: "number" },
                     margin_percent: { type: "number" },
                     retainer_monthly_eur: { type: "number", description: "Optional, 0 wenn keiner" },
                     payment_terms: { type: "string" },
-                    rationale: { type: "string" },
+                    rationale: { type: "string", description: "Gesamtbegründung der Preisstrategie" },
                   },
-                  required: ["suggested_price_eur", "min_price_eur", "margin_percent", "rationale"],
+                  required: ["catalog_subtotal_eur", "adjustments_subtotal_eur", "custom_subtotal_eur", "suggested_price_eur", "min_price_eur", "margin_percent", "rationale"],
                 },
                 benefit_analysis: {
                   type: "object",
@@ -240,7 +271,7 @@ ${(catalog || []).map((p: any) => `- ${p.name} (${p.category || "—"}): ${(p.de
               },
               required: [
                 "problem_analysis", "solution_concept", "is_custom_solution",
-                "required_connectors", "internal_cost_analysis", "pricing_strategy",
+                "required_connectors", "internal_cost_analysis", "price_breakdown", "pricing_strategy",
                 "benefit_analysis", "client_inputs_required", "qa_checks",
               ],
               additionalProperties: false,
@@ -268,6 +299,9 @@ ${(catalog || []).map((p: any) => `- ${p.name} (${p.category || "—"}): ${(p.de
 
     const status = qaPassed ? "review_required" : "correction";
 
+    const ps = draft.pricing_strategy || {};
+    const breakdown = Array.isArray(draft.price_breakdown) ? draft.price_breakdown : [];
+
     const { data: inserted } = await supabase
       .from("offer_drafts")
       .insert({
@@ -280,10 +314,14 @@ ${(catalog || []).map((p: any) => `- ${p.name} (${p.category || "—"}): ${(p.de
         is_custom_solution: draft.is_custom_solution,
         required_connectors: draft.required_connectors,
         internal_cost_analysis: draft.internal_cost_analysis,
-        pricing_strategy: draft.pricing_strategy,
-        suggested_price_cents: Math.round((draft.pricing_strategy.suggested_price_eur || 0) * 100),
-        min_price_cents: Math.round((draft.pricing_strategy.min_price_eur || 0) * 100),
-        margin_percent: draft.pricing_strategy.margin_percent,
+        pricing_strategy: ps,
+        price_breakdown: breakdown,
+        catalog_subtotal_cents: Math.round((ps.catalog_subtotal_eur || 0) * 100),
+        adjustments_subtotal_cents: Math.round((ps.adjustments_subtotal_eur || 0) * 100),
+        custom_subtotal_cents: Math.round((ps.custom_subtotal_eur || 0) * 100),
+        suggested_price_cents: Math.round((ps.suggested_price_eur || 0) * 100),
+        min_price_cents: Math.round((ps.min_price_eur || 0) * 100),
+        margin_percent: ps.margin_percent,
         benefit_analysis: draft.benefit_analysis,
         client_inputs_required: draft.client_inputs_required,
         qa_checks: draft.qa_checks,
@@ -303,12 +341,25 @@ ${(catalog || []).map((p: any) => `- ${p.name} (${p.category || "—"}): ${(p.de
 
     // Telegram-Push an Berater
     const leadName = `${lead.first_name} ${lead.last_name || ""}`.trim();
-    const price = (draft.pricing_strategy.suggested_price_eur || 0).toLocaleString("de-DE");
+    const fmt = (n: number) => (n || 0).toLocaleString("de-DE", { maximumFractionDigits: 0 });
+    const breakdownLines = breakdown.slice(0, 6).map((p: any) => {
+      if (p.kind === "catalog_item") {
+        const adj = p.adjustment_percent ? ` ${p.adjustment_percent > 0 ? "+" : ""}${p.adjustment_percent}%` : "";
+        const reason = p.adjustment_reason ? ` <i>(${p.adjustment_reason})</i>` : "";
+        return `• ${p.label}: ${fmt(p.base_price_eur)}€${adj} → <b>${fmt(p.line_total_eur)}€</b>${reason}`;
+      }
+      return `• ${p.label} <i>(custom)</i>: <b>${fmt(p.line_total_eur)}€</b>${p.adjustment_reason ? " — " + p.adjustment_reason : ""}`;
+    }).join("\n");
+
     await sendTelegram(
       `📝 <b>Neuer Angebotsentwurf</b>\n` +
       `Lead: <b>${leadName}</b>${lead.company ? " · " + lead.company : ""}\n` +
-      `Lösung: ${draft.solution_concept.title}\n` +
-      `Vorschlag: <b>${price} €</b> (Marge ${draft.pricing_strategy.margin_percent}%)\n` +
+      `Lösung: ${draft.solution_concept.title}\n\n` +
+      `<b>Preisherleitung:</b>\n${breakdownLines || "—"}\n\n` +
+      `Katalog-Basis: ${fmt(ps.catalog_subtotal_eur)}€\n` +
+      `Aufschläge: ${fmt(ps.adjustments_subtotal_eur)}€\n` +
+      `Custom: ${fmt(ps.custom_subtotal_eur)}€\n` +
+      `<b>Vorschlag: ${fmt(ps.suggested_price_eur)}€</b> (Marge ${ps.margin_percent}%)\n` +
       `QA: ${qaPassed ? "✅ bestanden" : "⚠️ Korrektur nötig"}\n` +
       `<a href="${APP_URL}/app/leads">→ Im CRM öffnen</a>`,
     );

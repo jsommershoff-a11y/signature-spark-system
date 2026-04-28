@@ -2746,14 +2746,17 @@ export type Database = {
       }
       offer_drafts: {
         Row: {
+          adjustments_subtotal_cents: number | null
           ai_model: string | null
           ai_tokens_used: number | null
           approved_at: string | null
           approved_by: string | null
           benefit_analysis: Json
+          catalog_subtotal_cents: number | null
           client_inputs_required: Json
           converted_offer_id: string | null
           created_at: string
+          custom_subtotal_cents: number | null
           generated_at: string
           id: string
           internal_cost_analysis: Json
@@ -2762,6 +2765,7 @@ export type Database = {
           margin_percent: number | null
           matched_catalog_product_ids: Json
           min_price_cents: number | null
+          price_breakdown: Json | null
           pricing_strategy: Json
           problem_analysis: Json
           qa_checks: Json
@@ -2775,14 +2779,17 @@ export type Database = {
           zoom_summary_id: string | null
         }
         Insert: {
+          adjustments_subtotal_cents?: number | null
           ai_model?: string | null
           ai_tokens_used?: number | null
           approved_at?: string | null
           approved_by?: string | null
           benefit_analysis?: Json
+          catalog_subtotal_cents?: number | null
           client_inputs_required?: Json
           converted_offer_id?: string | null
           created_at?: string
+          custom_subtotal_cents?: number | null
           generated_at?: string
           id?: string
           internal_cost_analysis?: Json
@@ -2791,6 +2798,7 @@ export type Database = {
           margin_percent?: number | null
           matched_catalog_product_ids?: Json
           min_price_cents?: number | null
+          price_breakdown?: Json | null
           pricing_strategy?: Json
           problem_analysis?: Json
           qa_checks?: Json
@@ -2804,14 +2812,17 @@ export type Database = {
           zoom_summary_id?: string | null
         }
         Update: {
+          adjustments_subtotal_cents?: number | null
           ai_model?: string | null
           ai_tokens_used?: number | null
           approved_at?: string | null
           approved_by?: string | null
           benefit_analysis?: Json
+          catalog_subtotal_cents?: number | null
           client_inputs_required?: Json
           converted_offer_id?: string | null
           created_at?: string
+          custom_subtotal_cents?: number | null
           generated_at?: string
           id?: string
           internal_cost_analysis?: Json
@@ -2820,6 +2831,7 @@ export type Database = {
           margin_percent?: number | null
           matched_catalog_product_ids?: Json
           min_price_cents?: number | null
+          price_breakdown?: Json | null
           pricing_strategy?: Json
           problem_analysis?: Json
           qa_checks?: Json
