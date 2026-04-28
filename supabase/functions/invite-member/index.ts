@@ -185,6 +185,7 @@ serve(async (req) => {
     let emailSent = false;
     let emailProvider: 'gmail' | 'resend' | 'outlook' | null = null;
     let emailError: string | null = null;
+    const triedProviders: string[] = [];
 
     // Primary: Gmail (via connector gateway)
     if (gmailKey && lovableKey) {
