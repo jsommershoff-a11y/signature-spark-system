@@ -42,7 +42,7 @@ export default function Automatisierungen() {
     <PublicLayout>
       <SEOHead
         title="KI-Automationen bestellen – 13 fertige Produkte für KMU & Mittelstand"
-        description="Fertige KI-Automatisierungen für Praxen, Kanzleien, Handwerk und Dienstleister: Terminbot, Mail-Assistent, Lead-Qualifizierung, Voice-Agent. Festpreis, in 5–14 Tagen produktiv."
+        description="Fertige KI-Automatisierungen für Praxen, Kanzleien, Handwerk und Dienstleister: Terminbot, Mail-Assistent, Lead-Qualifizierung, Voice-Agent. Inklusive Einrichtung, in 5–14 Tagen produktiv. Preis auf Anfrage."
         canonical="/automatisierungen"
         jsonLd={itemListJsonLd}
       />
