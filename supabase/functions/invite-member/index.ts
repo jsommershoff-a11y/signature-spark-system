@@ -7,6 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const RESEND_FROM = 'KI-Automationen <info@krs-signature.de>';
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/microsoft_outlook';
 
 const bodySchema = z.object({
@@ -23,6 +24,7 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const resendKey = Deno.env.get('RESEND_API_KEY');
   const outlookKey = Deno.env.get('MICROSOFT_OUTLOOK_API_KEY');
   const lovableKey = Deno.env.get('LOVABLE_API_KEY');
   const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
