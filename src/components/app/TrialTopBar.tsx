@@ -29,7 +29,7 @@ export function TrialTopBar() {
       ? 'Live-Call gesperrt'
       : null;
 
-  const liveCallIcon = eligibility.reason === 'trial_available' ? Ticket : Calendar;
+  const LiveCallIcon = eligibility.reason === 'trial_available' ? Ticket : Calendar;
 
   return (
     <div
@@ -65,7 +65,7 @@ export function TrialTopBar() {
 
           {liveCallText && !isExpired && (
             <span className="hidden sm:flex items-center gap-1.5 text-muted-foreground">
-              <liveCallIcon className="h-3.5 w-3.5" />
+              <LiveCallIcon className="h-3.5 w-3.5" />
               {liveCallText}
             </span>
           )}
