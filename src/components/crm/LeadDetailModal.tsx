@@ -53,7 +53,10 @@ import {
   Loader2,
   Plus,
   FileText,
+  UserPlus,
 } from 'lucide-react';
+import { InviteMemberDialog } from '@/components/admin/AdminMembersOverview';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LeadDetailModalProps {
   lead: CrmLead | null;
