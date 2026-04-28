@@ -120,7 +120,7 @@ export default function AutomatisierungDetail() {
                   Individuelles Angebot nach kurzer Bedarfsanalyse.
                 </div>
                 <Button asChild size="lg" className="w-full bg-primary hover:bg-primary-deep">
-                  <Link to="/qualifizierung">
+                  <Link to={`/qualifizierung?automation=${product.slug}`}>
                     Jetzt anfragen
                     <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Link>
