@@ -166,10 +166,19 @@ export function AdminZoomAutomation() {
                               {formatDistanceToNow(new Date(d.created_at), { addSuffix: true, locale: de })}
                             </div>
                           </div>
-                          <Button size="sm" variant="ghost" onClick={() => window.open(`/app/leads?lead=${d.lead_id}`, "_blank")}>
-                            Öffnen
-                          </Button>
-                        </div>
+                          <div className="flex flex-col gap-1 ml-2">
+                            <Button
+                              size="sm"
+                              onClick={() => approveDraft(d.id)}
+                              disabled={!d.qa_passed}
+                              title={d.qa_passed ? "Freigeben & Pipeline fortschreiben" : "QA fehlgeschlagen — erst korrigieren"}
+                            >
+                              <CheckCircle2 className="h-4 w-4 mr-1" /> Freigeben
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => window.open(`/app/leads?lead=${d.lead_id}`, "_blank")}>
+                              Öffnen
+                            </Button>
+                          </div>
                       ))}
                     </div>
                   )}
