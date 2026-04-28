@@ -3901,6 +3901,19 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_upgrade_funnel_stats: {
+        Args: { _from?: string; _to?: string }
+        Returns: {
+          click_to_upgrade_rate: number
+          cta_clicks: number
+          module_type: string
+          required_tier: string
+          upgrades: number
+          view_to_click_rate: number
+          view_to_upgrade_rate: number
+          views: number
+        }[]
+      }
       get_user_profile_id: { Args: { _user_id: string }; Returns: string }
       get_user_team_id: { Args: { _user_id: string }; Returns: string }
       has_email_consent: {
