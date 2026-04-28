@@ -88,10 +88,10 @@ const CALL_PREFERENCES = [
 ];
 
 const ROADMAP = [
-  { day: 0, icon: Phone, title: 'Call 1 — Integration & Anbindung', desc: 'Wir legen gemeinsam fest, welche Systeme wir verbinden, Zugänge prüfen und den Tech-Setup starten.' },
-  { day: 5, icon: Rocket, title: 'Call 2 — Delivery & Planung', desc: 'Bot ist live in deiner Umgebung. Wir testen End-to-End und planen Rollout, Schulung und KPIs.' },
-  { day: 19, icon: Repeat, title: 'Call 3 — Prüfung & Optimierung', desc: 'Erste 2 Wochen Praxisdaten: was läuft, was hakt? Wir schärfen Prompts, Regeln und Trigger.' },
-  { day: 33, icon: ShieldCheck, title: 'Call 4 — Finale Abnahme', desc: 'Stabilität bestätigen, letzte Tunings, Dokumentation übergeben, ggf. Erweiterungen besprechen.' },
+  { day: 0, icon: Rocket, title: 'Call 1 — Kickoff & Anbindung', desc: 'Wir legen Systeme, Zugänge und Use-Case fest. Bau startet sofort.' },
+  { day: 7, icon: Phone, title: 'Call 2 — Delivery', desc: 'Bot ist live in deiner Umgebung. End-to-End getestet, einsatzbereit.' },
+  { day: 10, icon: Repeat, title: 'Call 3 — Setup-Check', desc: 'Wir prüfen den Setup gemeinsam und passen Prompts, Regeln, Trigger an.' },
+  { day: 20, icon: ShieldCheck, title: 'Call 4 — Optimierung', desc: 'Praxisdaten ausgewertet, finale Anpassungen, Dokumentation übergeben.' },
 ];
 
 const STEPS = ['Bot wählen', 'Systeme & Aufgabe', 'Kontakt & Call'];
