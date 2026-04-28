@@ -90,21 +90,21 @@ export function LockedContent({
   moduleType = 'generic',
   benefits,
 }: LockedContentProps) {
-  if (hasAccess) return <>{children}</>;
-
-  const reason = buildReason(moduleType, requiredTier, benefits);
-
-  // Fire view event once per mount (when locked)
+  // Fire view event once per mount when locked (hook must be called unconditionally)
   const viewLogged = useRef(false);
   useEffect(() => {
-    if (viewLogged.current) return;
+    if (hasAccess || viewLogged.current) return;
     viewLogged.current = true;
     void trackEvent('view_locked_module', {
       moduleType,
       requiredTier,
       variant,
     });
-  }, [moduleType, requiredTier, variant]);
+  }, [hasAccess, moduleType, requiredTier, variant]);
+
+  if (hasAccess) return <>{children}</>;
+
+  const reason = buildReason(moduleType, requiredTier, benefits);
 
   const logUpgradeClick = (placement: 'card' | 'overlay' | 'compare') => {
     void trackEvent('upgrade_cta_click', {
