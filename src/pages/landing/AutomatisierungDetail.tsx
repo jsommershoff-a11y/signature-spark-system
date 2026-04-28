@@ -25,16 +25,21 @@ export default function AutomatisierungDetail() {
     offers: {
       "@type": "Offer",
       url: `https://ki-automationen.io/automatisierungen/${product.slug}`,
-      priceCurrency: "EUR",
-      price: "0",
+      availability: "https://schema.org/PreOrder",
+      businessFunction: "http://purl.org/goodrelations/v1#Sell",
       priceSpecification: {
         "@type": "PriceSpecification",
         priceCurrency: "EUR",
+        price: 0,
         valueAddedTaxIncluded: false,
-        description: "Preis auf Anfrage",
+        description: "Preis auf Anfrage – individuelles Angebot nach kurzer Bedarfsanalyse.",
       },
-      availability: "https://schema.org/InStock",
       seller: { "@type": "Organization", name: "KRS Immobilien GmbH" },
+      potentialAction: {
+        "@type": "RequestQuoteAction",
+        target: "https://ki-automationen.io/qualifizierung",
+        name: "Angebot anfragen",
+      },
     },
   };
 
