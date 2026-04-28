@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, X } from "lucide-react";
+import { AUTOMATIONS } from "@/data/automations";
 import {
   Form,
   FormControl,
@@ -35,6 +38,18 @@ type QualifizierungFormData = z.infer<typeof qualifizierungSchema>;
 const Qualifizierung = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const automationSlug = searchParams.get("automation");
+  const selectedAutomation = useMemo(
+    () => (automationSlug ? AUTOMATIONS.find((a) => a.slug === automationSlug) : undefined),
+    [automationSlug],
+  );
+
+  const prefilledMessage = useMemo(() => {
+    if (!selectedAutomation) return "";
+    return `Interesse an: ${selectedAutomation.code} – ${selectedAutomation.name}\n\nBitte sendet mir auf Basis dieser Automatisierung ein individuelles Angebot.`;
+  }, [selectedAutomation]);
 
   const form = useForm<QualifizierungFormData>({
     resolver: zodResolver(qualifizierungSchema),
@@ -42,22 +57,49 @@ const Qualifizierung = () => {
       name: "",
       email: "",
       phone: "",
-      message: "",
+      message: prefilledMessage,
       privacyAccepted: undefined as unknown as true,
     },
   });
+
+  // Sync prefilled message when automation param changes
+  useEffect(() => {
+    const current = form.getValues("message") ?? "";
+    if (prefilledMessage && (!current || current.startsWith("Interesse an:"))) {
+      form.setValue("message", prefilledMessage, { shouldDirty: false });
+    }
+  }, [prefilledMessage, form]);
+
+  const clearAutomation = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("automation");
+    setSearchParams(next, { replace: true });
+    const current = form.getValues("message") ?? "";
+    if (current.startsWith("Interesse an:")) {
+      form.setValue("message", "", { shouldDirty: false });
+    }
+  };
 
   const onSubmit = async (data: QualifizierungFormData) => {
     setIsSubmitting(true);
 
     const refCode = getStoredRefCode();
+    const automationTag = selectedAutomation
+      ? `[Automation: ${selectedAutomation.code} – ${selectedAutomation.name}]`
+      : null;
+    const messageWithTag = [automationTag, data.message?.trim() || null]
+      .filter(Boolean)
+      .join("\n\n") || null;
+
     try {
       const { error } = await supabase.from("leads").insert({
         name: data.name,
         email: data.email,
         phone: data.phone || null,
-        message: data.message || null,
-        source: "qualifizierung",
+        message: messageWithTag,
+        source: selectedAutomation
+          ? `qualifizierung:automation:${selectedAutomation.slug}`
+          : "qualifizierung",
         ref_code: refCode,
       });
 
@@ -72,8 +114,17 @@ const Qualifizierung = () => {
           name: data.name,
           email: data.email,
           phone: data.phone || null,
-          message: data.message || null,
-          source: "qualifizierung",
+          message: messageWithTag,
+          source: selectedAutomation
+            ? `qualifizierung:automation:${selectedAutomation.slug}`
+            : "qualifizierung",
+          automation: selectedAutomation
+            ? {
+                slug: selectedAutomation.slug,
+                code: selectedAutomation.code,
+                name: selectedAutomation.name,
+              }
+            : null,
         }),
       }).catch((err) => console.error("Notify email failed:", err));
 
@@ -92,8 +143,16 @@ const Qualifizierung = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="Kostenlose Potenzial-Analyse | KI-Automationen"
-        description="In 30 Minuten analysieren wir Engpässe, Abhängigkeiten und Automatisierungspotenzial in deinem Unternehmen. Klare Prioritäten statt Tool-Demo."
+        title={
+          selectedAutomation
+            ? `Angebot anfragen: ${selectedAutomation.name} | KI-Automationen`
+            : "Kostenlose Potenzial-Analyse | KI-Automationen"
+        }
+        description={
+          selectedAutomation
+            ? `Individuelles Angebot zu ${selectedAutomation.name} (${selectedAutomation.code}). In 15 Minuten besprechen wir Setup, Integrationen und Lieferzeit.`
+            : "In 30 Minuten analysieren wir Engpässe, Abhängigkeiten und Automatisierungspotenzial in deinem Unternehmen. Klare Prioritäten statt Tool-Demo."
+        }
         canonical="/qualifizierung"
       />
       <Header />
@@ -104,12 +163,55 @@ const Qualifizierung = () => {
             <div className="max-w-lg mx-auto">
               <div className="text-center mb-8 md:mb-12">
                 <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-4">
-                  Kostenloses Analysegespräch sichern
+                  {selectedAutomation
+                    ? "Angebot anfragen"
+                    : "Kostenloses Analysegespräch sichern"}
                 </h1>
                 <p className="text-base md:text-lg text-muted-foreground">
-                  In 15 Minuten schauen wir gemeinsam, wo du stehst und wie wir dir helfen können.
+                  {selectedAutomation
+                    ? "Wir melden uns innerhalb von 24 Stunden mit einem individuellen Angebot."
+                    : "In 15 Minuten schauen wir gemeinsam, wo du stehst und wie wir dir helfen können."}
                 </p>
               </div>
+
+              {selectedAutomation && (
+                <div className="mb-5 rounded-xl border border-primary/30 bg-primary/5 p-4 flex items-start gap-3">
+                  <div className="rounded-lg bg-primary/15 p-2 shrink-0">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {selectedAutomation.code}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Dein Angebot basiert auf:
+                      </span>
+                    </div>
+                    <div className="font-semibold text-foreground leading-snug">
+                      {selectedAutomation.name}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {selectedAutomation.subtitle}
+                    </p>
+                    <div className="mt-2 flex items-center gap-3 text-xs">
+                      <Link
+                        to={`/automatisierungen/${selectedAutomation.slug}`}
+                        className="text-primary underline hover:no-underline"
+                      >
+                        Details ansehen
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={clearAutomation}
+                        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                      >
+                        <X className="h-3 w-3" /> Auswahl entfernen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-card rounded-2xl shadow-xl border border-border p-6 md:p-8">
                 <Form {...form}>
@@ -161,10 +263,18 @@ const Qualifizierung = () => {
                       name="message"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nachricht (optional)</FormLabel>
+                          <FormLabel>
+                            {selectedAutomation
+                              ? "Deine Anforderungen (optional)"
+                              : "Nachricht (optional)"}
+                          </FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Erzähl uns kurz von deiner Situation..."
+                              placeholder={
+                                selectedAutomation
+                                  ? "z.B. genutzte Systeme, Volumen, Wunsch-Setup..."
+                                  : "Erzähl uns kurz von deiner Situation..."
+                              }
                               className="min-h-[100px]"
                               {...field}
                             />
@@ -222,7 +332,11 @@ const Qualifizierung = () => {
                       disabled={isSubmitting}
                       size="lg"
                     >
-                      {isSubmitting ? "Wird gesendet..." : "Gespräch anfordern"}
+                      {isSubmitting
+                        ? "Wird gesendet..."
+                        : selectedAutomation
+                          ? "Angebot anfragen"
+                          : "Gespräch anfordern"}
                     </Button>
 
                     <p className="text-xs text-muted-foreground text-center">
