@@ -4240,6 +4240,7 @@ export type Database = {
         Args: { _signature_data: string; _signer_name: string; _token: string }
         Returns: string
       }
+      approve_offer_draft: { Args: { _draft_id: string }; Returns: string }
       book_slot_public: {
         Args: {
           _contact_email: string
