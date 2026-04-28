@@ -11,13 +11,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminMembers } from '@/hooks/useAdminMembers';
 import {
   Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus, UserPlus,
   Pencil, Trash2, Loader2, Search, Eye, ChevronRight, BarChart3,
   FolderOpen, FileText, Play, CheckSquare, HelpCircle, ArrowUpDown,
-  Save, X, LayoutGrid, List, Handshake, CheckCircle2, AlertCircle, Mail
+  Save, X, LayoutGrid, List, Handshake, CheckCircle2, AlertCircle, Mail, Copy, Check
 } from 'lucide-react';
 import {
   MEMBER_STATUS_LABELS, MEMBER_STATUS_COLORS,
@@ -56,7 +57,19 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
     recipient: string;
     timestamp: number;
   } | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const { toast } = useToast();
+
+  const copyLink = async (link: string) => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setLinkCopied(true);
+      sonnerToast.success('Einladungslink kopiert');
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      sonnerToast.error('Kopieren fehlgeschlagen – Link bitte manuell markieren.');
+    }
+  };
 
   // Sync prefill when dialog re-opens with new lead
   useEffect(() => {
@@ -64,6 +77,7 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
       setEmail(prefillEmail || '');
       setName(prefillName || '');
       setLastResult(null);
+      setLinkCopied(false);
     }
   }, [open, prefillEmail, prefillName]);
 
@@ -146,8 +160,19 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
         toast({
           variant: 'destructive',
           title: 'Mail nicht versendet',
-          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert.`,
+          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert und steht im Dialog bereit.`,
         });
+        // Persistenter Sonner-Toast mit Copy-Action, damit Admin den Link auch nach Dialog-Schließen hat
+        if (inviteLink) {
+          sonnerToast.error('Einladungs-Mail nicht zugestellt', {
+            description: `Empfänger: ${email}. Bitte den Link manuell weiterleiten.`,
+            duration: 30000,
+            action: {
+              label: 'Link kopieren',
+              onClick: () => { navigator.clipboard.writeText(inviteLink).catch(() => {}); },
+            },
+          });
+        }
       }
     } catch (err: any) {
       setLastResult({
@@ -302,10 +327,35 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
                     Gmail war nicht verfügbar – {lastResult.provider === 'resend' ? 'Resend' : 'Outlook'} wurde als Fallback verwendet.
                   </p>
                 )}
-                {!lastResult.emailSent && lastResult.inviteLink && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Einladungslink wurde in die Zwischenablage kopiert.
-                  </p>
+                {lastResult.inviteLink && (
+                  <div className="mt-3 space-y-1">
+                    <Label className="text-xs">
+                      {lastResult.emailSent ? 'Einladungslink (zur Sicherheit)' : 'Einladungslink – bitte manuell weiterleiten'}
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={lastResult.inviteLink}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="text-xs font-mono bg-background"
+                      />
+                      <Button
+                        type="button"
+                        variant={linkCopied ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => copyLink(lastResult.inviteLink!)}
+                        className="gap-1.5 shrink-0"
+                      >
+                        {linkCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {linkCopied ? 'Kopiert' : 'Kopieren'}
+                      </Button>
+                    </div>
+                    {!lastResult.emailSent && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Link ist 7 Tage gültig. Versende ihn z. B. via WhatsApp, SMS oder persönlich.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
