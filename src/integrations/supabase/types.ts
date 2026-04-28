@@ -461,13 +461,18 @@ export type Database = {
           code: string
           created_at: string
           delivery_days: number
+          description: string | null
           id: string
           mode: Database["public"]["Enums"]["catalog_mode"]
           name: string
+          offer_prompt: string | null
+          offer_template: string | null
+          optional_connectors: string[]
           payment_link: string
           price_gross_cents: number
           price_net_cents: number
           price_period_label: string | null
+          required_connectors: string[]
           sort_order: number
           stripe_price_id: string
           stripe_product_id: string
@@ -481,13 +486,18 @@ export type Database = {
           code: string
           created_at?: string
           delivery_days?: number
+          description?: string | null
           id?: string
           mode?: Database["public"]["Enums"]["catalog_mode"]
           name: string
+          offer_prompt?: string | null
+          offer_template?: string | null
+          optional_connectors?: string[]
           payment_link: string
           price_gross_cents: number
           price_net_cents: number
           price_period_label?: string | null
+          required_connectors?: string[]
           sort_order?: number
           stripe_price_id: string
           stripe_product_id: string
@@ -501,13 +511,18 @@ export type Database = {
           code?: string
           created_at?: string
           delivery_days?: number
+          description?: string | null
           id?: string
           mode?: Database["public"]["Enums"]["catalog_mode"]
           name?: string
+          offer_prompt?: string | null
+          offer_template?: string | null
+          optional_connectors?: string[]
           payment_link?: string
           price_gross_cents?: number
           price_net_cents?: number
           price_period_label?: string | null
+          required_connectors?: string[]
           sort_order?: number
           stripe_price_id?: string
           stripe_product_id?: string
