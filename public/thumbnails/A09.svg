@@ -1,23 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450" role="img" aria-label="KI-Kundenservice-Bot">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B1220"/><stop offset="0.55" stop-color="#111C33"/><stop offset="1" stop-color="#0A1328"/></linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3B82F6"/><stop offset="1" stop-color="#22D3EE"/></linearGradient>
-    <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#3B82F6" stroke-opacity="0.08" stroke-width="1"/></pattern>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF3EB"/>
+      <stop offset="100%" stop-color="#FFE4CC"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#0F3E2E" opacity="0.08"/>
+    </pattern>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#grid)"/>
-  <rect x="0" y="0" width="1200" height="4" fill="url(#accent)"/>
-  <text x="60" y="70" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="24" fill="#F8FAFC" letter-spacing="2">ki-automatisierungen.io</text>
-  <rect x="60" y="110" width="120" height="40" rx="20" fill="#3B82F6" opacity="0.15"/>
-  <rect x="60" y="110" width="120" height="40" rx="20" fill="none" stroke="#3B82F6" stroke-width="1.5"/>
-  <text x="120" y="137" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="20" fill="#22D3EE" text-anchor="middle">A09</text>
-  <text x="60" y="260" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="76" fill="#F8FAFC">KI-Kundenservice-Bot</text>
-  <text x="60" y="320" font-family="Inter, Arial, sans-serif" font-weight="400" font-size="32" fill="#94A3B8">Chat-Widget mit Wissensbasis</text>
-  <rect x="60" y="470" width="300" height="80" rx="12" fill="#3B82F6"/>
-  <text x="210" y="522" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="40" fill="#F8FAFC" text-anchor="middle">3.400 € netto</text>
-  <text x="60" y="580" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="20" fill="#94A3B8">Festpreis · 7 Tage Lieferzeit · inkl. Setup &amp; Support</text>
-  <circle cx="980" cy="290" r="180" fill="#3B82F6" opacity="0.08"/>
-  <circle cx="980" cy="290" r="140" fill="#3B82F6" opacity="0.12"/>
-  <circle cx="980" cy="290" r="100" fill="#0B1220" stroke="#3B82F6" stroke-width="2"/>
-  <g transform="translate(852, 162)" fill="#22D3EE"><path d="M216 48H40c-13.3 0-24 10.7-24 24v112c0 13.3 10.7 24 24 24h40v40l48-40h88c13.3 0 24-10.7 24-24V72c0-13.3-10.7-24-24-24zM72 128h16v16H72v-16zm56 0h16v16h-16v-16zm56 0h16v16h-16v-16z"/></g>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <rect width="800" height="450" fill="url(#dots)"/>
+  <!-- Code badge -->
+  <g transform="translate(28,28)">
+    <rect x="0" y="0" rx="14" ry="14" width="78" height="32" fill="#0F3E2E"/>
+    <text x="39" y="21" font-family="ui-monospace, SFMono-Regular, monospace" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">A09</text>
+  </g>
+  <!-- Brand mark -->
+  <g transform="translate(772,36)" text-anchor="end">
+    <text font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#0F3E2E" opacity="0.55" letter-spacing="2">KI-AUTOMATIONEN</text>
+  </g>
+  <!-- Scene -->
+  
+    <g transform="translate(80,80)">
+      <rect x="0" y="0" rx="18" ry="18" width="640" height="280" fill="#FFFFFF" stroke="#0F3E2E" stroke-width="2"/>
+      <rect x="0" y="0" rx="18" ry="18" width="640" height="50" fill="#0F3E2E"/>
+      <circle cx="28" cy="25" r="10" fill="#F97316"/>
+      <text x="50" y="29" font-family="Inter,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">KI-Service · online</text>
+      <circle cx="600" cy="25" r="5" fill="#10B981"/>
+      <!-- user msg -->
+      <g transform="translate(220,70)">
+        <rect x="0" y="0" rx="14" ry="14" width="400" height="46" fill="#FFF3EB"/>
+        <text x="20" y="20" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#6B7280">Kunde</text>
+        <text x="20" y="38" font-family="Inter,sans-serif" font-size="12" fill="#1F2937">Wann ist meine Bestellung versandbereit?</text>
+      </g>
+      <!-- bot msg -->
+      <g transform="translate(20,130)">
+        <rect x="0" y="0" rx="14" ry="14" width="440" height="64" fill="#F97316"/>
+        <text x="20" y="20" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#FFFFFF" opacity="0.8">KI-Bot · 0.8s</text>
+        <text x="20" y="38" font-family="Inter,sans-serif" font-size="12" fill="#FFFFFF">Deine Bestellung #2087 wird heute versendet.</text>
+        <text x="20" y="56" font-family="Inter,sans-serif" font-size="12" fill="#FFFFFF">Tracking-Link kommt per E-Mail.</text>
+      </g>
+      <!-- typing -->
+      <g transform="translate(20,210)">
+        <rect x="0" y="0" rx="14" ry="14" width="100" height="40" fill="#FFF3EB"/>
+        <circle cx="22" cy="20" r="4" fill="#6B7280"/>
+        <circle cx="38" cy="20" r="4" fill="#6B7280" opacity="0.6"/>
+        <circle cx="54" cy="20" r="4" fill="#6B7280" opacity="0.3"/>
+      </g>
+    </g>
+    
+  <!-- Title strip -->
+  <g transform="translate(28,392)">
+    <text font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="700" fill="#1F2937">KI-Kundenservice-Bot</text>
+  </g>
 </svg>
