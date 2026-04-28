@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTrialStatus } from '@/hooks/useTrialStatus';
 import { cn } from '@/lib/utils';
 import { AppRole, STAFF_ROLES, MEMBER_ROLES } from '@/lib/roles';
 import {
@@ -25,6 +26,8 @@ import {
   Video,
   Handshake,
   Inbox,
+  Lock,
+  Rocket,
 } from 'lucide-react';
 
 interface NavItem {
