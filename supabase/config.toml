@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.email-consent-action]
 verify_jwt = false
+
+[functions.stripe-subscription-webhook]
+verify_jwt = false
