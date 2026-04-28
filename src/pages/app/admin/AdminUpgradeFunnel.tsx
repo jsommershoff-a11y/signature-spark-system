@@ -129,16 +129,42 @@ export default function AdminUpgradeFunnel() {
             Modul-Aufruf → CTA-Klick → Upgrade abgeschlossen, pro Modul und Ziel-Paket.
           </p>
         </div>
-        <Select value={range} onValueChange={(v) => setRange(v as Range)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {(Object.keys(RANGE_LABEL) as Range[]).map((r) => (
-              <SelectItem key={r} value={r}>{RANGE_LABEL[r]}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-2">
+          <Select value={range} onValueChange={(v) => setRange(v as Range)}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Zeitraum" /></SelectTrigger>
+            <SelectContent>
+              {(Object.keys(RANGE_LABEL) as Range[]).map((r) => (
+                <SelectItem key={r} value={r}>{RANGE_LABEL[r]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={moduleFilter} onValueChange={setModuleFilter}>
+            <SelectTrigger className="w-[170px]"><SelectValue placeholder="Modul" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Module</SelectItem>
+              {moduleOptions.map((m) => (
+                <SelectItem key={m} value={m}>{MODULE_LABEL[m] ?? m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={tierFilter} onValueChange={setTierFilter}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Ziel-Paket" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Pakete</SelectItem>
+              {tierOptions.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={filtered.length === 0}
+          >
+            <Download className="h-4 w-4 mr-1" /> CSV
+          </Button>
+        </div>
       </div>
 
       {/* KPI Tiles */}
