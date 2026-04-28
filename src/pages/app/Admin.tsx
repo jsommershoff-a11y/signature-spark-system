@@ -106,6 +106,10 @@ export default function Admin() {
           <AdminDriveSync />
         </TabsContent>
 
+        <TabsContent value="zoom-auto">
+          <AdminZoomAutomation />
+        </TabsContent>
+
         <TabsContent value="export">
           <Card>
             <CardHeader>
