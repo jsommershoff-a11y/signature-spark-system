@@ -4,8 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, AlertTriangle, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
+import { Clock, CheckCircle2, AlertTriangle, Sparkles, ArrowRight, Loader2, Ticket, Calendar as CalendarIcon, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLiveCallEligibility } from '@/hooks/useLiveCallEligibility';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -26,6 +27,7 @@ function formatRemaining(ms: number): string {
 
 export function TrialStatusWidget() {
   const { profile } = useAuth();
+  const { eligibility } = useLiveCallEligibility();
   const [now, setNow] = useState<number>(() => Date.now());
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
@@ -92,15 +94,18 @@ export function TrialStatusWidget() {
   if (view.kind === 'active') {
     return (
       <Card className="border-green-500/20 bg-green-500/5">
-        <CardContent className="p-4 flex items-center gap-3">
-          <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium">Mitgliedschaft aktiv</div>
-            <div className="text-xs text-muted-foreground">
-              Voller Zugriff auf alle Module, Live-Calls und Inhalte.
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium">Mitgliedschaft aktiv</div>
+              <div className="text-xs text-muted-foreground">
+                Voller Zugriff auf alle Module, Live-Calls und Inhalte.
+              </div>
             </div>
+            <Badge variant="default" className="bg-green-600 hover:bg-green-600">Aktiv</Badge>
           </div>
-          <Badge variant="default" className="bg-green-600 hover:bg-green-600">Aktiv</Badge>
+          <LiveCallStatusRow eligibility={eligibility} compact />
         </CardContent>
       </Card>
     );
@@ -132,6 +137,10 @@ export function TrialStatusWidget() {
               </p>
             </div>
           </div>
+
+          {/* Live-Call Status */}
+          <LiveCallStatusRow eligibility={eligibility} compact />
+
           <Progress value={view.percent} className="h-1.5" />
           <div className="flex flex-wrap gap-2 pt-1">
             <Button
@@ -191,5 +200,75 @@ export function TrialStatusWidget() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Inline-Statuszeile für Live-Call: zeigt verfügbar / eingelöst / gesperrt.
+ */
+function LiveCallStatusRow({
+  eligibility,
+  compact = false,
+}: {
+  eligibility: ReturnType<typeof useLiveCallEligibility>['eligibility'];
+  compact?: boolean;
+}) {
+  const reason = eligibility.reason;
+
+  if (reason === 'no_access') return null;
+
+  const variants = {
+    active: {
+      icon: CheckCircle2,
+      tone: 'text-green-700 dark:text-green-400 bg-green-500/10 border-green-500/30',
+      label: 'Live-Calls unbegrenzt verfügbar',
+      hint: 'Voller Zugriff auf alle kommenden Calls.',
+    },
+    trial_available: {
+      icon: Ticket,
+      tone: 'text-primary bg-primary/10 border-primary/30',
+      label: '1 Trial-Live-Call verfügbar',
+      hint: 'Wähle deinen Wunsch-Termin im Kalender.',
+    },
+    trial_used: {
+      icon: CalendarIcon,
+      tone: 'text-muted-foreground bg-muted/40 border-border',
+      label: 'Trial-Live-Call eingelöst',
+      hint: eligibility.used_event_title
+        ? `Gebucht: ${eligibility.used_event_title}`
+        : 'Du bist für deinen Live-Call angemeldet.',
+    },
+    expired: {
+      icon: Lock,
+      tone: 'text-destructive bg-destructive/10 border-destructive/30',
+      label: 'Live-Calls gesperrt',
+      hint: 'Upgrade benötigt für weitere Anmeldungen.',
+    },
+  } as const;
+
+  const v = variants[reason];
+  const Icon = v.icon;
+
+  return (
+    <div
+      className={`rounded-lg border px-3 py-2 flex items-center gap-2.5 ${v.tone}`}
+      role="status"
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-semibold leading-tight">{v.label}</div>
+        {!compact && (
+          <div className="text-[11px] opacity-80 leading-tight mt-0.5">{v.hint}</div>
+        )}
+      </div>
+      {(reason === 'trial_available' || reason === 'trial_used') && (
+        <Link
+          to="/app/calendar"
+          className="text-[11px] font-semibold hover:underline shrink-0"
+        >
+          {reason === 'trial_available' ? 'Buchen →' : 'Anzeigen →'}
+        </Link>
+      )}
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
+import { useLiveCallEligibility } from '@/hooks/useLiveCallEligibility';
 import { SEOHead } from '@/components/landing/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,8 @@ import {
   Mail,
   Phone,
   BarChart3,
+  Ticket,
+  CheckCircle2,
 } from 'lucide-react';
 
 const LOCKED_FEATURES = [
@@ -30,12 +33,14 @@ const LOCKED_FEATURES = [
 export default function Upgrade() {
   const location = useLocation();
   const trial = useTrialStatus();
+  const { eligibility } = useLiveCallEligibility();
   const reason = (location.state as { reason?: string } | null)?.reason;
   const fromPath = (location.state as { from?: string } | null)?.from;
 
   const isExpired = trial.isExpired;
   const isTrialing = trial.isTrialing;
   const days = trial.daysRemaining;
+  const liveCallReason = eligibility.reason;
 
   return (
     <div className="space-y-8">
@@ -118,14 +123,49 @@ export default function Upgrade() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Live-Call Status-Indicator */}
+            {liveCallReason === 'trial_available' && (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 flex items-center gap-2 text-xs text-primary font-medium">
+                <Ticket className="h-3.5 w-3.5" />
+                1 Trial-Live-Call verfügbar
+              </div>
+            )}
+            {liveCallReason === 'trial_used' && (
+              <div className="rounded-lg border border-border bg-muted/40 px-3 py-2 flex items-center gap-2 text-xs">
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium">Trial-Live-Call eingelöst</div>
+                  {eligibility.used_event_title && (
+                    <div className="text-muted-foreground truncate">
+                      {eligibility.used_event_title}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {liveCallReason === 'expired' && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 flex items-center gap-2 text-xs text-destructive font-medium">
+                <Lock className="h-3.5 w-3.5" />
+                Live-Calls gesperrt — Upgrade nötig
+              </div>
+            )}
+
             <p className="text-sm text-muted-foreground">
               {isExpired
                 ? 'Live-Calls sind nach Upgrade wieder verfügbar.'
+                : liveCallReason === 'trial_used'
+                ? 'Du hast deinen Trial-Call bereits gebucht. Upgrade für unbegrenzte Live-Calls.'
                 : 'Nutze dein einmaliges Trial-Ticket und sei bei einem Live-Call dabei.'}
             </p>
-            <Button asChild variant="outline" size="lg" className="w-full" disabled={isExpired}>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="w-full"
+              disabled={isExpired}
+            >
               <Link to="/app/calendar">
-                Zum Live-Kalender
+                {liveCallReason === 'trial_used' ? 'Buchung anzeigen' : 'Zum Live-Kalender'}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
