@@ -991,6 +991,90 @@ export type Database = {
         }
         Relationships: []
       }
+      drive_sync_runs: {
+        Row: {
+          errors: Json
+          finished_at: string | null
+          id: string
+          inserted: number
+          rows_total: number
+          sheet_id: string
+          skipped_dedupe: number
+          skipped_invalid: number
+          started_at: string
+          status: string
+          triggered_by: string
+        }
+        Insert: {
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          inserted?: number
+          rows_total?: number
+          sheet_id: string
+          skipped_dedupe?: number
+          skipped_invalid?: number
+          started_at?: string
+          status?: string
+          triggered_by?: string
+        }
+        Update: {
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          inserted?: number
+          rows_total?: number
+          sheet_id?: string
+          skipped_dedupe?: number
+          skipped_invalid?: number
+          started_at?: string
+          status?: string
+          triggered_by?: string
+        }
+        Relationships: []
+      }
+      drive_sync_state: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          last_error: string | null
+          last_status: string | null
+          last_sync_at: string | null
+          sheet_id: string
+          sheet_title: string | null
+          tab_name: string
+          total_inserted: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_status?: string | null
+          last_sync_at?: string | null
+          sheet_id: string
+          sheet_title?: string | null
+          tab_name?: string
+          total_inserted?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_status?: string | null
+          last_sync_at?: string | null
+          sheet_id?: string
+          sheet_title?: string | null
+          tab_name?: string
+          total_inserted?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_broadcasts: {
         Row: {
           body_html: string | null
