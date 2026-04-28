@@ -100,8 +100,28 @@ export function LeadDetailModal({
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
   const [createOfferOpen, setCreateOfferOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [invitations, setInvitations] = useState<InvitationRow[]>([]);
+  const [invitesLoading, setInvitesLoading] = useState(false);
   const { effectiveRole } = useAuth();
   const isAdmin = effectiveRole === 'admin';
+
+  const loadInvitations = async (email: string) => {
+    setInvitesLoading(true);
+    const { data } = await supabase
+      .from('invitations')
+      .select('id,email,created_at,expires_at,accepted_at')
+      .ilike('email', email)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    setInvitations((data as InvitationRow[]) || []);
+    setInvitesLoading(false);
+  };
+
+  useEffect(() => {
+    if (open && isAdmin && lead?.email) {
+      loadInvitations(lead.email);
+    }
+  }, [open, isAdmin, lead?.email, inviteOpen]);
 
   const { tasks, updateTask } = useTasks({ lead_id: lead?.id });
   const { calls, loading: callsLoading, createCall } = useCalls({ lead_id: lead?.id });
