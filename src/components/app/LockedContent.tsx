@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 
 type ModuleType = 'prompts' | 'tools' | 'lessons' | 'community' | 'generic';
 
