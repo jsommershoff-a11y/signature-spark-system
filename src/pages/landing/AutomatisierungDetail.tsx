@@ -30,6 +30,8 @@ import {
 import NotFound from "@/pages/NotFound";
 import { AUTOMATIONS } from "@/data/automations";
 import { DeliveryRoadmap } from "@/components/landing/DeliveryRoadmap";
+import { ProofBar } from "@/components/landing/ProofBar";
+import { ProductCTA } from "@/components/landing/ProductCTA";
 
 const FAQ = [
   {
@@ -199,15 +201,28 @@ export default function AutomatisierungDetail() {
                     <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Link>
                 </Button>
-                <p className="text-xs text-muted-foreground mt-3 text-center">
-                  Unverbindlich.<br />
-                  Antwort innerhalb von 24 h.
-                </p>
+                <ul className="text-xs text-muted-foreground mt-3 space-y-1">
+                  <li className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                    Unverbindliches Erstgespräch
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                    Festpreis-Angebot in 24 h
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                    DSGVO &amp; AVV inklusive
+                  </li>
+                </ul>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
+
+      {/* Proof */}
+      <ProofBar productCode={product.code} />
 
       {/* Vorher / Nachher */}
       <section className="bg-background py-12 md:py-16">
@@ -436,17 +451,22 @@ export default function AutomatisierungDetail() {
             Ein kurzer Anruf reicht, um Setup, Integrationen und Lieferzeit zu klären.
             Du bekommst innerhalb von 24 h dein individuelles Angebot.
           </p>
-          <Button asChild size="lg" className="bg-primary hover:bg-primary-deep">
-            <Link to={`/qualifizierung?automation=${product.slug}`}>
-              {product.name} anfragen
-              <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </Button>
-          <p className="text-xs text-muted-foreground mt-3">
-            Unverbindlich · Festpreis-Angebot · Bugfixes innerhalb der Termine inklusive
+          <ProductCTA
+            slug={product.slug}
+            label={`${product.name} anfragen`}
+            variant="hero"
+            className="inline-flex flex-col items-center"
+          />
+          <p className="text-xs text-muted-foreground mt-4">
+            Bugfixes innerhalb der Termine inklusive · 30 Tage Optimierungssupport
           </p>
         </div>
       </section>
+
+      {/* Mobile Sticky CTA */}
+      <ProductCTA slug={product.slug} variant="sticky" />
+      {/* Spacer damit Sticky-CTA Inhalte nicht überdeckt */}
+      <div className="h-16 md:hidden" aria-hidden="true" />
     </PublicLayout>
   );
 }
