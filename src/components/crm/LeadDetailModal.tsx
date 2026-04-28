@@ -113,7 +113,7 @@ export function LeadDetailModal({
     setInvitesLoading(true);
     const { data } = await supabase
       .from('invitations')
-      .select('id,email,created_at,expires_at,accepted_at')
+      .select('id,email,created_at,expires_at,accepted_at,invite_link,email_provider,email_sent,email_error')
       .ilike('email', email)
       .order('created_at', { ascending: false })
       .limit(10);
