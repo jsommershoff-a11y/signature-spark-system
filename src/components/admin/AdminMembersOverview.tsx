@@ -11,13 +11,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminMembers } from '@/hooks/useAdminMembers';
 import {
   Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus, UserPlus,
   Pencil, Trash2, Loader2, Search, Eye, ChevronRight, BarChart3,
   FolderOpen, FileText, Play, CheckSquare, HelpCircle, ArrowUpDown,
-  Save, X, LayoutGrid, List, Handshake, CheckCircle2, AlertCircle, Mail
+  Save, X, LayoutGrid, List, Handshake, CheckCircle2, AlertCircle, Mail, Copy, Check
 } from 'lucide-react';
 import {
   MEMBER_STATUS_LABELS, MEMBER_STATUS_COLORS,
