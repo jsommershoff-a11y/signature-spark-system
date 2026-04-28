@@ -17,7 +17,7 @@ import {
   Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus, UserPlus,
   Pencil, Trash2, Loader2, Search, Eye, ChevronRight, BarChart3,
   FolderOpen, FileText, Play, CheckSquare, HelpCircle, ArrowUpDown,
-  Save, X, LayoutGrid, List, Handshake
+  Save, X, LayoutGrid, List, Handshake, CheckCircle2, AlertCircle, Mail
 } from 'lucide-react';
 import {
   MEMBER_STATUS_LABELS, MEMBER_STATUS_COLORS,
@@ -47,6 +47,15 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
   const [leadResults, setLeadResults] = useState<LeadOption[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedLead, setSelectedLead] = useState<LeadOption | null>(null);
+  const [lastResult, setLastResult] = useState<{
+    success: boolean;
+    emailSent: boolean;
+    provider: 'gmail' | 'resend' | 'outlook' | null;
+    triedProviders?: string[];
+    inviteLink?: string;
+    recipient: string;
+    timestamp: number;
+  } | null>(null);
   const { toast } = useToast();
 
   // Sync prefill when dialog re-opens with new lead
@@ -54,6 +63,7 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
     if (open) {
       setEmail(prefillEmail || '');
       setName(prefillName || '');
+      setLastResult(null);
     }
   }, [open, prefillEmail, prefillName]);
 
@@ -94,6 +104,7 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
   const handleInvite = async () => {
     if (!email) return;
     setSending(true);
+    setLastResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('invite-member', {
         body: {
@@ -107,31 +118,45 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
 
       const inviteLink: string | undefined = data?.invite_link;
       const emailSent: boolean = !!data?.email_sent;
-      const provider: string | null = data?.email_provider || null;
+      const provider = (data?.email_provider || null) as 'gmail' | 'resend' | 'outlook' | null;
+      const triedProviders: string[] = Array.isArray(data?.tried_providers) ? data.tried_providers : [];
 
       // Always copy link as a fallback
       if (inviteLink) {
         try { await navigator.clipboard.writeText(inviteLink); } catch { /* ignore */ }
       }
 
+      setLastResult({
+        success: true,
+        emailSent,
+        provider,
+        triedProviders,
+        inviteLink,
+        recipient: email,
+        timestamp: Date.now(),
+      });
+
       if (emailSent) {
+        const usedFallback = provider && provider !== 'gmail';
         toast({
-          title: 'Einladung versendet',
-          description: `Mail an ${email} verschickt (${provider}). Link wurde zusätzlich in die Zwischenablage kopiert.${selectedLead || prefillLeadId ? ' Lead konvertiert.' : ''}`,
+          title: usedFallback ? `Versendet via ${provider} (Fallback)` : 'Einladung via Gmail versendet',
+          description: `Mail an ${email} verschickt. Link in Zwischenablage kopiert.${selectedLead || prefillLeadId ? ' Lead konvertiert.' : ''}`,
         });
       } else {
         toast({
-          title: 'Einladung erstellt – Mail nicht versendet',
-          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert: ${inviteLink ?? '—'}`,
+          variant: 'destructive',
+          title: 'Mail nicht versendet',
+          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert.`,
         });
       }
-
-      setEmail('');
-      setName('');
-      setRole('member_basic');
-      setSelectedLead(null);
-      onOpenChange(false);
     } catch (err: any) {
+      setLastResult({
+        success: false,
+        emailSent: false,
+        provider: null,
+        recipient: email,
+        timestamp: Date.now(),
+      });
       toast({ variant: 'destructive', title: 'Fehler', description: err.message || 'Einladung konnte nicht versendet werden.' });
     } finally {
       setSending(false);
@@ -230,11 +255,70 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
             </Select>
           </div>
         </div>
+
+        {/* Versand-Statusanzeige */}
+        {lastResult && (
+          <div
+            className={`rounded-md border p-3 text-sm ${
+              lastResult.emailSent
+                ? lastResult.provider === 'gmail'
+                  ? 'border-green-500/40 bg-green-500/10'
+                  : 'border-amber-500/40 bg-amber-500/10'
+                : 'border-destructive/40 bg-destructive/10'
+            }`}
+          >
+            <div className="flex items-start gap-2">
+              {lastResult.emailSent ? (
+                <CheckCircle2 className={`h-4 w-4 mt-0.5 shrink-0 ${lastResult.provider === 'gmail' ? 'text-green-600' : 'text-amber-600'}`} />
+              ) : (
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-medium">
+                    {lastResult.emailSent ? 'Einladung versendet' : 'Mail nicht versendet'}
+                  </span>
+                  {lastResult.provider && (
+                    <Badge
+                      variant="outline"
+                      className={`gap-1 ${
+                        lastResult.provider === 'gmail'
+                          ? 'border-green-500/50 text-green-700 dark:text-green-500'
+                          : 'border-amber-500/50 text-amber-700 dark:text-amber-500'
+                      }`}
+                    >
+                      <Mail className="h-3 w-3" />
+                      {lastResult.provider === 'gmail' && 'Gmail'}
+                      {lastResult.provider === 'resend' && 'Resend (Fallback)'}
+                      {lastResult.provider === 'outlook' && 'Outlook (Fallback)'}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 break-all">
+                  Empfänger: {lastResult.recipient}
+                </p>
+                {lastResult.provider && lastResult.provider !== 'gmail' && (
+                  <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">
+                    Gmail war nicht verfügbar – {lastResult.provider === 'resend' ? 'Resend' : 'Outlook'} wurde als Fallback verwendet.
+                  </p>
+                )}
+                {!lastResult.emailSent && lastResult.inviteLink && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Einladungslink wurde in die Zwischenablage kopiert.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {lastResult?.emailSent ? 'Schließen' : 'Abbrechen'}
+          </Button>
           <Button onClick={handleInvite} disabled={!email || sending} className="gap-1.5">
             {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-            {selectedLead ? 'Einladen & Konvertieren' : 'Einladen'}
+            {lastResult?.emailSent ? 'Erneut einladen' : selectedLead ? 'Einladen & Konvertieren' : 'Einladen'}
           </Button>
         </DialogFooter>
       </DialogContent>

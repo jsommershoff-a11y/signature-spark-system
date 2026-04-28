@@ -185,9 +185,11 @@ serve(async (req) => {
     let emailSent = false;
     let emailProvider: 'gmail' | 'resend' | 'outlook' | null = null;
     let emailError: string | null = null;
+    const triedProviders: string[] = [];
 
     // Primary: Gmail (via connector gateway)
     if (gmailKey && lovableKey) {
+      triedProviders.push('gmail');
       try {
         const raw = buildGmailRaw(email, subject, emailHtml);
         const res = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
@@ -215,6 +217,7 @@ serve(async (req) => {
 
     // Fallback 1: Resend
     if (!emailSent && resendKey) {
+      triedProviders.push('resend');
       try {
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -245,6 +248,7 @@ serve(async (req) => {
 
     // Fallback 2: Outlook
     if (!emailSent && outlookKey && lovableKey) {
+      triedProviders.push('outlook');
       try {
         const emailRes = await fetch(`${OUTLOOK_GATEWAY}/me/sendMail`, {
           method: 'POST',
@@ -288,6 +292,7 @@ serve(async (req) => {
         lead_converted: !!lead_id,
         email_sent: emailSent,
         email_provider: emailProvider,
+        tried_providers: triedProviders,
         email_error: emailSent ? null : emailError,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
