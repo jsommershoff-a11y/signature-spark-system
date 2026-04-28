@@ -20,7 +20,7 @@ export const CompetitionSection = () => {
               Stunden, die dir für Umsatz, Führung und Wachstum fehlen.
             </p>
             <p className="text-destructive font-bold text-lg">
-              Das sind 2.000–5.000 € – jeden Monat.
+              Das ist verlorene Marge – jeden Monat.
             </p>
           </div>
 
