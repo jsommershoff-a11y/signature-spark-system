@@ -341,12 +341,25 @@ ${(catalog || []).map((p: any) => {
 
     // Telegram-Push an Berater
     const leadName = `${lead.first_name} ${lead.last_name || ""}`.trim();
-    const price = (draft.pricing_strategy.suggested_price_eur || 0).toLocaleString("de-DE");
+    const fmt = (n: number) => (n || 0).toLocaleString("de-DE", { maximumFractionDigits: 0 });
+    const breakdownLines = breakdown.slice(0, 6).map((p: any) => {
+      if (p.kind === "catalog_item") {
+        const adj = p.adjustment_percent ? ` ${p.adjustment_percent > 0 ? "+" : ""}${p.adjustment_percent}%` : "";
+        const reason = p.adjustment_reason ? ` <i>(${p.adjustment_reason})</i>` : "";
+        return `• ${p.label}: ${fmt(p.base_price_eur)}€${adj} → <b>${fmt(p.line_total_eur)}€</b>${reason}`;
+      }
+      return `• ${p.label} <i>(custom)</i>: <b>${fmt(p.line_total_eur)}€</b>${p.adjustment_reason ? " — " + p.adjustment_reason : ""}`;
+    }).join("\n");
+
     await sendTelegram(
       `📝 <b>Neuer Angebotsentwurf</b>\n` +
       `Lead: <b>${leadName}</b>${lead.company ? " · " + lead.company : ""}\n` +
-      `Lösung: ${draft.solution_concept.title}\n` +
-      `Vorschlag: <b>${price} €</b> (Marge ${draft.pricing_strategy.margin_percent}%)\n` +
+      `Lösung: ${draft.solution_concept.title}\n\n` +
+      `<b>Preisherleitung:</b>\n${breakdownLines || "—"}\n\n` +
+      `Katalog-Basis: ${fmt(ps.catalog_subtotal_eur)}€\n` +
+      `Aufschläge: ${fmt(ps.adjustments_subtotal_eur)}€\n` +
+      `Custom: ${fmt(ps.custom_subtotal_eur)}€\n` +
+      `<b>Vorschlag: ${fmt(ps.suggested_price_eur)}€</b> (Marge ${ps.margin_percent}%)\n` +
       `QA: ${qaPassed ? "✅ bestanden" : "⚠️ Korrektur nötig"}\n` +
       `<a href="${APP_URL}/app/leads">→ Im CRM öffnen</a>`,
     );
