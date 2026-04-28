@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AUTOMATIONS, type Automation } from "@/data/automations";
+import { DeliveryRoadmap } from "@/components/landing/DeliveryRoadmap";
 
 type Filter = "all" | "automation" | "education";
 
@@ -103,6 +104,13 @@ export default function Automatisierungen() {
               <ProductCard key={a.code} a={a} />
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Roadmap */}
+      <section className="bg-background pb-4 md:pb-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <DeliveryRoadmap />
         </div>
       </section>
 
