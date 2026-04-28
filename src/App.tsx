@@ -57,6 +57,7 @@ import CallDetail from "./pages/app/CallDetail";
 import Offers from "./pages/app/Offers";
 import OfferDetail from "./pages/app/OfferDetail";
 import MyContracts from "./pages/app/MyContracts";
+import MemberManagement from "./pages/app/MemberManagement";
 import Goals from "./pages/app/Goals";
 import SocialMedia from "./pages/app/SocialMedia";
 import EmailHub from "./pages/app/EmailHub";
@@ -207,9 +208,14 @@ const App = () => (
               <Route path="calendar" element={<LiveCallsCalendar />} />
               <Route path="affiliate" element={<AffiliateDashboard />} />
 
-              {/* Konsolidierung: members → customers, member-management → admin/customers */}
+              {/* Konsolidierung: members → customers */}
               <Route path="members" element={<Navigate to="/app/customers" replace />} />
-              <Route path="member-management" element={<Navigate to="/app/admin/customers" replace />} />
+              {/* Mitgliederverwaltung — eigene Admin-Route, kein Redirect */}
+              <Route path="member-management" element={
+                <ProtectedRoute requiredRole="admin">
+                  <MemberManagement />
+                </ProtectedRoute>
+              } />
 
               <Route path="reports" element={
                 <ProtectedRoute requireMinRole="gruppenbetreuer">
