@@ -19,8 +19,16 @@ const CRON_SECRET = Deno.env.get("CRON_SECRET");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// Broad filter: any meeting summary mail
-const GMAIL_QUERY = '(subject:(Zusammenfassung OR Summary OR "Meeting Summary" OR "Besprechungszusammenfassung") OR from:(zoom.us OR fathom.video OR fireflies.ai OR fyi.fyi)) newer_than:2d';
+// Broad filter: any meeting summary mail. Matches Zoom AI Companion, Fathom, Fireflies,
+// Otter, tl;dv, Read.ai, Granola, Krisp, Avoma, Loom Summary, Microsoft Teams Recap.
+const GMAIL_QUERY = [
+  '(',
+  'subject:(Zusammenfassung OR Summary OR "Meeting Summary" OR "Besprechungszusammenfassung"',
+  ' OR "Meeting Recap" OR "AI Companion" OR "Recording is available" OR "Aufzeichnung")',
+  ' OR from:(zoom.us OR fathom.video OR fireflies.ai OR fyi.fyi OR otter.ai OR tldv.io',
+  ' OR read.ai OR granola.ai OR krisp.ai OR avoma.com OR loom.com OR microsoft.com)',
+  ') -in:spam -in:trash newer_than:3d',
+].join('');
 
 async function sendTelegram(text: string) {
   if (!TELEGRAM_API_KEY || !TELEGRAM_NOTIFY_CHAT_ID) return;
