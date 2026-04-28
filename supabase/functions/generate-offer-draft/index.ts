@@ -271,7 +271,7 @@ ${(catalog || []).map((p: any) => {
               },
               required: [
                 "problem_analysis", "solution_concept", "is_custom_solution",
-                "required_connectors", "internal_cost_analysis", "pricing_strategy",
+                "required_connectors", "internal_cost_analysis", "price_breakdown", "pricing_strategy",
                 "benefit_analysis", "client_inputs_required", "qa_checks",
               ],
               additionalProperties: false,
