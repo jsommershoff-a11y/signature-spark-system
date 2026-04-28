@@ -210,7 +210,7 @@ export default function AutomatisierungDetail() {
           {/* Final CTA */}
           <div className="text-center pt-4">
             <Button asChild size="lg" className="bg-primary hover:bg-primary-deep">
-              <Link to="/qualifizierung">
+              <Link to={`/qualifizierung?automation=${product.slug}`}>
                 {product.name} anfragen
                 <ArrowRight className="ml-1.5 h-4 w-4" />
               </Link>
