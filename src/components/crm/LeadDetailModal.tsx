@@ -79,6 +79,9 @@ export function LeadDetailModal({
   const [hasChanges, setHasChanges] = useState(false);
   const [scheduleCallOpen, setScheduleCallOpen] = useState(false);
   const [createOfferOpen, setCreateOfferOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const { effectiveRole } = useAuth();
+  const isAdmin = effectiveRole === 'admin';
 
   const { tasks, updateTask } = useTasks({ lead_id: lead?.id });
   const { calls, loading: callsLoading, createCall } = useCalls({ lead_id: lead?.id });
