@@ -318,6 +318,11 @@ export default function LiveCallsCalendar() {
                         <Badge variant="outline" className="text-emerald-600 border-emerald-300">
                           <CheckCircle2 className="h-3 w-3 mr-1" /> Angemeldet
                         </Badge>
+                        {!isStaff && reason === 'trial_used' && eligibility.used_event_id === event.id && (
+                          <Badge variant="secondary" className="gap-1">
+                            <Ticket className="h-3 w-3" /> Trial-Ticket eingelöst
+                          </Badge>
+                        )}
                         <Button variant="ghost" size="sm" onClick={() => unregister(event.id)}>Abmelden</Button>
                         {event.meeting_url && event.status === 'live' && (
                           <Button size="sm" asChild>
@@ -327,17 +332,38 @@ export default function LiveCallsCalendar() {
                           </Button>
                         )}
                       </>
+                    ) : canBook ? (
+                      <Button size="sm" onClick={() => handleRegister(event.id)}>
+                        {!isStaff && reason === 'trial_available' ? (
+                          <>
+                            <Ticket className="h-3.5 w-3.5 mr-1.5" />
+                            Trial-Ticket einlösen
+                          </>
+                        ) : (
+                          <>
+                            <Users className="h-3.5 w-3.5 mr-1.5" />
+                            Anmelden
+                          </>
+                        )}
+                      </Button>
                     ) : (
                       <Button
                         size="sm"
-                        onClick={() => register(event.id)}
-                        disabled={!canBook}
-                        title={!canBook ? 'Trial-Buchung bereits genutzt – upgrade für unbegrenzte Live-Calls' : undefined}
+                        variant="outline"
+                        asChild
+                        title={
+                          reason === 'trial_used'
+                            ? 'Trial-Ticket bereits eingelöst – upgrade für unbegrenzte Live-Calls'
+                            : 'Aktive Mitgliedschaft erforderlich'
+                        }
                       >
-                        <Users className="h-3.5 w-3.5 mr-1.5" />
-                        {canBook ? 'Anmelden' : 'Upgrade nötig'}
+                        <Link to="/app/dashboard">
+                          <Lock className="h-3.5 w-3.5 mr-1.5" />
+                          Upgrade nötig
+                        </Link>
                       </Button>
                     )}
+
 
                     {canSubmitTopic(event.event_date) && (
                       <Dialog open={topicDialogOpen && selectedEventId === event.id} onOpenChange={(open) => { setTopicDialogOpen(open); if (open) setSelectedEventId(event.id); }}>
