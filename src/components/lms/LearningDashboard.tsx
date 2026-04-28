@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, BookOpen, Trophy, Flame, Target, Sparkles, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { LockedContent, TierProgressHint } from '@/components/app/LockedContent';
+import { TrialInlineNotice } from '@/components/app/TrialInlineNotice';
 
 export function LearningDashboard() {
   const {
@@ -33,6 +34,8 @@ export function LearningDashboard() {
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
+      <TrialInlineNotice />
+
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-foreground/5 via-primary/5 to-primary/10 border border-border/50 p-6 md:p-8">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
