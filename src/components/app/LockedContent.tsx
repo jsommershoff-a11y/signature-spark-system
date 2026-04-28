@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Lock, ArrowUpRight, Sparkles, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
