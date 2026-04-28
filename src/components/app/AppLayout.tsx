@@ -61,6 +61,8 @@ export function AppLayout() {
         </div>
       </header>
 
+      <TrialTopBar />
+
       {/* Main Content */}
       <div className="flex-1 flex min-h-0">
         {/* Desktop Sidebar */}
