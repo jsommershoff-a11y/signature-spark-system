@@ -104,7 +104,28 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
         },
       });
       if (error) throw error;
-      toast({ title: 'Einladung versendet', description: `Einladung an ${email} gesendet.${selectedLead ? ' Lead wurde konvertiert.' : ''}` });
+
+      const inviteLink: string | undefined = data?.invite_link;
+      const emailSent: boolean = !!data?.email_sent;
+      const provider: string | null = data?.email_provider || null;
+
+      // Always copy link as a fallback
+      if (inviteLink) {
+        try { await navigator.clipboard.writeText(inviteLink); } catch { /* ignore */ }
+      }
+
+      if (emailSent) {
+        toast({
+          title: 'Einladung versendet',
+          description: `Mail an ${email} verschickt (${provider}). Link wurde zusätzlich in die Zwischenablage kopiert.${selectedLead || prefillLeadId ? ' Lead konvertiert.' : ''}`,
+        });
+      } else {
+        toast({
+          title: 'Einladung erstellt – Mail nicht versendet',
+          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert: ${inviteLink ?? '—'}`,
+        });
+      }
+
       setEmail('');
       setName('');
       setRole('member_basic');
