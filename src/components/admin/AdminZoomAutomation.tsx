@@ -82,6 +82,18 @@ export function AdminZoomAutomation() {
     }
   };
 
+  const approveDraft = async (draftId: string) => {
+    try {
+      const { data, error } = await supabase.rpc("approve_offer_draft", { _draft_id: draftId });
+      if (error) throw error;
+      toast.success(`Angebot freigegeben — Pipeline aktualisiert, Follow-up in 3 Tagen geplant`);
+      await load();
+      return data;
+    } catch (e: any) {
+      toast.error(`Freigabe fehlgeschlagen: ${e.message}`);
+    }
+  };
+
   const lastRun = runs[0];
 
   return (
