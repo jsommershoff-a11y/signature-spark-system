@@ -248,6 +248,7 @@ serve(async (req) => {
 
     // Fallback 2: Outlook
     if (!emailSent && outlookKey && lovableKey) {
+      triedProviders.push('outlook');
       try {
         const emailRes = await fetch(`${OUTLOOK_GATEWAY}/me/sendMail`, {
           method: 'POST',
