@@ -79,26 +79,30 @@ Deno.serve(async (req) => {
       summary = data;
     }
 
-    // Load active catalog products
+    // Load active catalog products (full pricing context)
     const { data: catalog } = await supabase
       .from("catalog_products")
-      .select("id, name, description, price_cents, category")
-      .eq("status", "active")
-      .limit(50);
+      .select("id, code, name, subtitle, description, category, mode, price_net_cents, price_period_label, term_label, required_connectors, optional_connectors")
+      .eq("active", true)
+      .order("sort_order", { ascending: true })
+      .limit(80);
 
     // Build AI prompt
     const sys = `Du bist Senior Sales Engineer für ein deutsches KI-Automatisierungsunternehmen.
 Du erstellst strukturierte Angebotsentwürfe (NICHT versendet, intern für Berater-Review).
 
-REGELN:
-1. Nutze IMMER zuerst passende Produkte aus dem Katalog. Match per Name/Kategorie/Beschreibung.
-2. Wenn keines passt: erstelle "Individueller Entwurf" und markiere is_custom_solution=true.
-3. Kalkuliere INTERNE Kosten realistisch (Setup, Tools, API, Wartung, Risiko).
-4. Verkaufspreis = interne Kosten × (2.5–4× Marge je nach Komplexität).
-5. Mindestpreis = interne Kosten × 1.8.
-6. Alle Preise als VORSCHLAG. Berater entscheidet final.
-7. Konnektoren-Liste: nur die wirklich nötigen (Email/Calendar/CRM/Drive/OneDrive/Zoom/sevDesk/Supabase/n8n/APIs/Webhooks).
-8. Antworte AUSSCHLIESSLICH via Tool-Call.`;
+REGELN PREISFINDUNG (transparent & nachvollziehbar):
+1. Mappe IMMER zuerst eine ODER mehrere Katalog-Positionen, die zur Lösung passen (per id).
+2. Für jede gewählte Katalog-Position gib an:
+   - base_price_eur (Netto-Preis aus Katalog)
+   - adjustment_percent (Aufschlag in % gegenüber Katalog, z.B. +25 für komplexere Variante, -10 für Volumenrabatt)
+   - adjustment_reason (z.B. "Mehraufwand durch 3 Standorte", "Sonderkonnektor sevDesk", "Erweiterte Auswertungslogik")
+   - quantity (Standard 1)
+3. Wenn Lösungsbestandteile NICHT im Katalog: füge "custom_addon"-Positionen hinzu mit cost_eur + rationale.
+4. Aufschläge sollen REALISTISCH und ARGUMENTIERBAR sein (Komplexität, Datenvolumen, Sonder-APIs, Risiko, Compliance).
+5. Marge = (final_price - internal_cost) / final_price · 100. Ziel 60-75%, min 45%.
+6. Konnektoren: nur die wirklich nötigen (Email/Calendar/CRM/Drive/OneDrive/Zoom/sevDesk/Supabase/n8n/APIs/Webhooks).
+7. Antworte AUSSCHLIESSLICH via Tool-Call.`;
 
     const userMsg = `LEAD:
 Name: ${lead.first_name} ${lead.last_name || ""}
@@ -119,8 +123,11 @@ Dringlichkeit: ${summary.ai_extraction?.urgency || "?"}
 Budget-Signal: ${summary.ai_extraction?.budget_signal || "—"}
 Entscheider anwesend: ${summary.ai_extraction?.decision_maker_present ? "ja" : "nein"}` : "Keine Call-Daten — erstelle Entwurf basierend auf Lead-Info."}
 
-VERFÜGBARER KATALOG (Auswahl):
-${(catalog || []).map((p: any) => `- ${p.name} (${p.category || "—"}): ${(p.description || "").slice(0, 120)} | Preis: ${p.price_cents ? (p.price_cents / 100).toFixed(0) + "€" : "individuell"}`).join("\n")}`;
+VERFÜGBARER KATALOG (id | code | name | mode | netto-preis):
+${(catalog || []).map((p: any) => {
+  const price = p.price_net_cents ? `${(p.price_net_cents / 100).toFixed(0)}€${p.price_period_label ? "/" + p.price_period_label : ""}` : "individuell";
+  return `[${p.id}] ${p.code || "—"} · ${p.name} (${p.mode || "—"}, ${p.category || "—"}) — ${price}${p.subtitle ? " · " + p.subtitle : ""}`;
+}).join("\n")}`;
 
     const r = await fetch(AI_URL, {
       method: "POST",
