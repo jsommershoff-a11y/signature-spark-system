@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.generate-offer-draft]
 verify_jwt = false
+
+[functions.telegram-poll]
+verify_jwt = false
+
+[functions.telegram-approval-webhook]
+verify_jwt = false

@@ -17,10 +17,10 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const APP_URL = "https://www.ki-automationen.io";
 
-async function sendTelegram(text: string) {
-  if (!TELEGRAM_API_KEY || !TELEGRAM_NOTIFY_CHAT_ID) return;
+async function sendTelegram(text: string, replyMarkup?: Record<string, unknown>): Promise<{ message_id?: number; chat_id?: number } | null> {
+  if (!TELEGRAM_API_KEY || !TELEGRAM_NOTIFY_CHAT_ID) return null;
   try {
-    await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
+    const r = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -32,10 +32,18 @@ async function sendTelegram(text: string) {
         text,
         parse_mode: "HTML",
         disable_web_page_preview: true,
+        ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
       }),
     });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      console.error("Telegram failed:", data);
+      return null;
+    }
+    return { message_id: data?.result?.message_id, chat_id: data?.result?.chat?.id };
   } catch (e) {
     console.error("Telegram failed:", e);
+    return null;
   }
 }
 
@@ -351,7 +359,25 @@ ${(catalog || []).map((p: any) => {
       return `• ${p.label} <i>(custom)</i>: <b>${fmt(p.line_total_eur)}€</b>${p.adjustment_reason ? " — " + p.adjustment_reason : ""}`;
     }).join("\n");
 
-    await sendTelegram(
+    const draftId = inserted!.id;
+    const inlineKb = qaPassed
+      ? {
+          inline_keyboard: [
+            [
+              { text: "✅ Freigeben & versenden", callback_data: `offer:approve:${draftId}` },
+              { text: "❌ Ablehnen", callback_data: `offer:reject:${draftId}` },
+            ],
+            [{ text: "→ Im CRM öffnen", url: `${APP_URL}/app/leads` }],
+          ],
+        }
+      : {
+          inline_keyboard: [
+            [{ text: "❌ Ablehnen", callback_data: `offer:reject:${draftId}` }],
+            [{ text: "→ Im CRM korrigieren", url: `${APP_URL}/app/leads` }],
+          ],
+        };
+
+    const tgRes = await sendTelegram(
       `📝 <b>Neuer Angebotsentwurf</b>\n` +
       `Lead: <b>${leadName}</b>${lead.company ? " · " + lead.company : ""}\n` +
       `Lösung: ${draft.solution_concept.title}\n\n` +
@@ -360,9 +386,17 @@ ${(catalog || []).map((p: any) => {
       `Aufschläge: ${fmt(ps.adjustments_subtotal_eur)}€\n` +
       `Custom: ${fmt(ps.custom_subtotal_eur)}€\n` +
       `<b>Vorschlag: ${fmt(ps.suggested_price_eur)}€</b> (Marge ${ps.margin_percent}%)\n` +
-      `QA: ${qaPassed ? "✅ bestanden" : "⚠️ Korrektur nötig"}\n` +
-      `<a href="${APP_URL}/app/leads">→ Im CRM öffnen</a>`,
+      `QA: ${qaPassed ? "✅ bestanden" : "⚠️ Korrektur nötig"}`,
+      inlineKb,
     );
+
+    if (tgRes?.message_id) {
+      await supabase
+        .from("offer_drafts")
+        .update({ telegram_message_id: tgRes.message_id, telegram_chat_id: tgRes.chat_id })
+        .eq("id", draftId);
+    }
+
 
     return new Response(JSON.stringify({ ok: true, draft_id: inserted!.id, qa_passed: qaPassed, status }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

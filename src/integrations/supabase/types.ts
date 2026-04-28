@@ -2770,11 +2770,16 @@ export type Database = {
           problem_analysis: Json
           qa_checks: Json
           qa_passed: boolean
+          rejection_reason: string | null
           required_connectors: Json
+          reviewed_at: string | null
+          reviewed_by_telegram_user: string | null
           reviewer_notes: string | null
           solution_concept: Json
           status: string
           suggested_price_cents: number | null
+          telegram_chat_id: number | null
+          telegram_message_id: number | null
           updated_at: string
           zoom_summary_id: string | null
         }
@@ -2803,11 +2808,16 @@ export type Database = {
           problem_analysis?: Json
           qa_checks?: Json
           qa_passed?: boolean
+          rejection_reason?: string | null
           required_connectors?: Json
+          reviewed_at?: string | null
+          reviewed_by_telegram_user?: string | null
           reviewer_notes?: string | null
           solution_concept?: Json
           status?: string
           suggested_price_cents?: number | null
+          telegram_chat_id?: number | null
+          telegram_message_id?: number | null
           updated_at?: string
           zoom_summary_id?: string | null
         }
@@ -2836,11 +2846,16 @@ export type Database = {
           problem_analysis?: Json
           qa_checks?: Json
           qa_passed?: boolean
+          rejection_reason?: string | null
           required_connectors?: Json
+          reviewed_at?: string | null
+          reviewed_by_telegram_user?: string | null
           reviewer_notes?: string | null
           solution_concept?: Json
           status?: string
           suggested_price_cents?: number | null
+          telegram_chat_id?: number | null
+          telegram_message_id?: number | null
           updated_at?: string
           zoom_summary_id?: string | null
         }
@@ -3928,6 +3943,24 @@ export type Database = {
           status?: string | null
           timestamp?: string
           workflow?: string | null
+        }
+        Relationships: []
+      }
+      telegram_bot_state: {
+        Row: {
+          id: number
+          update_offset: number
+          updated_at: string
+        }
+        Insert: {
+          id: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          update_offset?: number
+          updated_at?: string
         }
         Relationships: []
       }
