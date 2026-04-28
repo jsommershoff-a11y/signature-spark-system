@@ -104,6 +104,7 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
   const handleInvite = async () => {
     if (!email) return;
     setSending(true);
+    setLastResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('invite-member', {
         body: {
@@ -117,31 +118,45 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
 
       const inviteLink: string | undefined = data?.invite_link;
       const emailSent: boolean = !!data?.email_sent;
-      const provider: string | null = data?.email_provider || null;
+      const provider = (data?.email_provider || null) as 'gmail' | 'resend' | 'outlook' | null;
+      const triedProviders: string[] = Array.isArray(data?.tried_providers) ? data.tried_providers : [];
 
       // Always copy link as a fallback
       if (inviteLink) {
         try { await navigator.clipboard.writeText(inviteLink); } catch { /* ignore */ }
       }
 
+      setLastResult({
+        success: true,
+        emailSent,
+        provider,
+        triedProviders,
+        inviteLink,
+        recipient: email,
+        timestamp: Date.now(),
+      });
+
       if (emailSent) {
+        const usedFallback = provider && provider !== 'gmail';
         toast({
-          title: 'Einladung versendet',
-          description: `Mail an ${email} verschickt (${provider}). Link wurde zusätzlich in die Zwischenablage kopiert.${selectedLead || prefillLeadId ? ' Lead konvertiert.' : ''}`,
+          title: usedFallback ? `Versendet via ${provider} (Fallback)` : 'Einladung via Gmail versendet',
+          description: `Mail an ${email} verschickt. Link in Zwischenablage kopiert.${selectedLead || prefillLeadId ? ' Lead konvertiert.' : ''}`,
         });
       } else {
         toast({
-          title: 'Einladung erstellt – Mail nicht versendet',
-          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert: ${inviteLink ?? '—'}`,
+          variant: 'destructive',
+          title: 'Mail nicht versendet',
+          description: `Kein Mail-Provider verfügbar. Link wurde in die Zwischenablage kopiert.`,
         });
       }
-
-      setEmail('');
-      setName('');
-      setRole('member_basic');
-      setSelectedLead(null);
-      onOpenChange(false);
     } catch (err: any) {
+      setLastResult({
+        success: false,
+        emailSent: false,
+        provider: null,
+        recipient: email,
+        timestamp: Date.now(),
+      });
       toast({ variant: 'destructive', title: 'Fehler', description: err.message || 'Einladung konnte nicht versendet werden.' });
     } finally {
       setSending(false);
