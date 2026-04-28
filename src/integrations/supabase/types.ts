@@ -2744,6 +2744,118 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_drafts: {
+        Row: {
+          ai_model: string | null
+          ai_tokens_used: number | null
+          approved_at: string | null
+          approved_by: string | null
+          benefit_analysis: Json
+          client_inputs_required: Json
+          converted_offer_id: string | null
+          created_at: string
+          generated_at: string
+          id: string
+          internal_cost_analysis: Json
+          is_custom_solution: boolean
+          lead_id: string
+          margin_percent: number | null
+          matched_catalog_product_ids: Json
+          min_price_cents: number | null
+          pricing_strategy: Json
+          problem_analysis: Json
+          qa_checks: Json
+          qa_passed: boolean
+          required_connectors: Json
+          reviewer_notes: string | null
+          solution_concept: Json
+          status: string
+          suggested_price_cents: number | null
+          updated_at: string
+          zoom_summary_id: string | null
+        }
+        Insert: {
+          ai_model?: string | null
+          ai_tokens_used?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          benefit_analysis?: Json
+          client_inputs_required?: Json
+          converted_offer_id?: string | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          internal_cost_analysis?: Json
+          is_custom_solution?: boolean
+          lead_id: string
+          margin_percent?: number | null
+          matched_catalog_product_ids?: Json
+          min_price_cents?: number | null
+          pricing_strategy?: Json
+          problem_analysis?: Json
+          qa_checks?: Json
+          qa_passed?: boolean
+          required_connectors?: Json
+          reviewer_notes?: string | null
+          solution_concept?: Json
+          status?: string
+          suggested_price_cents?: number | null
+          updated_at?: string
+          zoom_summary_id?: string | null
+        }
+        Update: {
+          ai_model?: string | null
+          ai_tokens_used?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          benefit_analysis?: Json
+          client_inputs_required?: Json
+          converted_offer_id?: string | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          internal_cost_analysis?: Json
+          is_custom_solution?: boolean
+          lead_id?: string
+          margin_percent?: number | null
+          matched_catalog_product_ids?: Json
+          min_price_cents?: number | null
+          pricing_strategy?: Json
+          problem_analysis?: Json
+          qa_checks?: Json
+          qa_passed?: boolean
+          required_connectors?: Json
+          reviewer_notes?: string | null
+          solution_concept?: Json
+          status?: string
+          suggested_price_cents?: number | null
+          updated_at?: string
+          zoom_summary_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_drafts_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_drafts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_drafts_zoom_summary_id_fkey"
+            columns: ["zoom_summary_id"]
+            isOneToOne: false
+            referencedRelation: "zoom_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offers: {
         Row: {
           analysis_id: string | null
@@ -2973,6 +3085,67 @@ export type Database = {
           },
         ]
       }
+      pending_zoom_matches: {
+        Row: {
+          created_at: string
+          id: string
+          participants: Json
+          reason: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          resolved_lead_id: string | null
+          status: string
+          suggested_lead_ids: Json
+          zoom_summary_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          participants?: Json
+          reason?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_lead_id?: string | null
+          status?: string
+          suggested_lead_ids?: Json
+          zoom_summary_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          participants?: Json
+          reason?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_lead_id?: string | null
+          status?: string
+          suggested_lead_ids?: Json
+          zoom_summary_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_zoom_matches_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_zoom_matches_resolved_lead_id_fkey"
+            columns: ["resolved_lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_zoom_matches_zoom_summary_id_fkey"
+            columns: ["zoom_summary_id"]
+            isOneToOne: false
+            referencedRelation: "zoom_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipeline_items: {
         Row: {
           created_at: string
@@ -3013,6 +3186,59 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: true
             referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_pattern_suggestions: {
+        Row: {
+          description: string
+          example_draft_ids: Json
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          occurrence_count: number
+          pattern_signature: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          suggested_price_range: Json | null
+          suggested_product_name: string | null
+        }
+        Insert: {
+          description: string
+          example_draft_ids?: Json
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          occurrence_count?: number
+          pattern_signature: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_price_range?: Json | null
+          suggested_product_name?: string | null
+        }
+        Update: {
+          description?: string
+          example_draft_ids?: Json
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          occurrence_count?: number
+          pattern_signature?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_price_range?: Json | null
+          suggested_product_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_pattern_suggestions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3851,6 +4077,134 @@ export type Database = {
           signature_valid?: boolean | null
           source?: string
           status?: string
+        }
+        Relationships: []
+      }
+      zoom_summaries: {
+        Row: {
+          ai_extraction: Json
+          calendar_event_id: string | null
+          calendar_source: string | null
+          created_at: string
+          followup_task_id: string | null
+          from_address: string | null
+          gmail_message_id: string
+          gmail_thread_id: string | null
+          id: string
+          intent: string | null
+          match_confidence: number | null
+          matched_lead_id: string | null
+          matched_via: string | null
+          meeting_date: string | null
+          meeting_topic: string | null
+          offer_draft_id: string | null
+          participants: Json
+          processed_at: string
+          raw_summary: string | null
+          received_at: string | null
+          subject: string | null
+        }
+        Insert: {
+          ai_extraction?: Json
+          calendar_event_id?: string | null
+          calendar_source?: string | null
+          created_at?: string
+          followup_task_id?: string | null
+          from_address?: string | null
+          gmail_message_id: string
+          gmail_thread_id?: string | null
+          id?: string
+          intent?: string | null
+          match_confidence?: number | null
+          matched_lead_id?: string | null
+          matched_via?: string | null
+          meeting_date?: string | null
+          meeting_topic?: string | null
+          offer_draft_id?: string | null
+          participants?: Json
+          processed_at?: string
+          raw_summary?: string | null
+          received_at?: string | null
+          subject?: string | null
+        }
+        Update: {
+          ai_extraction?: Json
+          calendar_event_id?: string | null
+          calendar_source?: string | null
+          created_at?: string
+          followup_task_id?: string | null
+          from_address?: string | null
+          gmail_message_id?: string
+          gmail_thread_id?: string | null
+          id?: string
+          intent?: string | null
+          match_confidence?: number | null
+          matched_lead_id?: string | null
+          matched_via?: string | null
+          meeting_date?: string | null
+          meeting_topic?: string | null
+          offer_draft_id?: string | null
+          participants?: Json
+          processed_at?: string
+          raw_summary?: string | null
+          received_at?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zoom_summaries_matched_lead_id_fkey"
+            columns: ["matched_lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zoom_summary_runs: {
+        Row: {
+          created_at: string
+          emails_scanned: number
+          errors: Json
+          finished_at: string | null
+          followups_created: number
+          id: string
+          leads_matched: number
+          offers_drafted: number
+          pending_matches: number
+          started_at: string
+          status: string
+          summaries_parsed: number
+          triggered_by: string
+        }
+        Insert: {
+          created_at?: string
+          emails_scanned?: number
+          errors?: Json
+          finished_at?: string | null
+          followups_created?: number
+          id?: string
+          leads_matched?: number
+          offers_drafted?: number
+          pending_matches?: number
+          started_at?: string
+          status?: string
+          summaries_parsed?: number
+          triggered_by?: string
+        }
+        Update: {
+          created_at?: string
+          emails_scanned?: number
+          errors?: Json
+          finished_at?: string | null
+          followups_created?: number
+          id?: string
+          leads_matched?: number
+          offers_drafted?: number
+          pending_matches?: number
+          started_at?: string
+          status?: string
+          summaries_parsed?: number
+          triggered_by?: string
         }
         Relationships: []
       }
