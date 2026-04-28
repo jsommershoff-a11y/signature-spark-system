@@ -41,7 +41,7 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     seoTitle: "Starter-Bundle: 3 KI-Bots in 7 Tagen produktiv | KI-Automationen",
     seoDescription:
       "Der schnellste Einstieg in Automatisierung: KI-Terminbot, KI-E-Mail-Assistent und KI-Angebotsgenerator als fertiges Starter-Bundle. Live in 7 Tagen.",
-    automationSlugs: ["ki-terminbot", "ki-email-assistent", "ki-angebotsgenerator"],
+    automationSlugs: ["ki-terminbot", "ki-email-assistent", "ki-angebots-generator"],
     oneLiner:
       "Termine, E-Mails und Angebote ab Tag 7 automatisiert – mit nur einem Onboarding.",
     outcomes: [
@@ -86,13 +86,13 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     seoDescription:
       "Die komplette KI-Suite für skalierende Betriebe: Voice-Agent, Terminbot, E-Mail-Assistent, Angebotsgenerator, Lead-Qualifizierung, Daten-Extraktion und Content-Engine als ein System.",
     automationSlugs: [
-      "ki-voice-agent",
+      "ki-voice-assistent-empfang",
       "ki-terminbot",
       "ki-email-assistent",
-      "ki-angebotsgenerator",
+      "ki-angebots-generator",
       "ki-lead-qualifizierer",
-      "ki-daten-extraktion",
-      "ki-content-engine",
+      "ki-dokumenten-extraktion",
+      "ki-content-maschine",
     ],
     oneLiner:
       "Vom ersten Anruf bis zur Rechnung: 7 Bots als ein durchgängiger End-to-End-Prozess.",
