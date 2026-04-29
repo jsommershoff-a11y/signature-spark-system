@@ -76,6 +76,9 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
                 <p className="text-white font-semibold text-sm">Jan Sommershoff</p>
                 <p className="text-primary text-xs font-medium mb-1">KI-Automationen</p>
                 <p className="text-white/60 text-xs italic leading-snug">„{founderQuote}"</p>
+                <p className="text-white/45 text-[11px] leading-snug mt-1.5">
+                  So bleibt dein System nachvollziehbar, kontrollierbar und auch ohne mich betreibbar.
+                </p>
               </div>
             </div>
 
@@ -118,6 +121,9 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
             </p>
             <p className="text-white/70 text-xs italic text-center mt-3 max-w-[260px] leading-relaxed border-t border-white/10 pt-3">
               „{founderQuote}"
+            </p>
+            <p className="text-white/55 text-[11px] text-center mt-2 max-w-[260px] leading-relaxed">
+              Du bekommst nur Lösungen, die ich auch ohne KI selbst betreiben würde – damit dein Team sie versteht, du sie kontrollierst und nichts an einer Black Box hängt.
             </p>
           </div>
         </div>

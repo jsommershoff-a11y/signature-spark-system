@@ -51,6 +51,38 @@ const faqItems = [
     question: "Wie geht es nach den 30 Tagen Begleitung weiter?",
     answer: "Die 30 Tage nach Go-Live sind dafür da, dein Team sicher in das neue System zu bringen: Fragen klären, Feinjustierungen vornehmen, Prozesse stabilisieren. Danach hast du drei Optionen: (1) Du arbeitest eigenständig weiter – das System ist so dokumentiert, dass dein Team es ohne mich betreiben kann. (2) Du wechselst in einen schlanken Wartungs- und Support-Vertrag mit definierten Reaktionszeiten. (3) Wir gehen in eine langfristige Zusammenarbeit über, in der wir dein System schrittweise ausbauen und neue Automatisierungen ergänzen. Welche Variante zu dir passt, entscheiden wir gemeinsam vor Ablauf der 30 Tage – ohne automatische Verlängerung.",
   },
+  {
+    question: "Wir haben das schon mit einem Freelancer versucht – warum klappt das jetzt anders?",
+    answer: "Weil wir nicht bei den Tools anfangen, sondern bei deinen Prozessen. Die meisten Freelancer bauen Workflows auf einem unklaren Fundament – und dann hängt das System an dieser einen Person. Wir dokumentieren erst, automatisieren danach und übergeben am Ende ein nachvollziehbares System, das auch ohne uns weiterläuft.",
+  },
+  {
+    question: "Was ist der Unterschied zu einer Digitalagentur oder einem IT-Dienstleister?",
+    answer: "Eine Agentur baut, was du bestellst. Wir hinterfragen zuerst, ob du das Richtige bestellst. IT-Dienstleister verwalten deine Tools – wir verändern, wie dein Unternehmen arbeitet. Du bekommst keine 80-seitige Konzeption, sondern eine umgesetzte Struktur.",
+  },
+  {
+    question: "Wo laufen meine Daten?",
+    answer: "Auf einem dedizierten Server in Deutschland bzw. der EU, den wir für dich aufsetzen – kein Cloud-Lock-in, keine Abhängigkeit von US-Anbietern. Du bist Inhaber deiner Daten, deiner Workflows und deiner Backups. DSGVO-konform von Tag 1, inklusive Auftragsverarbeitungsvertrag.",
+  },
+  {
+    question: "Was kostet das? Womit muss ich rechnen?",
+    answer: "Die Potenzial-Analyse ist kostenlos. Projekte starten typischerweise bei einem Festpreis im mittleren vierstelligen Bereich für einzelne Workflows und gehen bis zu fünfstelligen Implementierungen für ein komplettes Systemsetup. Den genauen Rahmen besprechen wir transparent nach der Analyse – kein Pauschalpreis, ohne deinen echten Bedarf zu kennen.",
+  },
+  {
+    question: "Wie lange dauert ein typisches Projekt?",
+    answer: "Von Analyse bis Go-Live rechne mit 8–12 Wochen, abhängig davon, wie verteilt deine Informationen heute sind. Erste sichtbare Ergebnisse bekommst du oft schon nach 3–4 Wochen, weil wir Prozesse priorisieren, die schnellen Hebel bringen.",
+  },
+  {
+    question: "Müssen mein Team und ich technisch fit sein?",
+    answer: "Nein. Du musst keinen Code schreiben, keinen Server verwalten und keine API verstehen. Wir bauen das System, schulen dein Team mit Loom-Videos und Live-Sessions und sind 30 Tage nach Go-Live für Fragen erreichbar.",
+  },
+  {
+    question: "Was, wenn mein Team das System nicht annimmt?",
+    answer: "Das ist der häufigste Grund, warum Automatisierungen scheitern. Deshalb beziehen wir die Schlüsselpersonen schon im System-Mapping ein – nicht erst beim Rollout. Wer mitgestaltet, blockiert nicht.",
+  },
+  {
+    question: "Was passiert, wenn ihr irgendwann nicht mehr da seid?",
+    answer: "Du behältst alles: Server, Workflows, Dokumentation und Zugänge. Jeder Workflow ist als JSON exportierbar, jede Architekturentscheidung ist dokumentiert. Ein anderer Dienstleister oder dein internes Team kann ohne uns weiterarbeiten. Genau das ist der Punkt: kein Lock-in.",
+  },
 ];
 
 const BASE_URL = "https://ki-automationen.io";
