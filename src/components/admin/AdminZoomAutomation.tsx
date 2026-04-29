@@ -62,7 +62,7 @@ export function AdminZoomAutomation() {
     const [r1, r2, r3] = await Promise.all([
       supabase.from("zoom_summary_runs").select("*").order("started_at", { ascending: false }).limit(20),
       supabase.from("pending_zoom_matches").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(50),
-      supabase.from("offer_drafts").select("*").in("status", ["draft", "review_required", "correction"]).order("created_at", { ascending: false }).limit(50),
+      supabase.from("offer_drafts").select("*").order("created_at", { ascending: false }).limit(50),
     ]);
     if (r1.data) setRuns(r1.data as Run[]);
     if (r2.data) setPending(r2.data as PendingMatch[]);
@@ -71,6 +71,27 @@ export function AdminZoomAutomation() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Realtime: synchronisiere sofort, sobald Telegram-Webhook den Draft-Status aktualisiert
+  useEffect(() => {
+    const channel = supabase
+      .channel("offer-drafts-telegram-sync")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "offer_drafts" },
+        (payload) => {
+          const updated = payload.new as Draft;
+          setDrafts((prev) => prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)));
+          if (updated.status === "approved" && updated.reviewed_by_telegram_user) {
+            toast.success(`✅ Angebot freigegeben von ${updated.reviewed_by_telegram_user} (via Telegram)`);
+          } else if (updated.status === "rejected" && updated.reviewed_by_telegram_user) {
+            toast.warning(`❌ Entwurf abgelehnt von ${updated.reviewed_by_telegram_user} (via Telegram)`);
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const triggerSync = async () => {
     setRunning(true);
