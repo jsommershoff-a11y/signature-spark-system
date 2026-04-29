@@ -16,6 +16,7 @@ import { BranchenSection } from "@/components/landing/home/BranchenSection";
 import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection";
 import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
 import { FaqDirectCta } from "@/components/landing/home/FaqDirectCta";
+import { ThirtyDayTimeline } from "@/components/landing/home/ThirtyDayTimeline";
 
 const faqItems = [
   {
@@ -123,6 +124,9 @@ const MasterHome = () => {
           headline="Häufige Fragen – ehrlich beantwortet"
           items={faqItems}
         />
+
+        <ThirtyDayTimeline />
+
 
         <FaqDirectCta onCtaClick={handleCTAClick} />
 
