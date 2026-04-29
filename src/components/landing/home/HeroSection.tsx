@@ -14,9 +14,9 @@ const benefits = [
 ];
 
 const trustBadges = [
-  { icon: ShieldCheck, text: "DSGVO-konform · Eigener Server in der EU" },
+  { icon: ShieldCheck, text: "DSGVO-konform · Server in Deutschland" },
   { icon: UserCheck, text: "Berater + Umsetzer in einer Person" },
-  { icon: Clock, text: "30 Tage Begleitung nach Go-Live" },
+  { icon: Clock, text: "30 Tage Begleitung – auf Wunsch langfristige Zusammenarbeit" },
 ];
 
 const founderQuote = "Ich baue für meine Kunden nur Systeme, die ich selbst nutzen würde.";
