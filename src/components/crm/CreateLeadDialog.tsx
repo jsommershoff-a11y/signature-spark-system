@@ -185,6 +185,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                       inputMode="tel"
                       autoComplete="tel"
                       placeholder="+49 123 456789"
+                      className={touchInput}
                       {...field}
                     />
                   </FormControl>
