@@ -740,12 +740,12 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl p-0 gap-0 h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col sm:rounded-2xl rounded-none">
+        <DialogHeader className="px-4 sm:px-6 pt-5 pb-3 border-b border-border/40 shrink-0">
           <DialogTitle>Neues Angebot erstellen</DialogTitle>
-          <div className="flex items-center gap-1 mt-2">
+          <div className="flex items-center gap-1 mt-2 overflow-x-auto -mx-1 px-1 scrollbar-none">
             {STEPS.map((label, i) => (
-              <div key={label} className="flex items-center gap-1 flex-1">
+              <div key={label} className="flex items-center gap-1 flex-1 min-w-[28px]">
                 <div className={`flex items-center justify-center h-6 w-6 rounded-full text-xs font-medium shrink-0 ${
                   i < step ? 'bg-primary text-primary-foreground'
                   : i === step ? 'bg-primary text-primary-foreground'
@@ -762,26 +762,30 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
           </div>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4">
           {renderCurrentStep()}
         </div>
 
-        <DialogFooter className="flex justify-between sm:justify-between">
+        <DialogFooter
+          className="px-4 sm:px-6 py-3 border-t border-border/40 shrink-0 flex-row justify-between gap-2 sm:gap-2"
+          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
+        >
           <div>
             {step > 0 && (
-              <Button type="button" variant="outline" onClick={() => setStep(s => s - 1)}>
-                <ChevronLeft className="h-4 w-4 mr-1" /> Zurück
+              <Button type="button" variant="outline" size="sm" className="h-11 sm:h-9" onClick={() => setStep(s => s - 1)}>
+                <ChevronLeft className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Zurück</span>
               </Button>
             )}
           </div>
           <div className="flex gap-2">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+            <Button type="button" variant="ghost" className="h-11 sm:h-9 hidden sm:inline-flex" onClick={() => onOpenChange(false)}>Abbrechen</Button>
             {step < maxStep ? (
-              <Button type="button" onClick={() => setStep(s => s + 1)} disabled={!canProceed()}>
+              <Button type="button" className="h-11 sm:h-9" onClick={() => setStep(s => s + 1)} disabled={!canProceed()}>
                 Weiter <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button type="button" onClick={handleSubmit} disabled={isCreating || !!priceError}>
+              <Button type="button" className="h-11 sm:h-9" onClick={handleSubmit} disabled={isCreating || !!priceError}>
                 {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Entwurf speichern
               </Button>
