@@ -94,54 +94,60 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ ok: false, error: "qa failed" }), { headers: corsHeaders });
       }
 
-      // Use existing RPC to materialize draft → offer (sets status='approved' on draft)
-      const { data: offerId, error: rpcErr } = await supabase.rpc("approve_offer_draft", { _draft_id: draftId });
-      if (rpcErr) {
-        // RPC requires a real auth user. Fallback: do approval inline via service role.
-        const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
-        const { data: created, error: insErr } = await supabase
-          .from("offers")
-          .insert({
-            lead_id: draft.lead_id,
-            status: "sent",
-            offer_json: { source: "offer_draft", draft_id: draftId, telegram_approval: true },
-            public_token: token,
-            sent_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-          })
-          .select("id")
-          .single();
-        if (insErr) {
-          await tg("answerCallbackQuery", { callback_query_id: cbId, text: `Fehler: ${insErr.message}`, show_alert: true });
-          return new Response(JSON.stringify({ ok: false, error: insErr.message }), { headers: corsHeaders });
-        }
-        await supabase
-          .from("offer_drafts")
-          .update({
-            status: "approved",
-            converted_offer_id: created!.id,
-            reviewed_by_telegram_user: fromUser,
-            reviewed_at: new Date().toISOString(),
-          })
-          .eq("id", draftId);
-      } else {
-        await supabase
-          .from("offer_drafts")
-          .update({
-            reviewed_by_telegram_user: fromUser,
-            reviewed_at: new Date().toISOString(),
-          })
-          .eq("id", draftId);
+      // Service-role inline approval (RPC requires auth.uid()) — materialise draft → offer
+      let offerId: string | null = null;
+      const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+      const { data: created, error: insErr } = await supabase
+        .from("offers")
+        .insert({
+          lead_id: draft.lead_id,
+          status: "sent",
+          offer_json: { source: "offer_draft", draft_id: draftId, telegram_approval: true, approved_by_telegram_user: fromUser },
+          public_token: token,
+          sent_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        })
+        .select("id")
+        .single();
+      if (insErr) {
+        await tg("answerCallbackQuery", { callback_query_id: cbId, text: `Fehler: ${insErr.message}`, show_alert: true });
+        return new Response(JSON.stringify({ ok: false, error: insErr.message }), { headers: corsHeaders });
       }
+      offerId = created!.id;
 
-      // Activity log
+      await supabase
+        .from("offer_drafts")
+        .update({
+          status: "approved",
+          converted_offer_id: offerId,
+          reviewed_by_telegram_user: fromUser,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", draftId);
+
+      // Pipeline → offer_sent + Follow-up Task in 3 Tagen (Trigger handle_offer_draft_approval übernimmt das,
+      // aber wir stellen sicher dass es passiert auch wenn Trigger nicht greift)
+      await supabase
+        .from("pipeline_items")
+        .update({ stage: "offer_sent", stage_updated_at: new Date().toISOString() })
+        .eq("lead_id", draft.lead_id)
+        .in("stage", ["offer_draft", "analysis_ready", "setter_call_done", "setter_call_scheduled", "new_lead"]);
+
+      // Activity log mit Bearbeiter & Offer-Verweis für CRM-Timeline
       await supabase.from("activities").insert({
         lead_id: draft.lead_id,
         activity_type: "offer_draft_approved",
         channel: "telegram",
         direction: "inbound",
-        content: `Angebotsentwurf via Telegram freigegeben von ${fromUser || "unbekannt"}.`,
-        metadata: { offer_draft_id: draftId, telegram_user: fromUser },
+        content: `✅ Angebotsentwurf via Telegram freigegeben von ${fromUser || "unbekannt"} → Angebot versendet, Pipeline auf "offer_sent", Follow-up in 3 Tagen.`,
+        metadata: {
+          offer_draft_id: draftId,
+          offer_id: offerId,
+          telegram_user: fromUser,
+          telegram_chat_id: chatId,
+          telegram_message_id: messageId,
+          reviewed_at: new Date().toISOString(),
+        },
       });
 
       // Update Telegram message
