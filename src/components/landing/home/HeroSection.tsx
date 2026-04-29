@@ -119,6 +119,9 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
             <p className="text-white/70 text-xs italic text-center mt-3 max-w-[260px] leading-relaxed border-t border-white/10 pt-3">
               „{founderQuote}"
             </p>
+            <p className="text-white/55 text-[11px] text-center mt-2 max-w-[260px] leading-relaxed">
+              Du bekommst nur Lösungen, die ich auch ohne KI selbst betreiben würde – damit dein Team sie versteht, du sie kontrollierst und nichts an einer Black Box hängt.
+            </p>
           </div>
         </div>
 
