@@ -20,7 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Bot, Check, ChevronRight, Sparkles } from "lucide-react";
+import { Bot, Check, ChevronRight, Clock, Sparkles } from "lucide-react";
 import { AUTOMATIONS } from "@/data/automations";
 import {
   Form,
@@ -402,7 +402,15 @@ const Qualifizierung = () => {
               </div>
 
               <div className="bg-card rounded-2xl shadow-xl border border-border p-6 md:p-8">
+                <div className="flex items-start gap-3 mb-6 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <Clock className="w-4 h-4 text-primary mt-0.5 shrink-0" aria-hidden />
+                  <p className="text-sm text-foreground leading-snug">
+                    <span className="font-semibold">Antwort innerhalb von 24 Stunden</span> an Werktagen –
+                    häufig noch am selben Tag. Termin für die Potenzial-Analyse meist innerhalb von 3–5 Werktagen.
+                  </p>
+                </div>
                 <Form {...form}>
+
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     <FormField
                       control={form.control}
