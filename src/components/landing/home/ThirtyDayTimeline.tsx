@@ -107,6 +107,67 @@ export const ThirtyDayTimeline = () => {
         <p className="text-center text-xs text-muted-foreground mt-8 max-w-2xl mx-auto">
           Spätestens am Ende von Woche 4 entscheiden wir gemeinsam, wie es weitergeht – Eigenbetrieb, schlanker Support-Vertrag oder langfristige Zusammenarbeit.
         </p>
+
+        {/* Vergleichsbox: 3 Optionen nach 30 Tagen */}
+        <div className="max-w-5xl mx-auto mt-10">
+          <h3 className="text-center text-lg md:text-xl font-bold text-foreground mb-2">
+            Deine drei Optionen ab Tag 31
+          </h3>
+          <p className="text-center text-sm text-muted-foreground mb-6">
+            Du entscheidest – ohne automatische Verlängerung.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                icon: UserCheck,
+                tag: "Option 1",
+                title: "Eigenständig",
+                desc: "Dein Team betreibt das System selbst. Alles ist dokumentiert, übergeben und einsatzbereit – ohne laufende Kosten.",
+                badge: "0 € / Monat",
+              },
+              {
+                icon: LifeBuoy,
+                tag: "Option 2",
+                title: "Wartung & Support",
+                desc: "Schlanker Vertrag mit definierten Reaktionszeiten, Monitoring und kleineren Anpassungen, falls etwas hakt.",
+                badge: "Festes Monatspaket",
+                highlighted: true,
+              },
+              {
+                icon: Handshake,
+                tag: "Option 3",
+                title: "Langfristige Zusammenarbeit",
+                desc: "Wir bauen dein System schrittweise aus, ergänzen neue Automationen und entwickeln dein Unternehmen strukturell weiter.",
+                badge: "Individuell",
+              },
+            ].map((opt) => (
+              <div
+                key={opt.title}
+                className={`rounded-2xl border p-5 bg-card transition-shadow ${
+                  opt.highlighted
+                    ? "border-primary/40 shadow-md ring-1 ring-primary/20"
+                    : "border-border shadow-sm hover:shadow-md"
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <opt.icon className="w-5 h-5 text-primary" aria-hidden />
+                  </div>
+                  <span className="text-[11px] font-semibold tracking-wide uppercase text-primary">
+                    {opt.tag}
+                  </span>
+                </div>
+                <h4 className="text-base font-bold text-foreground mb-2">{opt.title}</h4>
+                <p className="text-sm text-muted-foreground leading-snug mb-4">{opt.desc}</p>
+                <span className="inline-block text-xs font-medium text-foreground/70 border border-border rounded-full px-2.5 py-1 bg-muted/40">
+                  {opt.badge}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </section>
   );
