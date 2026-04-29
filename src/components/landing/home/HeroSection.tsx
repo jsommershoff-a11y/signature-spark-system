@@ -76,6 +76,9 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
                 <p className="text-white font-semibold text-sm">Jan Sommershoff</p>
                 <p className="text-primary text-xs font-medium mb-1">KI-Automationen</p>
                 <p className="text-white/60 text-xs italic leading-snug">„{founderQuote}"</p>
+                <p className="text-white/45 text-[11px] leading-snug mt-1.5">
+                  So bleibt dein System nachvollziehbar, kontrollierbar und auch ohne mich betreibbar.
+                </p>
               </div>
             </div>
 
