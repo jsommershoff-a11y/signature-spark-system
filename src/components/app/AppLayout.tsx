@@ -17,6 +17,7 @@ import { AppFooter } from './AppFooter';
 import { Breadcrumbs } from './Breadcrumbs';
 import { TrialGuard } from '@/components/TrialGuard';
 import { TrialTopBar } from './TrialTopBar';
+import { MobileBottomNav } from './MobileBottomNav';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
