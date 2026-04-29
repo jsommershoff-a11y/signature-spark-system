@@ -9,6 +9,7 @@ import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { EmotionalHookSection } from "@/components/landing/home/EmotionalHookSection";
 import { VulnerabilitySection } from "@/components/landing/home/VulnerabilitySection";
 import { AiRealitySection } from "@/components/landing/home/AiRealitySection";
+import { ThreeStagesSection } from "@/components/landing/home/ThreeStagesSection";
 import { ResultsSection } from "@/components/landing/home/ResultsSection";
 import { ProcessStepsSection } from "@/components/landing/home/ProcessStepsSection";
 import { BranchenSection } from "@/components/landing/home/BranchenSection";
@@ -101,8 +102,9 @@ const MasterHome = () => {
         <HeroSection onCtaClick={handleCTAClick} />
         <TrustLogosSection />
         <EmotionalHookSection onCtaClick={handleCTAClick} />
-        <VulnerabilitySection onCtaClick={handleCTAClick} />
         <AiRealitySection onCtaClick={handleCTAClick} />
+        <ThreeStagesSection />
+        <VulnerabilitySection onCtaClick={handleCTAClick} />
         <ResultsSection />
         <ProcessStepsSection onCtaClick={handleCTAClick} />
         <BranchenSection />

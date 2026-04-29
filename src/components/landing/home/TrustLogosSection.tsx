@@ -26,8 +26,8 @@ export const TrustLogosSection = () => {
         <p className="text-center text-sm md:text-base font-semibold text-foreground">
           Wir automatisieren mit diesen Tools – und vielen weiteren
         </p>
-        <p className="text-center text-xs text-muted-foreground mt-1">
-          Kompetenz in Integration und Automatisierung – nicht nur einzelne Tools, sondern vernetzte Systeme.
+        <p className="text-center text-xs md:text-sm text-muted-foreground mt-1">
+          Wir integrieren in den Stack, den du schon hast — nicht noch ein Tool obendrauf.
         </p>
       </div>
 
