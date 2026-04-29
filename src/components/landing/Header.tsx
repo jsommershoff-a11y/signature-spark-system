@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, LogIn, Menu } from "lucide-react";
+import { Bot, ChevronDown, LogIn, Menu } from "lucide-react";
 import logoSignature from "@/assets/ki-automationen-logo.svg";
 import { Button } from "@/components/ui/button";
 import {
@@ -172,6 +172,20 @@ export const Header = () => {
                     className="w-full"
                   >
                     Kostenlose Analyse
+                  </Button>
+                </Link>
+
+                <Link
+                  to="/eigener-bot"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full gap-2 border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <Bot className="w-5 h-5" />
+                    Eigener Bot bestellen
                   </Button>
                 </Link>
               </nav>
