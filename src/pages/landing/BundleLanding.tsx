@@ -161,7 +161,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       </section>
 
       {/* 3. SYSTEM */}
-      <section className="bg-muted/30 py-14 md:py-20">
+      <section data-bundle-system className="bg-muted/30 py-14 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <Badge className="bg-primary/15 text-primary border-primary/30 mb-3">
