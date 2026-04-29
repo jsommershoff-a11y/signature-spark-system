@@ -221,3 +221,48 @@
 .animate-marquee {
   animation: marquee 30s linear infinite;
 }
+
+/* ============================================================
+   Mobile Safe-Area helpers (iOS notch + home-indicator)
+   Use on sticky headers, drawers, bottom-navs, sticky submit-bars.
+   ============================================================ */
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  .px-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  /* Reserve space at the bottom for the mobile bottom-nav (h-16) + safe-area.
+     Apply to scroll containers / page wrappers on mobile only. */
+  .pb-mobile-nav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* Sticky submit bar inside mobile sheets — sits above keyboard via sheet. */
+  .sticky-submit-bar {
+    position: sticky;
+    bottom: 0;
+    background: hsl(var(--background));
+    border-top: 1px solid hsl(var(--border) / 0.6);
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    margin: 0 -1rem -1rem;
+  }
+  /* Hide scrollbars while keeping scroll functional. Used by horizontal nav strips. */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
