@@ -18,7 +18,7 @@ const previewModules = [
   },
   {
     title: "Automatisierung",
-    lessons: ["Was ist No-Code Automation?", "Make vs. Zapier vs. n8n", "Workflow: Lead → E-Mail → CRM"],
+    lessons: ["Was ist No-Code Automation?", "Tool-Auswahl: Wann welches Werkzeug?", "Workflow: Lead → E-Mail → CRM"],
     free: false,
   },
 ];
