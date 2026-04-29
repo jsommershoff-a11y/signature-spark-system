@@ -44,6 +44,10 @@ interface Draft {
   is_custom_solution: boolean;
   solution_concept: any;
   created_at: string;
+  reviewed_by_telegram_user: string | null;
+  reviewed_at: string | null;
+  rejection_reason: string | null;
+  converted_offer_id: string | null;
 }
 
 export function AdminZoomAutomation() {
@@ -58,7 +62,7 @@ export function AdminZoomAutomation() {
     const [r1, r2, r3] = await Promise.all([
       supabase.from("zoom_summary_runs").select("*").order("started_at", { ascending: false }).limit(20),
       supabase.from("pending_zoom_matches").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(50),
-      supabase.from("offer_drafts").select("*").in("status", ["draft", "review_required", "correction"]).order("created_at", { ascending: false }).limit(50),
+      supabase.from("offer_drafts").select("*").order("created_at", { ascending: false }).limit(50),
     ]);
     if (r1.data) setRuns(r1.data as Run[]);
     if (r2.data) setPending(r2.data as PendingMatch[]);
@@ -67,6 +71,27 @@ export function AdminZoomAutomation() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Realtime: synchronisiere sofort, sobald Telegram-Webhook den Draft-Status aktualisiert
+  useEffect(() => {
+    const channel = supabase
+      .channel("offer-drafts-telegram-sync")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "offer_drafts" },
+        (payload) => {
+          const updated = payload.new as Draft;
+          setDrafts((prev) => prev.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)));
+          if (updated.status === "approved" && updated.reviewed_by_telegram_user) {
+            toast.success(`✅ Angebot freigegeben von ${updated.reviewed_by_telegram_user} (via Telegram)`);
+          } else if (updated.status === "rejected" && updated.reviewed_by_telegram_user) {
+            toast.warning(`❌ Entwurf abgelehnt von ${updated.reviewed_by_telegram_user} (via Telegram)`);
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const triggerSync = async () => {
     setRunning(true);
@@ -149,7 +174,7 @@ export function AdminZoomAutomation() {
                       {drafts.map((d) => (
                         <div key={d.id} className="p-3 border rounded-lg flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <FileText className="h-4 w-4 text-primary" />
                               <span className="font-medium text-sm">{d.solution_concept?.title || "—"}</span>
                               {d.is_custom_solution && <Badge variant="outline" className="text-xs">Custom</Badge>}
@@ -158,6 +183,12 @@ export function AdminZoomAutomation() {
                               ) : (
                                 <Badge variant="destructive" className="text-xs">QA ✗</Badge>
                               )}
+                              {d.status === "approved" && (
+                                <Badge className="text-xs bg-green-700">✅ Freigegeben</Badge>
+                              )}
+                              {d.status === "rejected" && (
+                                <Badge variant="destructive" className="text-xs">❌ Abgelehnt</Badge>
+                              )}
                             </div>
                             <div className="text-xs text-muted-foreground">
                               {d.suggested_price_cents ? `${(d.suggested_price_cents / 100).toLocaleString("de-DE")} €` : "—"}
@@ -165,16 +196,26 @@ export function AdminZoomAutomation() {
                               {" · "}
                               {formatDistanceToNow(new Date(d.created_at), { addSuffix: true, locale: de })}
                             </div>
+                            {d.reviewed_by_telegram_user && d.reviewed_at && (
+                              <div className="text-xs mt-1 text-muted-foreground italic">
+                                {d.status === "approved" ? "Freigegeben" : "Abgelehnt"} von{" "}
+                                <span className="font-medium text-foreground">@{d.reviewed_by_telegram_user}</span>
+                                {" "}via Telegram ·{" "}
+                                {formatDistanceToNow(new Date(d.reviewed_at), { addSuffix: true, locale: de })}
+                              </div>
+                            )}
                           </div>
                           <div className="flex flex-col gap-1 ml-2">
-                            <Button
-                              size="sm"
-                              onClick={() => approveDraft(d.id)}
-                              disabled={!d.qa_passed}
-                              title={d.qa_passed ? "Freigeben & Pipeline fortschreiben" : "QA fehlgeschlagen — erst korrigieren"}
-                            >
-                              <CheckCircle2 className="h-4 w-4 mr-1" /> Freigeben
-                            </Button>
+                            {d.status !== "approved" && d.status !== "rejected" && (
+                              <Button
+                                size="sm"
+                                onClick={() => approveDraft(d.id)}
+                                disabled={!d.qa_passed}
+                                title={d.qa_passed ? "Freigeben & Pipeline fortschreiben" : "QA fehlgeschlagen — erst korrigieren"}
+                              >
+                                <CheckCircle2 className="h-4 w-4 mr-1" /> Freigeben
+                              </Button>
+                            )}
                             <Button size="sm" variant="ghost" onClick={() => window.open(`/app/leads?lead=${d.lead_id}`, "_blank")}>
                               Öffnen
                             </Button>
