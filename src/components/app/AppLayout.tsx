@@ -42,7 +42,7 @@ export function AppLayout() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-[280px] max-w-[85vw]">
+            <SheetContent side="left" className="p-0 w-[280px] max-w-[85vw] pb-safe">
               <SheetTitle className="sr-only">Navigation</SheetTitle>
               <AppSidebar onNavigate={() => setSidebarOpen(false)} />
             </SheetContent>
