@@ -3,14 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Form,
   FormControl,
   FormField,
@@ -28,9 +20,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { 
+import { ResponsiveFormDialog } from '@/components/app/ResponsiveFormDialog';
+import {
   CreateTaskInput,
-  TaskType,
   TASK_TYPE_LABELS,
 } from '@/types/crm';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,9 +45,9 @@ interface CreateTaskDialogProps {
   leads?: { id: string; name: string }[];
 }
 
-export function CreateTaskDialog({ 
-  open, 
-  onOpenChange, 
+export function CreateTaskDialog({
+  open,
+  onOpenChange,
   onSubmit,
   leadId,
   leads = [],
@@ -92,34 +84,125 @@ export function CreateTaskDialog({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Neue Aufgabe erstellen</DialogTitle>
-          <DialogDescription>
-            Erstelle eine neue Aufgabe für dich oder dein Team.
-          </DialogDescription>
-        </DialogHeader>
+  const formId = 'create-task-form';
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+  return (
+    <ResponsiveFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Neue Aufgabe erstellen"
+      description="Erstelle eine neue Aufgabe für dich oder dein Team."
+      desktopMaxWidth="max-w-md"
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="h-11 sm:h-10"
+          >
+            Abbrechen
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            disabled={isSubmitting}
+            className="h-11 sm:h-10"
+          >
+            {isSubmitting ? 'Erstelle...' : 'Aufgabe erstellen'}
+          </Button>
+        </div>
+      }
+    >
+      <Form {...form}>
+        <form id={formId} onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Typ *</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11 sm:h-10">
+                      <SelectValue placeholder="Typ wählen" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.entries(TASK_TYPE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Titel *</FormLabel>
+                <FormControl>
+                  <Input placeholder="z.B. Erstgespräch führen" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Beschreibung</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Zusätzliche Details..."
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="due_at"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fällig am</FormLabel>
+                <FormControl>
+                  <Input type="datetime-local" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {leads.length > 0 && !leadId && (
             <FormField
               control={form.control}
-              name="type"
+              name="lead_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Typ *</FormLabel>
+                  <FormLabel>Verknüpfter Lead</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Typ wählen" />
+                      <SelectTrigger className="h-11 sm:h-10">
+                        <SelectValue placeholder="Lead wählen (optional)" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.entries(TASK_TYPE_LABELS).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
+                      {leads.map((lead) => (
+                        <SelectItem key={lead.id} value={lead.id}>
+                          {lead.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -128,91 +211,9 @@ export function CreateTaskDialog({
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Titel *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="z.B. Erstgespräch führen" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Beschreibung</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Zusätzliche Details..."
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="due_at"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fällig am</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {leads.length > 0 && !leadId && (
-              <FormField
-                control={form.control}
-                name="lead_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Verknüpfter Lead</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Lead wählen (optional)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="">Keiner</SelectItem>
-                        {leads.map((lead) => (
-                          <SelectItem key={lead.id} value={lead.id}>
-                            {lead.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Abbrechen
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Erstelle...' : 'Aufgabe erstellen'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          )}
+        </form>
+      </Form>
+    </ResponsiveFormDialog>
   );
 }
