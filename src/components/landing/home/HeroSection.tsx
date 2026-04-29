@@ -19,7 +19,7 @@ const trustBadges = [
   { icon: Clock, text: "30 Tage Begleitung – auf Wunsch langfristige Zusammenarbeit" },
 ];
 
-const founderQuote = "Ich baue für meine Kunden nur Systeme, die ich selbst nutzen würde.";
+const founderQuote = "Ich baue für meine Kunden nur Systeme, die ich selbst nutze und vollständig verstehe.";
 
 export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
   const handleSecondaryClick = (e: React.MouseEvent) => {
