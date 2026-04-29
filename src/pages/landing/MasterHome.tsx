@@ -150,6 +150,7 @@ const MasterHome = () => {
         <VulnerabilitySection onCtaClick={handleCTAClick} />
         <ResultsSection />
         <ProcessStepsSection onCtaClick={handleCTAClick} />
+        <SystemPeekSection />
         <BranchenSection />
         <CaseStudiesSection />
 
