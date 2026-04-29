@@ -165,6 +165,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                       inputMode="email"
                       autoComplete="email"
                       placeholder="max@beispiel.de"
+                      className={touchInput}
                       {...field}
                     />
                   </FormControl>
