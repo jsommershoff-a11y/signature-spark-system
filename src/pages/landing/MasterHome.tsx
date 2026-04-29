@@ -41,6 +41,14 @@ const faqItems = [
     question: "Wie schnell kann man erste Verbesserungen sehen?",
     answer: "Erste Klarheit entsteht meist sofort in der Analyse. Die Geschwindigkeit der Umsetzung hängt davon ab, wie verteilt Informationen, Prozesse und Verantwortlichkeiten aktuell sind.",
   },
+  {
+    question: "Wie schnell reagierst du auf eine Anfrage?",
+    answer: "Anfragen über das Formular oder per E-Mail beantworte ich in der Regel innerhalb von 24 Stunden an Werktagen, häufig noch am selben Tag. Den Termin für die kostenlose Potenzial-Analyse legen wir meist innerhalb von 3 bis 5 Werktagen fest. Während laufender Projekte gelten kürzere, vertraglich vereinbarte Reaktionszeiten.",
+  },
+  {
+    question: "Wie geht es nach den 30 Tagen Begleitung weiter?",
+    answer: "Die 30 Tage nach Go-Live sind dafür da, dein Team sicher in das neue System zu bringen: Fragen klären, Feinjustierungen vornehmen, Prozesse stabilisieren. Danach hast du drei Optionen: (1) Du arbeitest eigenständig weiter – das System ist so dokumentiert, dass dein Team es ohne mich betreiben kann. (2) Du wechselst in einen schlanken Wartungs- und Support-Vertrag mit definierten Reaktionszeiten. (3) Wir gehen in eine langfristige Zusammenarbeit über, in der wir dein System schrittweise ausbauen und neue Automatisierungen ergänzen. Welche Variante zu dir passt, entscheiden wir gemeinsam vor Ablauf der 30 Tage – ohne automatische Verlängerung.",
+  },
 ];
 
 const BASE_URL = "https://ki-automationen.io";
