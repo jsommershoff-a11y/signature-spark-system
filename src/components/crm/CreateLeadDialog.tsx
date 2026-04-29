@@ -91,6 +91,8 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
   };
 
   const formId = 'create-lead-form';
+  // Mobile touch-target: 44px minimum (h-11). Desktop reverts to h-10.
+  const touchInput = 'h-11 sm:h-10 text-base sm:text-sm';
 
   return (
     <ResponsiveFormDialog
