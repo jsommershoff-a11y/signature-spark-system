@@ -72,7 +72,9 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
     },
   };
 
-  const allFaq = [...bundle.faq, ...COMMON_FAQ];
+  // Conversion: Kurze FAQ — max. 4 Einwände (Top-Bundle-FAQ + 1 Preis-FAQ).
+  // Die übrigen Einwände werden über ObjectionFAQSection abgedeckt → keine Doppelung.
+  const allFaq = [...bundle.faq.slice(0, 3), COMMON_FAQ[0]];
 
   return (
     <PublicLayout>
