@@ -1,4 +1,4 @@
-import { Rocket, Wrench, Users, CheckCircle2 } from "lucide-react";
+import { Rocket, Wrench, Users, CheckCircle2, UserCheck, LifeBuoy, Handshake } from "lucide-react";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
 const weeks = [
