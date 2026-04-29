@@ -121,6 +121,22 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
                   DSGVO &amp; AVV inklusive
                 </li>
               </ul>
+
+              {/* Conversion: Mini-Proof direkt unter Hero-CTA */}
+              <div className="mt-7 grid grid-cols-3 gap-3 max-w-md border-t border-white/10 pt-5">
+                <div>
+                  <div className="text-xl md:text-2xl font-bold text-primary-light">7 Tage</div>
+                  <div className="text-xs text-white/60 leading-tight">bis Live-Betrieb</div>
+                </div>
+                <div>
+                  <div className="text-xl md:text-2xl font-bold text-primary-light">24 h</div>
+                  <div className="text-xs text-white/60 leading-tight">Festpreis-Angebot</div>
+                </div>
+                <div>
+                  <div className="text-xl md:text-2xl font-bold text-primary-light">30 Tage</div>
+                  <div className="text-xs text-white/60 leading-tight">Optimierungs-Support</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
