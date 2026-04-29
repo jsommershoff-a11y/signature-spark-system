@@ -185,13 +185,39 @@ Deno.serve(async (req) => {
         .update({ stage: "analysis_ready", stage_updated_at: new Date().toISOString() })
         .eq("lead_id", draft.lead_id);
 
+      // Open follow-up Task für Owner zur Korrektur
+      const { data: leadRow } = await supabase
+        .from("crm_leads")
+        .select("owner_user_id")
+        .eq("id", draft.lead_id)
+        .maybeSingle();
+
+      if (leadRow?.owner_user_id) {
+        await supabase.from("crm_tasks").insert({
+          assigned_user_id: leadRow.owner_user_id,
+          lead_id: draft.lead_id,
+          type: "review_offer",
+          title: "Angebotsentwurf überarbeiten",
+          description: `Per Telegram abgelehnt von ${fromUser || "unbekannt"}. Bitte Inhalt/Preis prüfen und neu freigeben.`,
+          due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          status: "open",
+          meta: { offer_draft_id: draftId, telegram_user: fromUser, source: "telegram_reject" },
+        });
+      }
+
       await supabase.from("activities").insert({
         lead_id: draft.lead_id,
         activity_type: "offer_draft_rejected",
         channel: "telegram",
         direction: "inbound",
-        content: `Angebotsentwurf via Telegram abgelehnt von ${fromUser || "unbekannt"}.`,
-        metadata: { offer_draft_id: draftId, telegram_user: fromUser },
+        content: `❌ Angebotsentwurf via Telegram abgelehnt von ${fromUser || "unbekannt"} → Pipeline auf "analysis_ready" zurückgesetzt, Korrektur-Task angelegt.`,
+        metadata: {
+          offer_draft_id: draftId,
+          telegram_user: fromUser,
+          telegram_chat_id: chatId,
+          telegram_message_id: messageId,
+          reviewed_at: new Date().toISOString(),
+        },
       });
 
       if (chatId && messageId) {
