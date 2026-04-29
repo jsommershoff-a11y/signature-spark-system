@@ -72,7 +72,9 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
     },
   };
 
-  const allFaq = [...bundle.faq, ...COMMON_FAQ];
+  // Conversion: Kurze FAQ — max. 4 Einwände (Top-Bundle-FAQ + 1 Preis-FAQ).
+  // Die übrigen Einwände werden über ObjectionFAQSection abgedeckt → keine Doppelung.
+  const allFaq = [...bundle.faq.slice(0, 3), COMMON_FAQ[0]];
 
   return (
     <PublicLayout>
@@ -119,6 +121,22 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
                   DSGVO &amp; AVV inklusive
                 </li>
               </ul>
+
+              {/* Conversion: Mini-Proof direkt unter Hero-CTA */}
+              <div className="mt-7 grid grid-cols-3 gap-3 max-w-md border-t border-white/10 pt-5">
+                <div>
+                  <div className="text-xl md:text-2xl font-bold text-primary-light">7 Tage</div>
+                  <div className="text-xs text-white/60 leading-tight">bis Live-Betrieb</div>
+                </div>
+                <div>
+                  <div className="text-xl md:text-2xl font-bold text-primary-light">24 h</div>
+                  <div className="text-xs text-white/60 leading-tight">Festpreis-Angebot</div>
+                </div>
+                <div>
+                  <div className="text-xl md:text-2xl font-bold text-primary-light">30 Tage</div>
+                  <div className="text-xs text-white/60 leading-tight">Optimierungs-Support</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -143,7 +161,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       </section>
 
       {/* 3. SYSTEM */}
-      <section className="bg-muted/30 py-14 md:py-20">
+      <section data-bundle-system className="bg-muted/30 py-14 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <Badge className="bg-primary/15 text-primary border-primary/30 mb-3">
@@ -234,11 +252,37 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
         qualifizierungQuery={`automations=${bundle.automationSlugs.join(",")}`}
       />
 
+      {/* Conversion: Mid-Page CTA — Hot-Spot zwischen Wertversprechen und Proof */}
+      <section className="bg-[#0F3E2E] text-white py-10 md:py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+          <div>
+            <p className="text-base md:text-lg font-semibold">
+              Bereit für ein konkretes Festpreis-Angebot?
+            </p>
+            <p className="text-sm text-white/70 mt-1">
+              Kurze Bedarfsanalyse · Antwort innerhalb von 24 h · 100 % unverbindlich
+            </p>
+          </div>
+          <Button
+            size="lg"
+            className="bg-primary hover:bg-primary-deep shrink-0"
+            onClick={() =>
+              navigate(
+                `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
+              )
+            }
+          >
+            {bundle.ctaText}
+            <ArrowRight className="ml-1.5 h-4 w-4" />
+          </Button>
+        </div>
+      </section>
+
       {/* 4. PROOF */}
       <TrustLogosSection />
       <ProofBar />
 
-      {/* 5. FAQ + Einwände */}
+      {/* 5. FAQ + Einwände (FAQ ist bewusst auf 4 Einträge gekürzt) */}
       <FAQSection items={allFaq} />
       <ObjectionFAQSection />
 
@@ -254,19 +298,33 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
           <p className="text-base md:text-lg text-muted-foreground mb-7 max-w-xl mx-auto leading-relaxed">
             {bundle.finalCtaSubline}
           </p>
-          <Button
-            size="lg"
-            className="bg-primary hover:bg-primary-deep"
-            onClick={() =>
-              navigate(
-                `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
-              )
-            }
-          >
-            {bundle.ctaText}
-            <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Button>
-          <p className="text-xs text-muted-foreground mt-3">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary-deep w-full sm:w-auto"
+              onClick={() =>
+                navigate(
+                  `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
+                )
+              }
+            >
+              {bundle.ctaText}
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground w-full sm:w-auto"
+              onClick={() => {
+                document
+                  .querySelector<HTMLElement>("[data-bundle-system]")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              Bots im Detail ansehen
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-4">
             Unverbindlich · Festpreis-Angebot in 24 h · Bugfixes innerhalb der Termine inklusive
           </p>
         </div>
