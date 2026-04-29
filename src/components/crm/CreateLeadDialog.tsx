@@ -131,7 +131,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                 <FormItem>
                   <FormLabel>Vorname *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Max" autoComplete="given-name" {...field} />
+                    <Input placeholder="Max" autoComplete="given-name" className={touchInput} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -144,7 +144,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                 <FormItem>
                   <FormLabel>Nachname</FormLabel>
                   <FormControl>
-                    <Input placeholder="Mustermann" autoComplete="family-name" {...field} />
+                    <Input placeholder="Mustermann" autoComplete="family-name" className={touchInput} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -201,7 +201,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                 <FormItem>
                   <FormLabel>Firma</FormLabel>
                   <FormControl>
-                    <Input placeholder="Beispiel GmbH" autoComplete="organization" {...field} />
+                    <Input placeholder="Beispiel GmbH" autoComplete="organization" className={touchInput} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -236,7 +236,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                 <FormItem>
                   <FormLabel>Branche</FormLabel>
                   <FormControl>
-                    <Input placeholder="IT / Software" {...field} />
+                    <Input placeholder="IT / Software" className={touchInput} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -249,7 +249,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                 <FormItem>
                   <FormLabel>Standort</FormLabel>
                   <FormControl>
-                    <Input placeholder="Berlin, DE" {...field} />
+                    <Input placeholder="Berlin, DE" className={touchInput} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -289,7 +289,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                 <FormItem>
                   <FormLabel>Quellendetail</FormLabel>
                   <FormControl>
-                    <Input placeholder="z.B. Facebook Ads, Google" {...field} />
+                    <Input placeholder="z.B. Facebook Ads, Google" className={touchInput} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
