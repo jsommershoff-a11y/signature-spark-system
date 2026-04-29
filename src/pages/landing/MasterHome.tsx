@@ -81,8 +81,8 @@ const faqItems = [
     answer: "Das ist der häufigste Grund, warum Automatisierungen scheitern. Deshalb beziehen wir die Schlüsselpersonen schon im System-Mapping ein – nicht erst beim Rollout. Wer mitgestaltet, blockiert nicht.",
   },
   {
-    question: "Was passiert, wenn ihr irgendwann nicht mehr da seid?",
-    answer: "Du behältst alles: Server, Workflows, Dokumentation und Zugänge. Jeder Workflow ist als JSON exportierbar, jede Architekturentscheidung ist dokumentiert. Ein anderer Dienstleister oder dein internes Team kann ohne uns weiterarbeiten. Genau das ist der Punkt: kein Lock-in.",
+    question: "Wie stellst du sicher, dass das System für mich und mein Team wirklich nutzbar ist?",
+    answer: "Indem ich nichts baue, was nur ich verstehe. Konkret: (1) Ich beziehe die Schlüsselpersonen aus deinem Team schon im System-Mapping ein – sie sehen, wie die Logik entsteht, statt sie am Ende vorgesetzt zu bekommen. (2) Jeder Workflow wird in deiner Sprache dokumentiert (Loom-Video + schriftliche Schritt-für-Schritt-Anleitung), nicht in Tech-Jargon. (3) Ich baue bewusst nur Lösungen, die ich auch ohne KI selbst betreiben würde – keine Black Box, keine versteckten Abhängigkeiten. (4) Vor dem Go-Live machen wir eine gemeinsame Testphase, in der dein Team das System unter echten Bedingungen nutzt und Feedback einfließt. (5) In den 30 Tagen nach Go-Live justieren wir nach, was im Alltag hakt. Das Ergebnis: ein System, das dein Team versteht, kontrolliert und ohne mich weiterbetreiben kann.",
   },
 ];
 
