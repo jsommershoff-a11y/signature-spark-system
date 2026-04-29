@@ -44,6 +44,10 @@ interface Draft {
   is_custom_solution: boolean;
   solution_concept: any;
   created_at: string;
+  reviewed_by_telegram_user: string | null;
+  reviewed_at: string | null;
+  rejection_reason: string | null;
+  converted_offer_id: string | null;
 }
 
 export function AdminZoomAutomation() {
