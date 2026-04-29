@@ -17,6 +17,7 @@ import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection
 import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
 import { FaqDirectCta } from "@/components/landing/home/FaqDirectCta";
 import { ThirtyDayTimeline } from "@/components/landing/home/ThirtyDayTimeline";
+import { SystemPeekSection } from "@/components/landing/home/SystemPeekSection";
 
 const faqItems = [
   {
