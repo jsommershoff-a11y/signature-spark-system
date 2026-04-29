@@ -298,19 +298,33 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
           <p className="text-base md:text-lg text-muted-foreground mb-7 max-w-xl mx-auto leading-relaxed">
             {bundle.finalCtaSubline}
           </p>
-          <Button
-            size="lg"
-            className="bg-primary hover:bg-primary-deep"
-            onClick={() =>
-              navigate(
-                `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
-              )
-            }
-          >
-            {bundle.ctaText}
-            <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Button>
-          <p className="text-xs text-muted-foreground mt-3">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary-deep w-full sm:w-auto"
+              onClick={() =>
+                navigate(
+                  `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
+                )
+              }
+            >
+              {bundle.ctaText}
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground w-full sm:w-auto"
+              onClick={() => {
+                document
+                  .querySelector<HTMLElement>("[data-bundle-system]")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              Bots im Detail ansehen
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-4">
             Unverbindlich · Festpreis-Angebot in 24 h · Bugfixes innerhalb der Termine inklusive
           </p>
         </div>
