@@ -139,6 +139,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const rolesData = await fetchRoles(currentSession.user.id);
             setRoles(rolesData);
             setIsLoading(false);
+
+            // Track portal login (only on actual sign-in, not token refresh)
+            if (event === 'SIGNED_IN') {
+              try {
+                await supabase.from('portal_login_events').insert({
+                  user_id: currentSession.user.id,
+                  email: currentSession.user.email ?? null,
+                  user_agent: navigator.userAgent,
+                });
+              } catch (err) {
+                console.error('Failed to log portal login:', err);
+              }
+            }
           }, 0);
         } else {
           setProfile(null);

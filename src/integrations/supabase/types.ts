@@ -3223,6 +3223,33 @@ export type Database = {
           },
         ]
       }
+      portal_login_events: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          ip: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_pattern_suggestions: {
         Row: {
           description: string
@@ -3287,8 +3314,10 @@ export type Database = {
           full_name: string | null
           id: string
           industry: string | null
+          last_login_at: string | null
           last_name: string | null
           live_call_used_at: string | null
+          login_count: number
           phone: string | null
           primary_goal: string | null
           stripe_customer_id: string | null
@@ -3312,8 +3341,10 @@ export type Database = {
           full_name?: string | null
           id?: string
           industry?: string | null
+          last_login_at?: string | null
           last_name?: string | null
           live_call_used_at?: string | null
+          login_count?: number
           phone?: string | null
           primary_goal?: string | null
           stripe_customer_id?: string | null
@@ -3337,8 +3368,10 @@ export type Database = {
           full_name?: string | null
           id?: string
           industry?: string | null
+          last_login_at?: string | null
           last_name?: string | null
           live_call_used_at?: string | null
+          login_count?: number
           phone?: string | null
           primary_goal?: string | null
           stripe_customer_id?: string | null
