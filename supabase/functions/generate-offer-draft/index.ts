@@ -347,17 +347,75 @@ ${(catalog || []).map((p: any) => {
         .eq("id", zoom_summary_id);
     }
 
-    // Telegram-Push an Berater
+    // Telegram-Push an Berater — kompakte Entscheidungs-Vorschau
     const leadName = `${lead.first_name} ${lead.last_name || ""}`.trim();
     const fmt = (n: number) => (n || 0).toLocaleString("de-DE", { maximumFractionDigits: 0 });
+    const truncate = (s: string, n: number) => {
+      if (!s) return "";
+      const clean = String(s).replace(/\s+/g, " ").trim();
+      return clean.length > n ? clean.slice(0, n - 1) + "…" : clean;
+    };
+    const escape = (s: string) => String(s || "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]!));
+
     const breakdownLines = breakdown.slice(0, 6).map((p: any) => {
       if (p.kind === "catalog_item") {
         const adj = p.adjustment_percent ? ` ${p.adjustment_percent > 0 ? "+" : ""}${p.adjustment_percent}%` : "";
-        const reason = p.adjustment_reason ? ` <i>(${p.adjustment_reason})</i>` : "";
-        return `• ${p.label}: ${fmt(p.base_price_eur)}€${adj} → <b>${fmt(p.line_total_eur)}€</b>${reason}`;
+        const reason = p.adjustment_reason ? ` <i>(${escape(truncate(p.adjustment_reason, 60))})</i>` : "";
+        return `• ${escape(p.label)}: ${fmt(p.base_price_eur)}€${adj} → <b>${fmt(p.line_total_eur)}€</b>${reason}`;
       }
-      return `• ${p.label} <i>(custom)</i>: <b>${fmt(p.line_total_eur)}€</b>${p.adjustment_reason ? " — " + p.adjustment_reason : ""}`;
+      return `• ${escape(p.label)} <i>(custom)</i>: <b>${fmt(p.line_total_eur)}€</b>${p.adjustment_reason ? " — " + escape(truncate(p.adjustment_reason, 60)) : ""}`;
     }).join("\n");
+
+    // Problem (1-2 Sätze) & Top-Benefits (max 3)
+    const problemSummary = truncate(
+      draft.problem_analysis?.summary || draft.problem_analysis?.core_problem || "—",
+      220,
+    );
+    const benefits: string[] = Array.isArray(draft.benefit_analysis?.key_benefits)
+      ? draft.benefit_analysis.key_benefits
+      : Array.isArray(draft.benefit_analysis)
+      ? draft.benefit_analysis
+      : [];
+    const benefitsBlock = benefits.slice(0, 3).map((b: any) => `• ${escape(truncate(typeof b === "string" ? b : b?.text || b?.title || JSON.stringify(b), 90))}`).join("\n");
+
+    // Connectoren
+    const connectors: string[] = Array.isArray(draft.required_connectors)
+      ? draft.required_connectors.map((c: any) => (typeof c === "string" ? c : c?.name || c?.connector || "")).filter(Boolean)
+      : [];
+    const connectorsLine = connectors.length ? connectors.slice(0, 8).map((c) => `<code>${escape(c)}</code>`).join(" · ") : "—";
+
+    // Auffällige Änderungen / Risiken
+    const flags: string[] = [];
+    const bigAdjustments = breakdown.filter((p: any) => Math.abs(p.adjustment_percent || 0) >= 25);
+    if (bigAdjustments.length) {
+      flags.push(`⚠️ <b>${bigAdjustments.length} Position(en) mit Aufschlag ≥25%</b>`);
+    }
+    const customShare = (ps.custom_subtotal_eur || 0) / Math.max(1, ps.suggested_price_eur || 0);
+    if (customShare > 0.4) {
+      flags.push(`⚠️ Custom-Anteil <b>${Math.round(customShare * 100)}%</b> (hoch — schwer skalierbar)`);
+    }
+    if (ps.margin_percent != null && ps.margin_percent < 50) {
+      flags.push(`⚠️ Marge <b>${ps.margin_percent}%</b> unter Zielkorridor (60–75%)`);
+    }
+    if (draft.is_custom_solution) {
+      flags.push(`ℹ️ Komplett-Custom-Lösung (kein Standardprodukt)`);
+    }
+    if (ps.suggested_price_eur && ps.min_price_eur && ps.suggested_price_eur < ps.min_price_eur * 1.1) {
+      flags.push(`⚠️ Vorschlag nur ${Math.round(((ps.suggested_price_eur / ps.min_price_eur) - 1) * 100)}% über Min-Preis`);
+    }
+    const openQuestions: string[] = Array.isArray(draft.qa_checks?.open_questions) ? draft.qa_checks.open_questions : [];
+    if (openQuestions.length) {
+      flags.push(`❓ ${openQuestions.length} offene Frage(n)`);
+    }
+    const clientInputs: string[] = Array.isArray(draft.client_inputs_required) ? draft.client_inputs_required : [];
+    if (clientInputs.length) {
+      flags.push(`📥 ${clientInputs.length} Kunden-Input(s) nötig vor Start`);
+    }
+
+    const flagsBlock = flags.length ? `\n<b>Auffällig:</b>\n${flags.join("\n")}\n` : "";
+    const openQBlock = openQuestions.length
+      ? `\n<b>Offene Fragen:</b>\n${openQuestions.slice(0, 3).map((q: string) => `• ${escape(truncate(q, 100))}`).join("\n")}\n`
+      : "";
 
     const draftId = inserted!.id;
     const inlineKb = qaPassed
@@ -377,18 +435,25 @@ ${(catalog || []).map((p: any) => {
           ],
         };
 
-    const tgRes = await sendTelegram(
+    const message =
       `📝 <b>Neuer Angebotsentwurf</b>\n` +
-      `Lead: <b>${leadName}</b>${lead.company ? " · " + lead.company : ""}\n` +
-      `Lösung: ${draft.solution_concept.title}\n\n` +
-      `<b>Preisherleitung:</b>\n${breakdownLines || "—"}\n\n` +
+      `Lead: <b>${escape(leadName)}</b>${lead.company ? " · " + escape(lead.company) : ""}\n` +
+      `Lösung: <b>${escape(draft.solution_concept.title)}</b>\n\n` +
+      `<b>Problem:</b> ${escape(problemSummary)}\n` +
+      (benefitsBlock ? `\n<b>Kern-Nutzen:</b>\n${benefitsBlock}\n` : "") +
+      `\n<b>Connectoren:</b> ${connectorsLine}\n` +
+      `\n<b>Preisherleitung:</b>\n${breakdownLines || "—"}\n\n` +
       `Katalog-Basis: ${fmt(ps.catalog_subtotal_eur)}€\n` +
       `Aufschläge: ${fmt(ps.adjustments_subtotal_eur)}€\n` +
       `Custom: ${fmt(ps.custom_subtotal_eur)}€\n` +
-      `<b>Vorschlag: ${fmt(ps.suggested_price_eur)}€</b> (Marge ${ps.margin_percent}%)\n` +
-      `QA: ${qaPassed ? "✅ bestanden" : "⚠️ Korrektur nötig"}`,
-      inlineKb,
-    );
+      `<b>Vorschlag: ${fmt(ps.suggested_price_eur)}€</b>` +
+      (ps.min_price_eur ? ` (Min: ${fmt(ps.min_price_eur)}€)` : "") +
+      (ps.margin_percent != null ? ` · Marge ${ps.margin_percent}%` : "") + `\n` +
+      flagsBlock +
+      openQBlock +
+      `\nQA: ${qaPassed ? "✅ bestanden — bereit zur Freigabe" : "⚠️ Korrektur nötig"}`;
+
+    const tgRes = await sendTelegram(message, inlineKb);
 
     if (tgRes?.message_id) {
       await supabase
