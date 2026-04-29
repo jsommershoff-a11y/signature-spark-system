@@ -473,7 +473,8 @@ ${(catalog || []).map((p: any) => {
       (ps.margin_percent != null ? ` · Marge ${ps.margin_percent}%` : "") + `\n` +
       flagsBlock +
       openQBlock +
-      `\nQA: ${qaPassed ? "✅ bestanden — bereit zur Freigabe" : "⚠️ Korrektur nötig"}`;
+      `\nQA: ${qaPassed ? "✅ bestanden — bereit zur Freigabe" : "⚠️ Korrektur nötig"}` +
+      (previewUrl ? `\n\n📄 <a href="${previewUrl}">Kompakte Vorschau (PDF) öffnen</a>` : "");
 
     const tgRes = await sendTelegram(message, inlineKb);
 
