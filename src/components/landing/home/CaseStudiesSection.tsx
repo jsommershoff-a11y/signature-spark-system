@@ -17,7 +17,7 @@ const cases = [
 const highlights = [
   { value: "40+", label: "neue Bewerbungen generiert" },
   { value: "1", label: "zentrales System statt 4 verstreuter Tools" },
-  { value: <Check className="w-10 h-10 md:w-12 md:h-12 mx-auto text-primary" strokeWidth={3} />, label: "„Value ehrlich gesagt unmessbar"" },
+  { value: <Check className="w-10 h-10 md:w-12 md:h-12 mx-auto text-primary" strokeWidth={3} />, label: "„Value ehrlich gesagt unmessbar\"" },
 ];
 
 export const CaseStudiesSection = () => {
