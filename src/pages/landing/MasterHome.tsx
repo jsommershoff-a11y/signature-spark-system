@@ -125,6 +125,9 @@ const MasterHome = () => {
           items={faqItems}
         />
 
+        <ThirtyDayTimeline />
+
+
         <FaqDirectCta onCtaClick={handleCTAClick} />
 
         <FinalCtaSection onCtaClick={handleCTAClick} />
