@@ -2765,6 +2765,8 @@ export type Database = {
           margin_percent: number | null
           matched_catalog_product_ids: Json
           min_price_cents: number | null
+          preview_generated_at: string | null
+          preview_pdf_path: string | null
           price_breakdown: Json | null
           pricing_strategy: Json
           problem_analysis: Json
@@ -2803,6 +2805,8 @@ export type Database = {
           margin_percent?: number | null
           matched_catalog_product_ids?: Json
           min_price_cents?: number | null
+          preview_generated_at?: string | null
+          preview_pdf_path?: string | null
           price_breakdown?: Json | null
           pricing_strategy?: Json
           problem_analysis?: Json
@@ -2841,6 +2845,8 @@ export type Database = {
           margin_percent?: number | null
           matched_catalog_product_ids?: Json
           min_price_cents?: number | null
+          preview_generated_at?: string | null
+          preview_pdf_path?: string | null
           price_breakdown?: Json | null
           pricing_strategy?: Json
           problem_analysis?: Json
