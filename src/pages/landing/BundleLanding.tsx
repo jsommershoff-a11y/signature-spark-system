@@ -252,11 +252,37 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
         qualifizierungQuery={`automations=${bundle.automationSlugs.join(",")}`}
       />
 
+      {/* Conversion: Mid-Page CTA — Hot-Spot zwischen Wertversprechen und Proof */}
+      <section className="bg-[#0F3E2E] text-white py-10 md:py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+          <div>
+            <p className="text-base md:text-lg font-semibold">
+              Bereit für ein konkretes Festpreis-Angebot?
+            </p>
+            <p className="text-sm text-white/70 mt-1">
+              Kurze Bedarfsanalyse · Antwort innerhalb von 24 h · 100 % unverbindlich
+            </p>
+          </div>
+          <Button
+            size="lg"
+            className="bg-primary hover:bg-primary-deep shrink-0"
+            onClick={() =>
+              navigate(
+                `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
+              )
+            }
+          >
+            {bundle.ctaText}
+            <ArrowRight className="ml-1.5 h-4 w-4" />
+          </Button>
+        </div>
+      </section>
+
       {/* 4. PROOF */}
       <TrustLogosSection />
       <ProofBar />
 
-      {/* 5. FAQ + Einwände */}
+      {/* 5. FAQ + Einwände (FAQ ist bewusst auf 4 Einträge gekürzt) */}
       <FAQSection items={allFaq} />
       <ObjectionFAQSection />
 
