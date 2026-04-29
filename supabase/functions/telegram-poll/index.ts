@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         offset: currentOffset,
         timeout,
-        allowed_updates: ["callback_query"],
+        allowed_updates: ["callback_query", "message"],
       }),
     });
 
@@ -80,6 +80,7 @@ Deno.serve(async (req) => {
     if (updates.length === 0) continue;
 
     for (const upd of updates) {
+      // Callback-Buttons
       if (upd.callback_query) {
         try {
           await fetch(`${SUPABASE_URL}/functions/v1/telegram-approval-webhook`, {
@@ -94,6 +95,23 @@ Deno.serve(async (req) => {
           totalProcessed++;
         } catch (e) {
           console.error("Failed to forward callback:", e);
+        }
+      }
+      // Reply-Nachrichten (nur an Bot-Messages, mit reply_to_message)
+      else if (upd.message?.reply_to_message?.message_id) {
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/telegram-approval-webhook`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-cron-secret": CRON_SECRET,
+              Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({ message: upd.message }),
+          });
+          totalProcessed++;
+        } catch (e) {
+          console.error("Failed to forward reply:", e);
         }
       }
     }

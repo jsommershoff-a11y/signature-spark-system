@@ -1,6 +1,16 @@
 // telegram-approval-webhook
-// Verarbeitet Inline-Button-Callbacks aus Telegram für Angebotsfreigaben.
-// Wird vom telegram-poll aufgerufen, sobald ein callback_query eintrifft.
+// Verarbeitet Inline-Button-Callbacks UND Reply-Nachrichten aus Telegram für Angebotsfreigaben.
+// Jede Aktion wird sofort als Timeline-Eintrag in `activities` gespeichert (mit Bearbeiter-Nennung).
+//
+// Callback-Daten-Schema:
+//   offer:approve:<draftId>
+//   offer:reject:<draftId>
+//   offer:negotiate:<draftId>           → zeigt Sub-Optionen (price/scope/timing/other)
+//   offer:negotiate-opt:<draftId>:<opt> → führt Negotiate mit Sub-Option aus
+//   offer:info:<draftId>                → fragt per ForceReply nach Kommentar
+//
+// Reply-Nachrichten (mit reply_to_message.message_id == draft.telegram_message_id) werden
+// als Zusatz-Kommentar zur letzten Aktion in der Timeline gespeichert.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -16,6 +26,13 @@ const CRON_SECRET = Deno.env.get("CRON_SECRET");
 const APP_URL = "https://www.ki-automationen.io";
 const GATEWAY = "https://connector-gateway.lovable.dev/telegram";
 
+const NEGOTIATE_OPTIONS: Record<string, string> = {
+  price: "Preis nachverhandeln",
+  scope: "Scope/Leistung anpassen",
+  timing: "Timing/Termin anpassen",
+  other: "Sonstiges",
+};
+
 async function tg(method: string, body: Record<string, unknown>) {
   const r = await fetch(`${GATEWAY}/${method}`, {
     method: "POST",
@@ -30,10 +47,68 @@ async function tg(method: string, body: Record<string, unknown>) {
   return r.json().catch(() => ({}));
 }
 
+function tgUserName(from: any): string {
+  return (
+    from?.username ||
+    `${from?.first_name || ""} ${from?.last_name || ""}`.trim() ||
+    "unbekannt"
+  );
+}
+
+// Schreibt eine Activity (Timeline-Eintrag) als Service-Role.
+// `activities.user_id` ist NOT NULL → wir verwenden den lead-owner als Bearbeiter
+// (Telegram-Identität bleibt im content + metadata sichtbar).
+async function logActivity(
+  supabase: ReturnType<typeof createClient>,
+  args: {
+    leadId: string;
+    ownerProfileId: string | null;
+    content: string;
+    metadata: Record<string, unknown>;
+  },
+) {
+  // Fallback: wenn Lead keinen Owner hat, irgendeinen Admin nehmen, sonst überspringen wir.
+  let userId = args.ownerProfileId;
+  if (!userId) {
+    const { data: anyAdmin } = await supabase
+      .from("profiles")
+      .select("id")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    userId = anyAdmin?.id ?? null;
+  }
+  if (!userId) {
+    console.warn("activities skipped: no user_id available");
+    return;
+  }
+
+  const { error } = await supabase.from("activities").insert({
+    lead_id: args.leadId,
+    user_id: userId,
+    type: "notiz",
+    content: args.content.length > 4900 ? args.content.slice(0, 4900) + "…" : args.content,
+    metadata: args.metadata,
+  });
+  if (error) console.error("activities insert failed:", error);
+}
+
+async function getLeadOwner(
+  supabase: ReturnType<typeof createClient>,
+  leadId: string,
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("crm_leads")
+    .select("owner_user_id")
+    .eq("id", leadId)
+    .maybeSingle();
+  return data?.owner_user_id ?? null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Internal-only: requires CRON_SECRET (called by telegram-poll)
+  // Internal-only
   const cronHeader = req.headers.get("x-cron-secret");
   if (!CRON_SECRET || cronHeader !== CRON_SECRET) {
     return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: corsHeaders });
@@ -42,19 +117,72 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    const { callback_query } = await req.json();
+    const payload = await req.json();
+    const { callback_query, message } = payload;
+
+    // === Pfad A: Reply-Nachricht (Kommentar zu einer Aktion) =================
+    if (message && message.reply_to_message?.message_id) {
+      const replyToId = message.reply_to_message.message_id;
+      const text: string = (message.text || "").trim();
+      const fromUser = tgUserName(message.from);
+
+      if (!text) {
+        return new Response(JSON.stringify({ ok: true, skipped: "empty reply" }), { headers: corsHeaders });
+      }
+
+      const { data: draft } = await supabase
+        .from("offer_drafts")
+        .select("id, lead_id, status, telegram_message_id")
+        .eq("telegram_message_id", replyToId)
+        .maybeSingle();
+
+      if (!draft) {
+        return new Response(JSON.stringify({ ok: true, skipped: "no draft for reply" }), { headers: corsHeaders });
+      }
+
+      const owner = await getLeadOwner(supabase, draft.lead_id);
+      const truncated = text.length > 1500 ? text.slice(0, 1500) + "…" : text;
+      await logActivity(supabase, {
+        leadId: draft.lead_id,
+        ownerProfileId: owner,
+        content: `💬 Telegram-Kommentar von ${fromUser} zu Angebotsentwurf (Status: ${draft.status}):\n\n${truncated}`,
+        metadata: {
+          source: "telegram_reply",
+          offer_draft_id: draft.id,
+          telegram_user: fromUser,
+          telegram_message_id: message.message_id,
+          reply_to_message_id: replyToId,
+          comment: truncated,
+          draft_status_at_comment: draft.status,
+          captured_at: new Date().toISOString(),
+        },
+      });
+
+      // Kurze Bestätigung zurück (kein neues Force-Reply)
+      if (message.chat?.id) {
+        await tg("sendMessage", {
+          chat_id: message.chat.id,
+          reply_to_message_id: message.message_id,
+          text: `✅ Kommentar in CRM-Timeline gespeichert.`,
+          disable_notification: true,
+        });
+      }
+
+      return new Response(JSON.stringify({ ok: true, action: "reply_logged" }), { headers: corsHeaders });
+    }
+
+    // === Pfad B: Inline-Button (callback_query) ==============================
     if (!callback_query) {
-      return new Response(JSON.stringify({ ok: true, skipped: "no callback_query" }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ ok: true, skipped: "no callback_query/message" }), { headers: corsHeaders });
     }
 
     const cbId = callback_query.id;
     const data: string = callback_query.data || "";
-    const fromUser = callback_query.from?.username || `${callback_query.from?.first_name || ""} ${callback_query.from?.last_name || ""}`.trim();
+    const fromUser = tgUserName(callback_query.from);
     const chatId = callback_query.message?.chat?.id;
     const messageId = callback_query.message?.message_id;
     const originalText: string = callback_query.message?.text || callback_query.message?.caption || "";
 
-    // Parse callback data: "offer:approve:<draft_id>" or "offer:reject:<draft_id>"
     const parts = data.split(":");
     if (parts[0] !== "offer" || parts.length < 3) {
       await tg("answerCallbackQuery", { callback_query_id: cbId, text: "Unbekannte Aktion" });
@@ -63,10 +191,11 @@ Deno.serve(async (req) => {
 
     const action = parts[1];
     const draftId = parts[2];
+    const subOption = parts[3]; // bei negotiate-opt
 
     const { data: draft, error: dErr } = await supabase
       .from("offer_drafts")
-      .select("id, status, lead_id, qa_passed, suggested_price_cents")
+      .select("id, status, lead_id, qa_passed, suggested_price_cents, telegram_message_id")
       .eq("id", draftId)
       .maybeSingle();
 
@@ -84,6 +213,18 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: true, skipped: "already processed" }), { headers: corsHeaders });
     }
 
+    const owner = await getLeadOwner(supabase, draft.lead_id);
+    const nowIso = new Date().toISOString();
+    const baseMeta = {
+      offer_draft_id: draftId,
+      telegram_user: fromUser,
+      telegram_chat_id: chatId,
+      telegram_message_id: messageId,
+      reviewed_at: nowIso,
+      source: "telegram_button",
+    };
+
+    // ---- approve ----
     if (action === "approve") {
       if (draft.qa_passed === false) {
         await tg("answerCallbackQuery", {
@@ -91,11 +232,15 @@ Deno.serve(async (req) => {
           text: "QA nicht bestanden – bitte im CRM korrigieren.",
           show_alert: true,
         });
+        await logActivity(supabase, {
+          leadId: draft.lead_id,
+          ownerProfileId: owner,
+          content: `⛔ ${fromUser} versuchte Freigabe via Telegram, abgelehnt: QA nicht bestanden.`,
+          metadata: { ...baseMeta, action: "approve_blocked_qa" },
+        });
         return new Response(JSON.stringify({ ok: false, error: "qa failed" }), { headers: corsHeaders });
       }
 
-      // Service-role inline approval (RPC requires auth.uid()) — materialise draft → offer
-      let offerId: string | null = null;
       const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
       const { data: created, error: insErr } = await supabase
         .from("offers")
@@ -104,7 +249,7 @@ Deno.serve(async (req) => {
           status: "sent",
           offer_json: { source: "offer_draft", draft_id: draftId, telegram_approval: true, approved_by_telegram_user: fromUser },
           public_token: token,
-          sent_at: new Date().toISOString(),
+          sent_at: nowIso,
           expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         })
         .select("id")
@@ -113,7 +258,7 @@ Deno.serve(async (req) => {
         await tg("answerCallbackQuery", { callback_query_id: cbId, text: `Fehler: ${insErr.message}`, show_alert: true });
         return new Response(JSON.stringify({ ok: false, error: insErr.message }), { headers: corsHeaders });
       }
-      offerId = created!.id;
+      const offerId = created!.id;
 
       await supabase
         .from("offer_drafts")
@@ -121,41 +266,28 @@ Deno.serve(async (req) => {
           status: "approved",
           converted_offer_id: offerId,
           reviewed_by_telegram_user: fromUser,
-          reviewed_at: new Date().toISOString(),
+          reviewed_at: nowIso,
         })
         .eq("id", draftId);
 
-      // Pipeline → offer_sent + Follow-up Task in 3 Tagen (Trigger handle_offer_draft_approval übernimmt das,
-      // aber wir stellen sicher dass es passiert auch wenn Trigger nicht greift)
       await supabase
         .from("pipeline_items")
-        .update({ stage: "offer_sent", stage_updated_at: new Date().toISOString() })
+        .update({ stage: "offer_sent", stage_updated_at: nowIso })
         .eq("lead_id", draft.lead_id)
         .in("stage", ["offer_draft", "analysis_ready", "setter_call_done", "setter_call_scheduled", "new_lead"]);
 
-      // Activity log mit Bearbeiter & Offer-Verweis für CRM-Timeline
-      await supabase.from("activities").insert({
-        lead_id: draft.lead_id,
-        activity_type: "offer_draft_approved",
-        channel: "telegram",
-        direction: "inbound",
-        content: `✅ Angebotsentwurf via Telegram freigegeben von ${fromUser || "unbekannt"} → Angebot versendet, Pipeline auf "offer_sent", Follow-up in 3 Tagen.`,
-        metadata: {
-          offer_draft_id: draftId,
-          offer_id: offerId,
-          telegram_user: fromUser,
-          telegram_chat_id: chatId,
-          telegram_message_id: messageId,
-          reviewed_at: new Date().toISOString(),
-        },
+      await logActivity(supabase, {
+        leadId: draft.lead_id,
+        ownerProfileId: owner,
+        content: `✅ Angebotsentwurf freigegeben via Telegram durch ${fromUser} → Angebot versendet, Pipeline auf "offer_sent", Follow-up in 3 Tagen.`,
+        metadata: { ...baseMeta, action: "approved", offer_id: offerId },
       });
 
-      // Update Telegram message
       if (chatId && messageId) {
         await tg("editMessageText", {
           chat_id: chatId,
           message_id: messageId,
-          text: `${originalText}\n\n✅ <b>FREIGEGEBEN</b> von ${fromUser || "—"} um ${new Date().toLocaleString("de-DE")}`,
+          text: `${originalText}\n\n✅ <b>FREIGEGEBEN</b> von ${fromUser} um ${new Date().toLocaleString("de-DE")}`,
           parse_mode: "HTML",
           disable_web_page_preview: true,
           reply_markup: {
@@ -164,10 +296,11 @@ Deno.serve(async (req) => {
         });
       }
 
-      await tg("answerCallbackQuery", { callback_query_id: cbId, text: "✅ Angebot freigegeben & versendet" });
+      await tg("answerCallbackQuery", { callback_query_id: cbId, text: "✅ Freigegeben & versendet" });
       return new Response(JSON.stringify({ ok: true, action: "approved" }), { headers: corsHeaders });
     }
 
+    // ---- reject ----
     if (action === "reject") {
       await supabase
         .from("offer_drafts")
@@ -175,56 +308,40 @@ Deno.serve(async (req) => {
           status: "rejected",
           rejection_reason: "Per Telegram abgelehnt",
           reviewed_by_telegram_user: fromUser,
-          reviewed_at: new Date().toISOString(),
+          reviewed_at: nowIso,
         })
         .eq("id", draftId);
 
-      // Pipeline-Stage zurück auf analysis_ready setzen
       await supabase
         .from("pipeline_items")
-        .update({ stage: "analysis_ready", stage_updated_at: new Date().toISOString() })
+        .update({ stage: "analysis_ready", stage_updated_at: nowIso })
         .eq("lead_id", draft.lead_id);
 
-      // Open follow-up Task für Owner zur Korrektur
-      const { data: leadRow } = await supabase
-        .from("crm_leads")
-        .select("owner_user_id")
-        .eq("id", draft.lead_id)
-        .maybeSingle();
-
-      if (leadRow?.owner_user_id) {
+      if (owner) {
         await supabase.from("crm_tasks").insert({
-          assigned_user_id: leadRow.owner_user_id,
+          assigned_user_id: owner,
           lead_id: draft.lead_id,
           type: "review_offer",
           title: "Angebotsentwurf überarbeiten",
-          description: `Per Telegram abgelehnt von ${fromUser || "unbekannt"}. Bitte Inhalt/Preis prüfen und neu freigeben.`,
+          description: `Per Telegram abgelehnt von ${fromUser}. Bitte Inhalt/Preis prüfen und neu freigeben.`,
           due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           status: "open",
           meta: { offer_draft_id: draftId, telegram_user: fromUser, source: "telegram_reject" },
         });
       }
 
-      await supabase.from("activities").insert({
-        lead_id: draft.lead_id,
-        activity_type: "offer_draft_rejected",
-        channel: "telegram",
-        direction: "inbound",
-        content: `❌ Angebotsentwurf via Telegram abgelehnt von ${fromUser || "unbekannt"} → Pipeline auf "analysis_ready" zurückgesetzt, Korrektur-Task angelegt.`,
-        metadata: {
-          offer_draft_id: draftId,
-          telegram_user: fromUser,
-          telegram_chat_id: chatId,
-          telegram_message_id: messageId,
-          reviewed_at: new Date().toISOString(),
-        },
+      await logActivity(supabase, {
+        leadId: draft.lead_id,
+        ownerProfileId: owner,
+        content: `❌ Angebotsentwurf abgelehnt via Telegram durch ${fromUser} → Pipeline auf "analysis_ready", Korrektur-Task angelegt.`,
+        metadata: { ...baseMeta, action: "rejected" },
       });
 
       if (chatId && messageId) {
         await tg("editMessageText", {
           chat_id: chatId,
           message_id: messageId,
-          text: `${originalText}\n\n❌ <b>ABGELEHNT</b> von ${fromUser || "—"} um ${new Date().toLocaleString("de-DE")}`,
+          text: `${originalText}\n\n❌ <b>ABGELEHNT</b> von ${fromUser} um ${new Date().toLocaleString("de-DE")}`,
           parse_mode: "HTML",
           disable_web_page_preview: true,
           reply_markup: {
@@ -233,105 +350,187 @@ Deno.serve(async (req) => {
         });
       }
 
-      await tg("answerCallbackQuery", { callback_query_id: cbId, text: "❌ Entwurf abgelehnt" });
+      // Optionalen Kommentar einsammeln
+      if (chatId) {
+        await tg("sendMessage", {
+          chat_id: chatId,
+          text: `💬 Optional: Antworte auf diese Nachricht mit dem Ablehnungsgrund — er wird in der CRM-Timeline ergänzt.`,
+          reply_markup: { force_reply: true, selective: true, input_field_placeholder: "Grund der Ablehnung…" },
+          reply_to_message_id: messageId,
+        });
+      }
+
+      await tg("answerCallbackQuery", { callback_query_id: cbId, text: "❌ Abgelehnt" });
       return new Response(JSON.stringify({ ok: true, action: "rejected" }), { headers: corsHeaders });
     }
 
-    if (action === "negotiate" || action === "info") {
-      const isNegotiate = action === "negotiate";
-      const newStatus = isNegotiate ? "negotiation" : "info_requested";
-      const newStage = isNegotiate ? "negotiation" : "info_requested";
-      const taskType = isNegotiate ? "negotiate_offer" : "request_info";
-      const taskTitle = isNegotiate
-        ? "Angebot nachverhandeln"
-        : "Rückfrage an Kunden stellen";
-      const reviewNote = isNegotiate
-        ? "Per Telegram zur Nachverhandlung markiert"
-        : "Per Telegram zur Kunden-Rückfrage markiert";
-      const headlineEmoji = isNegotiate ? "🔁" : "❓";
-      const headlineLabel = isNegotiate ? "NACHVERHANDELN" : "RÜCKFRAGE OFFEN";
-      const cbToast = isNegotiate
-        ? "🔁 Markiert: Nachverhandeln"
-        : "❓ Markiert: Rückfrage offen";
+    // ---- negotiate (Schritt 1: Sub-Optionen anzeigen) ----
+    if (action === "negotiate") {
+      // Aktivitäts-Eintrag sofort: User hat Nachverhandeln angetippt
+      await logActivity(supabase, {
+        leadId: draft.lead_id,
+        ownerProfileId: owner,
+        content: `🔁 ${fromUser} hat in Telegram „Nachverhandeln" angetippt — wartet auf Sub-Option.`,
+        metadata: { ...baseMeta, action: "negotiate_intent" },
+      });
+
+      if (chatId && messageId) {
+        await tg("sendMessage", {
+          chat_id: chatId,
+          reply_to_message_id: messageId,
+          text: `🔁 <b>Nachverhandeln</b> – worum geht es?`,
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: "💶 Preis", callback_data: `offer:negotiate-opt:${draftId}:price` },
+                { text: "📦 Scope", callback_data: `offer:negotiate-opt:${draftId}:scope` },
+              ],
+              [
+                { text: "📅 Timing", callback_data: `offer:negotiate-opt:${draftId}:timing` },
+                { text: "✏️ Sonstiges", callback_data: `offer:negotiate-opt:${draftId}:other` },
+              ],
+            ],
+          },
+        });
+      }
+      await tg("answerCallbackQuery", { callback_query_id: cbId, text: "Bitte Option wählen" });
+      return new Response(JSON.stringify({ ok: true, action: "negotiate_prompted" }), { headers: corsHeaders });
+    }
+
+    // ---- negotiate-opt (Schritt 2: Sub-Option ausgewählt) ----
+    if (action === "negotiate-opt") {
+      const optKey = subOption || "other";
+      const optLabel = NEGOTIATE_OPTIONS[optKey] || NEGOTIATE_OPTIONS.other;
 
       await supabase
         .from("offer_drafts")
         .update({
-          status: newStatus,
-          rejection_reason: reviewNote,
+          status: "negotiation",
+          rejection_reason: `Nachverhandeln (${optLabel})`,
           reviewed_by_telegram_user: fromUser,
-          reviewed_at: new Date().toISOString(),
+          reviewed_at: nowIso,
         })
         .eq("id", draftId);
 
-      // Pipeline-Stage setzen (best effort – falls Stage-Wert nicht erlaubt, fallen wir auf analysis_ready zurück)
       const { error: stageErr } = await supabase
         .from("pipeline_items")
-        .update({ stage: newStage, stage_updated_at: new Date().toISOString() })
+        .update({ stage: "negotiation", stage_updated_at: nowIso })
         .eq("lead_id", draft.lead_id);
       if (stageErr) {
         await supabase
           .from("pipeline_items")
-          .update({ stage: "analysis_ready", stage_updated_at: new Date().toISOString() })
+          .update({ stage: "analysis_ready", stage_updated_at: nowIso })
           .eq("lead_id", draft.lead_id);
       }
 
-      // Follow-up Task für Owner
-      const { data: leadRow } = await supabase
-        .from("crm_leads")
-        .select("owner_user_id")
-        .eq("id", draft.lead_id)
-        .maybeSingle();
-
-      if (leadRow?.owner_user_id) {
+      if (owner) {
         await supabase.from("crm_tasks").insert({
-          assigned_user_id: leadRow.owner_user_id,
+          assigned_user_id: owner,
           lead_id: draft.lead_id,
-          type: taskType,
-          title: taskTitle,
-          description: isNegotiate
-            ? `Per Telegram zur Nachverhandlung markiert von ${fromUser || "unbekannt"}. Preis/Scope mit Kunden neu abstimmen, danach Entwurf neu generieren oder anpassen.`
-            : `Per Telegram zur Rückfrage markiert von ${fromUser || "unbekannt"}. Offene Punkte beim Kunden klären (siehe QA-Fragen / Kunden-Inputs), danach Entwurf neu freigeben.`,
+          type: "negotiate_offer",
+          title: `Nachverhandeln: ${optLabel}`,
+          description: `Per Telegram zur Nachverhandlung markiert von ${fromUser} (Option: ${optLabel}). Punkt mit Kunden klären, danach Entwurf anpassen.`,
           due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           status: "open",
-          meta: {
-            offer_draft_id: draftId,
-            telegram_user: fromUser,
-            source: isNegotiate ? "telegram_negotiate" : "telegram_info_request",
-          },
+          meta: { offer_draft_id: draftId, telegram_user: fromUser, source: "telegram_negotiate", sub_option: optKey },
         });
       }
 
-      await supabase.from("activities").insert({
-        lead_id: draft.lead_id,
-        activity_type: isNegotiate ? "offer_draft_negotiation" : "offer_draft_info_requested",
-        channel: "telegram",
-        direction: "inbound",
-        content: `${headlineEmoji} Angebotsentwurf via Telegram als "${isNegotiate ? "Nachverhandeln" : "Rückfrage"}" markiert von ${fromUser || "unbekannt"} → Pipeline auf "${newStage}", Follow-up-Task für Owner erstellt.`,
-        metadata: {
-          offer_draft_id: draftId,
-          telegram_user: fromUser,
-          telegram_chat_id: chatId,
-          telegram_message_id: messageId,
-          reviewed_at: new Date().toISOString(),
-        },
+      await logActivity(supabase, {
+        leadId: draft.lead_id,
+        ownerProfileId: owner,
+        content: `🔁 Angebotsentwurf zur Nachverhandlung via Telegram durch ${fromUser} → Option: „${optLabel}". Pipeline auf "negotiation", Task angelegt.`,
+        metadata: { ...baseMeta, action: "negotiation", sub_option: optKey, sub_option_label: optLabel },
       });
 
       if (chatId && messageId) {
         await tg("editMessageText", {
           chat_id: chatId,
-          message_id: messageId,
-          text: `${originalText}\n\n${headlineEmoji} <b>${headlineLabel}</b> – markiert von ${fromUser || "—"} um ${new Date().toLocaleString("de-DE")}`,
+          message_id: draft.telegram_message_id || messageId,
+          text: `${originalText}\n\n🔁 <b>NACHVERHANDELN</b> – ${optLabel} – markiert von ${fromUser} um ${new Date().toLocaleString("de-DE")}`,
           parse_mode: "HTML",
           disable_web_page_preview: true,
           reply_markup: {
             inline_keyboard: [[{ text: "→ Im CRM öffnen", url: `${APP_URL}/app/leads` }]],
           },
         });
+        await tg("sendMessage", {
+          chat_id: chatId,
+          text: `💬 Optional: Antworte auf die ursprüngliche Angebots-Nachricht mit Details zur Nachverhandlung — sie landen in der CRM-Timeline.`,
+          reply_markup: { force_reply: true, selective: true, input_field_placeholder: `Details zu „${optLabel}"…` },
+          reply_to_message_id: draft.telegram_message_id || messageId,
+        });
       }
 
-      await tg("answerCallbackQuery", { callback_query_id: cbId, text: cbToast });
-      return new Response(JSON.stringify({ ok: true, action: newStatus }), { headers: corsHeaders });
+      await tg("answerCallbackQuery", { callback_query_id: cbId, text: `🔁 Nachverhandeln: ${optLabel}` });
+      return new Response(JSON.stringify({ ok: true, action: "negotiation", sub_option: optKey }), { headers: corsHeaders });
+    }
+
+    // ---- info (Rückfrage) ----
+    if (action === "info") {
+      await supabase
+        .from("offer_drafts")
+        .update({
+          status: "info_requested",
+          rejection_reason: "Per Telegram zur Kunden-Rückfrage markiert",
+          reviewed_by_telegram_user: fromUser,
+          reviewed_at: nowIso,
+        })
+        .eq("id", draftId);
+
+      const { error: stageErr } = await supabase
+        .from("pipeline_items")
+        .update({ stage: "info_requested", stage_updated_at: nowIso })
+        .eq("lead_id", draft.lead_id);
+      if (stageErr) {
+        await supabase
+          .from("pipeline_items")
+          .update({ stage: "analysis_ready", stage_updated_at: nowIso })
+          .eq("lead_id", draft.lead_id);
+      }
+
+      if (owner) {
+        await supabase.from("crm_tasks").insert({
+          assigned_user_id: owner,
+          lead_id: draft.lead_id,
+          type: "request_info",
+          title: "Rückfrage an Kunden stellen",
+          description: `Per Telegram zur Rückfrage markiert von ${fromUser}. Offene Punkte beim Kunden klären.`,
+          due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          status: "open",
+          meta: { offer_draft_id: draftId, telegram_user: fromUser, source: "telegram_info_request" },
+        });
+      }
+
+      await logActivity(supabase, {
+        leadId: draft.lead_id,
+        ownerProfileId: owner,
+        content: `❓ Angebotsentwurf zur Kunden-Rückfrage markiert via Telegram durch ${fromUser} → Pipeline auf "info_requested", Task angelegt.`,
+        metadata: { ...baseMeta, action: "info_requested" },
+      });
+
+      if (chatId && messageId) {
+        await tg("editMessageText", {
+          chat_id: chatId,
+          message_id: messageId,
+          text: `${originalText}\n\n❓ <b>RÜCKFRAGE OFFEN</b> – markiert von ${fromUser} um ${new Date().toLocaleString("de-DE")}`,
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+          reply_markup: {
+            inline_keyboard: [[{ text: "→ Im CRM öffnen", url: `${APP_URL}/app/leads` }]],
+          },
+        });
+        await tg("sendMessage", {
+          chat_id: chatId,
+          text: `💬 Welche Rückfrage genau? Antworte auf die ursprüngliche Angebots-Nachricht — sie landet in der CRM-Timeline.`,
+          reply_markup: { force_reply: true, selective: true, input_field_placeholder: "Welche Info brauchen wir vom Kunden?" },
+          reply_to_message_id: messageId,
+        });
+      }
+
+      await tg("answerCallbackQuery", { callback_query_id: cbId, text: "❓ Rückfrage offen" });
+      return new Response(JSON.stringify({ ok: true, action: "info_requested" }), { headers: corsHeaders });
     }
 
     await tg("answerCallbackQuery", { callback_query_id: cbId, text: "Unbekannte Aktion" });
