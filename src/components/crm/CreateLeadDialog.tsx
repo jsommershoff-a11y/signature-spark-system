@@ -221,6 +221,7 @@ export function CreateLeadDialog({ open, onOpenChange, onSubmit }: CreateLeadDia
                       inputMode="url"
                       autoComplete="url"
                       placeholder="https://beispiel.de"
+                      className={touchInput}
                       {...field}
                     />
                   </FormControl>
