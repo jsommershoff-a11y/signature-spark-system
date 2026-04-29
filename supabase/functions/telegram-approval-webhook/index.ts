@@ -237,6 +237,103 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: true, action: "rejected" }), { headers: corsHeaders });
     }
 
+    if (action === "negotiate" || action === "info") {
+      const isNegotiate = action === "negotiate";
+      const newStatus = isNegotiate ? "negotiation" : "info_requested";
+      const newStage = isNegotiate ? "negotiation" : "info_requested";
+      const taskType = isNegotiate ? "negotiate_offer" : "request_info";
+      const taskTitle = isNegotiate
+        ? "Angebot nachverhandeln"
+        : "Rückfrage an Kunden stellen";
+      const reviewNote = isNegotiate
+        ? "Per Telegram zur Nachverhandlung markiert"
+        : "Per Telegram zur Kunden-Rückfrage markiert";
+      const headlineEmoji = isNegotiate ? "🔁" : "❓";
+      const headlineLabel = isNegotiate ? "NACHVERHANDELN" : "RÜCKFRAGE OFFEN";
+      const cbToast = isNegotiate
+        ? "🔁 Markiert: Nachverhandeln"
+        : "❓ Markiert: Rückfrage offen";
+
+      await supabase
+        .from("offer_drafts")
+        .update({
+          status: newStatus,
+          rejection_reason: reviewNote,
+          reviewed_by_telegram_user: fromUser,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", draftId);
+
+      // Pipeline-Stage setzen (best effort – falls Stage-Wert nicht erlaubt, fallen wir auf analysis_ready zurück)
+      const { error: stageErr } = await supabase
+        .from("pipeline_items")
+        .update({ stage: newStage, stage_updated_at: new Date().toISOString() })
+        .eq("lead_id", draft.lead_id);
+      if (stageErr) {
+        await supabase
+          .from("pipeline_items")
+          .update({ stage: "analysis_ready", stage_updated_at: new Date().toISOString() })
+          .eq("lead_id", draft.lead_id);
+      }
+
+      // Follow-up Task für Owner
+      const { data: leadRow } = await supabase
+        .from("crm_leads")
+        .select("owner_user_id")
+        .eq("id", draft.lead_id)
+        .maybeSingle();
+
+      if (leadRow?.owner_user_id) {
+        await supabase.from("crm_tasks").insert({
+          assigned_user_id: leadRow.owner_user_id,
+          lead_id: draft.lead_id,
+          type: taskType,
+          title: taskTitle,
+          description: isNegotiate
+            ? `Per Telegram zur Nachverhandlung markiert von ${fromUser || "unbekannt"}. Preis/Scope mit Kunden neu abstimmen, danach Entwurf neu generieren oder anpassen.`
+            : `Per Telegram zur Rückfrage markiert von ${fromUser || "unbekannt"}. Offene Punkte beim Kunden klären (siehe QA-Fragen / Kunden-Inputs), danach Entwurf neu freigeben.`,
+          due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          status: "open",
+          meta: {
+            offer_draft_id: draftId,
+            telegram_user: fromUser,
+            source: isNegotiate ? "telegram_negotiate" : "telegram_info_request",
+          },
+        });
+      }
+
+      await supabase.from("activities").insert({
+        lead_id: draft.lead_id,
+        activity_type: isNegotiate ? "offer_draft_negotiation" : "offer_draft_info_requested",
+        channel: "telegram",
+        direction: "inbound",
+        content: `${headlineEmoji} Angebotsentwurf via Telegram als "${isNegotiate ? "Nachverhandeln" : "Rückfrage"}" markiert von ${fromUser || "unbekannt"} → Pipeline auf "${newStage}", Follow-up-Task für Owner erstellt.`,
+        metadata: {
+          offer_draft_id: draftId,
+          telegram_user: fromUser,
+          telegram_chat_id: chatId,
+          telegram_message_id: messageId,
+          reviewed_at: new Date().toISOString(),
+        },
+      });
+
+      if (chatId && messageId) {
+        await tg("editMessageText", {
+          chat_id: chatId,
+          message_id: messageId,
+          text: `${originalText}\n\n${headlineEmoji} <b>${headlineLabel}</b> – markiert von ${fromUser || "—"} um ${new Date().toLocaleString("de-DE")}`,
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+          reply_markup: {
+            inline_keyboard: [[{ text: "→ Im CRM öffnen", url: `${APP_URL}/app/leads` }]],
+          },
+        });
+      }
+
+      await tg("answerCallbackQuery", { callback_query_id: cbId, text: cbToast });
+      return new Response(JSON.stringify({ ok: true, action: newStatus }), { headers: corsHeaders });
+    }
+
     await tg("answerCallbackQuery", { callback_query_id: cbId, text: "Unbekannte Aktion" });
     return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
   } catch (e: any) {
