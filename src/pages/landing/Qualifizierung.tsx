@@ -20,7 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Bot, Check, ChevronRight, Sparkles } from "lucide-react";
+import { Bot, Check, ChevronRight, Clock, Sparkles } from "lucide-react";
 import { AUTOMATIONS } from "@/data/automations";
 import {
   Form,
