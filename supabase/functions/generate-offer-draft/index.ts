@@ -443,7 +443,11 @@ ${(catalog || []).map((p: any) => {
           inline_keyboard: [
             ...(previewBtn ? [previewBtn] : []),
             [
-              { text: "✅ Freigeben & versenden", callback_data: `offer:approve:${draftId}` },
+              { text: "✅ Freigeben", callback_data: `offer:approve:${draftId}` },
+              { text: "🔁 Nachverhandeln", callback_data: `offer:negotiate:${draftId}` },
+            ],
+            [
+              { text: "❓ Rückfrage", callback_data: `offer:info:${draftId}` },
               { text: "❌ Ablehnen", callback_data: `offer:reject:${draftId}` },
             ],
             [{ text: "→ Im CRM öffnen", url: `${APP_URL}/app/leads` }],
@@ -452,6 +456,10 @@ ${(catalog || []).map((p: any) => {
       : {
           inline_keyboard: [
             ...(previewBtn ? [previewBtn] : []),
+            [
+              { text: "🔁 Nachverhandeln", callback_data: `offer:negotiate:${draftId}` },
+              { text: "❓ Rückfrage", callback_data: `offer:info:${draftId}` },
+            ],
             [{ text: "❌ Ablehnen", callback_data: `offer:reject:${draftId}` }],
             [{ text: "→ Im CRM korrigieren", url: `${APP_URL}/app/leads` }],
           ],
