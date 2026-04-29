@@ -23,7 +23,7 @@ export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden app-scope">
+    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden app-scope pt-safe">
       <ProfileCompletionDialog />
       <ViewAsBanner />
       <IncomingCallPopup />
@@ -73,7 +73,7 @@ export function AppLayout() {
 
         {/* Content Area — landing container width + generous padding */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto min-w-0 flex flex-col">
-          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 pb-mobile-nav md:pb-10">
             <Breadcrumbs />
             <TrialGuard>
               <Outlet />
@@ -82,6 +82,9 @@ export function AppLayout() {
           <AppFooter />
         </main>
       </div>
+
+      {/* Mobile bottom navigation — opens hamburger sheet via "Mehr" */}
+      <MobileBottomNav onMore={() => setSidebarOpen(true)} />
     </div>
   );
 }
