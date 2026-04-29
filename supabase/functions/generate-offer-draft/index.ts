@@ -418,9 +418,30 @@ ${(catalog || []).map((p: any) => {
       : "";
 
     const draftId = inserted!.id;
+
+    // Kompakte HTML-Vorschau erzeugen (Angebotsdaten + Preiserklärung + Auffälligkeiten)
+    let previewUrl: string | null = null;
+    try {
+      const pv = await fetch(`${SUPABASE_URL}/functions/v1/generate-draft-preview-pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(CRON_SECRET ? { "x-cron-secret": CRON_SECRET } : {}),
+        },
+        body: JSON.stringify({ draft_id: draftId }),
+      });
+      const pvJson = await pv.json().catch(() => ({}));
+      if (pv.ok && pvJson?.signed_url) previewUrl = pvJson.signed_url;
+      else console.warn("Preview generation failed:", pvJson);
+    } catch (e) {
+      console.warn("Preview call error:", e);
+    }
+
+    const previewBtn = previewUrl ? [{ text: "📄 Vorschau (PDF) ansehen", url: previewUrl }] : null;
     const inlineKb = qaPassed
       ? {
           inline_keyboard: [
+            ...(previewBtn ? [previewBtn] : []),
             [
               { text: "✅ Freigeben & versenden", callback_data: `offer:approve:${draftId}` },
               { text: "❌ Ablehnen", callback_data: `offer:reject:${draftId}` },
@@ -430,6 +451,7 @@ ${(catalog || []).map((p: any) => {
         }
       : {
           inline_keyboard: [
+            ...(previewBtn ? [previewBtn] : []),
             [{ text: "❌ Ablehnen", callback_data: `offer:reject:${draftId}` }],
             [{ text: "→ Im CRM korrigieren", url: `${APP_URL}/app/leads` }],
           ],
