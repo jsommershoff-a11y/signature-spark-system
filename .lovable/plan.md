@@ -1,92 +1,99 @@
+# Landingpage-Optimierung ki-automationen.io
 
-## Ziel
+Ziel: Bestehende Seite konkreter, glaubwürdiger und konversionsstärker machen. Keine neue Seite, keine Strukturänderung, kein Branding-Wechsel. Alle Anpassungen DE/Du-Form, sachlich.
 
-Die globale Leadliste in deinem Google Sheet
-`14wfNDBU85hyZjVYZBOmo7iX3-ErdVW_fqI6eF55Y3cE`
-wird stündlich automatisch in `crm_leads` eingelesen. Bestehende Leads werden **nie** überschrieben. Jeder neue Lead wird klar als „Google Drive Leadliste" markiert. Der CRM-Status wird zurück ins Sheet geschrieben.
+## Übersicht der Änderungen
 
-## Datenfluss
+| # | Datei | Was passiert |
+|---|-------|--------------|
+| 1 | `src/components/landing/home/HeroSection.tsx` | Trust-Badges, Sekundär-Link, Jan-Zitat |
+| 2 | `src/components/landing/home/TrustLogosSection.tsx` | Neuer Untertitel |
+| 3 | `src/components/landing/home/ThreeStagesSection.tsx` (NEU) | Vergleichstabelle 3 Stufen |
+| 3b | `src/pages/landing/MasterHome.tsx` | Section einhängen zwischen `AiRealitySection` und `VulnerabilitySection` |
+| 4 | `src/components/landing/home/VulnerabilitySection.tsx` | Rote Risiko-Mini-Tags je Karte + "Jan sagt"-Quote |
+| 5 | `src/components/landing/home/ProcessStepsSection.tsx` | Mono-Zeit-Tags je Schritt + Gesamtdauer-Zeile + "Jan sagt"-Quote |
+| 6 | `src/components/landing/home/CaseStudiesSection.tsx` | 3 Zahlen-Highlights, Zitat hervorheben, Hinweiszeile |
 
-```text
-Google Sheet (Drive)
-       │  read  (stündlich via pg_cron)
-       ▼
-Edge Function: sync-drive-leads
-       │  insert (nur neu, dedupe per E-Mail/Telefon)
-       ▼
-crm_leads  (source_type = inbound_organic, source_detail = "drive_sheet:<id>")
-       │
-       ▼
-Edge Function schreibt CRM-Status zurück → Sheet-Spalte „CRM-Status"
-```
+## Details je Änderung
 
-## Komponenten
+### 1. HeroSection
+- Unter dem bestehenden Sub-Text-Block, vor dem Button: Drei horizontale Trust-Badges mit Lucide-Icons (`ShieldCheck`, `UserCheck`, `Clock`):
+  - "DSGVO-konform · Eigener Server in der EU"
+  - "Berater + Umsetzer in einer Person"
+  - "30 Tage Begleitung nach Go-Live"
+  - Auf Mobile (Viewport 448px): vertikal gestapelt, kleine Pills, weißer Text auf `bg-white/5 border-white/10`.
+- Unter dem Hauptbutton: Sekundär-Link `→ So läuft die Zusammenarbeit ab`, scrollt per Anchor `#vorgehen` (Anchor-ID an `ProcessStepsSection`-Wrapper hinzufügen). Style: `text-white/70 hover:text-primary underline-offset-4`.
+- Founder-Trust-Modul rechts: Direkt unter Subheader-Zeile ("Systematisierung, …") ein neues kursives Zitat klein, in Anführungszeichen:
+  > „Ich baue für meine Kunden nur Systeme, die ich selbst nutzen würde."
+- Mobile: Founder-Modul ist heute `hidden md:flex`. Damit Zitat & Foto auch mobil sichtbar sind → Founder-Block in einer kompakten Mobile-Variante zusätzlich oberhalb der Benefit-Cards rendern (nur `md:hidden`), kleines rundes Foto + Name + Kurz-Zitat.
 
-### 1. Connector
-- Google Sheets Connection (`Jan's Google Sheets`) wird mit dem Projekt verlinkt, damit `GOOGLE_SHEETS_API_KEY` in der Edge Function verfügbar ist. Drive-Token funktioniert für Sheets-API nicht (bereits getestet → `connector_type_mismatch`).
+### 2. TrustLogosSection
+- Untertitel ersetzen durch:
+  > "Wir integrieren in den Stack, den du schon hast — nicht noch ein Tool obendrauf."
+- Restliche Marquee-Logik bleibt unverändert.
 
-### 2. DB-Migration
-- Neue Tabelle `drive_sync_state`: speichert pro Sheet die letzte Sync-Zeit, Anzahl neuer Zeilen, letzten Fehler, gefundene Header.
-- Neue Tabelle `drive_sync_runs`: Run-Historie (timestamp, inserted, skipped, errors[]) für Admin-Monitoring.
-- RLS: nur Admin lesen.
-- Erweitere `crm_leads.enrichment_json` um Felder `drive_row_index`, `drive_sheet_id` (kein Schema-Change nötig, JSONB).
+### 3. NEU: ThreeStagesSection (`Drei Stufen — wo stehst du gerade?`)
+- Neue Datei `src/components/landing/home/ThreeStagesSection.tsx`.
+- Position: in `MasterHome.tsx` direkt **nach** `AiRealitySection` und **vor** `VulnerabilitySection`.
+- H2: "Drei Stufen — wo stehst du gerade?"
+- Sub: "Die meisten Unternehmen sind nicht zu langsam mit KI. Sie sind zu früh dran ohne Struktur."
+- Desktop: 4-spaltige Tabelle (Aspekt + 3 Stufen) als Grid mit `border-border/30`, gerundete Ecken, Zebra-Reihen.
+- Letzte Spalte ("Eigenes System (Wir)") visuell hervorgehoben: `border-2 border-primary/40 bg-[#FFF3EB]/40` (Sand), Header-Zelle `bg-primary text-primary-foreground`.
+- Mobile (<md): Tabelle wird zu 3 gestapelten Cards (eine pro Stufe). Jede Card listet alle 6 Aspekte als Key/Value-Paare. Letzte Card mit orangem Border + Sand-Hintergrund.
+- Inhalte exakt aus Briefing (Wissen, Übergaben, Skalierung, Reaktionszeit, Abhängigkeiten, KI-Hebel).
 
-### 3. Edge Function `sync-drive-leads` (POST, JWT off, geschützt via `x-cron-secret`)
-- Liest Sheet-Metadaten + erste Tab → Header-Zeile (Row 1).
-- Mapped Header heuristisch auf CRM-Felder (Aliasliste, case-insensitive):
-  - `email|e-mail|mail` → `email`
-  - `vorname|first name|firstname` → `first_name`
-  - `nachname|last name|lastname|name` → `last_name`
-  - `telefon|phone|handy|mobile` → `phone`
-  - `firma|company|unternehmen` → `company`
-  - `website|url|domain` → `website_url`
-  - `branche|industry` → `industry`
-  - `ort|stadt|location|city` → `location`
-  - `quelle|source` → `source_detail` (zusätzlich zur fixen Kennzeichnung)
-  - `notiz|notes|kommentar` → `notes`
-- Validierung pro Zeile (Zod): mind. `email` ODER `phone`, gültiges Email-Format.
-- Dedupe-Check: `SELECT id FROM crm_leads WHERE lower(email)=$1 OR regexp_replace(phone,'[^0-9]','','g')=$2 LIMIT 1`. Treffer → skip (insert-only Modus).
-- Insert mit:
-  - `source_type='inbound_organic'`
-  - `source_detail='drive_sheet:<sheetId>'`
-  - `discovered_by='manual'` (kein AI-Crawl)
-  - `enrichment_json={ origin:'google_drive_sheet', drive_sheet_id, drive_row_index, raw_row:{…} }`
-- Trigger `assign_lead_round_robin` und `create_pipeline_item_for_lead` greifen automatisch.
-- Sammelt pro Run: `inserted`, `skipped_dedupe`, `skipped_invalid`, `errors`.
-- Schreibt nach erfolgreicher Verarbeitung zurück in eine Spalte `CRM-Status` (wird angelegt falls fehlt) für jede Zeile: `imported` / `duplicate` / `invalid:<grund>` / `skipped`.
-- Loggt Run in `drive_sync_runs`.
+### 4. VulnerabilitySection
+- Pro Karte am Ende ein roter Mini-Tag (kleines Pill: `inline-flex items-center gap-1 mt-4 px-2.5 py-1 rounded-md bg-destructive/10 text-destructive text-xs font-semibold border border-destructive/20`):
+  - Steuerberater: "Risiko: 4–6 Wochen Stillstand in der Buchhaltung"
+  - Mitarbeiter: "Risiko: Niemand übernimmt ohne 2 Wochen Einarbeitung"
+  - System: "Risiko: Prozesse stehen still, Kunden warten"
+  - Compliance: "Risiko: Bußgeld + Tage manueller Recherche"
+- Über den 4 Karten ein konkretes Mini-Beispiel ergänzen: "z. B. Lead-Antwort in unter 2 Minuten statt 4 Stunden, sobald eingehende Anfragen direkt im eigenen System landen."
+- Unter den Karten "Jan sagt"-Quote (kursiv, kleines Foto-Avatar):
+  > „In 9 von 10 Erstgesprächen liegt das halbe Unternehmen in fremden Postfächern. Genau das wollen wir abschalten."
 
-### 4. Cron
-- `pg_cron` Eintrag stündlich (`5 * * * *`) → `net.http_post` auf die Edge Function inkl. `x-cron-secret`-Header (existierendes Secret `CRON_SECRET`).
-- SQL wird über `psql`-Insert eingespielt (nicht als Migration), Pattern wie bei den anderen Cron-Jobs.
+### 5. ProcessStepsSection
+- Wrapper-Section bekommt `id="vorgehen"` (für Hero-Sekundärlink).
+- Steps-Array um `duration` erweitern und in Karte oben rechts als Mono-Tag (`font-mono text-[11px] uppercase tracking-wide bg-muted text-muted-foreground rounded px-2 py-0.5`) anzeigen:
+  1. Analyse — "ca. 1 Woche"
+  2. System-Mapping — "1–2 Wochen"
+  3. Priorisierung — "ca. 1 Woche"
+  4. Umsetzung — "4–8 Wochen"
+  5. Übergabe + Support — "30 Tage Begleitung"
+- Aktuelles Layout: zentrierte Kreise. Wir wechseln je Step zu einer leichten Card (`rounded-2xl border border-border/30 p-5 text-left`), damit der Tag rechts oben Platz hat. Nummer-Kreis bleibt links oben.
+- Schritt 5 Title auf "Übergabe + Support" anpassen.
+- Direkt unter dem Grid neue Zeile (zentriert, fett):
+  > "Typische Gesamtdauer eines Projekts: 8–12 Wochen bis Go-Live."
+- Darunter ein "Jan sagt"-Quote (kursiv, klein):
+  > „Wir liefern keinen Tool-Stack, sondern eine dokumentierte Struktur, die ohne uns funktioniert."
 
-### 5. Admin-UI Erweiterung
-- Neue Karte unter `/app/admin` (oder in `AdminIntegrations`): „Drive-Leadliste-Sync"
-  - Status: letzter Run, Anzahl neue Leads, Fehler.
-  - Buttons: „Jetzt synchronisieren" (Admin-only), „Historie anzeigen".
-  - Quelle des Sheets editierbar (Sheet-ID + Tabname).
+### 6. CaseStudiesSection (René Schreiner)
+- Über der bestehenden Karte 1 Reihe / 3 Spalten Mini-Cards (Mobile: 3 gestapelt):
+  - `40+` — "neue Bewerbungen generiert"
+  - `1` — "zentrales System statt 4 verstreuter Tools"
+  - `✓` — „Value ehrlich gesagt unmessbar"
+  - Style: `rounded-2xl border-2 border-primary/30 bg-[#FFF3EB] p-6 text-center`, große Zahl in `text-4xl md:text-5xl font-bold text-primary`.
+- Bestehende Problem/Ziel/Lösung/Ergebnis-Struktur bleibt. Das Ergebnis-Zitat: größere Schrift `text-lg md:text-xl`, kursiv, Anführungszeichen sichtbar, mit `Quote`-Icon davor.
+- Ende der Sektion (kleine Zeile, zentriert, `text-xs text-muted-foreground`):
+  > "Weitere Referenzen auf Anfrage. Wir sprechen gern mit dir konkret über vergleichbare Projekte."
+  (Briefing brach hier ab — falls du einen anderen Wortlaut willst, einfach kurz angeben.)
 
-## Sicherheitspunkte
-- Edge Function akzeptiert nur Calls mit gültigem `x-cron-secret` ODER eingeloggtem Admin (JWT-Check via `has_min_role(uid,'admin')` über service-role client).
-- Input-Validierung via Zod auf jede Sheet-Zeile.
-- E-Mail-Suffix-Match per Trigger-bekanntem Pattern (kein SQL-Injection-Vektor – wir nutzen den Supabase-Client, keine raw SQL).
-- Keine Updates auf bestehende Leads → kein Datenverlustrisiko.
-- Sheet-Rückschreiben nur in eine eigens angelegte Spalte „CRM-Status", andere Spalten werden nie angefasst.
+## Technische Hinweise
+- Alle neuen UI-Elemente nutzen bestehende `landingTokens` und Tailwind-Klassen, kein neues Theming.
+- Keine neuen Dependencies; Lucide-Icons sind bereits verfügbar.
+- Mobile-First geprüft für Viewport 448px (Sticky CTA + Bottom-Nav-Padding bleiben unangetastet).
+- Anchor-Scroll aus dem Hero-Sekundärlink: einfaches `<a href="#vorgehen">` reicht (Browser-natives Smooth-Scroll via `html { scroll-behavior: smooth; }` ist im `index.css` aktiv — falls nicht, ergänze ich es im selben Schritt).
 
-## Akzeptanzkriterien
-1. Stündlicher Cron läuft und legt neue Leads in `crm_leads` an, sichtbar in `/app/leads`.
-2. Jeder neue Lead trägt `source_type=inbound_organic`, `source_detail` enthält `drive_sheet:<id>` und `enrichment_json.origin='google_drive_sheet'`.
-3. Doppelte E-Mail/Telefonnummern werden nicht erneut eingefügt.
-4. Im Sheet erscheint die neue Spalte „CRM-Status" mit Werten pro Zeile.
-5. Admin sieht Run-Historie + Fehlerliste in `/app/admin`.
+## Offene Punkte (werden mit umgesetzt — bitte nur bei Widerspruch melden)
+1. Letzte Zeile der Case-Study-Sektion ist im Briefing abgeschnitten. Ich übernehme den Wortlaut wie oben formuliert.
+2. Founder-Modul wird mobile sichtbar gemacht (kompakte Variante), damit das neue Jan-Zitat auch auf Smartphones wirkt.
+3. ProcessSteps-Karten wechseln von zentriert zu links-bündigen Cards, damit Zeit-Tags Platz haben — bleibt visuell konsistent zum Rest der Seite.
 
-## Was ich nach Approval zuerst tue
-1. Google Sheets Connection mit dem Projekt verlinken (Connect-Dialog).
-2. Header des Sheets auslesen → Mapping bestätigen (kurze Rückfrage falls Spaltennamen unklar).
-3. Migration + Edge Function + Cron + Admin-Card bauen, jeweils mit Step-PASS-Test laut Engineering-Policy.
+## Verbesserungsvorschläge zusätzlich (werden mit ausgeliefert, sofern du nicht widersprichst)
+- **A. Sticky-CTA-Bar**: Auf Mobile zusätzlich ein subtiler Hinweis "Antwort meist innerhalb von 24 h" rechts vom Button, um Reibung zu senken.
+- **B. Hero-Microcopy**: Unter dem Sekundär-Link `30 Min · Ohne Verkaufsdruck · Kein Tool-Pitch` als 3-Wort-Reassurance.
+- **C. Case-Study-Sektion**: Logo "AS Gärten GmbH" (falls vorhanden) klein neben Name einbinden — erhöht Glaubwürdigkeit.
+- **D. JSON-LD**: Neue `Review`/`Quote`-Schema-Einträge zu René Schreiner ergänzen (SEO-Sichtbarkeit / Sitelink-Snippets).
+- **E. Vergleichstabelle**: Auf Desktop letzte Spalte mit kleinem `Recommended`-Ribbon oben rechts.
 
-## Optionale Verbesserungen (liefere ich direkt mit, falls du nichts anderes sagst)
-- Webhook-Mode zusätzlich zum Cron, damit Zapier/Make sofort triggern kann.
-- Slack/Telegram-Notification bei `inserted > 0`.
-- „Trockenlauf"-Knopf im Admin (zeigt was importiert würde, ohne zu schreiben).
-- Konfigurierbare Mapping-Tabelle (UI), falls sich die Sheet-Struktur ändert.
+Sag einfach Bescheid, falls A–E ganz oder teilweise nicht mit ausgeliefert werden sollen.
