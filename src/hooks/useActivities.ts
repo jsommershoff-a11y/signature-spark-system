@@ -151,12 +151,15 @@ export function useActivities({ lead_id, customer_id }: UseActivitiesOptions) {
       if (!input.content || input.content.length > 5000) {
         throw new Error('Inhalt muss zwischen 1 und 5000 Zeichen lang sein');
       }
+      if (input.type === 'login') {
+        throw new Error('Login-Events werden automatisch erfasst');
+      }
 
       const { error } = await supabase.from('activities').insert({
         lead_id: input.lead_id || lead_id || null,
         customer_id: input.customer_id || customer_id || null,
         user_id: profile.id,
-        type: input.type,
+        type: input.type as 'anruf' | 'email' | 'meeting' | 'notiz' | 'fehler',
         content: input.content,
       });
 
