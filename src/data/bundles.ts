@@ -1,5 +1,37 @@
 import type { IndustryFAQ } from "./industries";
 
+export interface BundleProofStat {
+  /** Große Kennzahl, z. B. "8–15 h" */
+  value: string;
+  /** Kurze Beschreibung, z. B. "zurückgewonnene Mitarbeiterzeit / Woche" */
+  label: string;
+}
+
+export interface BundleProofResult {
+  /** Branche oder Rolle, z. B. "Handwerksbetrieb · 12 MA" */
+  segment: string;
+  /** Konkretes Ergebnis, z. B. "Angebote in 24 h statt 5 Tagen" */
+  outcome: string;
+  /** Zeitraum bis zum Ergebnis, z. B. "nach 2 Wochen" */
+  timeframe: string;
+}
+
+export interface BundleProof {
+  /** 4 Quick-Stats für die Stat-Reihe */
+  stats: [BundleProofStat, BundleProofStat, BundleProofStat, BundleProofStat];
+  /** Kurze, vergleichbare Mitgliedervorteile (3–4 Punkte) */
+  memberBenefits: string[];
+  /** 2–3 Beispiel-Ergebnisse aus echten Setups */
+  exampleResults: BundleProofResult[];
+  /** Zitat — passend zur Zielgruppe */
+  quote: {
+    text: string;
+    author: string;
+    role: string;
+    initials: string;
+  };
+}
+
 export interface Bundle {
   slug: "start" | "growth";
   /** Routenpfad ohne führenden Slash */
@@ -25,7 +57,10 @@ export interface Bundle {
   /** Final-CTA */
   finalCtaHeadline: string;
   finalCtaSubline: string;
+  /** Zielgruppen-spezifische Proof-Sektion */
+  proof: BundleProof;
 }
+
 
 export const BUNDLES: Record<"start" | "growth", Bundle> = {
   start: {
@@ -69,6 +104,43 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     finalCtaHeadline: "Bereit für den schnellen Einstieg?",
     finalCtaSubline:
       "Kurzer Bedarfsabgleich, dann erhältst du innerhalb von 24 h dein Festpreis-Angebot für das Starter-Bundle.",
+    proof: {
+      stats: [
+        { value: "7 Tage", label: "bis alle 3 Bots live sind" },
+        { value: "8–15 h", label: "freie Mitarbeiterzeit pro Woche" },
+        { value: "< 24 h", label: "Reaktion auf neue Anfragen" },
+        { value: "1×", label: "Onboarding für 3 Bots gleichzeitig" },
+      ],
+      memberBenefits: [
+        "Festpreis statt Stundenabrechnung – kein Kostenrisiko beim Einstieg",
+        "30 Tage Optimierungssupport ohne Mehrkosten inklusive",
+        "Direkter Slack-/E-Mail-Draht zum Implementierer während des Rollouts",
+        "Upgrade-Pfad: alle Komponenten sind Growth-kompatibel ohne Neuaufbau",
+      ],
+      exampleResults: [
+        {
+          segment: "Handwerksbetrieb · 8 MA",
+          outcome: "Angebote in 24 h statt 5 Tagen, 0 vergessene Anfragen",
+          timeframe: "nach 2 Wochen",
+        },
+        {
+          segment: "Praxis · 4 Behandler",
+          outcome: "60 % weniger Telefonate dank automatischer Terminvergabe",
+          timeframe: "nach 10 Tagen",
+        },
+        {
+          segment: "Dienstleister · 5 MA",
+          outcome: "12 h/Woche Backoffice-Zeit zurück bei gleichem Umsatz",
+          timeframe: "nach 3 Wochen",
+        },
+      ],
+      quote: {
+        text: "In der ersten Woche war Schluss mit dem ständigen Hinterhertelefonieren. Termine, E-Mails und Angebote laufen jetzt durch – wir merken nur noch, dass mehr Aufträge reinkommen.",
+        author: "René Schreiner",
+        role: "Geschäftsführung · KRS",
+        initials: "RS",
+      },
+    },
   },
 
   growth: {
@@ -121,6 +193,43 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     finalCtaHeadline: "Bereit für das komplette System?",
     finalCtaSubline:
       "Im Erstgespräch klären wir Reihenfolge, Integrationen und Roadmap. Festpreis-Angebot innerhalb von 24 h.",
+    proof: {
+      stats: [
+        { value: "1–2 FTE", label: "Personalentlastung als Gesamtsystem" },
+        { value: "4–6 Wo.", label: "vollständiger End-to-End-Rollout" },
+        { value: "+30 %", label: "qualifizierte Leads im Vertrieb" },
+        { value: "1 System", label: "statt 5 Tools mit Brüchen" },
+      ],
+      memberBenefits: [
+        "Dedizierter Lead-Implementierer über die gesamte Rollout-Phase",
+        "Wöchentliche Sync-Calls + privater Slack-/Teams-Kanal",
+        "Gestaffelter Rollout in 3 Wellen — Team kommt mit, Betrieb läuft weiter",
+        "Skalierungs-Roadmap inklusive: nächste Wachstumsstufe ist vorbereitet",
+      ],
+      exampleResults: [
+        {
+          segment: "B2B-Dienstleister · 25 MA",
+          outcome: "Voice-Agent + Lead-Qualifizierung übernimmt 70 % der Erstgespräche",
+          timeframe: "nach 5 Wochen",
+        },
+        {
+          segment: "Immobilien-Verwaltung · 40 Einheiten",
+          outcome: "End-to-End vom Anruf bis zur Rechnung ohne manuelle Übergabe",
+          timeframe: "nach 6 Wochen",
+        },
+        {
+          segment: "Handelsbetrieb · 60 MA",
+          outcome: "Skalierung um +35 % Umsatz ohne neue Vertriebsstelle",
+          timeframe: "nach 4 Monaten",
+        },
+      ],
+      quote: {
+        text: "Wir hatten zuvor fünf Tools, drei Excel-Listen und vier Übergaben pro Lead. Jetzt ist es ein System – und wir konnten skalieren, ohne neu einzustellen.",
+        author: "René Schreiner",
+        role: "Geschäftsführung · KRS",
+        initials: "RS",
+      },
+    },
   },
 };
 
