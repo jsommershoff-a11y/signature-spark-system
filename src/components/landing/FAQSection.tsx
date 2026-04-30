@@ -33,19 +33,6 @@ export const FAQSection = ({
   mobilePriority = ["kostet", "Preis", "wie schnell", "wie lange", "Zeit"],
   trackingSection = "faq",
 }: FAQSectionProps) => {
-  // Single-Accordion → value ist entweder der geöffnete `item-N`-String oder "" beim Schließen.
-  const handleValueChange = (value: string) => {
-    if (!value) return;
-    const idx = Number(value.replace("item-", ""));
-    const item = orderedItems[idx];
-    if (!item) return;
-    void trackEvent("faq_open", {
-      section: trackingSection,
-      question: item.question,
-      index: idx,
-      is_priority: isPriority(item.question),
-    });
-  };
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -69,6 +56,21 @@ export const FAQSection = ({
     const rest = items.filter((i) => !isPriority(i.question));
     return [...prio, ...rest];
   }, [items, mobilePriority]);
+
+  // Single-Accordion → value ist `item-N` beim Öffnen, "" beim Schließen.
+  // Wir feuern faq_open nur beim Öffnen, damit die Häufigkeit pro Frage sauber zählbar ist.
+  const handleValueChange = (value: string) => {
+    if (!value) return;
+    const idx = Number(value.replace("item-", ""));
+    const item = orderedItems[idx];
+    if (!item) return;
+    void trackEvent("faq_open", {
+      section: trackingSection,
+      question: item.question,
+      index: idx,
+      is_priority: isPriority(item.question),
+    });
+  };
 
   const renderItem = (item: FAQItem, index: number, highlight: boolean) => (
     <AccordionItem
