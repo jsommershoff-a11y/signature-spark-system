@@ -8,6 +8,7 @@ import {
   Clock,
   Settings as SettingsIcon,
   TrendingUp,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const adminNav = [
   { label: "Abos", href: "/app/admin/subscriptions", icon: CreditCard },
   { label: "Trials", href: "/app/admin/trials", icon: Clock },
   { label: "Upgrade-Funnel", href: "/app/admin/upgrade-funnel", icon: TrendingUp },
+  { label: "Audit-Log", href: "/app/admin/audit-log", icon: ScrollText },
   { label: "Einstellungen", href: "/app/admin/settings", icon: SettingsIcon },
 ];
 
