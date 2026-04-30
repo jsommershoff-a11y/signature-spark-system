@@ -62,6 +62,36 @@ export type Database = {
           },
         ]
       }
+      admin_audit_logs: {
+        Row: {
+          action: string
+          affected_count: number | null
+          created_at: string
+          details: Json | null
+          id: string
+          performed_by: string | null
+          source: string | null
+        }
+        Insert: {
+          action: string
+          affected_count?: number | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          performed_by?: string | null
+          source?: string | null
+        }
+        Update: {
+          action?: string
+          affected_count?: number | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          performed_by?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
       affiliates: {
         Row: {
           activated_at: string | null
@@ -4506,6 +4536,7 @@ export type Database = {
         }
         Returns: string
       }
+      purge_old_soft_deleted: { Args: never; Returns: Json }
       release_slot_for_google_event: {
         Args: {
           _google_event_id: string
