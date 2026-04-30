@@ -291,7 +291,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
 
       {/* 4. PROOF */}
       <TrustLogosSection />
-      <ProofBar />
+      <ProofBar proof={bundle.proof} audienceLabel={bundle.badge} />
 
       {/* 5. FAQ + Einwände (FAQ ist bewusst auf 4 Einträge gekürzt) */}
       <FAQSection items={allFaq} />
