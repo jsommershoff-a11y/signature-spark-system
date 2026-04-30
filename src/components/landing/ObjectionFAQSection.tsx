@@ -67,6 +67,7 @@ export const ObjectionFAQSection = ({
   headline = "Was wir vor fast jedem Abschluss gefragt werden",
   intro = "Sortiert nach realer Häufigkeit aus über 50 Verkaufsgesprächen — Preis und Zeit zuerst.",
   items = COMMON_OBJECTIONS,
+  trackingSection = "objections",
 }: ObjectionFAQSectionProps) => {
   const jsonLd = {
     "@context": "https://schema.org",
@@ -76,6 +77,19 @@ export const ObjectionFAQSection = ({
       name: item.objection.replace(/[„""]/g, ""),
       acceptedAnswer: { "@type": "Answer", text: item.answer },
     })),
+  };
+
+  const handleValueChange = (value: string) => {
+    if (!value) return;
+    const idx = Number(value.replace("obj-", ""));
+    const item = items[idx];
+    if (!item) return;
+    void trackEvent("faq_open", {
+      section: trackingSection,
+      question: item.objection,
+      index: idx,
+      kind: "objection",
+    });
   };
 
   return (
