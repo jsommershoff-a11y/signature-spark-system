@@ -248,7 +248,7 @@ export default function Customers() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onSubmit={async (values) => {
-          await createContact(values);
+          await createContact(values as Required<Pick<typeof values, 'first_name' | 'email'>> & typeof values);
           setStatusFilter('contact');
         }}
       />
