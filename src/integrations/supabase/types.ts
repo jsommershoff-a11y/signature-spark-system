@@ -4386,6 +4386,19 @@ export type Database = {
         }[]
       }
       convert_contact_to_lead: { Args: { _lead_id: string }; Returns: string }
+      find_duplicate_contacts: {
+        Args: { _company?: string; _email?: string; _exclude_id?: string }
+        Returns: {
+          company: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          match_type: string
+          record_status: string
+          source: string
+        }[]
+      }
       generate_referral_code: { Args: never; Returns: string }
       get_customers: {
         Args: { _include_deleted?: boolean; _status_filter?: string }
