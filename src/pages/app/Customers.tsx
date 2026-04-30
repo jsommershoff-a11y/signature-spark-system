@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Search, Users, Loader2, UserCheck, TrendingUp, AlertTriangle, Trash2, ArrowRightCircle, RotateCcw } from 'lucide-react';
+import { Search, Users, Loader2, UserCheck, TrendingUp, AlertTriangle, Trash2, ArrowRightCircle, RotateCcw, UserPlus } from 'lucide-react';
+import { CreateContactDialog } from '@/components/crm/CreateContactDialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,12 +46,13 @@ export default function Customers() {
   const [statusFilter, setStatusFilter] = useState<CustomerRecordStatus | 'all'>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [selected, setSelected] = useState<Customer | null>(null);
 
   const includeDeleted = statusFilter === 'deleted';
   const apiFilter = statusFilter === 'all' ? null : statusFilter;
 
-  const { customers, isLoading, softDelete, restore, convertToLead, isMutating } =
+  const { customers, isLoading, softDelete, restore, convertToLead, createContact, isMutating } =
     useCustomers(search, apiFilter, includeDeleted);
 
   const rowKey = (c: Customer) => `${c.source}:${c.id}`;
@@ -87,11 +89,17 @@ export default function Customers() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Kunden & Kontakte</h1>
-        <p className="text-muted-foreground">
-          Stammdaten von Kunden, potenziellen Kunden und Leads – mit Soft-Delete.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Kunden & Kontakte</h1>
+          <p className="text-muted-foreground">
+            Stammdaten von Kunden, potenziellen Kunden und Leads – mit Soft-Delete.
+          </p>
+        </div>
+        <Button onClick={() => setCreateOpen(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Neuer Kontakt
+        </Button>
       </div>
 
       <Tabs defaultValue="stammdaten">
@@ -235,6 +243,15 @@ export default function Customers() {
           <PerformanceTab />
         </TabsContent>
       </Tabs>
+
+      <CreateContactDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSubmit={async (values) => {
+          await createContact(values as Required<Pick<typeof values, 'first_name' | 'email'>> & typeof values);
+          setStatusFilter('contact');
+        }}
+      />
 
       {/* Delete-Confirm */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
