@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import founderPortrait from "@/assets/founder-hero.jpeg";
+import { trackCtaClick } from "@/lib/analytics";
 
 export const FloatingCTA = () => {
   const [visible, setVisible] = useState(false);
