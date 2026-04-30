@@ -7,6 +7,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/app/AppLayout";
 import { GtagDebugOverlay } from "@/components/dev/GtagDebugOverlay";
+import { CookieConsentBanner } from "@/components/landing/CookieConsentBanner";
+import { initApolloAutoload } from "@/lib/apollo-loader";
+
+// Apollo lädt nur nach Marketing-Consent (DSGVO).
+initApolloAutoload();
 
 // Public landing pages
 import MasterHome from "./pages/landing/MasterHome";
@@ -93,6 +98,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <CookieConsentBanner />
       {import.meta.env.DEV && <GtagDebugOverlay />}
       <BrowserRouter>
         <AuthProvider>
