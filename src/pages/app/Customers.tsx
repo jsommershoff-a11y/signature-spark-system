@@ -48,6 +48,7 @@ export default function Customers() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [selected, setSelected] = useState<Customer | null>(null);
 
   const includeDeleted = statusFilter === 'deleted';
