@@ -98,10 +98,16 @@ export default function Customers() {
             Stammdaten von Kunden, potenziellen Kunden und Leads – mit Soft-Delete.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Neuer Kontakt
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            CSV-Import
+          </Button>
+          <Button onClick={() => setCreateOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Neuer Kontakt
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="stammdaten">
