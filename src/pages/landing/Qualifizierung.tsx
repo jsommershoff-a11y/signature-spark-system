@@ -193,11 +193,12 @@ const Qualifizierung = () => {
         }),
       }).catch((err) => console.error("Notify email failed:", err));
 
-      // Apollo: Identify + Conversion-Event für B2B-Intent-Tracking
-      identifyApollo({
+      // Apollo: Identify (validiert via Zod, respektiert Consent) + Conversion-Event.
+      // Bei erfolgreicher Identify wird der Lead in Apollo direkt einem Kontakt zugeordnet.
+      const identified = identifyApollo({
         email: data.email,
         name: data.name,
-        phone: data.phone || undefined,
+        phone: data.phone || null,
       });
       void trackEvent("lead_form_submitted", {
         form: "qualifizierung",
@@ -206,6 +207,9 @@ const Qualifizierung = () => {
         automation_slugs: selectedItems.map((s) => s.slug),
         has_phone: Boolean(data.phone),
         has_message: Boolean(data.message?.trim()),
+        apollo_identified: identified,
+        // E-Mail-Domain (nicht die volle Adresse) als Account-Hint für Apollo-B2B-Matching.
+        email_domain: data.email.split("@")[1]?.toLowerCase() ?? null,
       });
 
       navigate("/danke");
