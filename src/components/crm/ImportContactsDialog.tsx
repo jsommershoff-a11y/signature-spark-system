@@ -239,14 +239,18 @@ export function ImportContactsDialog({ open, onOpenChange, onImportComplete }: P
 
         {summary ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
               <div className="rounded-lg border p-3">
                 <div className="text-2xl font-bold text-emerald-600">{summary.imported}</div>
                 <div className="text-xs text-muted-foreground">Importiert</div>
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-2xl font-bold text-amber-600">{summary.duplicates}</div>
-                <div className="text-xs text-muted-foreground">Duplikate übersprungen</div>
+                <div className="text-xs text-muted-foreground">E-Mail-Duplikate</div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-2xl font-bold text-blue-600">{summary.company_matches}</div>
+                <div className="text-xs text-muted-foreground">Firma bereits bekannt</div>
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-2xl font-bold text-destructive">{summary.errors.length}</div>
@@ -258,9 +262,13 @@ export function ImportContactsDialog({ open, onOpenChange, onImportComplete }: P
               <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <div>
                 <span className="font-medium">{summary.imported} von {summary.total}</span>{' '}
-                Zeilen verarbeitet. Wechsle zum Filter „Potenzielle Kunden" um die neuen Kontakte zu sehen.
+                Zeilen verarbeitet. {summary.company_matches > 0 && (
+                  <>Bei {summary.company_matches} importierten Kontakten existiert bereits ein anderer Kontakt mit derselben Firma.{' '}</>
+                )}
+                Wechsle zum Filter „Potenzielle Kunden" um die neuen Kontakte zu sehen.
               </div>
             </div>
+
 
             {summary.errors.length > 0 && (
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
