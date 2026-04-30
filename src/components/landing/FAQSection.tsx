@@ -90,25 +90,14 @@ export const FAQSection = ({
             {headline}
           </h2>
 
-          {/* Mobile: priorisierte Reihenfolge */}
+          {/* Einheitliche, priorisierte Reihenfolge auf Mobile & Desktop */}
           <Accordion
             type="single"
             collapsible
             defaultValue="item-0"
-            className="space-y-3 md:hidden"
+            className="space-y-3 md:space-y-4"
           >
-            {mobileItems.map((item, index) =>
-              renderItem(item, index, isPriority(item.question))
-            )}
-          </Accordion>
-
-          {/* Desktop: ursprüngliche Reihenfolge */}
-          <Accordion
-            type="single"
-            collapsible
-            className="hidden md:block space-y-4"
-          >
-            {items.map((item, index) =>
+            {orderedItems.map((item, index) =>
               renderItem(item, index, isPriority(item.question))
             )}
           </Accordion>
