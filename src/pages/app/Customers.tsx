@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Search, Users, Loader2, UserCheck, TrendingUp, AlertTriangle, Trash2, ArrowRightCircle, RotateCcw, UserPlus } from 'lucide-react';
+import { Search, Users, Loader2, UserCheck, TrendingUp, AlertTriangle, Trash2, ArrowRightCircle, RotateCcw, UserPlus, Upload } from 'lucide-react';
 import { CreateContactDialog } from '@/components/crm/CreateContactDialog';
+import { ImportContactsDialog } from '@/components/crm/ImportContactsDialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -47,6 +48,7 @@ export default function Customers() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [selected, setSelected] = useState<Customer | null>(null);
 
   const includeDeleted = statusFilter === 'deleted';
@@ -96,10 +98,16 @@ export default function Customers() {
             Stammdaten von Kunden, potenziellen Kunden und Leads – mit Soft-Delete.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Neuer Kontakt
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            CSV-Import
+          </Button>
+          <Button onClick={() => setCreateOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Neuer Kontakt
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="stammdaten">
@@ -251,6 +259,12 @@ export default function Customers() {
           await createContact(values as Required<Pick<typeof values, 'first_name' | 'email'>> & typeof values);
           setStatusFilter('contact');
         }}
+      />
+
+      <ImportContactsDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImportComplete={() => setStatusFilter('contact')}
       />
 
       {/* Delete-Confirm */}
