@@ -24,8 +24,12 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCustomers, type Customer, type CustomerRecordStatus } from '@/hooks/useCustomers';
 import { useAdminMembers } from '@/hooks/useAdminMembers';
+import { useSavedViews } from '@/hooks/useSavedViews';
+import { SavedViewsBar } from '@/components/crm/SavedViewsBar';
 import { ActivityFeed } from '@/components/activities/ActivityFeed';
 import { MEMBER_STATUS_LABELS, MEMBER_STATUS_COLORS, PRODUCT_LABELS } from '@/types/members';
+
+type CustomerViewFilter = { search: string; statusFilter: CustomerRecordStatus | 'all' };
 
 const STATUS_OPTIONS: { value: CustomerRecordStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'Alle aktiven' },
@@ -56,6 +60,8 @@ export default function Customers() {
 
   const { customers, isLoading, softDelete, restore, convertToLead, createContact, isMutating } =
     useCustomers(search, apiFilter, includeDeleted);
+
+  const savedViews = useSavedViews<CustomerViewFilter>('customers');
 
   const rowKey = (c: Customer) => `${c.source}:${c.id}`;
   const allSelected = customers.length > 0 && customers.every((c) => selectedIds.has(rowKey(c)));
@@ -124,12 +130,19 @@ export default function Customers() {
               <Input
                 placeholder="Name, Firma oder E-Mail…"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); savedViews.setActiveId(null); }}
                 className="pl-9"
               />
             </div>
 
-            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as CustomerRecordStatus | 'all'); setSelectedIds(new Set()); }}>
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                setStatusFilter(v as CustomerRecordStatus | 'all');
+                setSelectedIds(new Set());
+                savedViews.setActiveId(null);
+              }}
+            >
               <SelectTrigger className="w-[200px]">
                 <SelectValue />
               </SelectTrigger>
@@ -152,6 +165,20 @@ export default function Customers() {
               </Button>
             )}
           </div>
+
+          <SavedViewsBar<CustomerViewFilter>
+            views={savedViews.views}
+            activeId={savedViews.activeId}
+            currentFilter={{ search, statusFilter }}
+            onApply={(f) => {
+              setSearch(f.search ?? '');
+              setStatusFilter(f.statusFilter ?? 'all');
+              setSelectedIds(new Set());
+            }}
+            onSave={savedViews.save}
+            onDelete={savedViews.remove}
+            onSelect={(id) => savedViews.setActiveId(id)}
+          />
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
