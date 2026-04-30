@@ -77,7 +77,7 @@ export function ProductCTA({
         size={variant === "hero" ? "lg" : "default"}
         className="bg-primary hover:bg-primary-deep"
       >
-        <Link to={href}>
+        <Link to={href} onClick={handleTrack}>
           {label}
           <ArrowRight className="ml-1.5 h-4 w-4" />
         </Link>
