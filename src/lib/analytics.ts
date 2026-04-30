@@ -49,6 +49,50 @@ export function trackLeadConversion(options: TrackLeadConversionOptions = {}): b
 }
 
 // =============================================================
+// Apollo.io Website Tracker bridge
+// Tracker-Skript wird in index.html geladen und exposed
+// `window.trackingFunctions` (onLoad / trackEvent / identify).
+// =============================================================
+
+interface ApolloTrackingFunctions {
+  onLoad?: (opts: { appId: string }) => void;
+  trackEvent?: (eventName: string, properties?: Record<string, unknown>) => void;
+  identify?: (traits: Record<string, unknown>) => void;
+}
+
+const APOLLO_APP_ID = "69eaf28dcab75b0011d9e969";
+
+/** Fire-and-forget: Sendet ein Event an Apollo, sobald der Tracker geladen ist. */
+function sendToApollo(eventName: string, properties: Record<string, unknown> = {}): void {
+  if (typeof window === "undefined") return;
+  try {
+    const fns = (window as unknown as { trackingFunctions?: ApolloTrackingFunctions })
+      .trackingFunctions;
+    if (fns && typeof fns.trackEvent === "function") {
+      fns.trackEvent(eventName, { app_id: APOLLO_APP_ID, ...properties });
+    }
+  } catch {
+    /* never throw from analytics */
+  }
+}
+
+/** Apollo-Identify mit E-Mail/Name (Form-Submits, Logins). */
+export function identifyApollo(
+  traits: { email?: string; name?: string; phone?: string; [k: string]: unknown },
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    const fns = (window as unknown as { trackingFunctions?: ApolloTrackingFunctions })
+      .trackingFunctions;
+    if (fns && typeof fns.identify === "function") {
+      fns.identify({ app_id: APOLLO_APP_ID, ...traits });
+    }
+  } catch {
+    /* never throw */
+  }
+}
+
+// =============================================================
 // Generic in-app event tracking → public.analytics_events
 // Fire-and-forget. Never throws.
 // =============================================================
@@ -68,6 +112,8 @@ export async function trackEvent(
   } catch {
     /* never throw from analytics */
   }
+  // Mirror to Apollo for B2B intent tracking on every tracked event.
+  sendToApollo(eventName, properties);
   try {
     const { data: { user } } = await supabase.auth.getUser();
     const url =
