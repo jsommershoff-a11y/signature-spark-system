@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import founderPortrait from "@/assets/founder-hero.jpeg";
+import { trackCtaClick } from "@/lib/analytics";
 
 export const FloatingCTA = () => {
   const [visible, setVisible] = useState(false);
@@ -25,7 +26,15 @@ export const FloatingCTA = () => {
 
   return (
     <button
-      onClick={() => navigate("/qualifizierung")}
+      onClick={() => {
+        trackCtaClick({
+          stage: "floating",
+          cta: "qualifizierung",
+          label: "Potenzial-Analyse sichern",
+          destination: "/qualifizierung",
+        });
+        navigate("/qualifizierung");
+      }}
       className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-primary text-primary-foreground pl-1.5 pr-5 py-1.5 rounded-full shadow-[0_8px_30px_rgba(246,113,31,0.35)] hover:shadow-[0_8px_40px_rgba(246,113,31,0.5)] transition-all duration-300 hover:scale-105 group"
       aria-label="Kostenlose Potenzial-Analyse sichern"
     >

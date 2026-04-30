@@ -17,6 +17,8 @@ import { ObjectionFAQSection } from "@/components/landing/ObjectionFAQSection";
 import NotFound from "@/pages/NotFound";
 import { AUTOMATIONS } from "@/data/automations";
 import { getBundle, type Bundle } from "@/data/bundles";
+import { trackCtaClick } from "@/lib/analytics";
+import { useSectionViewTracking } from "@/hooks/useSectionViewTracking";
 
 const COMMON_FAQ = [
   {
@@ -46,6 +48,9 @@ interface BundleLandingTemplateProps {
  */
 const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
   const navigate = useNavigate();
+  const heroRef = useSectionViewTracking<HTMLElement>("hero", bundle.slug);
+  const midRef = useSectionViewTracking<HTMLElement>("mid_page", bundle.slug);
+  const finalRef = useSectionViewTracking<HTMLElement>("final", bundle.slug);
   const products = bundle.automationSlugs
     .map((slug) => AUTOMATIONS.find((a) => a.slug === slug))
     .filter((a): a is NonNullable<typeof a> => Boolean(a));
@@ -87,7 +92,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       />
 
       {/* 1. HERO */}
-      <section className="bg-[#0F3E2E] text-white pt-14 pb-14 md:pt-20 md:pb-20">
+      <section ref={heroRef} className="bg-[#0F3E2E] text-white pt-14 pb-14 md:pt-20 md:pb-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="grid md:grid-cols-[1fr_auto] gap-8 items-start">
             <div>
@@ -253,7 +258,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       />
 
       {/* Conversion: Mid-Page CTA — Hot-Spot zwischen Wertversprechen und Proof */}
-      <section className="bg-[#0F3E2E] text-white py-10 md:py-12">
+      <section ref={midRef} className="bg-[#0F3E2E] text-white py-10 md:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
           <div>
             <p className="text-base md:text-lg font-semibold">
@@ -266,11 +271,17 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
           <Button
             size="lg"
             className="bg-primary hover:bg-primary-deep shrink-0"
-            onClick={() =>
-              navigate(
-                `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
-              )
-            }
+            onClick={() => {
+              const dest = `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`;
+              trackCtaClick({
+                stage: "mid_page",
+                cta: "qualifizierung",
+                label: bundle.ctaText,
+                destination: dest,
+                context: bundle.slug,
+              });
+              navigate(dest);
+            }}
           >
             {bundle.ctaText}
             <ArrowRight className="ml-1.5 h-4 w-4" />
@@ -287,7 +298,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       <ObjectionFAQSection />
 
       {/* 6. CTA */}
-      <section className="bg-[#FFF3EB] py-16">
+      <section ref={finalRef} className="bg-[#FFF3EB] py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <Badge className="bg-primary/15 text-primary border-primary/30 mb-4">
             {bundle.badge}
@@ -302,11 +313,17 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
             <Button
               size="lg"
               className="bg-primary hover:bg-primary-deep w-full sm:w-auto"
-              onClick={() =>
-                navigate(
-                  `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
-                )
-              }
+              onClick={() => {
+                const dest = `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`;
+                trackCtaClick({
+                  stage: "final",
+                  cta: "qualifizierung",
+                  label: bundle.ctaText,
+                  destination: dest,
+                  context: bundle.slug,
+                });
+                navigate(dest);
+              }}
             >
               {bundle.ctaText}
               <ArrowRight className="ml-1.5 h-4 w-4" />
@@ -316,6 +333,13 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
               variant="outline"
               className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground w-full sm:w-auto"
               onClick={() => {
+                trackCtaClick({
+                  stage: "final",
+                  cta: "scroll_to_system",
+                  label: "Bots im Detail ansehen",
+                  destination: "#bundle-system",
+                  context: bundle.slug,
+                });
                 document
                   .querySelector<HTMLElement>("[data-bundle-system]")
                   ?.scrollIntoView({ behavior: "smooth", block: "start" });

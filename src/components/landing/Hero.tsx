@@ -72,7 +72,7 @@ export const Hero = ({
             </p>
           )}
           
-          <CTAButton onClick={onCtaClick}>
+          <CTAButton onClick={onCtaClick} trackingStage="hero" trackingCta="qualifizierung">
             {ctaText}
           </CTAButton>
         </div>

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, Clock, FileCheck2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackCtaClick, type FunnelStage } from "@/lib/analytics";
 
 interface ProductCTAProps {
   /** Slug oder Slug-Liste für Pre-Selection im Qualifizierungs-Formular */
@@ -37,6 +38,13 @@ export function ProductCTA({
   if (eigenerBot) params.set("eigener-bot", "1");
   const href = `/qualifizierung${params.toString() ? `?${params.toString()}` : ""}`;
 
+  const stage: FunnelStage =
+    variant === "hero" ? "hero" : variant === "sticky" ? "mobile_sticky" : "inline";
+  const cta = eigenerBot ? "eigener_bot" : "qualifizierung";
+  const context = slugs?.join(",") ?? slug;
+  const handleTrack = () =>
+    trackCtaClick({ stage, cta, label, destination: href, context });
+
   if (variant === "sticky") {
     return (
       <div
@@ -52,7 +60,7 @@ export function ProductCTA({
             </div>
           </div>
           <Button asChild size="sm" className="bg-primary hover:bg-primary-deep shrink-0">
-            <Link to={href}>
+            <Link to={href} onClick={handleTrack}>
               Anfragen
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
@@ -69,7 +77,7 @@ export function ProductCTA({
         size={variant === "hero" ? "lg" : "default"}
         className="bg-primary hover:bg-primary-deep"
       >
-        <Link to={href}>
+        <Link to={href} onClick={handleTrack}>
           {label}
           <ArrowRight className="ml-1.5 h-4 w-4" />
         </Link>

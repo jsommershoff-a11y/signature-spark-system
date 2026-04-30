@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import logoSignature from "@/assets/ki-automationen-logo.svg";
 import { Button } from "@/components/ui/button";
+import { trackCtaClick } from "@/lib/analytics";
 
 export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void }) => {
   return (
@@ -20,7 +21,14 @@ export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void 
               </Button>
             </Link>
             <Button
-              onClick={onCtaClick}
+              onClick={() => {
+                trackCtaClick({
+                  stage: "sticky_header",
+                  cta: "qualifizierung",
+                  label: "Jetzt Potenzial aufdecken!",
+                });
+                onCtaClick();
+              }}
               size="sm"
               className="bg-white text-primary-deep hover:bg-white/90 font-semibold shadow-md"
             >
