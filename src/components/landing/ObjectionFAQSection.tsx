@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { trackEvent } from "@/lib/analytics";
 
 export interface ObjectionItem {
   /** Der Einwand (Originalton Kunde) */
