@@ -98,6 +98,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <CookieConsentBanner />
       {import.meta.env.DEV && <GtagDebugOverlay />}
       <BrowserRouter>
         <AuthProvider>
