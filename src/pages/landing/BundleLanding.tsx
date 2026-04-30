@@ -258,7 +258,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       />
 
       {/* Conversion: Mid-Page CTA — Hot-Spot zwischen Wertversprechen und Proof */}
-      <section className="bg-[#0F3E2E] text-white py-10 md:py-12">
+      <section ref={midRef} className="bg-[#0F3E2E] text-white py-10 md:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
           <div>
             <p className="text-base md:text-lg font-semibold">
@@ -271,11 +271,17 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
           <Button
             size="lg"
             className="bg-primary hover:bg-primary-deep shrink-0"
-            onClick={() =>
-              navigate(
-                `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
-              )
-            }
+            onClick={() => {
+              const dest = `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`;
+              trackCtaClick({
+                stage: "mid_page",
+                cta: "qualifizierung",
+                label: bundle.ctaText,
+                destination: dest,
+                context: bundle.slug,
+              });
+              navigate(dest);
+            }}
           >
             {bundle.ctaText}
             <ArrowRight className="ml-1.5 h-4 w-4" />
