@@ -117,6 +117,7 @@ export const FAQSection = ({
             type="single"
             collapsible
             defaultValue="item-0"
+            onValueChange={handleValueChange}
             className="space-y-3 md:space-y-4"
           >
             {orderedItems.map((item, index) =>
