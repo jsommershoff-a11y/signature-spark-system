@@ -50,9 +50,10 @@ export function trackLeadConversion(options: TrackLeadConversionOptions = {}): b
 
 // =============================================================
 // Apollo.io Website Tracker bridge
-// Tracker-Skript wird in index.html geladen und exposed
-// `window.trackingFunctions` (onLoad / trackEvent / identify).
+// Tracker-Skript wird nur nach Marketing-Consent dynamisch geladen
+// (siehe src/lib/apollo-loader.ts). `sendToApollo` no-op'd ohne Consent.
 // =============================================================
+import { hasMarketingConsent } from "@/lib/consent";
 
 interface ApolloTrackingFunctions {
   onLoad?: (opts: { appId: string }) => void;
@@ -62,9 +63,10 @@ interface ApolloTrackingFunctions {
 
 const APOLLO_APP_ID = "69eaf28dcab75b0011d9e969";
 
-/** Fire-and-forget: Sendet ein Event an Apollo, sobald der Tracker geladen ist. */
+/** Fire-and-forget: Sendet Event an Apollo NUR wenn Consent + Tracker geladen. */
 function sendToApollo(eventName: string, properties: Record<string, unknown> = {}): void {
   if (typeof window === "undefined") return;
+  if (!hasMarketingConsent()) return;
   try {
     const fns = (window as unknown as { trackingFunctions?: ApolloTrackingFunctions })
       .trackingFunctions;
@@ -76,11 +78,12 @@ function sendToApollo(eventName: string, properties: Record<string, unknown> = {
   }
 }
 
-/** Apollo-Identify mit E-Mail/Name (Form-Submits, Logins). */
+/** Apollo-Identify (Form-Submits, Logins). Respektiert Consent. */
 export function identifyApollo(
   traits: { email?: string; name?: string; phone?: string; [k: string]: unknown },
 ): void {
   if (typeof window === "undefined") return;
+  if (!hasMarketingConsent()) return;
   try {
     const fns = (window as unknown as { trackingFunctions?: ApolloTrackingFunctions })
       .trackingFunctions;
