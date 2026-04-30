@@ -57,6 +57,17 @@ export async function trackEvent(
   eventName: string,
   properties: Record<string, unknown> = {},
 ): Promise<void> {
+  // Mirror to gtag (GA4) for funnel reporting in Google Analytics, when available.
+  try {
+    if (typeof window !== 'undefined') {
+      const gtag = (window as unknown as { gtag?: GtagFn }).gtag;
+      if (typeof gtag === 'function') {
+        gtag('event', eventName, properties as Record<string, unknown>);
+      }
+    }
+  } catch {
+    /* never throw from analytics */
+  }
   try {
     const { data: { user } } = await supabase.auth.getUser();
     const url =
