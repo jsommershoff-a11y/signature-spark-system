@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import logoSignature from "@/assets/ki-automationen-logo.svg";
 import { Button } from "@/components/ui/button";
+import { trackCtaClick } from "@/lib/analytics";
 
 export const StickyConversionHeader = ({ onCtaClick }: { onCtaClick: () => void }) => {
   return (
