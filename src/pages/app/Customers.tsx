@@ -155,7 +155,7 @@ export default function Customers() {
                   <TableRow>
                     <TableHead className="w-[40px]">
                       <Checkbox
-                        checked={allSelected || (someSelected && 'indeterminate')}
+                        checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                         onCheckedChange={(v) => toggleAll(Boolean(v))}
                         aria-label="Alle auswählen"
                       />
