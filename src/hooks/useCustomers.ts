@@ -1,8 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+export type CustomerRecordStatus = 'customer' | 'contact' | 'lead' | 'deleted';
+export type CustomerSource = 'profile' | 'crm_lead';
 
 export interface Customer {
   id: string;
+  source: CustomerSource;
   full_name: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -12,13 +17,24 @@ export interface Customer {
   created_at: string;
   assigned_to: string | null;
   assigned_staff_name: string | null;
+  record_status: CustomerRecordStatus;
+  deleted_at: string | null;
 }
 
-export function useCustomers(search: string = '') {
+export function useCustomers(
+  search: string = '',
+  statusFilter: CustomerRecordStatus | null = null,
+  includeDeleted: boolean = false,
+) {
+  const qc = useQueryClient();
+
   const query = useQuery({
-    queryKey: ['customers'],
+    queryKey: ['customers', statusFilter, includeDeleted],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_customers');
+      const { data, error } = await supabase.rpc('get_customers', {
+        _include_deleted: includeDeleted,
+        _status_filter: statusFilter,
+      });
       if (error) throw error;
       return (data ?? []) as Customer[];
     },
@@ -29,13 +45,69 @@ export function useCustomers(search: string = '') {
         const term = search.toLowerCase();
         const name = (c.full_name ?? `${c.first_name ?? ''} ${c.last_name ?? ''}`).toLowerCase();
         const company = (c.company ?? '').toLowerCase();
-        return name.includes(term) || company.includes(term);
+        const email = (c.email ?? '').toLowerCase();
+        return name.includes(term) || company.includes(term) || email.includes(term);
       })
     : query.data;
+
+  const softDelete = useMutation({
+    mutationFn: async (items: { id: string; source: CustomerSource }[]) => {
+      if (items.length === 1) {
+        const { error } = await supabase.rpc('soft_delete_customer', {
+          _id: items[0].id,
+          _source: items[0].source,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.rpc('bulk_soft_delete_customers', {
+          _items: items as never,
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_d, items) => {
+      toast.success(`${items.length} ${items.length === 1 ? 'Eintrag gelöscht' : 'Einträge gelöscht'}`);
+      qc.invalidateQueries({ queryKey: ['customers'] });
+    },
+    onError: (e: Error) => toast.error(`Löschen fehlgeschlagen: ${e.message}`),
+  });
+
+  const restore = useMutation({
+    mutationFn: async (item: { id: string; source: CustomerSource }) => {
+      const { error } = await supabase.rpc('restore_customer', {
+        _id: item.id,
+        _source: item.source,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Wiederhergestellt');
+      qc.invalidateQueries({ queryKey: ['customers'] });
+    },
+    onError: (e: Error) => toast.error(`Wiederherstellen fehlgeschlagen: ${e.message}`),
+  });
+
+  const convertToLead = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('convert_contact_to_lead', { _lead_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Kontakt in Lead umgewandelt');
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.invalidateQueries({ queryKey: ['leads'] });
+      qc.invalidateQueries({ queryKey: ['pipeline'] });
+    },
+    onError: (e: Error) => toast.error(`Umwandeln fehlgeschlagen: ${e.message}`),
+  });
 
   return {
     customers: filtered ?? [],
     isLoading: query.isLoading,
     refetch: query.refetch,
+    softDelete: softDelete.mutateAsync,
+    restore: restore.mutateAsync,
+    convertToLead: convertToLead.mutateAsync,
+    isMutating: softDelete.isPending || restore.isPending || convertToLead.isPending,
   };
 }

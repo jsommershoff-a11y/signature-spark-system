@@ -807,6 +807,8 @@ export type Database = {
           company: string | null
           created_at: string
           dedupe_key: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           discovered_by:
             | Database["public"]["Enums"]["lead_discovered_by"]
             | null
@@ -834,6 +836,8 @@ export type Database = {
           company?: string | null
           created_at?: string
           dedupe_key?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           discovered_by?:
             | Database["public"]["Enums"]["lead_discovered_by"]
             | null
@@ -861,6 +865,8 @@ export type Database = {
           company?: string | null
           created_at?: string
           dedupe_key?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           discovered_by?:
             | Database["public"]["Enums"]["lead_discovered_by"]
             | null
@@ -3309,6 +3315,8 @@ export type Database = {
           avatar_url: string | null
           company: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           email: string | null
           first_name: string | null
           full_name: string | null
@@ -3336,6 +3344,8 @@ export type Database = {
           avatar_url?: string | null
           company?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           first_name?: string | null
           full_name?: string | null
@@ -3363,6 +3373,8 @@ export type Database = {
           avatar_url?: string | null
           company?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           first_name?: string | null
           full_name?: string | null
@@ -4324,6 +4336,7 @@ export type Database = {
         }
         Returns: string
       }
+      bulk_soft_delete_customers: { Args: { _items: Json }; Returns: number }
       calculate_pipeline_priority: {
         Args: {
           _icp_score: number
@@ -4342,20 +4355,24 @@ export type Database = {
           rule_id: string
         }[]
       }
+      convert_contact_to_lead: { Args: { _lead_id: string }; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_customers: {
-        Args: never
+        Args: { _include_deleted?: boolean; _status_filter?: string }
         Returns: {
           assigned_staff_name: string
           assigned_to: string
           company: string
           created_at: string
+          deleted_at: string
           email: string
           first_name: string
           full_name: string
           id: string
           last_name: string
           phone: string
+          record_status: string
+          source: string
         }[]
       }
       get_live_call_eligibility: {
@@ -4503,6 +4520,14 @@ export type Database = {
           start_at: string
         }[]
       }
+      restore_customer: {
+        Args: { _id: string; _source: string }
+        Returns: undefined
+      }
+      soft_delete_customer: {
+        Args: { _id: string; _source: string }
+        Returns: undefined
+      }
       start_member_trial: {
         Args: never
         Returns: {
@@ -4589,7 +4614,7 @@ export type Database = {
         | "outbound_ai"
         | "outbound_manual"
         | "partner"
-      lead_status: "new" | "qualified" | "unqualified"
+      lead_status: "contact" | "new" | "qualified" | "unqualified"
       learning_path_level: "starter" | "fortgeschritten" | "experte"
       lesson_type: "video" | "task" | "worksheet" | "quiz"
       member_status: "active" | "paused" | "churned"
@@ -4814,7 +4839,7 @@ export const Constants = {
         "outbound_manual",
         "partner",
       ],
-      lead_status: ["new", "qualified", "unqualified"],
+      lead_status: ["contact", "new", "qualified", "unqualified"],
       learning_path_level: ["starter", "fortgeschritten", "experte"],
       lesson_type: ["video", "task", "worksheet", "quiz"],
       member_status: ["active", "paused", "churned"],
