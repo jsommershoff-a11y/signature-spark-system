@@ -27,6 +27,7 @@ type ImportSummary = {
   total: number;
   imported: number;
   duplicates: number;
+  company_matches: number;
   errors: RowError[];
 };
 
@@ -150,19 +151,33 @@ export function ImportContactsDialog({ open, onOpenChange, onImportComplete }: P
 
       setProgress(25);
 
-      // Dedupe: existing emails in crm_leads + profiles (only emails of the batch)
-      const emails = Array.from(new Set(valid.map((v) => v.input.email)));
-      const dupSet = new Set<string>();
-      if (emails.length > 0) {
-        const [{ data: leadDupes }, { data: profileDupes }] = await Promise.all([
-          supabase.from('crm_leads').select('email').in('email', emails),
-          supabase.from('profiles').select('email').in('email', emails),
-        ]);
-        leadDupes?.forEach((r) => r.email && dupSet.add(r.email.toLowerCase()));
-        profileDupes?.forEach((r) => r.email && dupSet.add(r.email.toLowerCase()));
-      }
+      // Dedupe via central RPC (email exact + company case-insensitive).
+      // Email-Match → skip; Company-Match → import but flag for summary.
+      const dupEmails = new Set<string>();
+      const companyMatchEmails = new Set<string>();
+      // Run lookups with light concurrency to keep UI responsive
+      const CONCURRENCY = 5;
+      let cursor = 0;
+      await Promise.all(
+        Array.from({ length: Math.min(CONCURRENCY, valid.length) }).map(async () => {
+          while (cursor < valid.length) {
+            const myIdx = cursor++;
+            const v = valid[myIdx];
+            const { data } = await supabase.rpc('find_duplicate_contacts' as any, {
+              _email: v.input.email,
+              _company: v.input.company || null,
+            });
+            const rows = (data ?? []) as Array<{ match_type: string }>;
+            if (rows.some((r) => r.match_type === 'email')) {
+              dupEmails.add(v.input.email);
+            } else if (rows.some((r) => r.match_type === 'company')) {
+              companyMatchEmails.add(v.input.email);
+            }
+          }
+        })
+      );
 
-      const toInsert = valid.filter((v) => !dupSet.has(v.input.email));
+      const toInsert = valid.filter((v) => !dupEmails.has(v.input.email));
       const duplicates = valid.length - toInsert.length;
 
       setProgress(50);
@@ -194,7 +209,13 @@ export function ImportContactsDialog({ open, onOpenChange, onImportComplete }: P
       }
 
       setProgress(100);
-      setSummary({ total: dataRows.length, imported, duplicates, errors });
+      setSummary({
+        total: dataRows.length,
+        imported,
+        duplicates,
+        company_matches: companyMatchEmails.size,
+        errors,
+      });
       if (imported > 0) onImportComplete();
     } catch (err) {
       console.error(err);
@@ -218,14 +239,18 @@ export function ImportContactsDialog({ open, onOpenChange, onImportComplete }: P
 
         {summary ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
               <div className="rounded-lg border p-3">
                 <div className="text-2xl font-bold text-emerald-600">{summary.imported}</div>
                 <div className="text-xs text-muted-foreground">Importiert</div>
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-2xl font-bold text-amber-600">{summary.duplicates}</div>
-                <div className="text-xs text-muted-foreground">Duplikate übersprungen</div>
+                <div className="text-xs text-muted-foreground">E-Mail-Duplikate</div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-2xl font-bold text-blue-600">{summary.company_matches}</div>
+                <div className="text-xs text-muted-foreground">Firma bereits bekannt</div>
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-2xl font-bold text-destructive">{summary.errors.length}</div>
@@ -237,9 +262,13 @@ export function ImportContactsDialog({ open, onOpenChange, onImportComplete }: P
               <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <div>
                 <span className="font-medium">{summary.imported} von {summary.total}</span>{' '}
-                Zeilen verarbeitet. Wechsle zum Filter „Potenzielle Kunden" um die neuen Kontakte zu sehen.
+                Zeilen verarbeitet. {summary.company_matches > 0 && (
+                  <>Bei {summary.company_matches} importierten Kontakten existiert bereits ein anderer Kontakt mit derselben Firma.{' '}</>
+                )}
+                Wechsle zum Filter „Potenzielle Kunden" um die neuen Kontakte zu sehen.
               </div>
             </div>
+
 
             {summary.errors.length > 0 && (
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
