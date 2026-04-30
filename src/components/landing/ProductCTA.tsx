@@ -38,6 +38,13 @@ export function ProductCTA({
   if (eigenerBot) params.set("eigener-bot", "1");
   const href = `/qualifizierung${params.toString() ? `?${params.toString()}` : ""}`;
 
+  const stage: FunnelStage =
+    variant === "hero" ? "hero" : variant === "sticky" ? "mobile_sticky" : "inline";
+  const cta = eigenerBot ? "eigener_bot" : "qualifizierung";
+  const context = slugs?.join(",") ?? slug;
+  const handleTrack = () =>
+    trackCtaClick({ stage, cta, label, destination: href, context });
+
   if (variant === "sticky") {
     return (
       <div
