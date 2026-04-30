@@ -298,7 +298,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       <ObjectionFAQSection />
 
       {/* 6. CTA */}
-      <section className="bg-[#FFF3EB] py-16">
+      <section ref={finalRef} className="bg-[#FFF3EB] py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <Badge className="bg-primary/15 text-primary border-primary/30 mb-4">
             {bundle.badge}
@@ -313,11 +313,17 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
             <Button
               size="lg"
               className="bg-primary hover:bg-primary-deep w-full sm:w-auto"
-              onClick={() =>
-                navigate(
-                  `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`,
-                )
-              }
+              onClick={() => {
+                const dest = `/qualifizierung?automations=${bundle.automationSlugs.join(",")}`;
+                trackCtaClick({
+                  stage: "final",
+                  cta: "qualifizierung",
+                  label: bundle.ctaText,
+                  destination: dest,
+                  context: bundle.slug,
+                });
+                navigate(dest);
+              }}
             >
               {bundle.ctaText}
               <ArrowRight className="ml-1.5 h-4 w-4" />
@@ -327,6 +333,13 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
               variant="outline"
               className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground w-full sm:w-auto"
               onClick={() => {
+                trackCtaClick({
+                  stage: "final",
+                  cta: "scroll_to_system",
+                  label: "Bots im Detail ansehen",
+                  destination: "#bundle-system",
+                  context: bundle.slug,
+                });
                 document
                   .querySelector<HTMLElement>("[data-bundle-system]")
                   ?.scrollIntoView({ behavior: "smooth", block: "start" });
