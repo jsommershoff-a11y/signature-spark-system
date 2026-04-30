@@ -24,7 +24,7 @@ interface FAQSectionProps {
 export const FAQSection = ({
   headline = "Häufige Fragen",
   items,
-  mobilePriority = ["Wie schnell reagierst", "30 Tagen Begleitung"],
+  mobilePriority = ["kostet", "Preis", "wie schnell", "wie lange", "Zeit"],
 }: FAQSectionProps) => {
   const faqJsonLd = {
     "@context": "https://schema.org",
