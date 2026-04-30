@@ -89,11 +89,17 @@ export default function Customers() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Kunden & Kontakte</h1>
-        <p className="text-muted-foreground">
-          Stammdaten von Kunden, potenziellen Kunden und Leads – mit Soft-Delete.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Kunden & Kontakte</h1>
+          <p className="text-muted-foreground">
+            Stammdaten von Kunden, potenziellen Kunden und Leads – mit Soft-Delete.
+          </p>
+        </div>
+        <Button onClick={() => setCreateOpen(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Neuer Kontakt
+        </Button>
       </div>
 
       <Tabs defaultValue="stammdaten">
