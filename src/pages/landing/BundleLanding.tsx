@@ -92,7 +92,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       />
 
       {/* 1. HERO */}
-      <section className="bg-[#0F3E2E] text-white pt-14 pb-14 md:pt-20 md:pb-20">
+      <section ref={heroRef} className="bg-[#0F3E2E] text-white pt-14 pb-14 md:pt-20 md:pb-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="grid md:grid-cols-[1fr_auto] gap-8 items-start">
             <div>
