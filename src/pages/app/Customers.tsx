@@ -261,6 +261,12 @@ export default function Customers() {
         }}
       />
 
+      <ImportContactsDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImportComplete={() => setStatusFilter('contact')}
+      />
+
       {/* Delete-Confirm */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
