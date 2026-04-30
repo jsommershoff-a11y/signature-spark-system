@@ -26,14 +26,25 @@ export const StickyCtaBanner = () => {
         </p>
         <div className="flex items-center gap-3 mx-auto sm:mx-0">
           <button
-            onClick={() => navigate("/qualifizierung")}
+            onClick={() => {
+              trackCtaClick({
+                stage: "sticky_banner",
+                cta: "qualifizierung",
+                label: "Kostenlose Potenzial-Analyse",
+                destination: "/qualifizierung",
+              });
+              navigate("/qualifizierung");
+            }}
             className="flex items-center gap-2 bg-primary-foreground text-primary font-semibold text-sm px-4 py-1.5 rounded-lg hover:opacity-90 transition-opacity"
           >
             Kostenlose Potenzial-Analyse
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => setDismissed(true)}
+            onClick={() => {
+              void trackEvent("sticky_banner_dismissed", {});
+              setDismissed(true);
+            }}
             className="text-primary-foreground/70 hover:text-primary-foreground transition-colors"
             aria-label="Banner schließen"
           >
