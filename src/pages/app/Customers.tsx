@@ -46,12 +46,13 @@ export default function Customers() {
   const [statusFilter, setStatusFilter] = useState<CustomerRecordStatus | 'all'>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [selected, setSelected] = useState<Customer | null>(null);
 
   const includeDeleted = statusFilter === 'deleted';
   const apiFilter = statusFilter === 'all' ? null : statusFilter;
 
-  const { customers, isLoading, softDelete, restore, convertToLead, isMutating } =
+  const { customers, isLoading, softDelete, restore, convertToLead, createContact, isMutating } =
     useCustomers(search, apiFilter, includeDeleted);
 
   const rowKey = (c: Customer) => `${c.source}:${c.id}`;
