@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 const REDIRECT_SECONDS = 5;
 
+const LEAD_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
+
 const Thanks = () => {
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
@@ -25,8 +27,9 @@ const Thanks = () => {
       trackLeadConversion();
     }
 
-    // Apollo + GA4 funnel attribution: thank_you_view verknüpft mit lead_form_submitted
-    // über die in sessionStorage hinterlegte Korrelation-ID.
+    // Apollo + GA4 funnel attribution: thank_you_view verknüpft mit lead_form_submitted.
+    // Primärquelle: ?lead_id= URL-Param (Cross-Device-resistent).
+    // Fallback: sessionStorage (gleiche Tab-Session, reichere Metadaten).
     let attribution: {
       lead_id?: string;
       form?: string;
@@ -42,12 +45,25 @@ const Thanks = () => {
       /* ignore */
     }
 
+    // URL-Param hat Vorrang & wird gegen Injection validiert.
+    const urlLeadIdRaw = searchParams.get("lead_id");
+    const urlLeadId =
+      urlLeadIdRaw && LEAD_ID_RE.test(urlLeadIdRaw) ? urlLeadIdRaw : null;
+    const resolvedLeadId = urlLeadId ?? attribution.lead_id ?? null;
+    // Konsistenz-Flag: hilft im Funnel-Reporting, Anomalien zu erkennen.
+    const leadIdSource: "url" | "session" | "url+session" | "none" = urlLeadId
+      ? attribution.lead_id
+        ? urlLeadId === attribution.lead_id ? "url+session" : "url"
+        : "url"
+      : attribution.lead_id ? "session" : "none";
+
     const timeOnFormMs =
       attribution.submitted_at ? Date.now() - attribution.submitted_at : null;
 
     void trackEvent("thank_you_view", {
       variant: isInfo ? "info" : "qualified",
-      lead_id: attribution.lead_id ?? null,
+      lead_id: resolvedLeadId,
+      lead_id_source: leadIdSource,
       lead_form: attribution.form ?? null,
       lead_source: attribution.source ?? null,
       email_domain: attribution.email_domain ?? null,
@@ -57,13 +73,13 @@ const Thanks = () => {
     });
 
     // Attribution-Payload nach Verbrauch entfernen, damit Reloads/Backnavigation
-    // kein doppeltes Funnel-Match auslösen.
+    // kein doppeltes Funnel-Match auslösen. URL-Param bleibt für Server-Logs erhalten.
     try {
       window.sessionStorage.removeItem("krs_lead_attribution");
     } catch {
       /* ignore */
     }
-  }, [isInfo]);
+  }, [isInfo, searchParams]);
 
   // Auto-start 14-day trial + redirect logged-in users into the member area
   useEffect(() => {
