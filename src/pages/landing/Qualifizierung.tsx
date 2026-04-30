@@ -236,7 +236,9 @@ const Qualifizierung = () => {
         lead_id: leadCorrelationId,
       });
 
-      navigate("/danke");
+      // lead_id zusätzlich als URL-Param weitergeben → robust gegen sessionStorage-Verlust
+      // (z. B. wenn Cross-Device der Link aus einer Bestätigungs-Mail geöffnet wird).
+      navigate(`/danke?lead_id=${encodeURIComponent(leadCorrelationId)}`);
     } catch {
       toast({
         title: "Fehler",
