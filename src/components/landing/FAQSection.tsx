@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { trackEvent } from "@/lib/analytics";
 
 interface FAQItem {
   question: string;
