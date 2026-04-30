@@ -193,6 +193,43 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     finalCtaHeadline: "Bereit für das komplette System?",
     finalCtaSubline:
       "Im Erstgespräch klären wir Reihenfolge, Integrationen und Roadmap. Festpreis-Angebot innerhalb von 24 h.",
+    proof: {
+      stats: [
+        { value: "1–2 FTE", label: "Personalentlastung als Gesamtsystem" },
+        { value: "4–6 Wo.", label: "vollständiger End-to-End-Rollout" },
+        { value: "+30 %", label: "qualifizierte Leads im Vertrieb" },
+        { value: "1 System", label: "statt 5 Tools mit Brüchen" },
+      ],
+      memberBenefits: [
+        "Dedizierter Lead-Implementierer über die gesamte Rollout-Phase",
+        "Wöchentliche Sync-Calls + privater Slack-/Teams-Kanal",
+        "Gestaffelter Rollout in 3 Wellen — Team kommt mit, Betrieb läuft weiter",
+        "Skalierungs-Roadmap inklusive: nächste Wachstumsstufe ist vorbereitet",
+      ],
+      exampleResults: [
+        {
+          segment: "B2B-Dienstleister · 25 MA",
+          outcome: "Voice-Agent + Lead-Qualifizierung übernimmt 70 % der Erstgespräche",
+          timeframe: "nach 5 Wochen",
+        },
+        {
+          segment: "Immobilien-Verwaltung · 40 Einheiten",
+          outcome: "End-to-End vom Anruf bis zur Rechnung ohne manuelle Übergabe",
+          timeframe: "nach 6 Wochen",
+        },
+        {
+          segment: "Handelsbetrieb · 60 MA",
+          outcome: "Skalierung um +35 % Umsatz ohne neue Vertriebsstelle",
+          timeframe: "nach 4 Monaten",
+        },
+      ],
+      quote: {
+        text: "Wir hatten zuvor fünf Tools, drei Excel-Listen und vier Übergaben pro Lead. Jetzt ist es ein System – und wir konnten skalieren, ohne neu einzustellen.",
+        author: "René Schreiner",
+        role: "Geschäftsführung · KRS",
+        initials: "RS",
+      },
+    },
   },
 };
 
