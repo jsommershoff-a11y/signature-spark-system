@@ -42,8 +42,9 @@ export const FAQSection = ({
   const isPriority = (q: string) =>
     mobilePriority.some((needle) => q.toLowerCase().includes(needle.toLowerCase()));
 
-  // Mobile: priorisierte Fragen zuerst. Desktop: ursprüngliche Reihenfolge.
-  const mobileItems = useMemo(() => {
+  // Priorisierte Reihenfolge: häufigste Einwände (Preis, Zeit) zuerst —
+  // auf Mobile UND Desktop, damit die wichtigsten Antworten ohne Scrollen sichtbar sind.
+  const orderedItems = useMemo(() => {
     const prio = items.filter((i) => isPriority(i.question));
     const rest = items.filter((i) => !isPriority(i.question));
     return [...prio, ...rest];
