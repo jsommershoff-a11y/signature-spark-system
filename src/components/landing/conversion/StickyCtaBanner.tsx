@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, X } from "lucide-react";
+import { trackCtaClick, trackEvent } from "@/lib/analytics";
 
 export const StickyCtaBanner = () => {
   const [visible, setVisible] = useState(false);
