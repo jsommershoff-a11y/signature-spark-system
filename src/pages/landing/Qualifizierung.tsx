@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { identifyApollo, trackEvent } from "@/lib/analytics";
 import { getStoredRefCode } from "@/components/affiliate/ReferralTracker";
 import { Header } from "@/components/landing/Header";
 import { SEOHead } from "@/components/landing/SEOHead";
@@ -191,6 +192,21 @@ const Qualifizierung = () => {
           })),
         }),
       }).catch((err) => console.error("Notify email failed:", err));
+
+      // Apollo: Identify + Conversion-Event für B2B-Intent-Tracking
+      identifyApollo({
+        email: data.email,
+        name: data.name,
+        phone: data.phone || undefined,
+      });
+      void trackEvent("lead_form_submitted", {
+        form: "qualifizierung",
+        source: sourceTag,
+        automations_count: selectedItems.length,
+        automation_slugs: selectedItems.map((s) => s.slug),
+        has_phone: Boolean(data.phone),
+        has_message: Boolean(data.message?.trim()),
+      });
 
       navigate("/danke");
     } catch {
