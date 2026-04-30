@@ -130,12 +130,19 @@ export default function Customers() {
               <Input
                 placeholder="Name, Firma oder E-Mail…"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); savedViews.setActiveId(null); }}
                 className="pl-9"
               />
             </div>
 
-            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as CustomerRecordStatus | 'all'); setSelectedIds(new Set()); }}>
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                setStatusFilter(v as CustomerRecordStatus | 'all');
+                setSelectedIds(new Set());
+                savedViews.setActiveId(null);
+              }}
+            >
               <SelectTrigger className="w-[200px]">
                 <SelectValue />
               </SelectTrigger>
@@ -158,6 +165,20 @@ export default function Customers() {
               </Button>
             )}
           </div>
+
+          <SavedViewsBar<CustomerViewFilter>
+            views={savedViews.views}
+            activeId={savedViews.activeId}
+            currentFilter={{ search, statusFilter }}
+            onApply={(f) => {
+              setSearch(f.search ?? '');
+              setStatusFilter(f.statusFilter ?? 'all');
+              setSelectedIds(new Set());
+            }}
+            onSave={savedViews.save}
+            onDelete={savedViews.remove}
+            onSelect={(id) => savedViews.setActiveId(id)}
+          />
 
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
