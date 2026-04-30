@@ -64,6 +64,51 @@ interface ApolloTrackingFunctions {
 
 const APOLLO_APP_ID = "69eaf28dcab75b0011d9e969";
 
+/** UTM/Referral-Whitelist — frei segmentierbar in Apollo. */
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const;
+type UtmKey = typeof UTM_KEYS[number];
+const UTM_STORAGE_KEY = "krs_utm_attribution";
+const UTM_VALUE_RE = /^[A-Za-z0-9_.\-/+ ]{1,120}$/;
+
+/** Liest UTM-Parameter aus der aktuellen URL und persistiert sie (first-touch) in sessionStorage. */
+export function captureUtmParams(): Partial<Record<UtmKey, string>> {
+  if (typeof window === "undefined") return {};
+  const out: Partial<Record<UtmKey, string>> = {};
+  try {
+    const params = new URLSearchParams(window.location.search);
+    for (const key of UTM_KEYS) {
+      const raw = params.get(key);
+      if (raw && UTM_VALUE_RE.test(raw)) out[key] = raw.trim().toLowerCase();
+    }
+    if (Object.keys(out).length > 0) {
+      // First-touch: nicht überschreiben, wenn bereits gesetzt.
+      if (!window.sessionStorage.getItem(UTM_STORAGE_KEY)) {
+        window.sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(out));
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return getStoredUtmParams();
+}
+
+export function getStoredUtmParams(): Partial<Record<UtmKey, string>> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.sessionStorage.getItem(UTM_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Partial<Record<UtmKey, string>>;
+    const clean: Partial<Record<UtmKey, string>> = {};
+    for (const key of UTM_KEYS) {
+      const v = parsed[key];
+      if (typeof v === "string" && UTM_VALUE_RE.test(v)) clean[key] = v;
+    }
+    return clean;
+  } catch {
+    return {};
+  }
+}
+
 /** Zod-Schema für Identify-Traits — verhindert Garbage/PII-Leaks an externen Tracker. */
 const apolloTraitsSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(255),
@@ -75,7 +120,13 @@ const apolloTraitsSchema = z.object({
     .regex(/^[+0-9 ()/.\-]+$/, "invalid phone")
     .optional(),
   company: z.string().trim().max(150).optional(),
-  // Erlaubte freie Felder bewusst whitelistet — keine beliebigen Schlüssel.
+  // Traffic-Source-Felder zur Segmentierung in Apollo (alle optional, validiert).
+  utm_source: z.string().trim().max(120).regex(UTM_VALUE_RE).optional(),
+  utm_medium: z.string().trim().max(120).regex(UTM_VALUE_RE).optional(),
+  utm_campaign: z.string().trim().max(120).regex(UTM_VALUE_RE).optional(),
+  utm_term: z.string().trim().max(120).regex(UTM_VALUE_RE).optional(),
+  utm_content: z.string().trim().max(120).regex(UTM_VALUE_RE).optional(),
+  referral_code: z.string().trim().toUpperCase().max(16).regex(/^[A-Z0-9]{4,16}$/).optional(),
 }).strict();
 
 export type ApolloIdentifyTraits = z.infer<typeof apolloTraitsSchema>;
@@ -99,7 +150,10 @@ function sendToApollo(eventName: string, properties: Record<string, unknown> = {
  * Identifiziert den Visitor in Apollo (Form-Submits, Logins).
  * Validiert Traits mit Zod, normalisiert E-Mail (lowercase/trim) und droppt
  * leere optionale Felder, bevor sie an den externen Tracker gehen.
- * Respektiert Marketing-Consent.
+ * Reichert automatisch die in sessionStorage gespeicherten UTM-Parameter
+ * (first-touch via captureUtmParams) sowie den persistierten Referral-Code
+ * (localStorage via ReferralTracker) an, sofern der Aufrufer sie nicht
+ * explizit überschreibt. Respektiert Marketing-Consent.
  *
  * @returns true wenn an Apollo gesendet, false bei No-Consent / Validation-Fail / kein Tracker
  */
@@ -108,18 +162,46 @@ export function identifyApollo(traits: {
   name?: string | null;
   phone?: string | null;
   company?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_term?: string | null;
+  utm_content?: string | null;
+  referral_code?: string | null;
 }): boolean {
   if (typeof window === "undefined") return false;
   if (!hasMarketingConsent()) return false;
 
-  // Leere/null-Felder strippen, bevor Zod sie ablehnt.
-  const cleaned: Record<string, string> = {};
-  if (traits.email) cleaned.email = traits.email;
-  if (traits.name) cleaned.name = traits.name;
-  if (traits.phone) cleaned.phone = traits.phone;
-  if (traits.company) cleaned.company = traits.company;
+  // Auto-Anreicherung aus persistierter Attribution.
+  const storedUtms = getStoredUtmParams();
+  let storedRef: string | null = null;
+  try {
+    const raw = window.localStorage.getItem("krs_ref_code");
+    if (raw) {
+      const parsed = JSON.parse(raw) as { code?: string; expires?: number };
+      if (parsed?.code && (!parsed.expires || Date.now() < parsed.expires)) {
+        storedRef = parsed.code;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
 
-  const parsed = apolloTraitsSchema.safeParse(cleaned);
+  const merged: Record<string, string> = {};
+  if (traits.email) merged.email = traits.email;
+  if (traits.name) merged.name = traits.name;
+  if (traits.phone) merged.phone = traits.phone;
+  if (traits.company) merged.company = traits.company;
+  for (const key of UTM_KEYS) {
+    const explicit = traits[key];
+    const fromStore = storedUtms[key];
+    if (explicit) merged[key] = explicit;
+    else if (fromStore) merged[key] = fromStore;
+  }
+  if (traits.referral_code) merged.referral_code = traits.referral_code;
+  else if (storedRef) merged.referral_code = storedRef;
+
+  const parsed = apolloTraitsSchema.safeParse(merged);
   if (!parsed.success) {
     if (typeof console !== "undefined") {
       console.debug("[apollo] identify rejected by schema", parsed.error.flatten());
