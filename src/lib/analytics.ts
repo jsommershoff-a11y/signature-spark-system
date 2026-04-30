@@ -53,6 +53,7 @@ export function trackLeadConversion(options: TrackLeadConversionOptions = {}): b
 // Tracker-Skript wird nur nach Marketing-Consent dynamisch geladen
 // (siehe src/lib/apollo-loader.ts). `sendToApollo` no-op'd ohne Consent.
 // =============================================================
+import { z } from "zod";
 import { hasMarketingConsent } from "@/lib/consent";
 
 interface ApolloTrackingFunctions {
@@ -62,6 +63,22 @@ interface ApolloTrackingFunctions {
 }
 
 const APOLLO_APP_ID = "69eaf28dcab75b0011d9e969";
+
+/** Zod-Schema für Identify-Traits — verhindert Garbage/PII-Leaks an externen Tracker. */
+const apolloTraitsSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(255),
+  name: z.string().trim().min(1).max(120).optional(),
+  phone: z
+    .string()
+    .trim()
+    .max(30)
+    .regex(/^[+0-9 ()/.\-]+$/, "invalid phone")
+    .optional(),
+  company: z.string().trim().max(150).optional(),
+  // Erlaubte freie Felder bewusst whitelistet — keine beliebigen Schlüssel.
+}).strict();
+
+export type ApolloIdentifyTraits = z.infer<typeof apolloTraitsSchema>;
 
 /** Fire-and-forget: Sendet Event an Apollo NUR wenn Consent + Tracker geladen. */
 function sendToApollo(eventName: string, properties: Record<string, unknown> = {}): void {
@@ -78,21 +95,49 @@ function sendToApollo(eventName: string, properties: Record<string, unknown> = {
   }
 }
 
-/** Apollo-Identify (Form-Submits, Logins). Respektiert Consent. */
-export function identifyApollo(
-  traits: { email?: string; name?: string; phone?: string; [k: string]: unknown },
-): void {
-  if (typeof window === "undefined") return;
-  if (!hasMarketingConsent()) return;
+/**
+ * Identifiziert den Visitor in Apollo (Form-Submits, Logins).
+ * Validiert Traits mit Zod, normalisiert E-Mail (lowercase/trim) und droppt
+ * leere optionale Felder, bevor sie an den externen Tracker gehen.
+ * Respektiert Marketing-Consent.
+ *
+ * @returns true wenn an Apollo gesendet, false bei No-Consent / Validation-Fail / kein Tracker
+ */
+export function identifyApollo(traits: {
+  email?: string | null;
+  name?: string | null;
+  phone?: string | null;
+  company?: string | null;
+}): boolean {
+  if (typeof window === "undefined") return false;
+  if (!hasMarketingConsent()) return false;
+
+  // Leere/null-Felder strippen, bevor Zod sie ablehnt.
+  const cleaned: Record<string, string> = {};
+  if (traits.email) cleaned.email = traits.email;
+  if (traits.name) cleaned.name = traits.name;
+  if (traits.phone) cleaned.phone = traits.phone;
+  if (traits.company) cleaned.company = traits.company;
+
+  const parsed = apolloTraitsSchema.safeParse(cleaned);
+  if (!parsed.success) {
+    if (typeof console !== "undefined") {
+      console.debug("[apollo] identify rejected by schema", parsed.error.flatten());
+    }
+    return false;
+  }
+
   try {
     const fns = (window as unknown as { trackingFunctions?: ApolloTrackingFunctions })
       .trackingFunctions;
     if (fns && typeof fns.identify === "function") {
-      fns.identify({ app_id: APOLLO_APP_ID, ...traits });
+      fns.identify({ app_id: APOLLO_APP_ID, ...parsed.data });
+      return true;
     }
   } catch {
     /* never throw */
   }
+  return false;
 }
 
 // =============================================================
