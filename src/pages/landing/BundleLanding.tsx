@@ -48,6 +48,9 @@ interface BundleLandingTemplateProps {
  */
 const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
   const navigate = useNavigate();
+  const heroRef = useSectionViewTracking<HTMLElement>("hero", bundle.slug);
+  const midRef = useSectionViewTracking<HTMLElement>("mid_page", bundle.slug);
+  const finalRef = useSectionViewTracking<HTMLElement>("final", bundle.slug);
   const products = bundle.automationSlugs
     .map((slug) => AUTOMATIONS.find((a) => a.slug === slug))
     .filter((a): a is NonNullable<typeof a> => Boolean(a));
