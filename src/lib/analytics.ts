@@ -87,3 +87,65 @@ export async function trackEvent(
     }
   }
 }
+
+// =============================================================
+// Conversion Funnel: CTA-Klicks & Section-Views
+// Standardisierte Funnel-Stages: hero → mid_page → final → sticky → floating
+// =============================================================
+
+export type FunnelStage =
+  | 'hero'
+  | 'mid_page'
+  | 'final'
+  | 'sticky_banner'
+  | 'sticky_header'
+  | 'floating'
+  | 'mobile_sticky'
+  | 'menu'
+  | 'inline';
+
+interface CtaClickProps {
+  /** Stelle im Funnel, an der die CTA sitzt */
+  stage: FunnelStage;
+  /** Logischer Name der CTA, z. B. "qualifizierung", "eigener_bot", "bots_im_detail" */
+  cta: string;
+  /** Sichtbarer Button-Text (zur Diagnose) */
+  label?: string;
+  /** Ziel-URL/Anchor */
+  destination?: string;
+  /** Seiten-Slug oder Bundle-Slug, in dessen Kontext geklickt wurde */
+  context?: string;
+  /** Zusätzliche Properties */
+  [key: string]: unknown;
+}
+
+/** Fire-and-forget CTA-Klick-Tracking → analytics_events + GA4. */
+export function trackCtaClick(props: CtaClickProps): void {
+  const path =
+    typeof window !== 'undefined'
+      ? window.location.pathname + window.location.search
+      : undefined;
+  void trackEvent('cta_click', {
+    funnel_stage: props.stage,
+    cta_name: props.cta,
+    cta_label: props.label,
+    destination: props.destination,
+    context: props.context,
+    page_path: path,
+    ...props,
+  });
+}
+
+/** Fire-and-forget Section-View (z. B. via IntersectionObserver). */
+export function trackSectionView(stage: FunnelStage, context?: string): void {
+  const path =
+    typeof window !== 'undefined'
+      ? window.location.pathname + window.location.search
+      : undefined;
+  void trackEvent('section_view', {
+    funnel_stage: stage,
+    context,
+    page_path: path,
+  });
+}
+
