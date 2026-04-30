@@ -200,6 +200,29 @@ const Qualifizierung = () => {
         name: data.name,
         phone: data.phone || null,
       });
+      // Korrelation-ID für Funnel-Attribution (lead_form_submitted ↔ thank_you_view).
+      // Persistiert in sessionStorage, sodass /danke das Folge-Event verknüpfen kann.
+      const leadCorrelationId =
+        (typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `lead_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`);
+      const emailDomain = data.email.split("@")[1]?.toLowerCase() ?? null;
+      try {
+        window.sessionStorage.setItem(
+          "krs_lead_attribution",
+          JSON.stringify({
+            lead_id: leadCorrelationId,
+            form: "qualifizierung",
+            source: sourceTag,
+            email_domain: emailDomain,
+            apollo_identified: identified,
+            submitted_at: Date.now(),
+          }),
+        );
+      } catch {
+        /* sessionStorage may be unavailable */
+      }
+
       void trackEvent("lead_form_submitted", {
         form: "qualifizierung",
         source: sourceTag,
@@ -209,7 +232,8 @@ const Qualifizierung = () => {
         has_message: Boolean(data.message?.trim()),
         apollo_identified: identified,
         // E-Mail-Domain (nicht die volle Adresse) als Account-Hint für Apollo-B2B-Matching.
-        email_domain: data.email.split("@")[1]?.toLowerCase() ?? null,
+        email_domain: emailDomain,
+        lead_id: leadCorrelationId,
       });
 
       navigate("/danke");
