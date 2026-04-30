@@ -60,7 +60,7 @@ export function ProductCTA({
             </div>
           </div>
           <Button asChild size="sm" className="bg-primary hover:bg-primary-deep shrink-0">
-            <Link to={href}>
+            <Link to={href} onClick={handleTrack}>
               Anfragen
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
