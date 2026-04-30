@@ -20,6 +20,8 @@ interface ObjectionFAQSectionProps {
   headline?: string;
   intro?: string;
   items?: ObjectionItem[];
+  /** Logischer Section-Identifier für faq_open-Analytics. */
+  trackingSection?: string;
 }
 
 /**
