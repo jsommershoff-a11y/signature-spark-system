@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, Clock, FileCheck2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackCtaClick, type FunnelStage } from "@/lib/analytics";
 
 interface ProductCTAProps {
   /** Slug oder Slug-Liste für Pre-Selection im Qualifizierungs-Formular */
