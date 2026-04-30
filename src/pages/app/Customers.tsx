@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Search, Users, Loader2, UserCheck, TrendingUp, AlertTriangle, Trash2, ArrowRightCircle, RotateCcw, UserPlus } from 'lucide-react';
+import { Search, Users, Loader2, UserCheck, TrendingUp, AlertTriangle, Trash2, ArrowRightCircle, RotateCcw, UserPlus, Upload } from 'lucide-react';
 import { CreateContactDialog } from '@/components/crm/CreateContactDialog';
+import { ImportContactsDialog } from '@/components/crm/ImportContactsDialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
