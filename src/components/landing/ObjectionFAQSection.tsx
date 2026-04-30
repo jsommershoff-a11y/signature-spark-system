@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { trackEvent } from "@/lib/analytics";
 
 export interface ObjectionItem {
   /** Der Einwand (Originalton Kunde) */
@@ -19,6 +20,8 @@ interface ObjectionFAQSectionProps {
   headline?: string;
   intro?: string;
   items?: ObjectionItem[];
+  /** Logischer Section-Identifier für faq_open-Analytics. */
+  trackingSection?: string;
 }
 
 /**
@@ -64,6 +67,7 @@ export const ObjectionFAQSection = ({
   headline = "Was wir vor fast jedem Abschluss gefragt werden",
   intro = "Sortiert nach realer Häufigkeit aus über 50 Verkaufsgesprächen — Preis und Zeit zuerst.",
   items = COMMON_OBJECTIONS,
+  trackingSection = "objections",
 }: ObjectionFAQSectionProps) => {
   const jsonLd = {
     "@context": "https://schema.org",
@@ -73,6 +77,19 @@ export const ObjectionFAQSection = ({
       name: item.objection.replace(/[„""]/g, ""),
       acceptedAnswer: { "@type": "Answer", text: item.answer },
     })),
+  };
+
+  const handleValueChange = (value: string) => {
+    if (!value) return;
+    const idx = Number(value.replace("obj-", ""));
+    const item = items[idx];
+    if (!item) return;
+    void trackEvent("faq_open", {
+      section: trackingSection,
+      question: item.objection,
+      index: idx,
+      kind: "objection",
+    });
   };
 
   return (
@@ -95,7 +112,13 @@ export const ObjectionFAQSection = ({
           )}
         </div>
 
-        <Accordion type="single" collapsible defaultValue="obj-0" className="space-y-3">
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="obj-0"
+          onValueChange={handleValueChange}
+          className="space-y-3"
+        >
           {items.map((item, i) => (
             <AccordionItem
               key={i}

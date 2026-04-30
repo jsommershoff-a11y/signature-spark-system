@@ -294,8 +294,8 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       <ProofBar proof={bundle.proof} audienceLabel={bundle.badge} />
 
       {/* 5. FAQ + Einwände (FAQ ist bewusst auf 4 Einträge gekürzt) */}
-      <FAQSection items={allFaq} />
-      <ObjectionFAQSection />
+      <FAQSection items={allFaq} trackingSection={`bundle:${bundle.slug}:faq`} />
+      <ObjectionFAQSection trackingSection={`bundle:${bundle.slug}:objections`} />
 
       {/* 6. CTA */}
       <section ref={finalRef} className="bg-[#FFF3EB] py-16">

@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { trackEvent } from "@/lib/analytics";
 
 interface FAQItem {
   question: string;
@@ -19,12 +20,18 @@ interface FAQSectionProps {
    * so wichtige Antworten ohne Scrollen sichtbar sind.
    */
   mobilePriority?: string[];
+  /**
+   * Logischer Section-Identifier für Analytics (z. B. "bundle:start", "industry:handwerk").
+   * Wird in jedes faq_open-Event geschrieben, damit die Priorisierung pro Page ausgewertet werden kann.
+   */
+  trackingSection?: string;
 }
 
 export const FAQSection = ({
   headline = "Häufige Fragen",
   items,
   mobilePriority = ["kostet", "Preis", "wie schnell", "wie lange", "Zeit"],
+  trackingSection = "faq",
 }: FAQSectionProps) => {
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -49,6 +56,21 @@ export const FAQSection = ({
     const rest = items.filter((i) => !isPriority(i.question));
     return [...prio, ...rest];
   }, [items, mobilePriority]);
+
+  // Single-Accordion → value ist `item-N` beim Öffnen, "" beim Schließen.
+  // Wir feuern faq_open nur beim Öffnen, damit die Häufigkeit pro Frage sauber zählbar ist.
+  const handleValueChange = (value: string) => {
+    if (!value) return;
+    const idx = Number(value.replace("item-", ""));
+    const item = orderedItems[idx];
+    if (!item) return;
+    void trackEvent("faq_open", {
+      section: trackingSection,
+      question: item.question,
+      index: idx,
+      is_priority: isPriority(item.question),
+    });
+  };
 
   const renderItem = (item: FAQItem, index: number, highlight: boolean) => (
     <AccordionItem
@@ -95,6 +117,7 @@ export const FAQSection = ({
             type="single"
             collapsible
             defaultValue="item-0"
+            onValueChange={handleValueChange}
             className="space-y-3 md:space-y-4"
           >
             {orderedItems.map((item, index) =>
