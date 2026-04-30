@@ -26,7 +26,7 @@ export const FinalCTA = ({ headline, subline, ctaText, onCtaClick }: FinalCTAPro
             {subline}
           </p>
           
-          <CTAButton onClick={onCtaClick}>
+          <CTAButton onClick={onCtaClick} trackingStage="final" trackingCta="qualifizierung">
             {ctaText}
           </CTAButton>
         </div>
