@@ -95,7 +95,7 @@ export const ObjectionFAQSection = ({
           )}
         </div>
 
-        <Accordion type="single" collapsible className="space-y-3">
+        <Accordion type="single" collapsible defaultValue="obj-0" className="space-y-3">
           {items.map((item, i) => (
             <AccordionItem
               key={i}
