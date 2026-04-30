@@ -24,7 +24,7 @@ interface FAQSectionProps {
 export const FAQSection = ({
   headline = "Häufige Fragen",
   items,
-  mobilePriority = ["Wie schnell reagierst", "30 Tagen Begleitung"],
+  mobilePriority = ["kostet", "Preis", "wie schnell", "wie lange", "Zeit"],
 }: FAQSectionProps) => {
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -42,8 +42,9 @@ export const FAQSection = ({
   const isPriority = (q: string) =>
     mobilePriority.some((needle) => q.toLowerCase().includes(needle.toLowerCase()));
 
-  // Mobile: priorisierte Fragen zuerst. Desktop: ursprüngliche Reihenfolge.
-  const mobileItems = useMemo(() => {
+  // Priorisierte Reihenfolge: häufigste Einwände (Preis, Zeit) zuerst —
+  // auf Mobile UND Desktop, damit die wichtigsten Antworten ohne Scrollen sichtbar sind.
+  const orderedItems = useMemo(() => {
     const prio = items.filter((i) => isPriority(i.question));
     const rest = items.filter((i) => !isPriority(i.question));
     return [...prio, ...rest];
@@ -89,25 +90,14 @@ export const FAQSection = ({
             {headline}
           </h2>
 
-          {/* Mobile: priorisierte Reihenfolge */}
+          {/* Einheitliche, priorisierte Reihenfolge auf Mobile & Desktop */}
           <Accordion
             type="single"
             collapsible
             defaultValue="item-0"
-            className="space-y-3 md:hidden"
+            className="space-y-3 md:space-y-4"
           >
-            {mobileItems.map((item, index) =>
-              renderItem(item, index, isPriority(item.question))
-            )}
-          </Accordion>
-
-          {/* Desktop: ursprüngliche Reihenfolge */}
-          <Accordion
-            type="single"
-            collapsible
-            className="hidden md:block space-y-4"
-          >
-            {items.map((item, index) =>
+            {orderedItems.map((item, index) =>
               renderItem(item, index, isPriority(item.question))
             )}
           </Accordion>
