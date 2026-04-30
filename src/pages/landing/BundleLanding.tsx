@@ -17,6 +17,8 @@ import { ObjectionFAQSection } from "@/components/landing/ObjectionFAQSection";
 import NotFound from "@/pages/NotFound";
 import { AUTOMATIONS } from "@/data/automations";
 import { getBundle, type Bundle } from "@/data/bundles";
+import { trackCtaClick } from "@/lib/analytics";
+import { useSectionViewTracking } from "@/hooks/useSectionViewTracking";
 
 const COMMON_FAQ = [
   {
