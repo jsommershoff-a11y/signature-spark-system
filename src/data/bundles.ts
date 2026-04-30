@@ -104,6 +104,43 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     finalCtaHeadline: "Bereit für den schnellen Einstieg?",
     finalCtaSubline:
       "Kurzer Bedarfsabgleich, dann erhältst du innerhalb von 24 h dein Festpreis-Angebot für das Starter-Bundle.",
+    proof: {
+      stats: [
+        { value: "7 Tage", label: "bis alle 3 Bots live sind" },
+        { value: "8–15 h", label: "freie Mitarbeiterzeit pro Woche" },
+        { value: "< 24 h", label: "Reaktion auf neue Anfragen" },
+        { value: "1×", label: "Onboarding für 3 Bots gleichzeitig" },
+      ],
+      memberBenefits: [
+        "Festpreis statt Stundenabrechnung – kein Kostenrisiko beim Einstieg",
+        "30 Tage Optimierungssupport ohne Mehrkosten inklusive",
+        "Direkter Slack-/E-Mail-Draht zum Implementierer während des Rollouts",
+        "Upgrade-Pfad: alle Komponenten sind Growth-kompatibel ohne Neuaufbau",
+      ],
+      exampleResults: [
+        {
+          segment: "Handwerksbetrieb · 8 MA",
+          outcome: "Angebote in 24 h statt 5 Tagen, 0 vergessene Anfragen",
+          timeframe: "nach 2 Wochen",
+        },
+        {
+          segment: "Praxis · 4 Behandler",
+          outcome: "60 % weniger Telefonate dank automatischer Terminvergabe",
+          timeframe: "nach 10 Tagen",
+        },
+        {
+          segment: "Dienstleister · 5 MA",
+          outcome: "12 h/Woche Backoffice-Zeit zurück bei gleichem Umsatz",
+          timeframe: "nach 3 Wochen",
+        },
+      ],
+      quote: {
+        text: "In der ersten Woche war Schluss mit dem ständigen Hinterhertelefonieren. Termine, E-Mails und Angebote laufen jetzt durch – wir merken nur noch, dass mehr Aufträge reinkommen.",
+        author: "René Schreiner",
+        role: "Geschäftsführung · KRS",
+        initials: "RS",
+      },
+    },
   },
 
   growth: {
