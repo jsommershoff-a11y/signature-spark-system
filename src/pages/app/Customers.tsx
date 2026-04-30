@@ -244,6 +244,15 @@ export default function Customers() {
         </TabsContent>
       </Tabs>
 
+      <CreateContactDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSubmit={async (values) => {
+          await createContact(values);
+          setStatusFilter('contact');
+        }}
+      />
+
       {/* Delete-Confirm */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
