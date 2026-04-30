@@ -1,5 +1,37 @@
 import type { IndustryFAQ } from "./industries";
 
+export interface BundleProofStat {
+  /** Große Kennzahl, z. B. "8–15 h" */
+  value: string;
+  /** Kurze Beschreibung, z. B. "zurückgewonnene Mitarbeiterzeit / Woche" */
+  label: string;
+}
+
+export interface BundleProofResult {
+  /** Branche oder Rolle, z. B. "Handwerksbetrieb · 12 MA" */
+  segment: string;
+  /** Konkretes Ergebnis, z. B. "Angebote in 24 h statt 5 Tagen" */
+  outcome: string;
+  /** Zeitraum bis zum Ergebnis, z. B. "nach 2 Wochen" */
+  timeframe: string;
+}
+
+export interface BundleProof {
+  /** 4 Quick-Stats für die Stat-Reihe */
+  stats: [BundleProofStat, BundleProofStat, BundleProofStat, BundleProofStat];
+  /** Kurze, vergleichbare Mitgliedervorteile (3–4 Punkte) */
+  memberBenefits: string[];
+  /** 2–3 Beispiel-Ergebnisse aus echten Setups */
+  exampleResults: BundleProofResult[];
+  /** Zitat — passend zur Zielgruppe */
+  quote: {
+    text: string;
+    author: string;
+    role: string;
+    initials: string;
+  };
+}
+
 export interface Bundle {
   slug: "start" | "growth";
   /** Routenpfad ohne führenden Slash */
@@ -25,7 +57,10 @@ export interface Bundle {
   /** Final-CTA */
   finalCtaHeadline: string;
   finalCtaSubline: string;
+  /** Zielgruppen-spezifische Proof-Sektion */
+  proof: BundleProof;
 }
+
 
 export const BUNDLES: Record<"start" | "growth", Bundle> = {
   start: {
