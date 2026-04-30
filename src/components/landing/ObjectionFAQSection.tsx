@@ -60,9 +60,9 @@ export const COMMON_OBJECTIONS: ObjectionItem[] = [
  * antwortet direkt und auflösend.
  */
 export const ObjectionFAQSection = ({
-  eyebrow = "Einwände & Antworten",
-  headline = "Was wir vor jedem Vertragsabschluss gefragt werden",
-  intro = "Diese sechs Bedenken hören wir in fast jedem Erstgespräch. Hier die ehrlichen Antworten.",
+  eyebrow = "Die 4 häufigsten Einwände",
+  headline = "Was wir vor fast jedem Abschluss gefragt werden",
+  intro = "Sortiert nach realer Häufigkeit aus über 50 Verkaufsgesprächen — Preis und Zeit zuerst.",
   items = COMMON_OBJECTIONS,
 }: ObjectionFAQSectionProps) => {
   const jsonLd = {
