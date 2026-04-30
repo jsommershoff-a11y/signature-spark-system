@@ -101,6 +101,40 @@ export function useCustomers(
     onError: (e: Error) => toast.error(`Umwandeln fehlgeschlagen: ${e.message}`),
   });
 
+  const createContact = useMutation({
+    mutationFn: async (input: {
+      first_name: string;
+      last_name?: string;
+      email: string;
+      phone?: string;
+      company?: string;
+      notes?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('crm_leads')
+        .insert({
+          first_name: input.first_name.trim(),
+          last_name: input.last_name?.trim() || null,
+          email: input.email.trim().toLowerCase(),
+          phone: input.phone?.trim() || null,
+          company: input.company?.trim() || null,
+          notes: input.notes?.trim() || null,
+          status: 'contact' as never,
+          source_type: 'outbound_manual',
+          discovered_by: 'manual',
+        })
+        .select('id')
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Kontakt angelegt');
+      qc.invalidateQueries({ queryKey: ['customers'] });
+    },
+    onError: (e: Error) => toast.error(`Anlegen fehlgeschlagen: ${e.message}`),
+  });
+
   return {
     customers: filtered ?? [],
     isLoading: query.isLoading,
@@ -108,6 +142,7 @@ export function useCustomers(
     softDelete: softDelete.mutateAsync,
     restore: restore.mutateAsync,
     convertToLead: convertToLead.mutateAsync,
-    isMutating: softDelete.isPending || restore.isPending || convertToLead.isPending,
+    createContact: createContact.mutateAsync,
+    isMutating: softDelete.isPending || restore.isPending || convertToLead.isPending || createContact.isPending,
   };
 }
