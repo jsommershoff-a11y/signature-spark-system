@@ -20,6 +20,11 @@ interface FAQSectionProps {
    * so wichtige Antworten ohne Scrollen sichtbar sind.
    */
   mobilePriority?: string[];
+  /**
+   * Logischer Section-Identifier für Analytics (z. B. "bundle:start", "industry:handwerk").
+   * Wird in jedes faq_open-Event geschrieben, damit die Priorisierung pro Page ausgewertet werden kann.
+   */
+  trackingSection?: string;
 }
 
 export const FAQSection = ({
