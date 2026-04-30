@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { captureUtmParams } from '@/lib/analytics';
 
 const REF_KEY = 'krs_ref_code';
 const REF_EXPIRY_DAYS = 60;
@@ -15,6 +16,9 @@ interface StoredRef {
  */
 export function ReferralTracker() {
   useEffect(() => {
+    // First-touch UTM-Capture für Apollo-Segmentierung (sessionStorage).
+    captureUtmParams();
+
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
 
