@@ -22,39 +22,36 @@ interface ObjectionFAQSectionProps {
 }
 
 /**
- * Standard-Einwände aus &gt; 50 Verkaufsgesprächen ("Big 5").
- * Werden als Default verwendet und können pro Page erweitert werden.
+ * Top-Einwände aus &gt; 50 Verkaufsgesprächen, sortiert nach realer Häufigkeit:
+ * 1. Preis (kommt in ~70 % der Gespräche)
+ * 2. Zeit / Bandbreite (~55 %)
+ * 3. Risiko: "Was wenn die KI Fehler macht?" (~40 %)
+ * 4. Agentur-Reinfall / Vertrauen (~30 %)
+ *
+ * Bewusst auf 4 reduziert: weniger Scroll-Friktion, höhere Read-Through-Rate.
+ * "Wir warten lieber" und "Prozesse zu individuell" sind in Hero/Solution-Texten
+ * bereits adressiert und werden hier nicht doppelt aufgegriffen.
  */
 export const COMMON_OBJECTIONS: ObjectionItem[] = [
   {
     objection: '\u201EDas ist mir zu teuer.\u201C',
     answer:
-      "Verständlich – aber rechne ehrlich gegen: Eine MFA / Vorarbeiter / Sachbearbeiter kostet dich 4.000–6.000 € pro Monat – inklusive Lohnnebenkosten, Krankheitstage und Einarbeitung. Unsere Lösungen amortisieren sich in der Regel in weniger als 90 Tagen über die gesparten Personalstunden.",
+      "Eine Vollzeitkraft kostet 4.000–6.000 € pro Monat — inkl. Lohnnebenkosten, Krankheit, Einarbeitung. Unsere Bots amortisieren sich typischerweise in unter 90 Tagen über die gesparten Personalstunden. Du bekommst Festpreis statt Stundenfass.",
   },
   {
     objection: '\u201EWir haben gerade keine Zeit für so ein Projekt.\u201C',
     answer:
-      "Genau dafür ist die Lösung gebaut. Dein Team-Aufwand liegt bei 1–2 h Onboarding und einer halben Stunde pro Woche. Wir bauen, wir testen, wir schulen – ihr nutzt nur das Ergebnis. Wer keine Zeit für Automatisierung hat, hat in 12 Monaten noch weniger.",
-  },
-  {
-    objection: '\u201EWir warten lieber, bis sich KI etabliert hat.\u201C',
-    answer:
-      "Die Technologie ist seit über zwei Jahren produktionsreif. Wer jetzt nicht startet, verschiebt nicht das Risiko – sondern den Wettbewerbsvorsprung an die Konkurrenz, die schon umsetzt. In 12 Monaten ist KI in deiner Branche kein Vorteil mehr, sondern Pflicht.",
-  },
-  {
-    objection: '\u201EUnsere Prozesse sind zu individuell für KI.\u201C',
-    answer:
-      "Genau das ist der häufigste Trugschluss. 80 % der Prozesse sind in jedem Mittelstand identisch (Anfragen, Termine, Angebote, Rechnungen, Service). Die restlichen 20 % bilden wir als Custom-Modul ab – das ist genau unsere Spezialität.",
+      "Dein Aufwand: 1–2 h Onboarding plus 30 min pro Woche. Wir bauen, testen und schulen — ihr nutzt nur das Ergebnis. Wer heute keine Zeit für Automatisierung hat, hat in 12 Monaten noch weniger.",
   },
   {
     objection: '\u201EWas, wenn die KI Fehler macht?\u201C',
     answer:
-      "Jede produktive Automatisierung hat ein klares Eskalationsmodell: Bei Unsicherheit eskaliert die KI an einen Menschen, statt selbst zu entscheiden. Du behältst volle Kontrolle und alle Logs. Außerdem: 30 Tage Optimierungssupport sind inklusive.",
+      "Jede Automatisierung hat ein klares Eskalationsmodell: Bei Unsicherheit gibt die KI an einen Menschen ab, statt selbst zu entscheiden. Volle Kontrolle, alle Logs, 30 Tage Optimierungssupport inklusive.",
   },
   {
-    objection: '\u201EWir haben schon mal mit einer Agentur gearbeitet – das war ein Reinfall.\u201C',
+    objection: '\u201EWir hatten schon mal eine Agentur — war ein Reinfall.\u201C',
     answer:
-      "Klassisch. Der Unterschied: Wir liefern Festpreis (kein Stundenfass), klare Roadmap (Tag 0–20), produktiven Code (kein PoC, der versandet) – und du bist in 7 Tagen live. Falls wir nicht liefern, zahlst du nicht.",
+      "Klassisch. Der Unterschied bei uns: Festpreis (kein Stundenfass), klare Roadmap (Tag 0–20), produktiver Code statt PoC, live in 7 Tagen. Wenn wir nicht liefern, zahlst du nicht.",
   },
 ];
 
