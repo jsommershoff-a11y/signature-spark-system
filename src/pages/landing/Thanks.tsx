@@ -5,7 +5,7 @@ import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { SEOHead } from "@/components/landing/SEOHead";
 import { Button } from "@/components/ui/button";
-import { trackLeadConversion } from "@/lib/analytics";
+import { trackLeadConversion, trackEvent } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,6 +23,45 @@ const Thanks = () => {
   useEffect(() => {
     if (!isInfo) {
       trackLeadConversion();
+    }
+
+    // Apollo + GA4 funnel attribution: thank_you_view verknüpft mit lead_form_submitted
+    // über die in sessionStorage hinterlegte Korrelation-ID.
+    let attribution: {
+      lead_id?: string;
+      form?: string;
+      source?: string;
+      email_domain?: string | null;
+      apollo_identified?: boolean;
+      submitted_at?: number;
+    } = {};
+    try {
+      const raw = window.sessionStorage.getItem("krs_lead_attribution");
+      if (raw) attribution = JSON.parse(raw);
+    } catch {
+      /* ignore */
+    }
+
+    const timeOnFormMs =
+      attribution.submitted_at ? Date.now() - attribution.submitted_at : null;
+
+    void trackEvent("thank_you_view", {
+      variant: isInfo ? "info" : "qualified",
+      lead_id: attribution.lead_id ?? null,
+      lead_form: attribution.form ?? null,
+      lead_source: attribution.source ?? null,
+      email_domain: attribution.email_domain ?? null,
+      apollo_identified: attribution.apollo_identified ?? false,
+      time_to_thanks_ms: timeOnFormMs,
+      referrer: typeof document !== "undefined" ? document.referrer || null : null,
+    });
+
+    // Attribution-Payload nach Verbrauch entfernen, damit Reloads/Backnavigation
+    // kein doppeltes Funnel-Match auslösen.
+    try {
+      window.sessionStorage.removeItem("krs_lead_attribution");
+    } catch {
+      /* ignore */
     }
   }, [isInfo]);
 
