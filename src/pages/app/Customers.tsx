@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, Users, Loader2, UserCheck, TrendingUp, AlertTriangle, Trash2, ArrowRightCircle, RotateCcw, UserPlus, Upload } from 'lucide-react';
 import { CreateContactDialog } from '@/components/crm/CreateContactDialog';
 import { ImportContactsDialog } from '@/components/crm/ImportContactsDialog';
@@ -62,6 +62,20 @@ export default function Customers() {
     useCustomers(search, apiFilter, includeDeleted);
 
   const savedViews = useSavedViews<CustomerViewFilter>('customers');
+
+  // Auto-apply default view on first load
+  const defaultAppliedRef = useRef(false);
+  useEffect(() => {
+    if (defaultAppliedRef.current || savedViews.loading) return;
+    if (!savedViews.defaultId) { defaultAppliedRef.current = true; return; }
+    const v = savedViews.views.find((x) => x.id === savedViews.defaultId);
+    if (v) {
+      setSearch(v.filter.search ?? '');
+      setStatusFilter(v.filter.statusFilter ?? 'all');
+      savedViews.setActiveId(v.id);
+    }
+    defaultAppliedRef.current = true;
+  }, [savedViews.loading, savedViews.defaultId, savedViews.views, savedViews]);
 
   const rowKey = (c: Customer) => `${c.source}:${c.id}`;
   const allSelected = customers.length > 0 && customers.every((c) => selectedIds.has(rowKey(c)));
@@ -169,6 +183,7 @@ export default function Customers() {
           <SavedViewsBar<CustomerViewFilter>
             views={savedViews.views}
             activeId={savedViews.activeId}
+            defaultId={savedViews.defaultId}
             currentFilter={{ search, statusFilter }}
             onApply={(f) => {
               setSearch(f.search ?? '');
@@ -178,6 +193,7 @@ export default function Customers() {
             onSave={savedViews.save}
             onDelete={savedViews.remove}
             onSelect={(id) => savedViews.setActiveId(id)}
+            onSetDefault={savedViews.setDefault}
           />
 
           {isLoading ? (
