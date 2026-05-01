@@ -64,7 +64,7 @@ export function useSavedViews<TFilter = Record<string, unknown>>(scope: string) 
     const saved_views = { ...all, [scope]: { views: next, defaultId: nextDefault } };
     const { error } = await supabase
       .from('user_preferences')
-      .upsert({ user_id: auth.user.id, saved_views }, { onConflict: 'user_id' });
+      .upsert({ user_id: auth.user.id, saved_views } as never, { onConflict: 'user_id' });
     if (error) { toast.error('Ansicht konnte nicht gespeichert werden'); throw error; }
   }, [scope]);
 
