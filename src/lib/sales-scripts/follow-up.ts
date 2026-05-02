@@ -81,6 +81,7 @@ export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
       '',
       'Beste Grüße',
     ],
+    stages: ['setter_call_scheduled', 'new_lead'],
   },
   {
     id: 'reschedule',
