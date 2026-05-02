@@ -279,6 +279,42 @@ export default function AdminFollowUpTemplates() {
             </div>
           </div>
 
+          {/* Pipeline-Stage-Zuordnung */}
+          <div className="space-y-2 border-t pt-4">
+            <div>
+              <Label>Pipeline-Stages (Default-Vorlage)</Label>
+              <p className="text-xs text-muted-foreground">
+                Diese Vorlage wird in der PipelineCard automatisch vorgeschlagen,
+                wenn der Lead in einer der angehakten Phasen ist.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {PIPELINE_STAGE_OPTIONS.map((opt) => {
+                const active = form.stages.includes(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      const next = active
+                        ? form.stages.filter((s) => s !== opt.value)
+                        : [...form.stages, opt.value];
+                      setForm({ ...form, stages: next });
+                    }}
+                    className={
+                      'text-left text-xs rounded-md border px-2 py-1.5 transition ' +
+                      (active
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border hover:bg-muted/40 text-muted-foreground')
+                    }
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* A/B Varianten */}
           <div className="space-y-2 border-t pt-4">
             <div className="flex items-center justify-between">
