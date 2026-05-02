@@ -38,6 +38,7 @@ import {
 } from '@/lib/pipeline-stage';
 import {
   renderFollowUpTemplate,
+  pickDefaultTemplateForStage,
   type FollowUpTemplateId,
   type FollowUpTemplate,
 } from '@/lib/sales-scripts/follow-up';
