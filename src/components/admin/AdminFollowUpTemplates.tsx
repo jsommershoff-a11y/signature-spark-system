@@ -19,6 +19,7 @@ import { ResponsiveFormDialog } from '@/components/app/ResponsiveFormDialog';
 import { Pencil, Plus, Trash2, Mail, History } from 'lucide-react';
 import { toast } from 'sonner';
 import FollowUpTemplateHistoryDialog from './FollowUpTemplateHistoryDialog';
+import { FollowUpTemplatePreview } from './FollowUpTemplatePreview';
 
 const PLACEHOLDER_HINT =
   'Verfügbare Platzhalter: {{greeting_name}}, {{when}}, {{company}}, {{stage_label}}, {{context_line}}';
@@ -31,6 +32,8 @@ interface FormState {
   body: string;
   sort_order: number;
   is_active: boolean;
+  active_from: string | null;
+  active_until: string | null;
   variants: FollowUpVariant[];
   stages: string[];
 }
@@ -43,6 +46,8 @@ const EMPTY_FORM: FormState = {
   body: '',
   sort_order: 100,
   is_active: true,
+  active_from: null,
+  active_until: null,
   variants: [],
   stages: [],
 };
@@ -58,6 +63,30 @@ const PIPELINE_STAGE_OPTIONS: { value: string; label: string }[] = [
   { value: 'won', label: 'Gewonnen' },
   { value: 'lost', label: 'Verloren' },
 ];
+
+type LiveState = 'active' | 'inactive' | 'scheduled' | 'expired';
+
+function getLiveState(row: { is_active: boolean; active_from: string | null; active_until: string | null }): LiveState {
+  if (!row.is_active) return 'inactive';
+  const now = Date.now();
+  if (row.active_from && new Date(row.active_from).getTime() > now) return 'scheduled';
+  if (row.active_until && new Date(row.active_until).getTime() < now) return 'expired';
+  return 'active';
+}
+
+function toLocalInputValue(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fromLocalInputValue(v: string): string | null {
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
 
 export default function AdminFollowUpTemplates() {
   const { templates, isLoading, create, update, remove } = useFollowUpTemplatesAdmin();
@@ -83,6 +112,8 @@ export default function AdminFollowUpTemplates() {
       body: row.body,
       sort_order: row.sort_order,
       is_active: row.is_active,
+      active_from: row.active_from ?? null,
+      active_until: row.active_until ?? null,
       variants: Array.isArray(row.variants) ? row.variants : [],
       stages: Array.isArray(row.stages) ? row.stages : [],
     });
@@ -93,6 +124,11 @@ export default function AdminFollowUpTemplates() {
     e.preventDefault();
     if (!form.template_key.trim() || !form.label.trim() || !form.subject.trim() || !form.body.trim()) {
       toast.error('Schlüssel, Label, Betreff und Body sind Pflicht');
+      return;
+    }
+    if (form.active_from && form.active_until &&
+        new Date(form.active_from).getTime() >= new Date(form.active_until).getTime()) {
+      toast.error('„Aktiv bis" muss später als „Go-Live ab" sein');
       return;
     }
     try {
@@ -161,11 +197,15 @@ export default function AdminFollowUpTemplates() {
                   <TableCell className="font-medium">{t.label}</TableCell>
                   <TableCell className="max-w-[280px] truncate text-sm">{t.subject}</TableCell>
                   <TableCell>
-                    {t.is_active ? (
-                      <Badge variant="default">Aktiv</Badge>
-                    ) : (
-                      <Badge variant="secondary">Inaktiv</Badge>
-                    )}
+                    {(() => {
+                      const state = getLiveState(t);
+                      if (state === 'active') return <Badge variant="default">Aktiv</Badge>;
+                      if (state === 'scheduled')
+                        return <Badge variant="outline" title={`Go-Live: ${new Date(t.active_from!).toLocaleString('de-DE')}`}>Geplant</Badge>;
+                      if (state === 'expired')
+                        return <Badge variant="outline" title={`Abgelaufen: ${new Date(t.active_until!).toLocaleString('de-DE')}`}>Abgelaufen</Badge>;
+                      return <Badge variant="secondary">Inaktiv</Badge>;
+                    })()}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => setHistoryTarget(t)} title="Versionshistorie">
@@ -277,6 +317,61 @@ export default function AdminFollowUpTemplates() {
               />
               <Label htmlFor="active">Aktiv (in Pipeline-Karte sichtbar)</Label>
             </div>
+          </div>
+
+          {/* Zeitsteuerung */}
+          <div className="space-y-3 border-t pt-4">
+            <div>
+              <Label>Zeitsteuerung (optional)</Label>
+              <p className="text-xs text-muted-foreground">
+                Vorlage erscheint nur innerhalb dieses Zeitfensters. Leer = unbegrenzt.
+                Der Aktiv-Schalter oben muss zusätzlich gesetzt sein.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="active_from" className="text-xs">Go-Live ab</Label>
+                <Input
+                  id="active_from"
+                  type="datetime-local"
+                  value={toLocalInputValue(form.active_from)}
+                  onChange={(e) => setForm({ ...form, active_from: fromLocalInputValue(e.target.value) })}
+                />
+                {form.active_from && (
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-foreground underline"
+                    onClick={() => setForm({ ...form, active_from: null })}
+                  >
+                    Zurücksetzen
+                  </button>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="active_until" className="text-xs">Aktiv bis</Label>
+                <Input
+                  id="active_until"
+                  type="datetime-local"
+                  value={toLocalInputValue(form.active_until)}
+                  onChange={(e) => setForm({ ...form, active_until: fromLocalInputValue(e.target.value) })}
+                />
+                {form.active_until && (
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-foreground underline"
+                    onClick={() => setForm({ ...form, active_until: null })}
+                  >
+                    Zurücksetzen
+                  </button>
+                )}
+              </div>
+            </div>
+            {form.active_from && form.active_until &&
+              new Date(form.active_from).getTime() >= new Date(form.active_until).getTime() && (
+                <p className="text-xs text-destructive">
+                  „Aktiv bis" muss später als „Go-Live ab" sein.
+                </p>
+            )}
           </div>
 
           {/* Pipeline-Stage-Zuordnung */}
@@ -407,6 +502,17 @@ export default function AdminFollowUpTemplates() {
                 </div>
               ))
             )}
+          </div>
+
+          {/* Live-Vorschau */}
+          <div className="border-t pt-4">
+            <FollowUpTemplatePreview
+              templateKey={form.template_key}
+              subject={form.subject}
+              body={form.body}
+              variants={form.variants}
+              stages={form.stages}
+            />
           </div>
         </form>
       </ResponsiveFormDialog>
