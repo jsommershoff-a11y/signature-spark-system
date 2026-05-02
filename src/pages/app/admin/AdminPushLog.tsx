@@ -60,7 +60,6 @@ export default function AdminPushLog() {
       <PageHeader
         title="Push-Log"
         description={`Versendete Push-Benachrichtigungen der letzten ${days} Tage`}
-        icon={BellRing}
       />
 
       {/* KPI-Tiles */}
