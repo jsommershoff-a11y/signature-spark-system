@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 import { PipelineCard } from './PipelineCard';
+import { StageTooltip } from './StageTooltip';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
 import { PipelineStage } from '@/types/crm';
-import { getStageLabel, getStageHint, getStageTooltip } from '@/lib/pipeline-stage';
+import { getStageLabel, getStageHint } from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
 
 interface PipelineColumnProps {
