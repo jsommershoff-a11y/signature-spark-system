@@ -199,6 +199,23 @@ serve(async (req) => {
       );
     }
 
+    // Wenn kein log_id übergeben (z.B. Direktaufruf aus Frontend-Testmodus): Log-Eintrag anlegen
+    if (!logId) {
+      const { data: created } = await client
+        .from("push_log")
+        .insert({
+          user_id: input.user_id,
+          category: input.category,
+          title: input.title,
+          body: input.body ?? null,
+          source: input.source ?? (input.dry_run ? "admin_test_dry" : "admin_test"),
+          status: "pending",
+        })
+        .select("id")
+        .single();
+      logId = created?.id;
+    }
+
     // 1) push_settings prüfen (es sei denn force = true)
     let settingsAllowed = true;
     let settingsReason: string | null = null;
