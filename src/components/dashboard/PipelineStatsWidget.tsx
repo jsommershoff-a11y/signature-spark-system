@@ -3,23 +3,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight, Kanban } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { PipelineStats } from '@/hooks/useDashboardData';
+import { PIPELINE_STAGE_LABELS, type PipelineStage } from '@/types/crm';
 
 interface PipelineStatsWidgetProps {
   stats: PipelineStats[];
   isLoading?: boolean;
 }
-
-const STAGE_LABELS: Record<string, string> = {
-  new_lead: 'Neue Leads',
-  setter_call_scheduled: 'Call geplant',
-  setter_call_done: 'Call durchgeführt',
-  analysis_ready: 'Analyse bereit',
-  offer_draft: 'Angebot Entwurf',
-  offer_sent: 'Angebot gesendet',
-  payment_unlocked: 'Zahlung freigeschaltet',
-  won: 'Gewonnen',
-  lost: 'Verloren',
-};
 
 const STAGE_COLORS: Record<string, string> = {
   new_lead: 'bg-blue-500',
@@ -117,7 +106,7 @@ export function PipelineStatsWidget({ stats, isLoading }: PipelineStatsWidgetPro
                     className={`w-2 h-2 rounded-full ${STAGE_COLORS[stat.stage] || 'bg-gray-500'}`}
                   />
                   <span className="text-xs truncate">
-                    {STAGE_LABELS[stat.stage] || stat.stage}
+                    {PIPELINE_STAGE_LABELS[stat.stage as PipelineStage] || stat.stage}
                   </span>
                 </div>
                 <span className="text-sm font-bold">{stat.count}</span>
