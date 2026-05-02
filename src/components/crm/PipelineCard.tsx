@@ -411,20 +411,55 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
             <span className="hidden sm:inline">Termin</span>
           </Button>
           {lastMeeting && lead.email && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-[11px] font-medium flex-shrink-0 touch-manipulation text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/15"
-              onClick={(e) => {
-                stop(e);
-                sendFollowUp();
-              }}
-              title="Follow-up E-Mail mit Termin-Kontext vorbereiten"
-              aria-label="Follow-up senden"
-            >
-              <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
-              <span className="hidden sm:inline">Follow-up</span>
-            </Button>
+            <div className="flex items-center flex-shrink-0 rounded-md overflow-hidden bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-[11px] font-medium rounded-none touch-manipulation hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                onClick={(e) => {
+                  stop(e);
+                  sendFollowUp('confirm');
+                }}
+                title="Follow-up: Bestätigung (Standard)"
+                aria-label="Follow-up Bestätigung senden"
+              >
+                <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
+                <span className="hidden sm:inline">Follow-up</span>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-1 rounded-none border-l border-emerald-500/20 touch-manipulation hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                    onClick={stop}
+                    title="Vorlage wählen"
+                    aria-label="Follow-up Vorlage wählen"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={stop} className="w-56">
+                  <DropdownMenuLabel className="text-[11px]">Vorlage wählen</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {FOLLOW_UP_TEMPLATES.map((tpl) => (
+                    <DropdownMenuItem
+                      key={tpl.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sendFollowUp(tpl.id);
+                      }}
+                      className="flex flex-col items-start gap-0.5 py-2"
+                    >
+                      <span className="text-xs font-medium">{tpl.label}</span>
+                      <span className="text-[10px] text-muted-foreground leading-tight">
+                        {tpl.description}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
           <Button
             variant="ghost"
