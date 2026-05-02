@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminMembers } from '@/hooks/useAdminMembers';
+import { PIPELINE_STAGE_LABELS } from '@/types/crm';
 import {
   Users, BookOpen, GraduationCap, AlertTriangle, TrendingUp, Plus, UserPlus,
   Pencil, Trash2, Loader2, Search, Eye, ChevronRight, BarChart3,
