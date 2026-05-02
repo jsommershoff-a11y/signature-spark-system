@@ -124,7 +124,7 @@ export function PipelineBoard({
 
   return (
     <div className="flex flex-col lg:flex-row gap-4">
-      <div className="flex-1 min-w-0 space-y-3">
+      <div className="flex-1 min-w-0 space-y-3 order-2 lg:order-1">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Tabs
             value={group}
@@ -133,7 +133,7 @@ export function PipelineBoard({
               setStageFilter(null);
             }}
           >
-            <TabsList>
+            <TabsList className="flex-wrap h-auto">
               {GROUP_ORDER.map((g) => (
                 <TabsTrigger key={g} value={g} title={PIPELINE_GROUP_HINTS[g]}>
                   {PIPELINE_GROUP_LABELS[g]}
@@ -158,14 +158,14 @@ export function PipelineBoard({
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground break-words">
           {stageFilter
             ? `Gefiltert auf eine Phase – Klick auf „Filter ✕" in der Übersicht zum Zurücksetzen.`
             : PIPELINE_GROUP_HINTS[group]}
         </p>
 
         <ScrollArea className="w-full">
-          <div className="flex gap-4 p-1 pb-4 h-[calc(100vh-280px)] min-h-[500px]">
+          <div className="flex gap-3 sm:gap-4 p-1 pb-4 h-[calc(100vh-280px)] min-h-[500px]">
             {STAGE_ORDER.map((stage) => (
               <PipelineColumn
                 key={stage}
@@ -181,7 +181,7 @@ export function PipelineBoard({
         </ScrollArea>
       </div>
 
-      <aside className="lg:w-72 lg:shrink-0">
+      <aside className="w-full lg:w-72 lg:shrink-0 order-1 lg:order-2">
         <PipelineHeatmap
           pipelineByStage={pipelineByStage}
           stageOrder={STAGE_ORDER}
