@@ -251,6 +251,25 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   // damit Sales/Marketing sie pflegen kann ohne UI-Code zu touchen.
 
 
+  const buildFollowUp = (templateId: FollowUpTemplateId) => {
+    const greetingName = lead.first_name?.trim() || fullName;
+    const when = formatMeetingWhen(lastMeeting?.scheduledAt);
+    return renderFollowUpTemplate(
+      templateId,
+      { greetingName, when, company: lead.company, stageLabel },
+      followUpTemplates,
+    );
+  };
+
+  const previewFollowUp = (templateId: FollowUpTemplateId = 'confirm') => {
+    if (!lead.email) {
+      toast.error('Keine E-Mail-Adresse hinterlegt');
+      return;
+    }
+    const { template: tpl, subject, body } = buildFollowUp(templateId);
+    setFollowUpPreview({ templateId, label: tpl.label, subject, body });
+  };
+
   const sendFollowUp = (templateId: FollowUpTemplateId = 'confirm', force = false) => {
     if (!lead.email) {
       toast.error('Keine E-Mail-Adresse hinterlegt');
@@ -269,18 +288,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
       return;
     }
 
-    const greetingName = lead.first_name?.trim() || fullName;
-    const when = formatMeetingWhen(lastMeeting?.scheduledAt);
-    const { template: tpl, subject, body } = renderFollowUpTemplate(
-      templateId,
-      {
-        greetingName,
-        when,
-        company: lead.company,
-        stageLabel,
-      },
-      followUpTemplates,
-    );
+    const { template: tpl, subject, body } = buildFollowUp(templateId);
 
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
