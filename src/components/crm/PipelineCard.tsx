@@ -77,6 +77,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const { createCall } = useCalls({ lead_id: lead.id });
+  const { createActivity } = useActivities({ lead_id: lead.id });
 
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
