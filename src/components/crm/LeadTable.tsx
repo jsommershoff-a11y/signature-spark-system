@@ -93,7 +93,10 @@ export function LeadTable({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs font-mono ${getPriorityTextClass(lead.pipeline_item?.pipeline_priority_score)}`}>
+                  <span
+                    className={`text-xs font-mono ${getPriorityTextClass(lead.pipeline_item?.pipeline_priority_score)}`}
+                    title={getPriorityLabel(lead.pipeline_item?.pipeline_priority_score)}
+                  >
                     {lead.pipeline_item?.pipeline_priority_score ?? '–'}
                   </span>
                   <p className="font-semibold text-sm truncate">
