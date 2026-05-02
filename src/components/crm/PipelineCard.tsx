@@ -29,7 +29,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getStageLabel, getPriorityTone, getPriorityLabel } from '@/lib/pipeline-stage';
+import {
+  getStageLabel,
+  getPriorityTone,
+  getPriorityLabel,
+  getAutoAdvanceStageAfterBooking,
+} from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
