@@ -213,13 +213,24 @@ export function PipelineBoard({
               placeholder="Suche: Name, Firma, E-Mail…"
               className="pl-8 h-9"
             />
-            {normalizedSearch && (
-              <Badge variant="secondary" className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]">
+            {hasActiveQuery && (
+              <Badge
+                variant="secondary"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]"
+                title={`${totalMatches} Treffer mit aktuellen Filtern`}
+              >
                 {totalMatches}
               </Badge>
             )}
           </div>
         </div>
+
+        {/* Filter-Leiste: Priorität, Owner, ICP-Fit */}
+        <PipelineFilters
+          value={filters}
+          onChange={setFilters}
+          ownerOptions={ownerOptions}
+        />
 
         <p className="text-xs text-muted-foreground break-words">
           {stageFilter
