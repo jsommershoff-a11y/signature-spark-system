@@ -493,6 +493,8 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         leadId={lead.id}
         leadName={fullName}
         onSchedule={handleScheduleSubmit}
+        showContextToggle
+        defaultAttachContext
       />
     </Card>
   );
