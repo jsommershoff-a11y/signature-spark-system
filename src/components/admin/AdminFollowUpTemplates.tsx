@@ -15,8 +15,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ResponsiveFormDialog } from '@/components/app/ResponsiveFormDialog';
-import { Pencil, Plus, Trash2, Mail } from 'lucide-react';
+import { Pencil, Plus, Trash2, Mail, History } from 'lucide-react';
 import { toast } from 'sonner';
+import FollowUpTemplateHistoryDialog from './FollowUpTemplateHistoryDialog';
 
 const PLACEHOLDER_HINT =
   'Verfügbare Platzhalter: {{greeting_name}}, {{when}}, {{company}}, {{stage_label}}, {{context_line}}';
@@ -47,6 +48,7 @@ export default function AdminFollowUpTemplates() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [historyTarget, setHistoryTarget] = useState<FollowUpTemplateRow | null>(null);
 
   const startCreate = () => {
     setEditing(null);
@@ -147,6 +149,9 @@ export default function AdminFollowUpTemplates() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => setHistoryTarget(t)} title="Versionshistorie">
+                      <History className="h-3.5 w-3.5" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => startEdit(t)}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -271,6 +276,13 @@ export default function AdminFollowUpTemplates() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FollowUpTemplateHistoryDialog
+        templateId={historyTarget?.id ?? null}
+        templateLabel={historyTarget?.label}
+        open={!!historyTarget}
+        onOpenChange={(o) => !o && setHistoryTarget(null)}
+      />
     </Card>
   );
 }
