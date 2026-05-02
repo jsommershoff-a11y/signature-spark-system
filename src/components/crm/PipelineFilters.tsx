@@ -13,11 +13,49 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Filter, Check, X, Flame, User as UserIcon, Target } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Filter,
+  Check,
+  X,
+  Flame,
+  User as UserIcon,
+  Target,
+  Layers,
+  Tag,
+  AlertTriangle,
+  FileText,
+  CalendarClock,
+  Clock,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PriorityTier } from '@/lib/pipeline-stage';
+import {
+  PipelineStage,
+  PIPELINE_STAGE_LABELS,
+  LeadSourceType,
+  SOURCE_TYPE_LABELS,
+} from '@/types/crm';
 
 export type IcpBand = 'high' | 'medium' | 'low' | 'none';
+export type TriState = 'all' | 'with' | 'without';
+export type OverdueState = 'all' | 'overdue' | 'on_track';
+export type DateRangeKey = 'all' | 'today' | 'week' | 'month' | 'custom';
 
 export interface OwnerOption {
   id: string;
@@ -25,15 +63,29 @@ export interface OwnerOption {
 }
 
 export interface PipelineFilterValue {
-  priorities: PriorityTier[]; // leer = keine Einschränkung
-  owners: string[];           // user_ids; 'unassigned' für Leads ohne Owner
-  icpBands: IcpBand[];        // leer = keine Einschränkung
+  priorities: PriorityTier[];
+  owners: string[];
+  icpBands: IcpBand[];
+  stages: PipelineStage[];
+  sources: LeadSourceType[];
+  overdue: OverdueState;
+  hasOffer: TriState;
+  hasAppointment: TriState;
+  dateRange: DateRangeKey;
+  customFrom?: string;
+  customTo?: string;
 }
 
 export const EMPTY_FILTER: PipelineFilterValue = {
   priorities: [],
   owners: [],
   icpBands: [],
+  stages: [],
+  sources: [],
+  overdue: 'all',
+  hasOffer: 'all',
+  hasAppointment: 'all',
+  dateRange: 'all',
 };
 
 const PRIORITY_OPTIONS: { value: PriorityTier; label: string }[] = [
@@ -51,6 +103,18 @@ const ICP_OPTIONS: { value: IcpBand; label: string }[] = [
   { value: 'none', label: 'Kein ICP-Score' },
 ];
 
+const STAGE_OPTIONS: PipelineStage[] = [
+  'new_lead',
+  'setter_call_scheduled',
+  'setter_call_done',
+  'analysis_ready',
+  'offer_draft',
+  'offer_sent',
+  'payment_unlocked',
+  'won',
+  'lost',
+];
+
 export function getIcpBand(score?: number | null): IcpBand {
   if (score === undefined || score === null || Number.isNaN(score)) return 'none';
   if (score >= 80) return 'high';
@@ -58,87 +122,272 @@ export function getIcpBand(score?: number | null): IcpBand {
   return 'low';
 }
 
+export function countActiveFilters(v: PipelineFilterValue): number {
+  return (
+    v.priorities.length +
+    v.owners.length +
+    v.icpBands.length +
+    v.stages.length +
+    v.sources.length +
+    (v.overdue !== 'all' ? 1 : 0) +
+    (v.hasOffer !== 'all' ? 1 : 0) +
+    (v.hasAppointment !== 'all' ? 1 : 0) +
+    (v.dateRange !== 'all' ? 1 : 0)
+  );
+}
+
 interface PipelineFiltersProps {
   value: PipelineFilterValue;
   onChange: (next: PipelineFilterValue) => void;
   ownerOptions: OwnerOption[];
+  sourceOptions: LeadSourceType[];
+  /** Wenn false → Filter „Angebot" ausgeblendet (keine Datenbasis verfügbar) */
+  offerFilterAvailable?: boolean;
+  /** Wenn false → Filter „Termin" ausgeblendet */
+  appointmentFilterAvailable?: boolean;
 }
 
 function toggle<T>(arr: T[], v: T): T[] {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
 
-export function PipelineFilters({ value, onChange, ownerOptions }: PipelineFiltersProps) {
-  const activeCount =
-    value.priorities.length + value.owners.length + value.icpBands.length;
-
+function FiltersInner({
+  value,
+  onChange,
+  ownerOptions,
+  sourceOptions,
+  offerFilterAvailable = true,
+  appointmentFilterAvailable = true,
+}: PipelineFiltersProps) {
+  const activeCount = countActiveFilters(value);
   const reset = () => onChange(EMPTY_FILTER);
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {/* Priorität */}
-      <MultiSelectPopover
-        icon={<Flame className="h-3.5 w-3.5" />}
-        label="Priorität"
-        selectedCount={value.priorities.length}
-        items={PRIORITY_OPTIONS.map((o) => ({
-          key: o.value,
-          label: o.label,
-          checked: value.priorities.includes(o.value),
-          onToggle: () => onChange({ ...value, priorities: toggle(value.priorities, o.value) }),
-        }))}
-        onClear={() => onChange({ ...value, priorities: [] })}
-      />
+    <TooltipProvider delayDuration={300}>
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Phase */}
+        <MultiSelectPopover
+          icon={<Layers className="h-3.5 w-3.5" />}
+          label="Phase"
+          selectedCount={value.stages.length}
+          items={STAGE_OPTIONS.map((s) => ({
+            key: s,
+            label: PIPELINE_STAGE_LABELS[s],
+            checked: value.stages.includes(s),
+            onToggle: () => onChange({ ...value, stages: toggle(value.stages, s) }),
+          }))}
+          onClear={() => onChange({ ...value, stages: [] })}
+        />
 
-      {/* Owner */}
-      <MultiSelectPopover
-        icon={<UserIcon className="h-3.5 w-3.5" />}
-        label="Owner"
-        selectedCount={value.owners.length}
-        searchPlaceholder="Owner suchen…"
-        items={[
-          {
-            key: 'unassigned',
-            label: 'Ohne Owner',
-            checked: value.owners.includes('unassigned'),
-            onToggle: () => onChange({ ...value, owners: toggle(value.owners, 'unassigned') }),
-          },
-          ...ownerOptions.map((o) => ({
-            key: o.id,
+        {/* Verantwortlicher */}
+        <MultiSelectPopover
+          icon={<UserIcon className="h-3.5 w-3.5" />}
+          label="Owner"
+          selectedCount={value.owners.length}
+          searchPlaceholder="Owner suchen…"
+          items={[
+            {
+              key: 'unassigned',
+              label: 'Ohne Owner',
+              checked: value.owners.includes('unassigned'),
+              onToggle: () => onChange({ ...value, owners: toggle(value.owners, 'unassigned') }),
+            },
+            ...ownerOptions.map((o) => ({
+              key: o.id,
+              label: o.label,
+              checked: value.owners.includes(o.id),
+              onToggle: () => onChange({ ...value, owners: toggle(value.owners, o.id) }),
+            })),
+          ]}
+          onClear={() => onChange({ ...value, owners: [] })}
+        />
+
+        {/* Quelle */}
+        {sourceOptions.length > 0 ? (
+          <MultiSelectPopover
+            icon={<Tag className="h-3.5 w-3.5" />}
+            label="Quelle"
+            selectedCount={value.sources.length}
+            items={sourceOptions.map((s) => ({
+              key: s,
+              label: SOURCE_TYPE_LABELS[s] ?? s,
+              checked: value.sources.includes(s),
+              onToggle: () => onChange({ ...value, sources: toggle(value.sources, s) }),
+            }))}
+            onClear={() => onChange({ ...value, sources: [] })}
+          />
+        ) : (
+          <DisabledChip icon={<Tag className="h-3.5 w-3.5" />} label="Quelle" reason="Keine Quellen-Daten" />
+        )}
+
+        {/* Priorität */}
+        <MultiSelectPopover
+          icon={<Flame className="h-3.5 w-3.5" />}
+          label="Priorität"
+          selectedCount={value.priorities.length}
+          items={PRIORITY_OPTIONS.map((o) => ({
+            key: o.value,
             label: o.label,
-            checked: value.owners.includes(o.id),
-            onToggle: () => onChange({ ...value, owners: toggle(value.owners, o.id) }),
-          })),
-        ]}
-        onClear={() => onChange({ ...value, owners: [] })}
-      />
+            checked: value.priorities.includes(o.value),
+            onToggle: () => onChange({ ...value, priorities: toggle(value.priorities, o.value) }),
+          }))}
+          onClear={() => onChange({ ...value, priorities: [] })}
+        />
 
-      {/* ICP-Fit */}
-      <MultiSelectPopover
-        icon={<Target className="h-3.5 w-3.5" />}
-        label="ICP-Fit"
-        selectedCount={value.icpBands.length}
-        items={ICP_OPTIONS.map((o) => ({
-          key: o.value,
-          label: o.label,
-          checked: value.icpBands.includes(o.value),
-          onToggle: () => onChange({ ...value, icpBands: toggle(value.icpBands, o.value) }),
-        }))}
-        onClear={() => onChange({ ...value, icpBands: [] })}
-      />
+        {/* ICP-Fit */}
+        <MultiSelectPopover
+          icon={<Target className="h-3.5 w-3.5" />}
+          label="ICP-Fit"
+          selectedCount={value.icpBands.length}
+          items={ICP_OPTIONS.map((o) => ({
+            key: o.value,
+            label: o.label,
+            checked: value.icpBands.includes(o.value),
+            onToggle: () => onChange({ ...value, icpBands: toggle(value.icpBands, o.value) }),
+          }))}
+          onClear={() => onChange({ ...value, icpBands: [] })}
+        />
 
-      {activeCount > 0 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2 text-xs text-muted-foreground"
-          onClick={reset}
-        >
-          <X className="h-3.5 w-3.5 mr-1" />
-          Filter zurücksetzen ({activeCount})
-        </Button>
-      )}
-    </div>
+        {/* Überfällig */}
+        <TriStateChip
+          icon={<AlertTriangle className="h-3.5 w-3.5" />}
+          label="Fälligkeit"
+          value={value.overdue}
+          options={[
+            { value: 'all', label: 'Alle' },
+            { value: 'overdue', label: 'Überfällig' },
+            { value: 'on_track', label: 'Nicht überfällig' },
+          ]}
+          onChange={(v) => onChange({ ...value, overdue: v as OverdueState })}
+        />
+
+        {/* Angebot */}
+        {offerFilterAvailable ? (
+          <TriStateChip
+            icon={<FileText className="h-3.5 w-3.5" />}
+            label="Angebot"
+            value={value.hasOffer}
+            options={[
+              { value: 'all', label: 'Alle' },
+              { value: 'with', label: 'Mit Angebot' },
+              { value: 'without', label: 'Ohne Angebot' },
+            ]}
+            onChange={(v) => onChange({ ...value, hasOffer: v as TriState })}
+          />
+        ) : (
+          <DisabledChip icon={<FileText className="h-3.5 w-3.5" />} label="Angebot" reason="Keine Angebotsdaten verfügbar" />
+        )}
+
+        {/* Termin */}
+        {appointmentFilterAvailable ? (
+          <TriStateChip
+            icon={<CalendarClock className="h-3.5 w-3.5" />}
+            label="Termin"
+            value={value.hasAppointment}
+            options={[
+              { value: 'all', label: 'Alle' },
+              { value: 'with', label: 'Mit Termin' },
+              { value: 'without', label: 'Ohne Termin' },
+            ]}
+            onChange={(v) => onChange({ ...value, hasAppointment: v as TriState })}
+          />
+        ) : (
+          <DisabledChip icon={<CalendarClock className="h-3.5 w-3.5" />} label="Termin" reason="Keine Termindaten verfügbar" />
+        )}
+
+        {/* Zeitraum */}
+        <div className="flex items-center gap-1">
+          <Select
+            value={value.dateRange}
+            onValueChange={(v) => onChange({ ...value, dateRange: v as DateRangeKey })}
+          >
+            <SelectTrigger
+              className={cn(
+                'h-8 text-xs gap-1.5 w-auto px-2.5',
+                value.dateRange !== 'all' && 'border-primary/60 bg-primary/5',
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Zeitraum: Alle</SelectItem>
+              <SelectItem value="today">Heute</SelectItem>
+              <SelectItem value="week">Diese Woche</SelectItem>
+              <SelectItem value="month">Dieser Monat</SelectItem>
+              <SelectItem value="custom">Benutzerdefiniert…</SelectItem>
+            </SelectContent>
+          </Select>
+          {value.dateRange === 'custom' && (
+            <>
+              <input
+                type="date"
+                value={value.customFrom ?? ''}
+                onChange={(e) => onChange({ ...value, customFrom: e.target.value })}
+                className="h-8 rounded-md border bg-background px-2 text-xs"
+                aria-label="Von"
+              />
+              <input
+                type="date"
+                value={value.customTo ?? ''}
+                onChange={(e) => onChange({ ...value, customTo: e.target.value })}
+                className="h-8 rounded-md border bg-background px-2 text-xs"
+                aria-label="Bis"
+              />
+            </>
+          )}
+        </div>
+
+        {activeCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 text-xs text-muted-foreground"
+            onClick={reset}
+          >
+            <X className="h-3.5 w-3.5 mr-1" />
+            Filter zurücksetzen ({activeCount})
+          </Button>
+        )}
+      </div>
+    </TooltipProvider>
+  );
+}
+
+export function PipelineFilters(props: PipelineFiltersProps) {
+  const activeCount = countActiveFilters(props.value);
+  return (
+    <>
+      {/* Desktop / Tablet */}
+      <div className="hidden md:block">
+        <FiltersInner {...props} />
+      </div>
+
+      {/* Mobile: Aufklappbares Sheet */}
+      <div className="md:hidden">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Filter
+              {activeCount > 0 && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-0.5">
+                  {activeCount}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Pipeline-Filter</SheetTitle>
+            </SheetHeader>
+            <div className="mt-4">
+              <FiltersInner {...props} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </>
   );
 }
 
@@ -230,5 +479,56 @@ function MultiSelectPopover({
         </Command>
       </PopoverContent>
     </Popover>
+  );
+}
+
+interface TriStateChipProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}
+
+function TriStateChip({ icon, label, value, options, onChange }: TriStateChipProps) {
+  const active = value !== 'all';
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger
+        className={cn(
+          'h-8 text-xs gap-1.5 w-auto px-2.5',
+          active && 'border-primary/60 bg-primary/5',
+        )}
+      >
+        {icon}
+        <span className="font-normal">
+          {label}
+          {active && `: ${options.find((o) => o.value === value)?.label}`}
+        </span>
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((o) => (
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function DisabledChip({ icon, label, reason }: { icon: React.ReactNode; label: string; reason: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span>
+          <Button variant="outline" size="sm" disabled className="h-8 gap-1.5 text-xs font-normal opacity-60">
+            {icon}
+            {label}
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{reason}</TooltipContent>
+    </Tooltip>
   );
 }
