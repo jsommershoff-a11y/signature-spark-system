@@ -265,8 +265,12 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
 
     const greetingName = lead.first_name?.trim() || fullName;
     const when = formatMeetingWhen(lastMeeting?.scheduledAt);
-    const tpl = FOLLOW_UP_TEMPLATES.find((t) => t.id === templateId) ?? FOLLOW_UP_TEMPLATES[0];
-    const { subject, body } = buildFollowUpContent(templateId, when, greetingName);
+    const { template: tpl, subject, body } = renderFollowUpTemplate(templateId, {
+      greetingName,
+      when,
+      company: lead.company,
+      stageLabel,
+    });
 
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
