@@ -64,6 +64,30 @@ const PIPELINE_STAGE_OPTIONS: { value: string; label: string }[] = [
   { value: 'lost', label: 'Verloren' },
 ];
 
+type LiveState = 'active' | 'inactive' | 'scheduled' | 'expired';
+
+function getLiveState(row: { is_active: boolean; active_from: string | null; active_until: string | null }): LiveState {
+  if (!row.is_active) return 'inactive';
+  const now = Date.now();
+  if (row.active_from && new Date(row.active_from).getTime() > now) return 'scheduled';
+  if (row.active_until && new Date(row.active_until).getTime() < now) return 'expired';
+  return 'active';
+}
+
+function toLocalInputValue(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fromLocalInputValue(v: string): string | null {
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
 export default function AdminFollowUpTemplates() {
   const { templates, isLoading, create, update, remove } = useFollowUpTemplatesAdmin();
   const [editing, setEditing] = useState<FollowUpTemplateRow | null>(null);
@@ -168,11 +192,15 @@ export default function AdminFollowUpTemplates() {
                   <TableCell className="font-medium">{t.label}</TableCell>
                   <TableCell className="max-w-[280px] truncate text-sm">{t.subject}</TableCell>
                   <TableCell>
-                    {t.is_active ? (
-                      <Badge variant="default">Aktiv</Badge>
-                    ) : (
-                      <Badge variant="secondary">Inaktiv</Badge>
-                    )}
+                    {(() => {
+                      const state = getLiveState(t);
+                      if (state === 'active') return <Badge variant="default">Aktiv</Badge>;
+                      if (state === 'scheduled')
+                        return <Badge variant="outline" title={`Go-Live: ${new Date(t.active_from!).toLocaleString('de-DE')}`}>Geplant</Badge>;
+                      if (state === 'expired')
+                        return <Badge variant="outline" title={`Abgelaufen: ${new Date(t.active_until!).toLocaleString('de-DE')}`}>Abgelaufen</Badge>;
+                      return <Badge variant="secondary">Inaktiv</Badge>;
+                    })()}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => setHistoryTarget(t)} title="Versionshistorie">
