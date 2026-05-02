@@ -88,6 +88,10 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="followups">
+          <AdminFollowUpTemplates />
+        </TabsContent>
+
         <TabsContent value="integrations">
           <Card>
             <CardHeader>
