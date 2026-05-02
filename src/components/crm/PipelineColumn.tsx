@@ -31,7 +31,7 @@ function getStageColor(stage: PipelineStage) {
   }
 }
 
-export function PipelineColumn({ stage, items, onItemClick, onDrop }: PipelineColumnProps) {
+export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = false }: PipelineColumnProps) {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.currentTarget.classList.add('bg-accent/50');
@@ -55,8 +55,11 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop }: PipelineCo
   };
 
   return (
-    <Card 
-      className="flex flex-col h-full min-w-[280px] max-w-[280px] transition-colors"
+    <Card
+      className={cn(
+        "flex flex-col h-full min-w-[280px] max-w-[280px] transition-all duration-200",
+        dimmed && "opacity-40 grayscale-[0.4] hover:opacity-70"
+      )}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
