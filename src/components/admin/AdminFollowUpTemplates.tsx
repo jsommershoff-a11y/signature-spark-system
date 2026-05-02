@@ -31,6 +31,7 @@ interface FormState {
   body: string;
   sort_order: number;
   is_active: boolean;
+  variants: FollowUpVariant[];
 }
 
 const EMPTY_FORM: FormState = {
@@ -41,6 +42,7 @@ const EMPTY_FORM: FormState = {
   body: '',
   sort_order: 100,
   is_active: true,
+  variants: [],
 };
 
 export default function AdminFollowUpTemplates() {
