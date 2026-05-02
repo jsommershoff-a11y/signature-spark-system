@@ -18,6 +18,8 @@ export interface FollowUpTemplateRow {
   stages: string[] | null;
   sort_order: number;
   is_active: boolean;
+  active_from: string | null;
+  active_until: string | null;
   updated_at: string;
   created_at: string;
 }
@@ -44,10 +46,13 @@ export function useFollowUpTemplatesPublic() {
   const query = useQuery({
     queryKey: [...QUERY_KEY, 'public'],
     queryFn: async (): Promise<FollowUpTemplate[]> => {
+      const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from('follow_up_templates' as any)
         .select('*')
         .eq('is_active', true)
+        .or(`active_from.is.null,active_from.lte.${nowIso}`)
+        .or(`active_until.is.null,active_until.gte.${nowIso}`)
         .order('sort_order', { ascending: true });
       if (error) throw error;
       const rows = (data ?? []) as unknown as FollowUpTemplateRow[];
