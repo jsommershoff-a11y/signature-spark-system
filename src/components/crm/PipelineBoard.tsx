@@ -90,9 +90,11 @@ export function PipelineBoard({
   }, [group]);
 
   const activeStages = useMemo<Set<PipelineStage>>(() => {
+    // Einzel-Stage-Filter (aus Heatmap-Klick) hat Vorrang vor Gruppen-Tabs
+    if (stageFilter) return new Set<PipelineStage>([stageFilter]);
     if (group === 'all') return new Set(STAGE_ORDER);
     return new Set(PIPELINE_GROUP_STAGES[group]);
-  }, [group]);
+  }, [group, stageFilter]);
 
   const normalizedSearch = search.trim().toLowerCase();
 
