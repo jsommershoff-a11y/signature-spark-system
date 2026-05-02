@@ -136,7 +136,7 @@ export function LeadDetailSidebar({ lead, open, onOpenChange }: LeadDetailSideba
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col">
+        <SheetContent side="right" className="w-full max-w-full sm:max-w-xl p-0 flex flex-col">
           <SheetHeader className="px-5 py-4 border-b">
             <SheetTitle className="flex items-center gap-2">
               <UserIcon className="h-5 w-5" />
