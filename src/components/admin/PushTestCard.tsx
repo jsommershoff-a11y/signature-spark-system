@@ -54,13 +54,13 @@ export function PushTestCard() {
   const [busy, setBusy] = useState<'dry' | 'send' | null>(null);
   const [result, setResult] = useState<DryRunResult | null>(null);
 
-  // User laden (alle Profile mit auth_user_id)
+  // User laden
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, full_name, auth_user_id')
-        .not('auth_user_id', 'is', null)
+        .select('id, email, full_name, user_id')
+        .not('user_id', 'is', null)
         .order('full_name', { ascending: true })
         .limit(500);
       if (error) {
@@ -69,7 +69,7 @@ export function PushTestCard() {
       }
       setUsers(
         (data ?? []).map((p: any) => ({
-          id: p.auth_user_id,
+          id: p.user_id,
           email: p.email,
           full_name: p.full_name,
         })),
