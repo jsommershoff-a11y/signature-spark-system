@@ -74,6 +74,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const stagnation = getStagnation(item.stage_updated_at, item.stage);
 
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const { createCall } = useCalls({ lead_id: lead.id });
 
   // Mini-CTAs ohne Card-Click zu triggern
