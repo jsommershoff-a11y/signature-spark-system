@@ -46,6 +46,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PipelineCardProps {
   item: PipelineItemWithLead;
@@ -116,33 +117,20 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   }, []);
 
   const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-  const cooldownStorageKey = lead.email
-    ? `crm:followup:last:${lead.id}:${lead.email.toLowerCase()}`
-    : null;
 
-  // 1) Server-Quelle: gelöggte E-Mail-Activities mit Lead-E-Mail im Inhalt
+  // Optimistischer lokaler Override (nur bis Realtime-Refresh durch usePipeline ankommt)
+  const [optimisticLastFollowUpAt, setOptimisticLastFollowUpAt] = useState<number | null>(null);
+
+  // Server-Quelle: pipeline_items.last_followup_at (cross-device konsistent)
   const lastFollowUpServerAt = useMemo(() => {
-    if (!lead.email) return null;
-    const emailLc = lead.email.toLowerCase();
-    const hit = (activities ?? []).find((a) => {
-      if (a.type !== 'email') return false;
-      const content = (a.content || '').toLowerCase();
-      return content.includes(emailLc) && content.includes('follow-up');
-    });
-    return hit?.created_at ? new Date(hit.created_at).getTime() : null;
-  }, [activities, lead.email]);
-
-  // 2) Lokale Quelle: localStorage (sofortige Reaktion ohne Roundtrip)
-  const lastFollowUpLocalAt = useMemo(() => {
-    if (!cooldownStorageKey || typeof window === 'undefined') return null;
-    const raw = window.localStorage.getItem(cooldownStorageKey);
+    const raw = (item as any).last_followup_at as string | null | undefined;
     if (!raw) return null;
-    const ts = Number.parseInt(raw, 10);
+    const ts = new Date(raw).getTime();
     return Number.isFinite(ts) ? ts : null;
-    // Re-evaluiert über setNowTick (Re-Render) und nach sendFollowUp
-  }, [cooldownStorageKey, activities]);
+  }, [item]);
 
-  const lastFollowUpAt = Math.max(lastFollowUpServerAt ?? 0, lastFollowUpLocalAt ?? 0) || null;
+  const lastFollowUpAt =
+    Math.max(lastFollowUpServerAt ?? 0, optimisticLastFollowUpAt ?? 0) || null;
   const cooldownRemainingMs =
     lastFollowUpAt && Date.now() - lastFollowUpAt < COOLDOWN_MS
       ? COOLDOWN_MS - (Date.now() - lastFollowUpAt)
@@ -298,14 +286,20 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
 
-    if (cooldownStorageKey && typeof window !== 'undefined') {
-      try {
-        window.localStorage.setItem(cooldownStorageKey, String(Date.now()));
-        setNowTick((t) => t + 1);
-      } catch {
-        /* ignore */
-      }
-    }
+    // Cross-Device-Cooldown: Server-State updaten + optimistisch lokal vormerken
+    const nowIso = new Date().toISOString();
+    setOptimisticLastFollowUpAt(Date.now());
+    void supabase
+      .from('pipeline_items')
+      .update({
+        last_followup_at: nowIso,
+        last_followup_template_id: templateId,
+        last_followup_variant_id: usedVariantId,
+      } as any)
+      .eq('id', item.id)
+      .then(({ error }) => {
+        if (error) console.warn('last_followup_at update failed:', error);
+      });
 
     // Activity inkl. Variante loggen → A/B-Performance auswertbar
     createActivity.mutate(
