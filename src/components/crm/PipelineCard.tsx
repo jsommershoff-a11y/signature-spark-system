@@ -87,7 +87,60 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const { createCall } = useCalls({ lead_id: lead.id });
-  const { createActivity } = useActivities({ lead_id: lead.id });
+  const { activities, createActivity } = useActivities({ lead_id: lead.id });
+
+  // Cooldown-Tick: forciert Re-Render, wenn die 24h ablaufen,
+  // damit der Button automatisch wieder freigegeben wird.
+  const [, setNowTick] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick((t) => t + 1), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+  const cooldownStorageKey = lead.email
+    ? `crm:followup:last:${lead.id}:${lead.email.toLowerCase()}`
+    : null;
+
+  // 1) Server-Quelle: gelöggte E-Mail-Activities mit Lead-E-Mail im Inhalt
+  const lastFollowUpServerAt = useMemo(() => {
+    if (!lead.email) return null;
+    const emailLc = lead.email.toLowerCase();
+    const hit = (activities ?? []).find((a) => {
+      if (a.type !== 'email') return false;
+      const content = (a.content || '').toLowerCase();
+      return content.includes(emailLc) && content.includes('follow-up');
+    });
+    return hit?.created_at ? new Date(hit.created_at).getTime() : null;
+  }, [activities, lead.email]);
+
+  // 2) Lokale Quelle: localStorage (sofortige Reaktion ohne Roundtrip)
+  const lastFollowUpLocalAt = useMemo(() => {
+    if (!cooldownStorageKey || typeof window === 'undefined') return null;
+    const raw = window.localStorage.getItem(cooldownStorageKey);
+    if (!raw) return null;
+    const ts = Number.parseInt(raw, 10);
+    return Number.isFinite(ts) ? ts : null;
+    // Re-evaluiert über setNowTick (Re-Render) und nach sendFollowUp
+  }, [cooldownStorageKey, activities]);
+
+  const lastFollowUpAt = Math.max(lastFollowUpServerAt ?? 0, lastFollowUpLocalAt ?? 0) || null;
+  const cooldownRemainingMs =
+    lastFollowUpAt && Date.now() - lastFollowUpAt < COOLDOWN_MS
+      ? COOLDOWN_MS - (Date.now() - lastFollowUpAt)
+      : 0;
+  const isInCooldown = cooldownRemainingMs > 0;
+
+  const formatCooldown = (ms: number) => {
+    const totalMin = Math.ceil(ms / 60_000);
+    if (totalMin >= 60) {
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      return m > 0 ? `${h}h ${m}min` : `${h}h`;
+    }
+    return `${totalMin}min`;
+  };
+
 
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
