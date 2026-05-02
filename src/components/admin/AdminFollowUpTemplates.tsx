@@ -131,6 +131,7 @@ export default function AdminFollowUpTemplates() {
       variants: Array.isArray(row.variants) ? row.variants : [],
       stages: Array.isArray(row.stages) ? row.stages : [],
     });
+    setWarningsAcked(false);
     setOpen(true);
   };
 
