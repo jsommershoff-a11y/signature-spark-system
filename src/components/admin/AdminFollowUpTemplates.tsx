@@ -314,6 +314,61 @@ export default function AdminFollowUpTemplates() {
             </div>
           </div>
 
+          {/* Zeitsteuerung */}
+          <div className="space-y-3 border-t pt-4">
+            <div>
+              <Label>Zeitsteuerung (optional)</Label>
+              <p className="text-xs text-muted-foreground">
+                Vorlage erscheint nur innerhalb dieses Zeitfensters. Leer = unbegrenzt.
+                Der Aktiv-Schalter oben muss zusätzlich gesetzt sein.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="active_from" className="text-xs">Go-Live ab</Label>
+                <Input
+                  id="active_from"
+                  type="datetime-local"
+                  value={toLocalInputValue(form.active_from)}
+                  onChange={(e) => setForm({ ...form, active_from: fromLocalInputValue(e.target.value) })}
+                />
+                {form.active_from && (
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-foreground underline"
+                    onClick={() => setForm({ ...form, active_from: null })}
+                  >
+                    Zurücksetzen
+                  </button>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="active_until" className="text-xs">Aktiv bis</Label>
+                <Input
+                  id="active_until"
+                  type="datetime-local"
+                  value={toLocalInputValue(form.active_until)}
+                  onChange={(e) => setForm({ ...form, active_until: fromLocalInputValue(e.target.value) })}
+                />
+                {form.active_until && (
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-foreground underline"
+                    onClick={() => setForm({ ...form, active_until: null })}
+                  >
+                    Zurücksetzen
+                  </button>
+                )}
+              </div>
+            </div>
+            {form.active_from && form.active_until &&
+              new Date(form.active_from).getTime() >= new Date(form.active_until).getTime() && (
+                <p className="text-xs text-destructive">
+                  „Aktiv bis" muss später als „Go-Live ab" sein.
+                </p>
+            )}
+          </div>
+
           {/* Pipeline-Stage-Zuordnung */}
           <div className="space-y-2 border-t pt-4">
             <div>
