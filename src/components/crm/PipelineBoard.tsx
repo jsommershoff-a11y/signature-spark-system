@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { PipelineColumn } from './PipelineColumn';
+import { PipelineHeatmap } from './PipelineHeatmap';
 import { PipelineData, PipelineItemWithLead } from '@/hooks/usePipeline';
 import {
   PipelineStage,
