@@ -132,30 +132,101 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     }
   };
 
-  const sendFollowUp = () => {
+  type FollowUpTemplateId = 'confirm' | 'reschedule' | 'no_show';
+
+  const FOLLOW_UP_TEMPLATES: Array<{
+    id: FollowUpTemplateId;
+    label: string;
+    description: string;
+  }> = [
+    { id: 'confirm', label: 'Bestätigung', description: 'Termin bestätigen & Agenda teilen' },
+    { id: 'reschedule', label: 'Reschedule', description: 'Höflich neuen Termin vorschlagen' },
+    { id: 'no_show', label: 'Absage-Folgefrage', description: 'Nach No-Show / Absage nachfassen' },
+  ];
+
+  const buildFollowUpContent = (
+    templateId: FollowUpTemplateId,
+    when: string,
+    greetingName: string,
+  ): { subject: string; body: string } => {
+    const contextLine = lead.company
+      ? `Kontext: ${lead.company} – Phase: ${stageLabel}`
+      : `Phase: ${stageLabel}`;
+
+    if (templateId === 'reschedule') {
+      return {
+        subject: `Neuer Termin statt ${when}?`,
+        body: [
+          `Hallo ${greetingName},`,
+          '',
+          `bei mir ist kurzfristig etwas dazwischengekommen – ich muss unseren Termin am ${when} leider verschieben.`,
+          '',
+          'Drei Alternativen, die bei mir passen würden:',
+          '• Vorschlag 1: ___',
+          '• Vorschlag 2: ___',
+          '• Vorschlag 3: ___',
+          '',
+          'Sag mir kurz, was bei dir am besten passt – oder schick mir gern selbst zwei Slots.',
+          '',
+          contextLine,
+          '',
+          'Danke dir & beste Grüße',
+        ].join('\n'),
+      };
+    }
+
+    if (templateId === 'no_show') {
+      return {
+        subject: `Schade, dass es am ${when} nicht geklappt hat`,
+        body: [
+          `Hallo ${greetingName},`,
+          '',
+          `wir hatten ${when} einen Termin – leider konnten wir nicht sprechen.`,
+          '',
+          'Kurz & ehrlich: Ist das Thema bei dir aktuell noch relevant?',
+          '• Ja → ich schick dir gern zwei neue Slots',
+          '• Gerade nicht → kein Problem, dann lassen wir es ruhen',
+          '• Passt nicht mehr → kurzes „nein danke" reicht völlig',
+          '',
+          contextLine,
+          '',
+          'Beste Grüße',
+        ].join('\n'),
+      };
+    }
+
+    // confirm (default)
+    return {
+      subject: `Bestätigung & nächste Schritte – ${when}`,
+      body: [
+        `Hallo ${greetingName},`,
+        '',
+        `vielen Dank für die Zusage zu unserem Termin am ${when}.`,
+        '',
+        'Damit wir die Zeit optimal nutzen, hier kurz, was dich erwartet:',
+        '• Kurze Bestandsaufnahme deiner aktuellen Situation',
+        '• Konkrete nächste Schritte für deinen Engpass',
+        '• Klare Empfehlung, ob & wie wir zusammenarbeiten',
+        '',
+        contextLine,
+        '',
+        'Falls sich etwas ändert, gib mir bitte kurz Bescheid.',
+        '',
+        'Beste Grüße',
+      ].join('\n'),
+    };
+  };
+
+  const sendFollowUp = (templateId: FollowUpTemplateId = 'confirm') => {
     if (!lead.email) {
       toast.error('Keine E-Mail-Adresse hinterlegt');
       return;
     }
     const greetingName = lead.first_name?.trim() || fullName;
     const when = formatMeetingWhen(lastMeeting?.scheduledAt);
-    const subject = `Bestätigung & nächste Schritte – ${when}`;
-    const body = [
-      `Hallo ${greetingName},`,
-      '',
-      `vielen Dank für die Zusage zu unserem Termin am ${when}.`,
-      '',
-      'Damit wir die Zeit optimal nutzen, hier kurz, was dich erwartet:',
-      '• Kurze Bestandsaufnahme deiner aktuellen Situation',
-      '• Konkrete nächste Schritte für deinen Engpass',
-      '• Klare Empfehlung, ob & wie wir zusammenarbeiten',
-      '',
-      lead.company ? `Kontext: ${lead.company} – Phase: ${stageLabel}` : `Phase: ${stageLabel}`,
-      '',
-      'Falls sich etwas ändert, gib mir bitte kurz Bescheid.',
-      '',
-      'Beste Grüße',
-    ].join('\n');
+    const tpl = FOLLOW_UP_TEMPLATES.find((t) => t.id === templateId) ?? FOLLOW_UP_TEMPLATES[0];
+    const { subject, body } = buildFollowUpContent(templateId, when, greetingName);
+
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
 
@@ -164,7 +235,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
       {
         type: 'email',
         lead_id: lead.id,
-        content: `Follow-up E-Mail vorbereitet an ${lead.email} – Betreff: "${subject}" (Phase: ${stageLabel})`,
+        content: `Follow-up "${tpl.label}" vorbereitet an ${lead.email} – Betreff: "${subject}" (Phase: ${stageLabel})`,
       },
       {
         onError: (err) => {
@@ -173,7 +244,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
       },
     );
 
-    toast.success('Follow-up vorbereitet', {
+    toast.success(`Follow-up vorbereitet: ${tpl.label}`, {
       description: 'E-Mail-Entwurf geöffnet & im Verlauf protokolliert.',
     });
   };
