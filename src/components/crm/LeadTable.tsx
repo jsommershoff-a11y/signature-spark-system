@@ -46,13 +46,7 @@ function getStatusColor(status: string) {
   }
 }
 
-function getPriorityColor(score?: number) {
-  if (!score) return 'text-muted-foreground';
-  if (score >= 80) return 'text-green-500 font-semibold';
-  if (score >= 60) return 'text-yellow-500 font-medium';
-  if (score >= 40) return 'text-orange-500';
-  return 'text-red-500';
-}
+
 
 export function LeadTable({ 
   leads, 
