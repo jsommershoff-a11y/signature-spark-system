@@ -12,7 +12,9 @@ import {
   Target,
   AlertTriangle,
   CalendarPlus,
+  Send,
 } from 'lucide-react';
+import { format } from 'date-fns';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
 import { useCalls } from '@/hooks/useCalls';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
