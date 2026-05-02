@@ -3524,6 +3524,45 @@ export type Database = {
           },
         ]
       }
+      push_settings: {
+        Row: {
+          admin_alerts: boolean
+          created_at: string
+          enabled: boolean
+          incoming_calls: boolean
+          lifecycle: boolean
+          member_alerts: boolean
+          quiet_hours_end: number | null
+          quiet_hours_start: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_alerts?: boolean
+          created_at?: string
+          enabled?: boolean
+          incoming_calls?: boolean
+          lifecycle?: boolean
+          member_alerts?: boolean
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_alerts?: boolean
+          created_at?: string
+          enabled?: boolean
+          incoming_calls?: boolean
+          lifecycle?: boolean
+          member_alerts?: boolean
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           affiliate_id: string
