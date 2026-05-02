@@ -15,6 +15,7 @@ export interface FollowUpTemplateRow {
   subject: string;
   body: string;
   variants: FollowUpVariant[] | null;
+  stages: string[] | null;
   sort_order: number;
   is_active: boolean;
   updated_at: string;
@@ -31,6 +32,7 @@ function rowToTemplate(row: FollowUpTemplateRow): FollowUpTemplate {
     subject: row.subject,
     body: row.body.split('\n'),
     variants: Array.isArray(row.variants) ? row.variants : [],
+    stages: Array.isArray(row.stages) ? row.stages : [],
   };
 }
 
