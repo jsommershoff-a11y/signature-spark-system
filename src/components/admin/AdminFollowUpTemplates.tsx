@@ -532,6 +532,45 @@ export default function AdminFollowUpTemplates() {
             )}
           </div>
 
+          {/* Validierung */}
+          {(validation.errors.length > 0 || validation.warnings.length > 0) && (
+            <div className="border-t pt-4 space-y-2">
+              {validation.errors.length > 0 && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Fehler – Speichern blockiert</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc pl-4 space-y-0.5 text-xs mt-1">
+                      {validation.errors.map((iss, i) => (
+                        <li key={i}>{iss.message}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {validation.warnings.length > 0 && (
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>
+                    Warnungen ({validation.warnings.length})
+                    {warningsAcked && (
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        – bestätigt, Speichern möglich
+                      </span>
+                    )}
+                  </AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc pl-4 space-y-0.5 text-xs mt-1">
+                      {validation.warnings.map((iss, i) => (
+                        <li key={i}>{iss.message}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
+
           {/* Live-Vorschau */}
           <div className="border-t pt-4">
             <FollowUpTemplatePreview
