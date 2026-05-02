@@ -17,7 +17,7 @@ import {
   type PipelineStageTooltip,
 } from '@/types/crm';
 
-/** Aktionsorientiertes Stage-Label inkl. Emoji (z. B. „👆 Lead prüfen"). */
+/** Aktionsorientiertes Stage-Label (z. B. „Eingang – noch nicht bewertet"). */
 export function getStageLabel(stage: PipelineStage): string {
   return PIPELINE_STAGE_LABELS[stage];
 }
@@ -27,10 +27,12 @@ export function getStageHint(stage: PipelineStage): string {
   return PIPELINE_STAGE_HINTS[stage];
 }
 
-/**
- * Vollständiger Tooltip-Text für eine Stage – Label + Hint kombiniert.
- * Wird in allen UI-Komponenten als `title=""` und/oder Tooltip-Inhalt genutzt.
- */
+/** Strukturierter Tooltip-Inhalt: Status / Aufgabe / Ziel. */
+export function getStageTooltipContent(stage: PipelineStage): PipelineStageTooltip {
+  return PIPELINE_STAGE_TOOLTIPS[stage];
+}
+
+/** Kombinierter Plain-Text-Fallback für native `title`-Attribute. */
 export function getStageTooltip(stage: PipelineStage): string {
   return `${PIPELINE_STAGE_LABELS[stage]} – ${PIPELINE_STAGE_HINTS[stage]}`;
 }
