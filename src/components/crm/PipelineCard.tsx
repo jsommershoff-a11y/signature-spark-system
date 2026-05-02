@@ -214,7 +214,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                 toast.success(`Phase auf „${nextLabel}" gesetzt`, {
                   description: lead.email ? 'Jetzt Follow-up vorbereiten?' : undefined,
                   action: lead.email
-                    ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+                    ? { label: 'Vorschau', onClick: () => previewFollowUp() }
                     : undefined,
                 });
               } else {
