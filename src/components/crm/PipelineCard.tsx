@@ -88,8 +88,9 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   return (
     <Card
       className={cn(
-        'group cursor-pointer transition-all hover:shadow-md hover:border-primary/40 border',
+      'group cursor-pointer transition-all hover:shadow-md hover:border-primary/40 border',
         isDragging && 'opacity-50 rotate-2 shadow-lg',
+        stagnation?.severe && 'border-rose-400/60',
       )}
       onClick={onClick}
     >
@@ -97,8 +98,20 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         {/* Kopfzeile: Avatar + Name + Priority */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 min-w-0 flex-1">
-            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center flex-shrink-0">
-              {getInitials(lead.first_name, lead.last_name)}
+            <div className="relative flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
+                {getInitials(lead.first_name, lead.last_name)}
+              </div>
+              {stagnation && (
+                <span
+                  className={cn(
+                    'absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-background',
+                    stagnation.severe ? 'bg-rose-500 animate-pulse' : 'bg-amber-500',
+                  )}
+                  title={stagnation.label}
+                  aria-label={stagnation.label}
+                />
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-medium text-sm leading-tight truncate" title={fullName}>
