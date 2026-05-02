@@ -15,6 +15,7 @@ import {
   Shield,
   Webhook,
   Inbox,
+  BellRing,
 } from "lucide-react";
 import { AdminKpiTiles } from "@/components/admin/AdminKpiTiles";
 
@@ -66,6 +67,7 @@ const quickLinks = [
   { label: "COO Cockpit", href: "/app/coo-cockpit", icon: Activity },
   { label: "Posteingang", href: "/app/posteingang", icon: Inbox },
   { label: "E-Mail Log", href: "/app/email-log", icon: Mail },
+  { label: "Push-Log", href: "/app/admin/push-log", icon: BellRing },
 ];
 
 export default function AdminOverview() {
