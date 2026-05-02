@@ -71,8 +71,36 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const icp = lead.icp_fit_score;
   const stagnation = getStagnation(item.stage_updated_at, item.stage);
 
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const { createCall } = useCalls({ lead_id: lead.id });
+
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
+
+  const handleScheduleSubmit = async (data: Parameters<typeof createCall>[0]) => {
+    try {
+      // Lead-Kontext in Notes vorbelegen, wenn leer
+      const contextLines = [
+        `Lead: ${fullName}`,
+        lead.company ? `Firma: ${lead.company}` : null,
+        lead.phone ? `Telefon: ${lead.phone}` : null,
+        lead.email ? `E-Mail: ${lead.email}` : null,
+        `Phase: ${stageLabel}`,
+      ].filter(Boolean).join('\n');
+      const notes = data.notes && data.notes.trim().length > 0
+        ? `${data.notes}\n\n— Kontext —\n${contextLines}`
+        : contextLines;
+
+      await createCall({ ...data, notes });
+      toast.success('Termin angelegt', {
+        description: `${fullName} – wird im Kalender angezeigt.`,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unbekannter Fehler';
+      toast.error('Termin konnte nicht angelegt werden', { description: message });
+      throw err; // Dialog-Loading-State zurücksetzen
+    }
+  };
 
   return (
     <Card
