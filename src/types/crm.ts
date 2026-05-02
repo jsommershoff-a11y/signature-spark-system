@@ -198,6 +198,32 @@ export const PIPELINE_STAGE_HINTS: Record<PipelineStage, string> = {
   lost: 'Verlustgrund dokumentieren und ggf. in Nurture-Sequenz aufnehmen.',
 };
 
+// Pipeline-Filter-Gruppen (nach Team-Verantwortung)
+export type PipelineGroup = 'all' | 'active' | 'setter' | 'closer' | 'archive';
+
+export const PIPELINE_GROUP_LABELS: Record<PipelineGroup, string> = {
+  all: 'Alle',
+  active: 'Aktiv',
+  setter: '📞 Setter',
+  closer: '💼 Closer',
+  archive: '📦 Archiv',
+};
+
+export const PIPELINE_GROUP_HINTS: Record<PipelineGroup, string> = {
+  all: 'Alle Phasen anzeigen.',
+  active: 'Alles, woran aktuell gearbeitet wird (ohne Gewonnen/Verloren).',
+  setter: 'Lead prüfen, Termin halten, Call auswerten.',
+  closer: 'Angebot bauen, finalisieren, nachfassen, Abschluss holen.',
+  archive: 'Abgeschlossene Deals: Gewonnen oder Verloren.',
+};
+
+export const PIPELINE_GROUP_STAGES: Record<Exclude<PipelineGroup, 'all'>, PipelineStage[]> = {
+  active: ['new_lead', 'setter_call_scheduled', 'setter_call_done', 'analysis_ready', 'offer_draft', 'offer_sent', 'payment_unlocked'],
+  setter: ['new_lead', 'setter_call_scheduled', 'setter_call_done'],
+  closer: ['analysis_ready', 'offer_draft', 'offer_sent', 'payment_unlocked'],
+  archive: ['won', 'lost'],
+};
+
 export const TASK_TYPE_LABELS: Record<TaskType, string> = {
   call: 'Anruf',
   followup: 'Follow-up',
