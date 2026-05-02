@@ -1578,6 +1578,48 @@ export type Database = {
           },
         ]
       }
+      follow_up_templates: {
+        Row: {
+          body: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          label: string
+          sort_order: number
+          subject: string
+          template_key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          sort_order?: number
+          subject: string
+          template_key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          sort_order?: number
+          subject?: string
+          template_key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       followup_plans: {
         Row: {
           approved_at: string | null
