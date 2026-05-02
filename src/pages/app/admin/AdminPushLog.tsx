@@ -63,6 +63,8 @@ export default function AdminPushLog() {
         description={`Versendete Push-Benachrichtigungen der letzten ${days} Tage`}
       />
 
+      <PushTestCard />
+
       {/* KPI-Tiles */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KpiTile label="Gesamt" value={stats?.total ?? 0} loading={isLoading} />
