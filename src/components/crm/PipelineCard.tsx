@@ -227,7 +227,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         toast.success('Termin angelegt', {
           description: `${fullName} – Follow-up jetzt vorbereiten?`,
           action: lead.email
-            ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+            ? { label: 'Vorschau', onClick: () => previewFollowUp() }
             : undefined,
         });
       }
