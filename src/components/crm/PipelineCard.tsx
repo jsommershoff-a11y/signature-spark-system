@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   Clock,
   Target,
+  AlertTriangle,
 } from 'lucide-react';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
 import { getStageLabel } from '@/lib/pipeline-stage';
@@ -55,6 +56,23 @@ function getRelativeTime(iso?: string) {
   }
 }
 
+const STAGNATION_DAYS = 7;
+
+function getStagnation(iso?: string, stage?: string) {
+  if (!iso) return null;
+  // Geschlossene Phasen ignorieren
+  if (stage === 'won' || stage === 'lost') return null;
+  const updated = new Date(iso).getTime();
+  if (Number.isNaN(updated)) return null;
+  const days = Math.floor((Date.now() - updated) / (1000 * 60 * 60 * 24));
+  if (days < STAGNATION_DAYS) return null;
+  return {
+    days,
+    severe: days >= 14,
+    label: days >= 30 ? `Über 30 Tage ohne Bewegung` : `${days} Tage ohne Bewegung`,
+  };
+}
+
 export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const lead = item.lead;
   const fullName = `${lead.first_name ?? ''} ${lead.last_name ?? ''}`.trim() || lead.email;
@@ -62,6 +80,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const movedAgo = getRelativeTime(item.stage_updated_at);
   const priority = item.pipeline_priority_score;
   const icp = lead.icp_fit_score;
+  const stagnation = getStagnation(item.stage_updated_at, item.stage);
 
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -69,8 +88,9 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   return (
     <Card
       className={cn(
-        'group cursor-pointer transition-all hover:shadow-md hover:border-primary/40 border',
+      'group cursor-pointer transition-all hover:shadow-md hover:border-primary/40 border',
         isDragging && 'opacity-50 rotate-2 shadow-lg',
+        stagnation?.severe && 'border-rose-400/60',
       )}
       onClick={onClick}
     >
@@ -78,8 +98,20 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         {/* Kopfzeile: Avatar + Name + Priority */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 min-w-0 flex-1">
-            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center flex-shrink-0">
-              {getInitials(lead.first_name, lead.last_name)}
+            <div className="relative flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
+                {getInitials(lead.first_name, lead.last_name)}
+              </div>
+              {stagnation && (
+                <span
+                  className={cn(
+                    'absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-background',
+                    stagnation.severe ? 'bg-rose-500 animate-pulse' : 'bg-amber-500',
+                  )}
+                  title={stagnation.label}
+                  aria-label={stagnation.label}
+                />
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-medium text-sm leading-tight truncate" title={fullName}>
@@ -120,6 +152,24 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
             </span>
           )}
         </div>
+
+        {/* Stillstand-Hinweis */}
+        {stagnation && (
+          <div
+            className={cn(
+              'flex items-start gap-1.5 rounded-md px-2 py-1.5 text-[11px] leading-snug',
+              stagnation.severe
+                ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                : 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+            )}
+            role="status"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+            <span className="font-medium">
+              {stagnation.label} – nächsten Schritt planen
+            </span>
+          </div>
+        )}
 
         {/* Owner + ICP */}
         {(lead.owner || icp !== undefined) && (
