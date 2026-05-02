@@ -68,6 +68,7 @@ export function PipelineBoard({
 }: PipelineBoardProps) {
   const [group, setGroup] = useState<PipelineGroup>(DEFAULT_GROUP);
   const [search, setSearch] = useState('');
+  const [stageFilter, setStageFilter] = useState<PipelineStage | null>(null);
 
   // Auswahl beim Mount aus localStorage laden
   useEffect(() => {
