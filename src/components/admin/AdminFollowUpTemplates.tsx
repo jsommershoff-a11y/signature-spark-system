@@ -126,6 +126,11 @@ export default function AdminFollowUpTemplates() {
       toast.error('Schlüssel, Label, Betreff und Body sind Pflicht');
       return;
     }
+    if (form.active_from && form.active_until &&
+        new Date(form.active_from).getTime() >= new Date(form.active_until).getTime()) {
+      toast.error('„Aktiv bis" muss später als „Go-Live ab" sein');
+      return;
+    }
     try {
       if (editing) {
         await update.mutateAsync({ id: editing.id, ...form });
