@@ -149,6 +149,9 @@ export default function AdminFollowUpTemplates() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => setHistoryTarget(t)} title="Versionshistorie">
+                      <History className="h-3.5 w-3.5" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => startEdit(t)}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
