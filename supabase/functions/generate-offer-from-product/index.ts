@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createOpenAIChatCompletion, OpenAIRequestError } from "../_shared/openai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,13 +22,6 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     // AuthN
     const authHeader = req.headers.get("Authorization");
@@ -100,10 +94,11 @@ serve(async (req) => {
         .eq("id", body.lead_id)
         .maybeSingle();
       if (lead) {
+        const leadWithIndustry = lead as { industry?: string | null };
         leadCtx = {
           lead_name: [lead.first_name, lead.last_name].filter(Boolean).join(" ") || "(unbekannt)",
           lead_company: lead.company ?? "(keine Angabe)",
-          lead_industry: (lead as any).industry ?? "(keine Angabe)",
+          lead_industry: leadWithIndustry.industry ?? "(keine Angabe)",
           lead_pain: lead.message ?? "(keine Angabe)",
         };
       }
@@ -126,31 +121,14 @@ serve(async (req) => {
       .replaceAll("{{lead_industry}}", leadCtx.lead_industry)
       .replaceAll("{{lead_pain}}", leadCtx.lead_pain);
 
-    // Call Lovable AI Gateway
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: "Du erstellst strukturierte Angebote als JSON. Antworte NUR mit gültigem JSON." },
-          { role: "user", content: filled },
-        ],
-        response_format: { type: "json_object" },
-      }),
+    const aiJson = await createOpenAIChatCompletion({
+      messages: [
+        { role: "system", content: "Du erstellst strukturierte Angebote als JSON. Antworte NUR mit gültigem JSON." },
+        { role: "user", content: filled },
+      ],
+      response_format: { type: "json_object" },
     });
 
-    if (!aiRes.ok) {
-      const errText = await aiRes.text();
-      console.error("AI gateway error", aiRes.status, errText);
-      return new Response(JSON.stringify({ error: `AI gateway: ${aiRes.status}`, details: errText }), {
-        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const aiJson = await aiRes.json();
     const content = aiJson?.choices?.[0]?.message?.content ?? "";
 
     let parsed: unknown = content;
@@ -159,9 +137,14 @@ serve(async (req) => {
     return new Response(JSON.stringify({ offer: parsed, prompt: filled }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (e: any) {
+  } catch (e) {
     console.error("generate-offer-from-product error", e);
-    return new Response(JSON.stringify({ error: e?.message ?? "Unknown" }), {
+    if (e instanceof OpenAIRequestError) {
+      return new Response(JSON.stringify({ error: `OpenAI: ${e.status}`, details: e.details }), {
+        status: e.status === 429 ? 429 : 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

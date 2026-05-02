@@ -60,6 +60,32 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## ChatGPT / OpenAI setup
+
+The app includes a protected `/app/chatgpt` page and Supabase Edge Functions that call OpenAI from the server side. Store the API key as a Supabase secret, never in frontend environment variables:
+
+```sh
+supabase secrets set OPENAI_API_KEY=sk-...
+```
+
+Optional secrets:
+
+```sh
+supabase secrets set OPENAI_MODEL=gpt-5.4-mini
+supabase secrets set OPENAI_ORG_ID=org_...
+supabase secrets set OPENAI_PROJECT_ID=proj_...
+```
+
+After setting secrets, deploy the Edge Functions you want to use:
+
+```sh
+supabase functions deploy chatgpt
+supabase functions deploy generate-social-content
+supabase functions deploy generate-offer-from-product
+supabase functions deploy analyze-call
+supabase functions deploy mail-ocr-classify
+```
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.

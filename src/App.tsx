@@ -73,6 +73,7 @@ import Pricing from "./pages/app/Pricing";
 import Welcome from "./pages/app/Welcome";
 import Upgrade from "./pages/app/Upgrade";
 import CooCockpit from "./pages/app/CooCockpit";
+import ChatGPT from "./pages/app/ChatGPT";
 import PromptLibrary from "./pages/app/PromptLibrary";
 import ToolsDirectory from "./pages/app/ToolsDirectory";
 import LiveCallsCalendar from "./pages/app/LiveCallsCalendar";
@@ -213,6 +214,7 @@ const App = () => (
               <Route path="pricing" element={<Pricing />} />
               <Route path="upgrade" element={<Upgrade />} />
               <Route path="prompts" element={<PromptLibrary />} />
+              <Route path="chatgpt" element={<ChatGPT />} />
               <Route path="tools" element={<ToolsDirectory />} />
               <Route path="welcome" element={<Welcome />} />
               <Route path="calendar" element={<LiveCallsCalendar />} />

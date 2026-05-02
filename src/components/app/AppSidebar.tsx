@@ -29,6 +29,7 @@ import {
   Lock,
   Rocket,
   Package,
+  Bot,
 } from 'lucide-react';
 
 interface NavItem {
@@ -56,6 +57,7 @@ const navGroups: NavGroup[] = [
     items: [
       { label: 'Mein System', href: '/app/academy', icon: GraduationCap, memberOnly: true },
       { label: 'Prompt-Bibliothek', href: '/app/prompts', icon: Sparkles, memberOnly: true },
+      { label: 'ChatGPT', href: '/app/chatgpt', icon: Bot, memberOnly: true },
       { label: 'Meine Tools', href: '/app/tools', icon: Wrench, memberOnly: true },
     ],
   },

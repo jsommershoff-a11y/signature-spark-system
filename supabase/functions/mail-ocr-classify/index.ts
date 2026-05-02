@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createOpenAIChatCompletion, OpenAIRequestError } from "../_shared/openai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,29 +51,38 @@ Deno.serve(async (req) => {
     // Convert to base64 for AI
     const buf = await fileBlob.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-    const mimeType = fileBlob.type || "application/pdf";
-
-    // Call Lovable AI Gateway with vision (Gemini supports PDF + images)
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Du bist ein OCR- und Klassifizierungs-Assistent für deutsche Geschäftspost. Extrahiere den Volltext und klassifiziere das Dokument. Antworte ausschließlich mit JSON.",
+    const fileName =
+      mail.filename ||
+      mail.file_name ||
+      String(mail.file_path).split("/").pop() ||
+      "document.pdf";
+    const mimeType = fileBlob.type || (fileName.toLowerCase().endsWith(".pdf") ? "application/pdf" : "image/png");
+    const filePart = mimeType === "application/pdf"
+      ? {
+          type: "file",
+          file: {
+            filename: fileName,
+            file_data: base64,
           },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Analysiere dieses Dokument und gib JSON zurück mit:
+        }
+      : {
+          type: "image_url",
+          image_url: { url: `data:${mimeType};base64,${base64}` },
+        };
+
+    const aiJson = await createOpenAIChatCompletion({
+      messages: [
+        {
+          role: "system",
+          content:
+            "Du bist ein OCR- und Klassifizierungs-Assistent für deutsche Geschäftspost. Extrahiere den Volltext und klassifiziere das Dokument. Antworte ausschließlich mit JSON.",
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analysiere dieses Dokument und gib JSON zurück mit:
 {
   "ocr_text": "vollständiger extrahierter Text",
   "sender": "Absender (Firma/Person)",
@@ -82,24 +92,14 @@ Deno.serve(async (req) => {
   "priority": "low|normal|high|urgent",
   "ai_summary": "Kurze Zusammenfassung in 2-3 Sätzen mit den wichtigsten Punkten und ggf. Handlungsbedarf"
 }`,
-              },
-              {
-                type: "image_url",
-                image_url: { url: `data:${mimeType};base64,${base64}` },
-              },
-            ],
-          },
-        ],
-        response_format: { type: "json_object" },
-      }),
+            },
+            filePart,
+          ],
+        },
+      ],
+      response_format: { type: "json_object" },
     });
 
-    if (!aiRes.ok) {
-      const txt = await aiRes.text();
-      return json({ error: "AI failed", status: aiRes.status, details: txt }, 500);
-    }
-
-    const aiJson = await aiRes.json();
     const content = aiJson.choices?.[0]?.message?.content || "{}";
     const parsed = JSON.parse(content);
 
@@ -123,6 +123,9 @@ Deno.serve(async (req) => {
 
     return json({ ok: true, result: parsed });
   } catch (e) {
+    if (e instanceof OpenAIRequestError) {
+      return json({ error: "AI failed", status: e.status, details: e.details }, e.status === 429 ? 429 : 500);
+    }
     return json({ error: String(e) }, 500);
   }
 });

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createOpenAIChatCompletion, OpenAIRequestError } from "../_shared/openai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -311,27 +312,14 @@ serve(async (req) => {
       );
     }
 
-    // Call Lovable AI Gateway
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    console.log("Calling OpenAI for analysis...");
 
-    console.log("Calling Lovable AI Gateway for analysis...");
-
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          {
-            role: "user",
-            content: `Analysiere dieses Verkaufsgespräch:
+    const aiData = await createOpenAIChatCompletion({
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        {
+          role: "user",
+          content: `Analysiere dieses Verkaufsgespräch:
 
 Kunde: ${call.lead?.first_name || "Unbekannt"} ${call.lead?.last_name || ""} ${call.lead?.company ? `(${call.lead.company})` : ""}
 
@@ -339,34 +327,12 @@ TRANSKRIPT:
 ${transcript.text}
 
 Führe eine vollständige Analyse durch und liefere die Ergebnisse über die submit_analysis Funktion.`,
-          },
-        ],
-        tools: [ANALYSIS_TOOL],
-        tool_choice: { type: "function", function: { name: "submit_analysis" } },
-      }),
+        },
+      ],
+      tools: [ANALYSIS_TOOL],
+      tool_choice: { type: "function", function: { name: "submit_analysis" } },
     });
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI Gateway error:", aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
-      throw new Error(`AI Gateway error: ${aiResponse.status}`);
-    }
-
-    const aiData = await aiResponse.json();
     console.log("AI response received");
 
     // Extract the tool call result
@@ -414,6 +380,12 @@ Führe eine vollständige Analyse durch und liefere die Ergebnisse über die sub
     );
   } catch (error) {
     console.error("analyze-call error:", error);
+    if (error instanceof OpenAIRequestError && error.status === 429) {
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     return new Response(
       JSON.stringify({ error: "An error occurred processing your request" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
