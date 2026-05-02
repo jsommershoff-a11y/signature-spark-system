@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Activity, Mail, Plug, Download, GraduationCap, Tags, FileSpreadsheet, Bot } from 'lucide-react';
+import { Shield, Activity, Mail, Plug, Download, GraduationCap, Tags, FileSpreadsheet, Bot, MessageSquare } from 'lucide-react';
+import AdminFollowUpTemplates from '@/components/admin/AdminFollowUpTemplates';
 import AdminUserManagement from '@/components/admin/AdminUserManagement';
 import AdminLeadsTable from '@/components/admin/AdminLeadsTable';
 import AdminSystemLogs from '@/components/admin/AdminSystemLogs';
