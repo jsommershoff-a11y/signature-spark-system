@@ -48,6 +48,7 @@ export default function AdminFollowUpTemplates() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [historyTarget, setHistoryTarget] = useState<FollowUpTemplateRow | null>(null);
 
   const startCreate = () => {
     setEditing(null);
