@@ -13,6 +13,7 @@ interface PipelineColumnProps {
   items: PipelineItemWithLead[];
   onItemClick?: (item: PipelineItemWithLead) => void;
   onDrop?: (itemId: string, stage: PipelineStage) => void;
+  dimmed?: boolean;
 }
 
 function getStageColor(stage: PipelineStage) {
