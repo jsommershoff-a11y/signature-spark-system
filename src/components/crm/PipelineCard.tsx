@@ -143,20 +143,26 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
           </div>
         )}
 
-        {/* Mini-CTA-Leiste */}
-        <div className="flex items-center gap-1 pt-1.5 border-t border-border/60 -mx-1">
+        {/* Mini-CTA-Leiste – Mobile: immer sichtbar, Desktop: full row */}
+        <div
+          className="flex items-center gap-1 pt-1.5 border-t border-border/60 -mx-1"
+          // Drag-Handle auf Card lassen, aber Buttons selbst nicht draggen
+          draggable={false}
+          onDragStart={(e) => e.preventDefault()}
+          onPointerDown={stop}
+        >
           {lead.phone && (
             <Button
               asChild
               variant="ghost"
               size="sm"
-              className="h-7 px-2 text-[11px] font-normal flex-1"
+              className="h-8 px-2 text-[11px] font-normal flex-1 min-w-0 touch-manipulation"
               onClick={stop}
               title={`Anrufen: ${lead.phone}`}
             >
-              <a href={`tel:${lead.phone}`}>
-                <Phone className="h-3.5 w-3.5 mr-1" />
-                Anrufen
+              <a href={`tel:${lead.phone}`} aria-label={`Anrufen ${lead.phone}`}>
+                <Phone className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                <span className="truncate">Anrufen</span>
               </a>
             </Button>
           )}
@@ -165,28 +171,29 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
               asChild
               variant="ghost"
               size="sm"
-              className="h-7 px-2 text-[11px] font-normal flex-1"
+              className="h-8 px-2 text-[11px] font-normal flex-1 min-w-0 touch-manipulation"
               onClick={stop}
               title={`E-Mail: ${lead.email}`}
             >
-              <a href={`mailto:${lead.email}`}>
-                <Mail className="h-3.5 w-3.5 mr-1" />
-                E-Mail
+              <a href={`mailto:${lead.email}`} aria-label={`E-Mail an ${lead.email}`}>
+                <Mail className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                <span className="truncate">E-Mail</span>
               </a>
             </Button>
           )}
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 text-[11px] font-normal text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-8 px-2 text-[11px] font-normal text-primary flex-shrink-0 touch-manipulation md:opacity-70 md:group-hover:opacity-100 md:transition-opacity"
             onClick={(e) => {
               stop(e);
               onClick?.();
             }}
             title="Lead öffnen"
+            aria-label="Lead öffnen"
           >
-            Öffnen
-            <ArrowUpRight className="h-3.5 w-3.5 ml-0.5" />
+            <span className="hidden xs:inline">Öffnen</span>
+            <ArrowUpRight className="h-3.5 w-3.5 xs:ml-0.5" />
           </Button>
         </div>
       </CardContent>
