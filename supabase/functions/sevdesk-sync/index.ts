@@ -7,8 +7,12 @@ const corsHeaders = {
 };
 
 // sevDesk REST API. Auth uses raw API key (no "Bearer" prefix).
-// Docs: https://api.sevdesk.de/
-const SEVDESK_API = "https://my.sevdesk.de/api/v1";
+// Default base is `https://my.sevdesk.de/api/v1`; some accounts use the
+// newer `https://api.sevdesk.de/api/v1` host -> overridable via env.
+const SEVDESK_API = Deno.env.get("SEVDESK_API_URL") ?? "https://my.sevdesk.de/api/v1";
+
+const PAGE_SIZE = 100;
+const MAX_PAGES = 50; // hard ceiling: 5000 records per pull, prevents runaway loops
 
 type SevHeaders = Record<string, string>;
 
@@ -24,6 +28,73 @@ async function sevFetch(path: string, init: RequestInit, headers: SevHeaders) {
     throw new Error(`sevDesk ${init.method ?? "GET"} ${path} failed [${res.status}]: ${typeof body === "string" ? body : JSON.stringify(body)}`);
   }
   return body as { objects?: unknown[]; total?: number } & Record<string, unknown>;
+}
+
+// Loop through paginated GET endpoints until sevDesk returns a short page or we hit MAX_PAGES.
+async function sevFetchAll(
+  basePath: string,
+  extraParams: Record<string, string>,
+  headers: SevHeaders,
+): Promise<any[]> {
+  const all: any[] = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const params = new URLSearchParams({
+      ...extraParams,
+      limit: String(PAGE_SIZE),
+      offset: String(page * PAGE_SIZE),
+    });
+    const sep = basePath.includes("?") ? "&" : "?";
+    const res = await sevFetch(`${basePath}${sep}${params}`, { method: "GET" }, headers);
+    const items = (res?.objects as any[]) ?? [];
+    all.push(...items);
+    if (items.length < PAGE_SIZE) break;
+  }
+  return all;
+}
+
+// Find an existing CommunicationWay (email/phone) on a contact so we can PUT-update
+// instead of creating a fresh duplicate every sync.
+async function findCommunicationWay(
+  contactId: string,
+  type: "EMAIL" | "PHONE",
+  headers: SevHeaders,
+): Promise<{ id: string } | null> {
+  const params = new URLSearchParams({
+    "contact[id]": contactId,
+    "contact[objectName]": "Contact",
+    type,
+    limit: "50",
+  });
+  const res = await sevFetch(`/CommunicationWay?${params}`, { method: "GET" }, headers);
+  const items = (res?.objects as any[]) ?? [];
+  return items[0] ? { id: String(items[0].id) } : null;
+}
+
+async function upsertCommunicationWay(
+  contactId: string,
+  type: "EMAIL" | "PHONE",
+  value: string,
+  headers: SevHeaders,
+) {
+  const existing = await findCommunicationWay(contactId, type, headers);
+  const payload = {
+    contact: { id: contactId, objectName: "Contact" },
+    type,
+    value,
+    key: { id: 2, objectName: "CommunicationWayKey" }, // 2 = work; account-specific, see issue #9
+    main: type === "EMAIL",
+  };
+  if (existing) {
+    await sevFetch(`/CommunicationWay/${existing.id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }, headers);
+  } else {
+    await sevFetch(`/CommunicationWay`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }, headers);
+  }
 }
 
 function splitName(full: string | null | undefined): { first: string; last: string } {
@@ -142,33 +213,15 @@ serve(async (req) => {
           result = { action: "created", sevdesk_id: contactId };
         }
 
-        // Attach email + phone as separate communication ways (best-effort, ignore errors)
+        // Sync email + phone as CommunicationWays. Update existing entries
+        // instead of POSTing duplicates on every push.
         if (lead.email) {
-          try {
-            await sevFetch(`/CommunicationWay`, {
-              method: "POST",
-              body: JSON.stringify({
-                contact: { id: contactId, objectName: "Contact" },
-                type: "EMAIL",
-                value: lead.email,
-                key: { id: 2, objectName: "CommunicationWayKey" }, // 2 = work
-                main: true,
-              }),
-            }, sevHeaders);
-          } catch (e) { console.warn("sevDesk email attach failed:", e); }
+          try { await upsertCommunicationWay(contactId, "EMAIL", lead.email, sevHeaders); }
+          catch (e) { console.warn("sevDesk email upsert failed:", e); }
         }
         if (lead.phone) {
-          try {
-            await sevFetch(`/CommunicationWay`, {
-              method: "POST",
-              body: JSON.stringify({
-                contact: { id: contactId, objectName: "Contact" },
-                type: "PHONE",
-                value: lead.phone,
-                key: { id: 2, objectName: "CommunicationWayKey" },
-              }),
-            }, sevHeaders);
-          } catch (e) { console.warn("sevDesk phone attach failed:", e); }
+          try { await upsertCommunicationWay(contactId, "PHONE", lead.phone, sevHeaders); }
+          catch (e) { console.warn("sevDesk phone upsert failed:", e); }
         }
         break;
       }
@@ -177,15 +230,7 @@ serve(async (req) => {
       // PULL: sevDesk Contacts → public.contacts
       // ========================================
       case "pull_contacts": {
-        const limit = data?.limit ?? 100;
-        const offset = data?.offset ?? 0;
-        const params = new URLSearchParams({
-          limit: String(limit),
-          offset: String(offset),
-          depth: "1",
-        });
-        const list = await sevFetch(`/Contact?${params}`, { method: "GET" }, sevHeaders);
-        const items = (list?.objects as any[]) ?? [];
+        const items = await sevFetchAll(`/Contact`, { depth: "1" }, sevHeaders);
 
         let imported = 0;
         let skipped = 0;
@@ -259,16 +304,23 @@ serve(async (req) => {
 
         const offerJson = (offer.offer_json as any) ?? {};
         const positions: any[] = Array.isArray(offerJson.line_items)
-          ? offerJson.line_items.map((li: any, idx: number) => ({
-              objectName: "InvoicePos",
-              mapAll: true,
-              quantity: Number(li.quantity ?? 1),
-              price: Number(li.unit_price_cents ?? li.unit_price ?? 0) / (li.unit_price_cents ? 100 : 1),
-              name: li.name ?? li.description ?? `Position ${idx + 1}`,
-              text: li.description ?? "",
-              taxRate: Number(li.tax_rate ?? SEVDESK_TAX_RATE),
-              unity: { id: 1, objectName: "Unity" }, // 1 = piece
-            }))
+          ? offerJson.line_items.map((li: any, idx: number) => {
+              // Prefer cents (integer) when present; fall back to euro float.
+              // Use property check, not truthiness, so a 0-priced line item still divides by 100.
+              const price = "unit_price_cents" in li
+                ? Number(li.unit_price_cents ?? 0) / 100
+                : Number(li.unit_price ?? 0);
+              return {
+                objectName: "InvoicePos",
+                mapAll: true,
+                quantity: Number(li.quantity ?? 1),
+                price,
+                name: li.name ?? li.description ?? `Position ${idx + 1}`,
+                text: li.description ?? "",
+                taxRate: Number(li.tax_rate ?? SEVDESK_TAX_RATE),
+                unity: { id: 1, objectName: "Unity" }, // 1 = piece
+              };
+            })
           : [{
               objectName: "InvoicePos",
               mapAll: true,
@@ -318,15 +370,7 @@ serve(async (req) => {
       // PULL: sevDesk Invoices → public.invoices
       // ========================================
       case "pull_invoices": {
-        const limit = data?.limit ?? 100;
-        const offset = data?.offset ?? 0;
-        const params = new URLSearchParams({
-          limit: String(limit),
-          offset: String(offset),
-          embed: "contact",
-        });
-        const list = await sevFetch(`/Invoice?${params}`, { method: "GET" }, sevHeaders);
-        const items = (list?.objects as any[]) ?? [];
+        const items = await sevFetchAll(`/Invoice`, { embed: "contact" }, sevHeaders);
 
         const statusMap: Record<string, string> = {
           "100": "entwurf",
@@ -373,15 +417,7 @@ serve(async (req) => {
       // PULL: sevDesk Vouchers (incoming receipts) → public.invoices typ=eingang
       // ========================================
       case "pull_vouchers": {
-        const limit = data?.limit ?? 100;
-        const offset = data?.offset ?? 0;
-        const params = new URLSearchParams({
-          limit: String(limit),
-          offset: String(offset),
-          embed: "supplier",
-        });
-        const list = await sevFetch(`/Voucher?${params}`, { method: "GET" }, sevHeaders);
-        const items = (list?.objects as any[]) ?? [];
+        const items = await sevFetchAll(`/Voucher`, { embed: "supplier" }, sevHeaders);
 
         let imported = 0;
         for (const v of items) {
