@@ -99,7 +99,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const [followUpPreview, setFollowUpPreview] = useState<
-    | { templateId: FollowUpTemplateId; label: string; subject: string; body: string }
+    | { templateId: FollowUpTemplateId; label: string; subject: string; body: string; variantId: string }
     | null
   >(null);
   const { createCall } = useCalls({ lead_id: lead.id });
