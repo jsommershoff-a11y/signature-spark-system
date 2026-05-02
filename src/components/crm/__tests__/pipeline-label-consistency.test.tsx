@@ -194,7 +194,7 @@ describe('Label-Änderungen propagieren in alle Komponenten', () => {
         ...actual,
         PIPELINE_STAGE_LABELS: {
           ...actual.PIPELINE_STAGE_LABELS,
-          new_lead: '🧪 TEST_LABEL_NEW_LEAD',
+          new_lead: 'TEST_LABEL_NEW_LEAD',
         },
       };
     });
