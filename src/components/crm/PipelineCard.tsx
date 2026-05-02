@@ -148,7 +148,12 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     return `${totalMin}min`;
   };
 
-
+  // Default-Template anhand der aktuellen Pipeline-Stage (Step 06).
+  const defaultFollowUpTemplate = useMemo(
+    () => pickDefaultTemplateForStage(item.stage, followUpTemplates),
+    [item.stage, followUpTemplates],
+  );
+  const defaultTemplateId = defaultFollowUpTemplate.id as FollowUpTemplateId;
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
