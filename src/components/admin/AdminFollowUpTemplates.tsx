@@ -276,6 +276,13 @@ export default function AdminFollowUpTemplates() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FollowUpTemplateHistoryDialog
+        templateId={historyTarget?.id ?? null}
+        templateLabel={historyTarget?.label}
+        open={!!historyTarget}
+        onOpenChange={(o) => !o && setHistoryTarget(null)}
+      />
     </Card>
   );
 }
