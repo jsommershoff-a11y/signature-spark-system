@@ -71,8 +71,10 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
             <div className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 mt-1", getStageColor(stage))} />
             <StageTooltip stage={stage} className="flex-1 min-w-0">
               <CardTitle
-                className="text-[13px] sm:text-sm font-medium leading-snug break-words hyphens-auto"
-                style={{ overflowWrap: 'anywhere' }}
+                className={cn(
+                  'text-[13px] sm:text-sm font-medium leading-snug',
+                  STAGE_LABEL_WRAP_CLASS,
+                )}
               >
                 {getStageLabel(stage)}
               </CardTitle>
@@ -92,8 +94,10 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
           </Badge>
         </div>
         <p
-          className="hidden sm:block text-[11px] leading-snug text-muted-foreground break-words"
-          style={{ overflowWrap: 'anywhere' }}
+          className={cn(
+            'hidden sm:block text-[11px] leading-snug text-muted-foreground',
+            STAGE_LABEL_WRAP_CLASS,
+          )}
         >
           {getStageHint(stage)}
         </p>
