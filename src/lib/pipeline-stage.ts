@@ -15,7 +15,7 @@ import {
   type PipelineStage,
 } from '@/types/crm';
 
-/** Aktionsorientiertes Stage-Label inkl. Emoji (z. B. „🆕 Lead prüfen"). */
+/** Aktionsorientiertes Stage-Label inkl. Emoji (z. B. „👆 Lead prüfen"). */
 export function getStageLabel(stage: PipelineStage): string {
   return PIPELINE_STAGE_LABELS[stage];
 }
