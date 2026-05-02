@@ -77,6 +77,7 @@ export function PipelineBoard({
   const [group, setGroup] = useState<PipelineGroup>(DEFAULT_GROUP);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<PipelineStage | null>(null);
+  const [filters, setFilters] = useState<PipelineFilterValue>(EMPTY_FILTER);
 
   // Auswahl beim Mount aus localStorage laden
   useEffect(() => {
@@ -106,21 +107,75 @@ export function PipelineBoard({
 
   const normalizedSearch = search.trim().toLowerCase();
 
-  // Karten pro Stage nach Suche filtern (Spalten bleiben sichtbar)
+  // Owner-Optionen aus aktuellen Pipeline-Daten ableiten
+  const ownerOptions = useMemo<OwnerOption[]>(() => {
+    const map = new Map<string, string>();
+    for (const stage of STAGE_ORDER) {
+      for (const item of pipelineByStage[stage] || []) {
+        const owner = item.lead?.owner;
+        if (owner?.id) {
+          const label =
+            [owner.first_name, owner.last_name].filter(Boolean).join(' ').trim() ||
+            owner.full_name ||
+            'Unbekannt';
+          if (!map.has(owner.id)) map.set(owner.id, label);
+        }
+      }
+    }
+    return Array.from(map, ([id, label]) => ({ id, label })).sort((a, b) =>
+      a.label.localeCompare(b.label, 'de'),
+    );
+  }, [pipelineByStage]);
+
+  const matchesFilters = (item: PipelineItemWithLead): boolean => {
+    // Priorität
+    if (filters.priorities.length > 0) {
+      const tier = getPriorityTier(item.pipeline_priority_score);
+      if (!filters.priorities.includes(tier)) return false;
+    }
+    // Owner
+    if (filters.owners.length > 0) {
+      const ownerId = item.lead?.owner?.id ?? null;
+      const key = ownerId ?? 'unassigned';
+      if (!filters.owners.includes(key)) return false;
+    }
+    // ICP-Fit
+    if (filters.icpBands.length > 0) {
+      const band = getIcpBand(item.lead?.icp_fit_score);
+      if (!filters.icpBands.includes(band)) return false;
+    }
+    return true;
+  };
+
+  // Karten pro Stage nach Suche + Filtern filtern (Spalten bleiben sichtbar)
   const filteredByStage = useMemo<PipelineData>(() => {
-    if (!normalizedSearch) return pipelineByStage;
+    const noSearch = !normalizedSearch;
+    const noFilters =
+      filters.priorities.length === 0 &&
+      filters.owners.length === 0 &&
+      filters.icpBands.length === 0;
+    if (noSearch && noFilters) return pipelineByStage;
+
     const out: PipelineData = {} as PipelineData;
     for (const stage of STAGE_ORDER) {
-      out[stage] = (pipelineByStage[stage] || []).filter((item) => matchesSearch(item, normalizedSearch));
+      out[stage] = (pipelineByStage[stage] || []).filter(
+        (item) => matchesSearch(item, normalizedSearch) && matchesFilters(item),
+      );
     }
     return out;
-  }, [pipelineByStage, normalizedSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pipelineByStage, normalizedSearch, filters]);
 
-  // Treffer-Count für Suche (über alle Stages, ohne Dimming-Filter)
+  // Treffer-Count für Suche/Filter (über alle Stages, ohne Dimming-Filter)
+  const hasActiveQuery =
+    !!normalizedSearch ||
+    filters.priorities.length > 0 ||
+    filters.owners.length > 0 ||
+    filters.icpBands.length > 0;
   const totalMatches = useMemo(() => {
-    if (!normalizedSearch) return 0;
+    if (!hasActiveQuery) return 0;
     return STAGE_ORDER.reduce((acc, s) => acc + (filteredByStage[s]?.length || 0), 0);
-  }, [filteredByStage, normalizedSearch]);
+  }, [filteredByStage, hasActiveQuery]);
 
   if (loading) {
     return (
