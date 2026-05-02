@@ -3,7 +3,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight, Kanban } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { PipelineStats } from '@/hooks/useDashboardData';
-import { PIPELINE_STAGE_LABELS, type PipelineStage } from '@/types/crm';
+import { type PipelineStage } from '@/types/crm';
+import { getStageLabel, getStageTooltip } from '@/lib/pipeline-stage';
 
 interface PipelineStatsWidgetProps {
   stats: PipelineStats[];
