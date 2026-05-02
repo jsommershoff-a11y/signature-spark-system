@@ -146,6 +146,19 @@ export default function AdminFollowUpTemplates() {
       toast.error('„Aktiv bis" muss später als „Go-Live ab" sein');
       return;
     }
+    if (validation.errors.length > 0) {
+      toast.error('Vorlage hat Fehler', {
+        description: validation.errors[0].message,
+      });
+      return;
+    }
+    if (validation.warnings.length > 0 && !warningsAcked) {
+      setWarningsAcked(true);
+      toast.warning(`${validation.warnings.length} Warnung(en) – nochmal „Speichern" drücken zum Bestätigen`, {
+        description: validation.warnings[0].message,
+      });
+      return;
+    }
     try {
       if (editing) {
         await update.mutateAsync({ id: editing.id, ...form });
