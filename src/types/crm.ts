@@ -174,15 +174,15 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
 };
 
 export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
-  new_lead: '👆 Lead prüfen',
-  setter_call_scheduled: '📅 Termin vorbereiten',
-  setter_call_done: '📝 Gespräch auswerten',
-  analysis_ready: '📊 Angebot vorbereiten',
-  offer_draft: '✏️ Angebot finalisieren',
-  offer_sent: '📤 Angebot nachfassen',
-  payment_unlocked: '🤝 Abschluss klären',
-  won: '✅ Gewonnen',
-  lost: '❌ Verloren',
+  new_lead: 'Eingang – noch nicht bewertet',
+  setter_call_scheduled: 'Erstgespräch terminiert',
+  setter_call_done: 'Erstgespräch durchgeführt',
+  analysis_ready: 'Analyse erstellt – bereit für Angebot',
+  offer_draft: 'Angebot wird vorbereitet',
+  offer_sent: 'Angebot versendet – Entscheidung offen',
+  payment_unlocked: 'Follow-up & Abschlussphase',
+  won: 'Kunde gewonnen',
+  lost: 'Kein Abschluss',
 };
 
 // Kurze Aktions-Hinweise pro Pipeline-Phase ("Was ist hier als Nächstes zu tun?")
