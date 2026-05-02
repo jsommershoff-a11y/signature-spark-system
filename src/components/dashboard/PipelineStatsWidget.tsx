@@ -106,7 +106,7 @@ export function PipelineStatsWidget({ stats, isLoading }: PipelineStatsWidgetPro
                     className={`w-2 h-2 rounded-full ${STAGE_COLORS[stat.stage] || 'bg-gray-500'}`}
                   />
                   <span className="text-xs truncate">
-                    {STAGE_LABELS[stat.stage] || stat.stage}
+                    {PIPELINE_STAGE_LABELS[stat.stage as PipelineStage] || stat.stage}
                   </span>
                 </div>
                 <span className="text-sm font-bold">{stat.count}</span>
