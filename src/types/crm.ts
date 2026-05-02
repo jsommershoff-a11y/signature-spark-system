@@ -174,28 +174,85 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
 };
 
 export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
-  new_lead: '👆 Lead prüfen',
-  setter_call_scheduled: '📅 Termin vorbereiten',
-  setter_call_done: '📝 Gespräch auswerten',
-  analysis_ready: '📊 Angebot vorbereiten',
-  offer_draft: '✏️ Angebot finalisieren',
-  offer_sent: '📤 Angebot nachfassen',
-  payment_unlocked: '🤝 Abschluss klären',
-  won: '✅ Gewonnen',
-  lost: '❌ Verloren',
+  new_lead: 'Eingang – noch nicht bewertet',
+  setter_call_scheduled: 'Erstgespräch terminiert',
+  setter_call_done: 'Erstgespräch durchgeführt',
+  analysis_ready: 'Analyse erstellt – bereit für Angebot',
+  offer_draft: 'Angebot wird vorbereitet',
+  offer_sent: 'Angebot versendet – Entscheidung offen',
+  payment_unlocked: 'Follow-up & Abschlussphase',
+  won: 'Kunde gewonnen',
+  lost: 'Kein Abschluss',
 };
 
-// Kurze Aktions-Hinweise pro Pipeline-Phase ("Was ist hier als Nächstes zu tun?")
+// Strukturierte Tooltip-Inhalte pro Pipeline-Phase: Status / Aufgabe / Ziel.
+// Zentrale Quelle für StageTooltip + alle abgeleiteten Hint-Texte.
+export interface PipelineStageTooltip {
+  status: string;
+  task: string;
+  goal: string;
+}
+
+export const PIPELINE_STAGE_TOOLTIPS: Record<PipelineStage, PipelineStageTooltip> = {
+  new_lead: {
+    status: 'Ein neuer Lead ist eingegangen und wurde noch nicht qualifiziert.',
+    task: 'Lead prüfen, Quelle ansehen und entscheiden, ob ein Erstgespräch sinnvoll ist.',
+    goal: 'Relevante Leads schnell erkennen und priorisieren.',
+  },
+  setter_call_scheduled: {
+    status: 'Ein Erstgespräch wurde vereinbart.',
+    task: 'Gespräch vorbereiten, Zielgruppe prüfen und relevante Fragen bereitlegen.',
+    goal: 'Bedarf, Problem und wirtschaftliches Potenzial verstehen.',
+  },
+  setter_call_done: {
+    status: 'Das Erstgespräch wurde geführt.',
+    task: 'Gespräch zusammenfassen, Schmerzpunkte dokumentieren und Analyse starten.',
+    goal: 'Eine belastbare Grundlage für Analyse und Angebot schaffen.',
+  },
+  analysis_ready: {
+    status: 'Die Analyse ist abgeschlossen.',
+    task: 'Lösungsvorschlag, Nutzenargumentation und Kosten-Nutzen-Rechnung vorbereiten.',
+    goal: 'Aus dem Bedarf ein passendes Angebot ableiten.',
+  },
+  offer_draft: {
+    status: 'Das Angebot befindet sich in Erstellung oder Prüfung.',
+    task: 'Inhalte, Preise, Nutzenrechnung und nächste Schritte finalisieren.',
+    goal: 'Ein klares, verkaufsstarkes und prüfbares Angebot erstellen.',
+  },
+  offer_sent: {
+    status: 'Der Kunde hat das Angebot erhalten.',
+    task: 'Reaktion prüfen, Follow-up planen und Zweitberatung sichern.',
+    goal: 'Entscheidung vorbereiten und offene Fragen klären.',
+  },
+  payment_unlocked: {
+    status: 'Das Angebot wird aktiv nachverfolgt.',
+    task: 'Einwände klären, Entscheidung herbeiführen und Zahlung vorbereiten.',
+    goal: 'Abschluss erzielen oder klare Absage dokumentieren.',
+  },
+  won: {
+    status: 'Der Kunde hat bezahlt oder wurde durch Admin als gewonnen bestätigt.',
+    task: 'Onboarding starten und nächste Schritte einleiten.',
+    goal: 'Leistungserbringung sauber starten.',
+  },
+  lost: {
+    status: 'Der Lead wurde verloren oder ist aktuell nicht passend.',
+    task: 'Grund dokumentieren und Learnings für Vertrieb und Marketing ableiten.',
+    goal: 'Systematisch aus verlorenen Chancen lernen.',
+  },
+};
+
+// Kurzform der Hinweise (1-Zeilen-Aktion) – aus Tooltip-Tasks abgeleitet.
+// Wird weiterhin von einigen Stellen als kompakter `title`-Text genutzt.
 export const PIPELINE_STAGE_HINTS: Record<PipelineStage, string> = {
-  new_lead: 'ICP-Fit checken, dann Erstgespräch anbieten.',
-  setter_call_scheduled: 'Termin bestätigen, Reminder senden, No-Show verhindern.',
-  setter_call_done: 'Bedarf dokumentieren, Analyse vorbereiten.',
-  analysis_ready: 'Module, Preis und Laufzeit konfigurieren.',
-  offer_draft: 'Letzte Korrekturen, dann an den Lead versenden.',
-  offer_sent: 'Aktiv nachfassen, offene Fragen klären, Entscheidung herbeiführen.',
-  payment_unlocked: 'Vertrag, Zahlung und Onboarding-Start abstimmen.',
-  won: 'Onboarding starten, an Kundenbetreuung übergeben.',
-  lost: 'Verlustgrund dokumentieren, ggf. Nurture-Sequenz starten.',
+  new_lead: PIPELINE_STAGE_TOOLTIPS.new_lead.task,
+  setter_call_scheduled: PIPELINE_STAGE_TOOLTIPS.setter_call_scheduled.task,
+  setter_call_done: PIPELINE_STAGE_TOOLTIPS.setter_call_done.task,
+  analysis_ready: PIPELINE_STAGE_TOOLTIPS.analysis_ready.task,
+  offer_draft: PIPELINE_STAGE_TOOLTIPS.offer_draft.task,
+  offer_sent: PIPELINE_STAGE_TOOLTIPS.offer_sent.task,
+  payment_unlocked: PIPELINE_STAGE_TOOLTIPS.payment_unlocked.task,
+  won: PIPELINE_STAGE_TOOLTIPS.won.task,
+  lost: PIPELINE_STAGE_TOOLTIPS.lost.task,
 };
 
 

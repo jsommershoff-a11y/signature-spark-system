@@ -1,99 +1,149 @@
-# Landingpage-Optimierung ki-automationen.io
+# Pipeline-Überarbeitung – 16-Step Plan
 
-Ziel: Bestehende Seite konkreter, glaubwürdiger und konversionsstärker machen. Keine neue Seite, keine Strukturänderung, kein Branding-Wechsel. Alle Anpassungen DE/Du-Form, sachlich.
+Großer Umbau, ausschließlich UI. Keine DB-, Enum-, Stage-Key-, Trigger- oder Webhook-Änderungen. Stage-Keys (`new_lead`, `setter_call_scheduled`, …) bleiben unverändert.
 
-## Übersicht der Änderungen
+## Zentrale Regel
+Eine einzige Quelle der Wahrheit für sichtbare Labels & Tooltips: `src/types/crm.ts` (Konstanten) + `src/lib/pipeline-stage.ts` (Helper). Alle Pipeline-UIs lesen ausschließlich darüber.
 
-| # | Datei | Was passiert |
-|---|-------|--------------|
-| 1 | `src/components/landing/home/HeroSection.tsx` | Trust-Badges, Sekundär-Link, Jan-Zitat |
-| 2 | `src/components/landing/home/TrustLogosSection.tsx` | Neuer Untertitel |
-| 3 | `src/components/landing/home/ThreeStagesSection.tsx` (NEU) | Vergleichstabelle 3 Stufen |
-| 3b | `src/pages/landing/MasterHome.tsx` | Section einhängen zwischen `AiRealitySection` und `VulnerabilitySection` |
-| 4 | `src/components/landing/home/VulnerabilitySection.tsx` | Rote Risiko-Mini-Tags je Karte + "Jan sagt"-Quote |
-| 5 | `src/components/landing/home/ProcessStepsSection.tsx` | Mono-Zeit-Tags je Schritt + Gesamtdauer-Zeile + "Jan sagt"-Quote |
-| 6 | `src/components/landing/home/CaseStudiesSection.tsx` | 3 Zahlen-Highlights, Zitat hervorheben, Hinweiszeile |
+---
 
-## Details je Änderung
+## Step 01 – Labels final umbenennen (ohne Emojis)
+- `PIPELINE_STAGE_LABELS` in `src/types/crm.ts` auf reine Texte umstellen:
+  - `new_lead` → "Eingang – noch nicht bewertet"
+  - `setter_call_scheduled` → "Erstgespräch terminiert"
+  - `setter_call_done` → "Erstgespräch durchgeführt"
+  - `analysis_ready` → "Analyse erstellt – bereit für Angebot"
+  - `offer_draft` → "Angebot wird vorbereitet"
+  - `offer_sent` → "Angebot versendet – Entscheidung offen"
+  - `payment_unlocked` → "Follow-up & Abschlussphase"
+  - `won` → "Kunde gewonnen"
+  - `lost` → "Kein Abschluss"
+- Test `pipeline-label-consistency.test.tsx` an neue Labels anpassen (Legacy-Liste & Erwartungen).
+- Verifizieren: `PipelineColumn`, `PipelineHeatmap`, `PipelineStatsWidget`, `LeadDetailModal` ziehen ausschließlich aus `PIPELINE_STAGE_LABELS` / `getStageLabel()`.
 
-### 1. HeroSection
-- Unter dem bestehenden Sub-Text-Block, vor dem Button: Drei horizontale Trust-Badges mit Lucide-Icons (`ShieldCheck`, `UserCheck`, `Clock`):
-  - "DSGVO-konform · Eigener Server in der EU"
-  - "Berater + Umsetzer in einer Person"
-  - "30 Tage Begleitung nach Go-Live"
-  - Auf Mobile (Viewport 448px): vertikal gestapelt, kleine Pills, weißer Text auf `bg-white/5 border-white/10`.
-- Unter dem Hauptbutton: Sekundär-Link `→ So läuft die Zusammenarbeit ab`, scrollt per Anchor `#vorgehen` (Anchor-ID an `ProcessStepsSection`-Wrapper hinzufügen). Style: `text-white/70 hover:text-primary underline-offset-4`.
-- Founder-Trust-Modul rechts: Direkt unter Subheader-Zeile ("Systematisierung, …") ein neues kursives Zitat klein, in Anführungszeichen:
-  > „Ich baue für meine Kunden nur Systeme, die ich selbst nutzen würde."
-- Mobile: Founder-Modul ist heute `hidden md:flex`. Damit Zitat & Foto auch mobil sichtbar sind → Founder-Block in einer kompakten Mobile-Variante zusätzlich oberhalb der Benefit-Cards rendern (nur `md:hidden`), kleines rundes Foto + Name + Kurz-Zitat.
+## Step 02 – Tooltips pro Spalte mit Status / Aufgabe / Ziel
+- `PIPELINE_STAGE_HINTS` zu strukturiertem `PIPELINE_STAGE_TOOLTIPS: Record<PipelineStage, { status; task; goal }>` erweitern (in `src/types/crm.ts`). Alte `*_HINTS` als abgeleiteter Kurztext beibehalten für bestehende Komponenten.
+- `StageTooltip.tsx` rendert drei Mini-Sektionen (Status / Aufgabe / Ziel), kompakt, max-width 280px, wrap, mobile-klickbar.
+- Info-Icon neben jedem Spaltentitel ist bereits vorhanden – sicherstellen dass es Tooltip + Klick-Popover unterstützt (Touch).
 
-### 2. TrustLogosSection
-- Untertitel ersetzen durch:
-  > "Wir integrieren in den Stack, den du schon hast — nicht noch ein Tool obendrauf."
-- Restliche Marquee-Logik bleibt unverändert.
+## Step 03 – Lead-Karte erweitern (`PipelineCard.tsx`)
+Strukturierte Bereiche:
+1. Kopf: Firma/Name, Ansprechpartner, kleine Source-Badge.
+2. Status: aktuelle Phase (Mini-Badge) + nächste Aktion (aus Phase abgeleitet).
+3. Bewertung: ICP-Fit, `purchase_readiness` (Abschlussnähe), Angebotswert (falls aus `offers`/`pipeline_item` ableitbar – sonst Fallback).
+4. Aktivität: letzter Kontakt (`stage_updated_at` oder Activity), nächster Termin (falls vorhanden), Overdue-Warnung.
+- Saubere Fallbacks ("Noch nicht bewertet", "Kein Wert hinterlegt", "Kein Kontakt erfasst").
+- Karte vollständig klickbar, öffnet `LeadDetailModal`.
 
-### 3. NEU: ThreeStagesSection (`Drei Stufen — wo stehst du gerade?`)
-- Neue Datei `src/components/landing/home/ThreeStagesSection.tsx`.
-- Position: in `MasterHome.tsx` direkt **nach** `AiRealitySection` und **vor** `VulnerabilitySection`.
-- H2: "Drei Stufen — wo stehst du gerade?"
-- Sub: "Die meisten Unternehmen sind nicht zu langsam mit KI. Sie sind zu früh dran ohne Struktur."
-- Desktop: 4-spaltige Tabelle (Aspekt + 3 Stufen) als Grid mit `border-border/30`, gerundete Ecken, Zebra-Reihen.
-- Letzte Spalte ("Eigenes System (Wir)") visuell hervorgehoben: `border-2 border-primary/40 bg-[#FFF3EB]/40` (Sand), Header-Zelle `bg-primary text-primary-foreground`.
-- Mobile (<md): Tabelle wird zu 3 gestapelten Cards (eine pro Stufe). Jede Card listet alle 6 Aspekte als Key/Value-Paare. Letzte Card mit orangem Border + Sand-Hintergrund.
-- Inhalte exakt aus Briefing (Wissen, Übergaben, Skalierung, Reaktionszeit, Abhängigkeiten, KI-Hebel).
+## Step 04 – Quick Actions auf Karten
+- Hover-Bar (Desktop) bzw. permanent kompakt (Mobile) mit Icon-Buttons:
+  Anrufen (`tel:` falls phone), Termin planen (`ScheduleCallDialog`), E-Mail (`mailto:` oder InboxHub), Angebot erstellen (`CreateOfferDialog`), Aufgabe erstellen (`CreateTaskDialog`), Detail öffnen.
+- Buttons stoppen Click-Propagation, stören Drag&Drop nicht (`draggable=false` an Buttons).
+- Pro Phase eine **primäre Aktion** visuell hervorheben (Mapping `STAGE_PRIMARY_ACTION` in `pipeline-stage.ts`).
+- Fehlende Funktionen → Button deaktiviert mit Tooltip "Noch nicht verbunden" oder ausgeblendet.
 
-### 4. VulnerabilitySection
-- Pro Karte am Ende ein roter Mini-Tag (kleines Pill: `inline-flex items-center gap-1 mt-4 px-2.5 py-1 rounded-md bg-destructive/10 text-destructive text-xs font-semibold border border-destructive/20`):
-  - Steuerberater: "Risiko: 4–6 Wochen Stillstand in der Buchhaltung"
-  - Mitarbeiter: "Risiko: Niemand übernimmt ohne 2 Wochen Einarbeitung"
-  - System: "Risiko: Prozesse stehen still, Kunden warten"
-  - Compliance: "Risiko: Bußgeld + Tage manueller Recherche"
-- Über den 4 Karten ein konkretes Mini-Beispiel ergänzen: "z. B. Lead-Antwort in unter 2 Minuten statt 4 Stunden, sobald eingehende Anfragen direkt im eigenen System landen."
-- Unter den Karten "Jan sagt"-Quote (kursiv, kleines Foto-Avatar):
-  > „In 9 von 10 Erstgesprächen liegt das halbe Unternehmen in fremden Postfächern. Genau das wollen wir abschalten."
+## Step 05 – KPI-Leiste oberhalb des Kanbans
+- Neue Komponente `src/components/crm/PipelineKpiBar.tsx` über `PipelineBoard`.
+- Karten: Leads gesamt, Noch nicht bewertet, Erstgespräche terminiert, Angebote offen (`offer_draft`+`offer_sent`), Follow-up & Abschluss, Gewonnen, Pipeline-Wert, Erwarteter Umsatz.
+- Werte aus `pipelineByStage` + (sofern verfügbar) `useOffers`-Summen. Ohne Werte: "Noch keine Daten" / "0 €".
+- Karten klickbar → setzen `stageFilter` im Board (für Pipeline-Wert/Umsatz: TODO-Kommentar, kein kaputter Link).
+- Responsive Grid (2 / 4 / 8 Spalten).
 
-### 5. ProcessStepsSection
-- Wrapper-Section bekommt `id="vorgehen"` (für Hero-Sekundärlink).
-- Steps-Array um `duration` erweitern und in Karte oben rechts als Mono-Tag (`font-mono text-[11px] uppercase tracking-wide bg-muted text-muted-foreground rounded px-2 py-0.5`) anzeigen:
-  1. Analyse — "ca. 1 Woche"
-  2. System-Mapping — "1–2 Wochen"
-  3. Priorisierung — "ca. 1 Woche"
-  4. Umsetzung — "4–8 Wochen"
-  5. Übergabe + Support — "30 Tage Begleitung"
-- Aktuelles Layout: zentrierte Kreise. Wir wechseln je Step zu einer leichten Card (`rounded-2xl border border-border/30 p-5 text-left`), damit der Tag rechts oben Platz hat. Nummer-Kreis bleibt links oben.
-- Schritt 5 Title auf "Übergabe + Support" anpassen.
-- Direkt unter dem Grid neue Zeile (zentriert, fett):
-  > "Typische Gesamtdauer eines Projekts: 8–12 Wochen bis Go-Live."
-- Darunter ein "Jan sagt"-Quote (kursiv, klein):
-  > „Wir liefern keinen Tool-Stack, sondern eine dokumentierte Struktur, die ohne uns funktioniert."
+## Step 06 – Filter & Suche (oberhalb Board)
+- Vorhandene Suche (Name/Firma/E-Mail) bleibt; ergänzen um Filter-Popover:
+  Phase (Mehrfach), Verantwortlicher (`owner_user_id`), Quelle (`source_type`), Priorität (Score-Bucket), Überfällig (basierend auf `stage_updated_at` > X Tage), mit/ohne Angebot, mit/ohne Termin.
+- Zeitraum: Heute / Diese Woche / Dieser Monat / Custom (Filter über `stage_updated_at`).
+- "Filter zurücksetzen", angezeigte Lead-Anzahl.
+- Mobile: Filter in `Sheet`/Collapsible.
+- Felder die nicht zuverlässig vorliegen → Filter disabled mit Tooltip.
 
-### 6. CaseStudiesSection (René Schreiner)
-- Über der bestehenden Karte 1 Reihe / 3 Spalten Mini-Cards (Mobile: 3 gestapelt):
-  - `40+` — "neue Bewerbungen generiert"
-  - `1` — "zentrales System statt 4 verstreuter Tools"
-  - `✓` — „Value ehrlich gesagt unmessbar"
-  - Style: `rounded-2xl border-2 border-primary/30 bg-[#FFF3EB] p-6 text-center`, große Zahl in `text-4xl md:text-5xl font-bold text-primary`.
-- Bestehende Problem/Ziel/Lösung/Ergebnis-Struktur bleibt. Das Ergebnis-Zitat: größere Schrift `text-lg md:text-xl`, kursiv, Anführungszeichen sichtbar, mit `Quote`-Icon davor.
-- Ende der Sektion (kleine Zeile, zentriert, `text-xs text-muted-foreground`):
-  > "Weitere Referenzen auf Anfrage. Wir sprechen gern mit dir konkret über vergleichbare Projekte."
-  (Briefing brach hier ab — falls du einen anderen Wortlaut willst, einfach kurz angeben.)
+## Step 07 – Lead-Detail-Sidebar
+- Neue Komponente `src/components/crm/PipelineLeadSidebar.tsx` als `Sheet` (rechts, Desktop) / Fullscreen-Drawer (Mobile).
+- Tabs/Sektionen: Kopf, Nächste Aktion, Kommunikation (Inbox-Link), Sales-Hinweis (Vorgriff Step 08), Angebot/Analyse (Status + CTAs), Historie (`ActivityFeed` oder Fallback).
+- Trigger: Klick auf Pipeline-Karte öffnet **Sidebar statt** des bestehenden `LeadDetailModal` auf der Pipeline-Seite. Modal bleibt anderswo erhalten.
 
-## Technische Hinweise
-- Alle neuen UI-Elemente nutzen bestehende `landingTokens` und Tailwind-Klassen, kein neues Theming.
-- Keine neuen Dependencies; Lucide-Icons sind bereits verfügbar.
-- Mobile-First geprüft für Viewport 448px (Sticky CTA + Bottom-Nav-Padding bleiben unangetastet).
-- Anchor-Scroll aus dem Hero-Sekundärlink: einfaches `<a href="#vorgehen">` reicht (Browser-natives Smooth-Scroll via `html { scroll-behavior: smooth; }` ist im `index.css` aktiv — falls nicht, ergänze ich es im selben Schritt).
+## Step 08 – Sales-Skript-Karte je Phase
+- Neue Konstante `SALES_SCRIPTS_BY_STAGE` in `src/lib/sales-scripts/index.ts` (Ziel, 3 Fragen, Hinweis – Texte aus Prompt 08 übernommen).
+- Sektion `<StageSalesScriptCard stage={stage} />` in der Sidebar (Step 07).
 
-## Offene Punkte (werden mit umgesetzt — bitte nur bei Widerspruch melden)
-1. Letzte Zeile der Case-Study-Sektion ist im Briefing abgeschnitten. Ich übernehme den Wortlaut wie oben formuliert.
-2. Founder-Modul wird mobile sichtbar gemacht (kompakte Variante), damit das neue Jan-Zitat auch auf Smartphones wirkt.
-3. ProcessSteps-Karten wechseln von zentriert zu links-bündigen Cards, damit Zeit-Tags Platz haben — bleibt visuell konsistent zum Rest der Seite.
+## Step 09 – Drag-&-Drop Folgeaktions-Dialoge
+- Neuer `<StageTransitionDialog>`-Wrapper in `PipelineBoard`. Nach erfolgreichem `moveToStage` öffnet Dialog mit phasenspezifischen Folgeaktionen (Mapping `STAGE_TRANSITION_ACTIONS`).
+- Mappings für: scheduled, done, analysis_ready, offer_draft, offer_sent, payment_unlocked, won, lost (Verlustgrund-Chips).
+- "Später" / Schließen ohne Folgeaktion möglich. Aktionen verlinken auf bestehende Dialoge/Routen, Verlustgrund schreibt in `pipeline_items.meta` oder `notes` (vorhandene Felder, keine Schema-Änderung – sonst rein UI-Toast als Fallback).
 
-## Verbesserungsvorschläge zusätzlich (werden mit ausgeliefert, sofern du nicht widersprichst)
-- **A. Sticky-CTA-Bar**: Auf Mobile zusätzlich ein subtiler Hinweis "Antwort meist innerhalb von 24 h" rechts vom Button, um Reibung zu senken.
-- **B. Hero-Microcopy**: Unter dem Sekundär-Link `30 Min · Ohne Verkaufsdruck · Kein Tool-Pitch` als 3-Wort-Reassurance.
-- **C. Case-Study-Sektion**: Logo "AS Gärten GmbH" (falls vorhanden) klein neben Name einbinden — erhöht Glaubwürdigkeit.
-- **D. JSON-LD**: Neue `Review`/`Quote`-Schema-Einträge zu René Schreiner ergänzen (SEO-Sichtbarkeit / Sitelink-Snippets).
-- **E. Vergleichstabelle**: Auf Desktop letzte Spalte mit kleinem `Recommended`-Ribbon oben rechts.
+## Step 10 – Termin-/Kalenderanzeige
+- In `PipelineCard` und Sidebar: nächsten Termin aus `useCalls({ lead_id })` lesen.
+- Karte: Datum/Uhrzeit + Badges "Heute" / "Überfällig".
+- Sidebar: Terminart, Link, Buttons "Kalender öffnen" (`/app/live-calls-calendar`) / "Termin planen" (öffnet `ScheduleCallDialog`).
+- Fallbacks: "Kein Termin geplant".
 
-Sag einfach Bescheid, falls A–E ganz oder teilweise nicht mit ausgeliefert werden sollen.
+## Step 11 – Farblogik vereinheitlichen
+- `STAGE_COLOR_TOKEN` Map in `pipeline-stage.ts` (Akzentfarbe pro Phase, dezent, Tailwind-Tokens).
+- Anwendung: dünne 2px Akzentlinie am Spaltenkopf + Mini-Dot, statt grellem Hintergrund.
+- `PipelineStatsWidget` & `PipelineHeatmap` nutzen dasselbe Mapping (lokale `STAGE_COLORS` entfernen).
+- Light/Dark geprüft.
+
+## Step 12 – Empty States
+- In `PipelineColumn`: bei `items.length===0` Texte aus Prompt 12 + dezenter Lucide-Icon (z. B. `Inbox`, `Calendar`, `MessageSquare`, `BarChart3`, `FileEdit`, `Send`, `Handshake`, `Trophy`, `Archive`).
+- Neue Konstante `PIPELINE_STAGE_EMPTY_STATES` in `src/types/crm.ts`.
+
+## Step 13 – Responsive Check
+- Desktop: horizontaler ScrollArea bestätigen, KPI-Leiste sticky/wrappend.
+- Tablet: Filter-Popover, kompakte Karten.
+- Mobile: Sidebar als Fullscreen-Drawer, Tooltips per Klick, Karten min-w 240px (bereits da), Buttons ≥ 32px Touch-Target.
+- Snapshot-Notiz im Code-Kommentar dokumentieren.
+
+## Step 14 – Dashboard-Verlinkung
+- `PipelineStatsWidget`, `TopLeadsWidget`, `TodayPrioritiesWidget`, `QuickActionsWidget`, `StaffDashboard`, `KundeDashboard`, `AdminDashboard` prüfen.
+- Links auf Pipeline ggf. mit Query-Param erweitern (`/app/pipeline?stage=offer_sent`) – `PipelineBoard` liest Param und setzt `stageFilter`.
+- Alte Begriffe in Widget-Texten ersetzen.
+
+## Step 15 – Sprache global syncen
+- Suchen & ersetzen sichtbarer Texte in:
+  - `src/hooks/useCalls.ts` Toast "Call geplant" → "Erstgespräch terminiert".
+  - `src/hooks/useOffers.ts` Toast-Texte angleichen ("Angebot versendet", "Follow-up freigeschaltet").
+  - `src/components/offers/PaymentUnlockButton.tsx`, `OfferApprovalCard.tsx`: "Zahlung freigeschaltet" → "Follow-up & Abschlussphase aktiviert" (Funktionalität unverändert).
+  - `src/pages/app/MyContracts.tsx` Anzeigetext.
+  - `pipeline-label-consistency.test.tsx` Legacy-Liste aktualisieren (entfernt nur die jetzt-erlaubten Begriffe wo nötig).
+- Stage-Keys/DB-Werte unverändert. Notification "Neuer Lead" in `NotificationsCenter.tsx` bleibt (eigener Notification-Typ, nicht Pipeline-Phase).
+
+## Step 16 – Abschlussprüfung
+- TypeScript build, vitest run, Console-Errors check.
+- Checkliste durcharbeiten (16 Punkte aus Prompt 16) und Befund + Korrekturen dokumentieren.
+- Final-Liste: geänderte Dateien, gefundene/gefixte Inkonsistenzen, offene TODOs.
+
+---
+
+## Voraussichtlich neue Dateien
+- `src/components/crm/PipelineKpiBar.tsx`
+- `src/components/crm/PipelineFilters.tsx`
+- `src/components/crm/PipelineLeadSidebar.tsx`
+- `src/components/crm/StageTransitionDialog.tsx`
+- `src/components/crm/StageSalesScriptCard.tsx`
+- `src/components/crm/PipelineCardActions.tsx`
+
+## Voraussichtlich geänderte Dateien
+- `src/types/crm.ts` (Labels, Tooltips, Empty-States, Mappings)
+- `src/lib/pipeline-stage.ts` (Color-Tokens, Primary-Actions, Transition-Actions)
+- `src/components/crm/StageTooltip.tsx` (3-Felder-Layout)
+- `src/components/crm/PipelineBoard.tsx` (KPI-Bar, Filter, Query-Param, Sidebar, Transition-Dialog)
+- `src/components/crm/PipelineColumn.tsx` (Akzentlinie, Empty-State)
+- `src/components/crm/PipelineCard.tsx` (Reichere Darstellung, Actions, Termin)
+- `src/components/crm/PipelineHeatmap.tsx` (Color-Tokens)
+- `src/components/dashboard/PipelineStatsWidget.tsx` (Color-Tokens, Links)
+- `src/components/dashboard/*` Widgets mit Pipeline-Bezug (Step 14)
+- `src/pages/app/Pipeline.tsx` (Sidebar statt Modal)
+- `src/hooks/useCalls.ts`, `src/hooks/useOffers.ts`, `src/components/offers/PaymentUnlockButton.tsx`, `OfferApprovalCard.tsx`, `src/pages/app/MyContracts.tsx` (Sprache)
+- `src/lib/sales-scripts/index.ts` (Stage-Skripte)
+- `src/components/crm/__tests__/pipeline-label-consistency.test.tsx` (Anpassung)
+
+## Stop-the-Line Disziplin
+Nach jedem Step: Build + Tests + Console-Check. Nur bei PASS weiter zum nächsten Step. Status pro Step im Antwortformat:
+```
+Step NN — Titel
+Change: …
+Test: …
+Status: PASS / FAIL
+```
+
+Nach Approval starte ich mit Step 01.
