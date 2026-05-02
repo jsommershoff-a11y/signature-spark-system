@@ -36,10 +36,11 @@ import {
   getAutoAdvanceStageAfterBooking,
 } from '@/lib/pipeline-stage';
 import {
-  FOLLOW_UP_TEMPLATES,
   renderFollowUpTemplate,
   type FollowUpTemplateId,
+  type FollowUpTemplate,
 } from '@/lib/sales-scripts/follow-up';
+import { useFollowUpTemplatesPublic } from '@/hooks/useFollowUpTemplates';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -99,6 +100,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const { createCall } = useCalls({ lead_id: lead.id });
   const { activities, createActivity } = useActivities({ lead_id: lead.id });
   const { moveToStage } = usePipeline();
+  const { templates: followUpTemplates } = useFollowUpTemplatesPublic();
 
   // Cooldown-Tick: forciert Re-Render, wenn die 24h ablaufen,
   // damit der Button automatisch wieder freigegeben wird.
@@ -265,12 +267,16 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
 
     const greetingName = lead.first_name?.trim() || fullName;
     const when = formatMeetingWhen(lastMeeting?.scheduledAt);
-    const { template: tpl, subject, body } = renderFollowUpTemplate(templateId, {
-      greetingName,
-      when,
-      company: lead.company,
-      stageLabel,
-    });
+    const { template: tpl, subject, body } = renderFollowUpTemplate(
+      templateId,
+      {
+        greetingName,
+        when,
+        company: lead.company,
+        stageLabel,
+      },
+      followUpTemplates,
+    );
 
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
@@ -535,7 +541,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                       : 'Vorlage wählen'}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {FOLLOW_UP_TEMPLATES.map((tpl) => (
+                  {followUpTemplates.map((tpl) => (
                     <DropdownMenuItem
                       key={tpl.id}
                       onClick={(e) => {

@@ -111,9 +111,10 @@ function applyPlaceholders(input: string, vars: Record<string, string>): string 
 export function renderFollowUpTemplate(
   templateId: FollowUpTemplateId,
   ctx: FollowUpContext,
+  templates: FollowUpTemplate[] = FOLLOW_UP_TEMPLATES,
 ): { template: FollowUpTemplate; subject: string; body: string } {
-  const template =
-    FOLLOW_UP_TEMPLATES.find((t) => t.id === templateId) ?? FOLLOW_UP_TEMPLATES[0];
+  const pool = templates.length > 0 ? templates : FOLLOW_UP_TEMPLATES;
+  const template = pool.find((t) => t.id === templateId) ?? pool[0];
 
   const contextLine = ctx.company
     ? `Kontext: ${ctx.company} – Phase: ${ctx.stageLabel}`

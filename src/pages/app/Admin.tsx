@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Activity, Mail, Plug, Download, GraduationCap, Tags, FileSpreadsheet, Bot } from 'lucide-react';
+import { Shield, Activity, Mail, Plug, Download, GraduationCap, Tags, FileSpreadsheet, Bot, MessageSquare } from 'lucide-react';
+import AdminFollowUpTemplates from '@/components/admin/AdminFollowUpTemplates';
 import AdminUserManagement from '@/components/admin/AdminUserManagement';
 import AdminLeadsTable from '@/components/admin/AdminLeadsTable';
 import AdminSystemLogs from '@/components/admin/AdminSystemLogs';
@@ -27,6 +28,7 @@ export default function Admin() {
           <TabsTrigger value="members" className="gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> Mitglieder</TabsTrigger>
           <TabsTrigger value="logs" className="gap-1.5"><Activity className="h-3.5 w-3.5" /> Logs</TabsTrigger>
           <TabsTrigger value="templates" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> E-Mail</TabsTrigger>
+          <TabsTrigger value="followups" className="gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> Follow-ups</TabsTrigger>
           <TabsTrigger value="integrations" className="gap-1.5"><Plug className="h-3.5 w-3.5" /> Integrationen</TabsTrigger>
           <TabsTrigger value="slot-rules" className="gap-1.5"><Tags className="h-3.5 w-3.5" /> Slot-Regeln</TabsTrigger>
           <TabsTrigger value="drive-sync" className="gap-1.5"><FileSpreadsheet className="h-3.5 w-3.5" /> Drive-Sync</TabsTrigger>
@@ -84,6 +86,10 @@ export default function Admin() {
               <AdminEmailTemplates />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="followups">
+          <AdminFollowUpTemplates />
         </TabsContent>
 
         <TabsContent value="integrations">
