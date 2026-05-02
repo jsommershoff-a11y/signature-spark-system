@@ -91,19 +91,27 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
-  const handleScheduleSubmit = async (data: Parameters<typeof createCall>[0]) => {
+  const handleScheduleSubmit = async (
+    data: Parameters<typeof createCall>[0],
+    options?: { attachContext: boolean },
+  ) => {
     try {
-      // Lead-Kontext in Notes vorbelegen, wenn leer
-      const contextLines = [
-        `Lead: ${fullName}`,
-        lead.company ? `Firma: ${lead.company}` : null,
-        lead.phone ? `Telefon: ${lead.phone}` : null,
-        lead.email ? `E-Mail: ${lead.email}` : null,
-        `Phase: ${stageLabel}`,
-      ].filter(Boolean).join('\n');
-      const notes = data.notes && data.notes.trim().length > 0
-        ? `${data.notes}\n\n— Kontext —\n${contextLines}`
-        : contextLines;
+      const attachContext = options?.attachContext ?? true;
+
+      // Lead-Kontext nur anhängen, wenn Nutzer es nicht abgewählt hat
+      let notes = data.notes;
+      if (attachContext) {
+        const contextLines = [
+          `Lead: ${fullName}`,
+          lead.company ? `Firma: ${lead.company}` : null,
+          lead.phone ? `Telefon: ${lead.phone}` : null,
+          lead.email ? `E-Mail: ${lead.email}` : null,
+          `Phase: ${stageLabel}`,
+        ].filter(Boolean).join('\n');
+        notes = data.notes && data.notes.trim().length > 0
+          ? `${data.notes}\n\n— Kontext —\n${contextLines}`
+          : contextLines;
+      }
 
       const created = await createCall({ ...data, notes });
       setLastMeeting({
@@ -485,6 +493,8 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         leadId={lead.id}
         leadName={fullName}
         onSchedule={handleScheduleSubmit}
+        showContextToggle
+        defaultAttachContext
       />
     </Card>
   );
