@@ -36,10 +36,11 @@ import {
   getAutoAdvanceStageAfterBooking,
 } from '@/lib/pipeline-stage';
 import {
-  FOLLOW_UP_TEMPLATES,
   renderFollowUpTemplate,
   type FollowUpTemplateId,
+  type FollowUpTemplate,
 } from '@/lib/sales-scripts/follow-up';
+import { useFollowUpTemplatesPublic } from '@/hooks/useFollowUpTemplates';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
