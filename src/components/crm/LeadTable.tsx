@@ -215,7 +215,10 @@ export function LeadTable({
                 onClick={() => onViewLead?.(lead)}
               >
                 <TableCell>
-                  <span className={getPriorityTextClass(lead.pipeline_item?.pipeline_priority_score)}>
+                  <span
+                    className={getPriorityTextClass(lead.pipeline_item?.pipeline_priority_score)}
+                    title={getPriorityLabel(lead.pipeline_item?.pipeline_priority_score)}
+                  >
                     {lead.pipeline_item?.pipeline_priority_score ?? '-'}
                   </span>
                 </TableCell>
