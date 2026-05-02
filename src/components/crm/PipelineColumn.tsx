@@ -58,19 +58,20 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
   return (
     <Card
       className={cn(
-        "flex flex-col h-full min-w-[300px] max-w-[300px] transition-all duration-200",
+        "flex flex-col h-full w-[260px] min-w-[260px] max-w-[260px] sm:w-[300px] sm:min-w-[300px] sm:max-w-[300px] transition-all duration-200",
         dimmed && "opacity-40 grayscale-[0.4] hover:opacity-70"
       )}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <CardHeader className="pb-3 flex-shrink-0 space-y-1.5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 min-w-0 flex-1">
-            <div className={cn("w-3 h-3 rounded-full flex-shrink-0 mt-1", getStageColor(stage))} />
+      <CardHeader className="pb-3 flex-shrink-0 space-y-1.5 px-3 sm:px-6">
+        <div className="flex items-start justify-between gap-1.5 sm:gap-2">
+          <div className="flex items-start gap-1.5 sm:gap-2 min-w-0 flex-1">
+            <div className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 mt-1", getStageColor(stage))} />
             <CardTitle
-              className="text-sm font-medium leading-snug break-words hyphens-auto flex-1 min-w-0"
+              className="text-[13px] sm:text-sm font-medium leading-snug break-words hyphens-auto flex-1 min-w-0"
+              style={{ overflowWrap: 'anywhere' }}
               title={getStageTooltip(stage)}
             >
               {getStageLabel(stage)}
@@ -81,7 +82,7 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
                   <button
                     type="button"
                     aria-label={`Hinweis: ${getStageLabel(stage)}`}
-                    className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5"
+                    className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5 -mr-0.5"
                   >
                     <Info className="h-3.5 w-3.5" />
                   </button>
@@ -92,11 +93,14 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
               </Tooltip>
             </TooltipProvider>
           </div>
-          <Badge variant="secondary" className="text-xs flex-shrink-0 mt-0.5">
+          <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 flex-shrink-0 mt-0.5">
             {items.length}
           </Badge>
         </div>
-        <p className="text-[11px] leading-snug text-muted-foreground break-words">
+        <p
+          className="hidden sm:block text-[11px] leading-snug text-muted-foreground break-words"
+          style={{ overflowWrap: 'anywhere' }}
+        >
           {getStageHint(stage)}
         </p>
       </CardHeader>
