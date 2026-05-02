@@ -12,7 +12,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
-import { getStageLabel } from '@/lib/pipeline-stage';
+import { getStageLabel, getPriorityTone, getPriorityLabel } from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -23,23 +23,7 @@ interface PipelineCardProps {
   isDragging?: boolean;
 }
 
-function getPriorityTone(score?: number) {
-  if (score === undefined || score === null) {
-    return 'bg-muted text-muted-foreground';
-  }
-  if (score >= 80) return 'bg-emerald-500 text-white';
-  if (score >= 60) return 'bg-amber-500 text-white';
-  if (score >= 40) return 'bg-orange-500 text-white';
-  return 'bg-rose-500 text-white';
-}
 
-function getPriorityLabel(score?: number) {
-  if (score === undefined || score === null) return 'Keine Priorität';
-  if (score >= 80) return 'Hohe Priorität';
-  if (score >= 60) return 'Mittlere Priorität';
-  if (score >= 40) return 'Niedrige Priorität';
-  return 'Sehr niedrig';
-}
 
 function getInitials(first?: string, last?: string) {
   const f = (first || '').trim()[0] || '';

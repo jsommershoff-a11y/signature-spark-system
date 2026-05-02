@@ -45,3 +45,76 @@ export function getStageTooltip(stage: PipelineStage): string {
 export const STAGE_LABEL_WRAP_CLASS =
   'break-words hyphens-auto [overflow-wrap:anywhere] [word-break:break-word]';
 
+/* ==========================================================================
+ * Prioritäts-Tonalitäten (Single Source of Truth)
+ *
+ * Wird von PipelineCard, LeadTable, PipelineHeatmap und PipelineStatsWidget
+ * verwendet, damit Score-Farben überall identisch sind. Skala (0–100):
+ *   ≥ 80  → 'high'      (grün)   – Top-Priorität, sofort bearbeiten
+ *   ≥ 60  → 'medium'    (amber)  – Wichtige Leads
+ *   ≥ 40  → 'low'       (orange) – Im Auge behalten
+ *   <  40 → 'very_low'  (rosé)   – Niedrige Priorität
+ *   null  → 'none'      (muted)  – Kein Score
+ * ========================================================================== */
+
+export type PriorityTier = 'none' | 'very_low' | 'low' | 'medium' | 'high';
+
+export const PRIORITY_THRESHOLDS = {
+  high: 80,
+  medium: 60,
+  low: 40,
+} as const;
+
+export function getPriorityTier(score?: number | null): PriorityTier {
+  if (score === undefined || score === null || Number.isNaN(score)) return 'none';
+  if (score >= PRIORITY_THRESHOLDS.high) return 'high';
+  if (score >= PRIORITY_THRESHOLDS.medium) return 'medium';
+  if (score >= PRIORITY_THRESHOLDS.low) return 'low';
+  return 'very_low';
+}
+
+/** Klartext-Label für Tooltips/Aria. */
+export function getPriorityLabel(score?: number | null): string {
+  switch (getPriorityTier(score)) {
+    case 'high': return 'Hohe Priorität';
+    case 'medium': return 'Mittlere Priorität';
+    case 'low': return 'Niedrige Priorität';
+    case 'very_low': return 'Sehr niedrige Priorität';
+    default: return 'Keine Priorität';
+  }
+}
+
+/** Solid-Badge (z. B. PipelineCard Score-Pill). */
+export function getPriorityTone(score?: number | null): string {
+  switch (getPriorityTier(score)) {
+    case 'high': return 'bg-emerald-500 text-white';
+    case 'medium': return 'bg-amber-500 text-white';
+    case 'low': return 'bg-orange-500 text-white';
+    case 'very_low': return 'bg-rose-500 text-white';
+    default: return 'bg-muted text-muted-foreground';
+  }
+}
+
+/** Reine Text-Farbe (z. B. LeadTable-Zellen). */
+export function getPriorityTextClass(score?: number | null): string {
+  switch (getPriorityTier(score)) {
+    case 'high': return 'text-emerald-600 dark:text-emerald-400 font-semibold';
+    case 'medium': return 'text-amber-600 dark:text-amber-400 font-medium';
+    case 'low': return 'text-orange-600 dark:text-orange-400';
+    case 'very_low': return 'text-rose-600 dark:text-rose-400';
+    default: return 'text-muted-foreground';
+  }
+}
+
+/** Hintergrund-Tint für Heatmap-Zellen / Stats-Bars. */
+export function getPriorityBgClass(score?: number | null): string {
+  switch (getPriorityTier(score)) {
+    case 'high': return 'bg-emerald-500/15';
+    case 'medium': return 'bg-amber-500/15';
+    case 'low': return 'bg-orange-500/15';
+    case 'very_low': return 'bg-rose-500/15';
+    default: return 'bg-muted/40';
+  }
+}
+
+
