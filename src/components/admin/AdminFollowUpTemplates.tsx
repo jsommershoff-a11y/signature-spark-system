@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useFollowUpTemplatesAdmin, type FollowUpTemplateRow } from '@/hooks/useFollowUpTemplates';
 import type { FollowUpVariant } from '@/lib/sales-scripts/follow-up';
+import { validateFollowUpTemplate } from '@/lib/sales-scripts/template-validation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -16,7 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ResponsiveFormDialog } from '@/components/app/ResponsiveFormDialog';
-import { Pencil, Plus, Trash2, Mail, History } from 'lucide-react';
+import { Pencil, Plus, Trash2, Mail, History, AlertTriangle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import FollowUpTemplateHistoryDialog from './FollowUpTemplateHistoryDialog';
 import { FollowUpTemplatePreview } from './FollowUpTemplatePreview';
