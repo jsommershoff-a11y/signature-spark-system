@@ -37,6 +37,8 @@ interface SendPushInput {
   data?: Record<string, string>;
   force?: boolean;
   log_id?: string;
+  dry_run?: boolean;
+  source?: string;
 }
 
 interface ServiceAccount {
