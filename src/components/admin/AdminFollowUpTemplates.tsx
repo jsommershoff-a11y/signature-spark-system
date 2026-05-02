@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useFollowUpTemplatesAdmin, type FollowUpTemplateRow } from '@/hooks/useFollowUpTemplates';
+import type { FollowUpVariant } from '@/lib/sales-scripts/follow-up';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ interface FormState {
   body: string;
   sort_order: number;
   is_active: boolean;
+  variants: FollowUpVariant[];
 }
 
 const EMPTY_FORM: FormState = {
@@ -40,6 +42,7 @@ const EMPTY_FORM: FormState = {
   body: '',
   sort_order: 100,
   is_active: true,
+  variants: [],
 };
 
 export default function AdminFollowUpTemplates() {
@@ -66,6 +69,7 @@ export default function AdminFollowUpTemplates() {
       body: row.body,
       sort_order: row.sort_order,
       is_active: row.is_active,
+      variants: Array.isArray(row.variants) ? row.variants : [],
     });
     setOpen(true);
   };
@@ -258,6 +262,100 @@ export default function AdminFollowUpTemplates() {
               />
               <Label htmlFor="active">Aktiv (in Pipeline-Karte sichtbar)</Label>
             </div>
+          </div>
+
+          {/* A/B Varianten */}
+          <div className="space-y-2 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>A/B-Varianten</Label>
+                <p className="text-xs text-muted-foreground">
+                  Beim Versand wird gewichtet zufällig eine Variante gewählt. Leer = nur Standard verwenden.
+                </p>
+              </div>
+              <Button
+                type="button" size="sm" variant="outline"
+                onClick={() => {
+                  const next = [...form.variants];
+                  const id = String.fromCharCode(65 + next.length); // A, B, C ...
+                  next.push({ id, weight: 1, subject: '', body: [] });
+                  setForm({ ...form, variants: next });
+                }}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" /> Variante
+              </Button>
+            </div>
+
+            {form.variants.length === 0 ? (
+              <div className="text-xs text-muted-foreground">Keine Varianten – nur Standard-Vorlage wird verwendet.</div>
+            ) : (
+              form.variants.map((v, idx) => (
+                <div key={idx} className="space-y-2 rounded-md border p-3 bg-muted/20">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Variant-ID</Label>
+                      <Input
+                        value={v.id}
+                        onChange={(e) => {
+                          const next = [...form.variants];
+                          next[idx] = { ...v, id: e.target.value };
+                          setForm({ ...form, variants: next });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Gewicht</Label>
+                      <Input
+                        type="number" min={0}
+                        value={v.weight ?? 1}
+                        onChange={(e) => {
+                          const next = [...form.variants];
+                          next[idx] = { ...v, weight: parseFloat(e.target.value) || 0 };
+                          setForm({ ...form, variants: next });
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-end justify-end">
+                      <Button
+                        type="button" variant="ghost" size="sm"
+                        className="text-destructive"
+                        onClick={() => {
+                          const next = form.variants.filter((_, i) => i !== idx);
+                          setForm({ ...form, variants: next });
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Betreff (überschreibt Standard, optional)</Label>
+                    <Input
+                      value={v.subject ?? ''}
+                      onChange={(e) => {
+                        const next = [...form.variants];
+                        next[idx] = { ...v, subject: e.target.value || undefined };
+                        setForm({ ...form, variants: next });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Body (überschreibt Standard, optional)</Label>
+                    <Textarea
+                      rows={6}
+                      className="font-mono text-xs"
+                      value={(v.body ?? []).join('\n')}
+                      onChange={(e) => {
+                        const next = [...form.variants];
+                        const lines = e.target.value.split('\n');
+                        next[idx] = { ...v, body: e.target.value ? lines : undefined };
+                        setForm({ ...form, variants: next });
+                      }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </form>
       </ResponsiveFormDialog>

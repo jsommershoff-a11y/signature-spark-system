@@ -4,6 +4,7 @@ import {
   FOLLOW_UP_TEMPLATES as STATIC_TEMPLATES,
   type FollowUpTemplate,
   type FollowUpTemplateId,
+  type FollowUpVariant,
 } from '@/lib/sales-scripts/follow-up';
 
 export interface FollowUpTemplateRow {
@@ -13,6 +14,7 @@ export interface FollowUpTemplateRow {
   description: string;
   subject: string;
   body: string;
+  variants: FollowUpVariant[] | null;
   sort_order: number;
   is_active: boolean;
   updated_at: string;
@@ -28,6 +30,7 @@ function rowToTemplate(row: FollowUpTemplateRow): FollowUpTemplate {
     description: row.description,
     subject: row.subject,
     body: row.body.split('\n'),
+    variants: Array.isArray(row.variants) ? row.variants : [],
   };
 }
 

@@ -1593,6 +1593,7 @@ export type Database = {
           subject: string
           template_id: string
           template_key: string
+          variants: Json
           version_number: number
         }
         Insert: {
@@ -1609,6 +1610,7 @@ export type Database = {
           subject: string
           template_id: string
           template_key: string
+          variants?: Json
           version_number: number
         }
         Update: {
@@ -1625,6 +1627,7 @@ export type Database = {
           subject?: string
           template_id?: string
           template_key?: string
+          variants?: Json
           version_number?: number
         }
         Relationships: [
@@ -1650,6 +1653,7 @@ export type Database = {
           template_key: string
           updated_at: string
           updated_by: string | null
+          variants: Json
         }
         Insert: {
           body: string
@@ -1663,6 +1667,7 @@ export type Database = {
           template_key: string
           updated_at?: string
           updated_by?: string | null
+          variants?: Json
         }
         Update: {
           body?: string
@@ -1676,6 +1681,7 @@ export type Database = {
           template_key?: string
           updated_at?: string
           updated_by?: string | null
+          variants?: Json
         }
         Relationships: []
       }

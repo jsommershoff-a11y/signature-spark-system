@@ -14,6 +14,17 @@
 
 export type FollowUpTemplateId = 'confirm' | 'reschedule' | 'no_show';
 
+export interface FollowUpVariant {
+  /** Stabile ID innerhalb des Templates, z.B. 'A' / 'B' / 'short'. */
+  id: string;
+  /** Optional: überschreibt Subject des Templates. */
+  subject?: string;
+  /** Optional: überschreibt Body (Array von Zeilen). */
+  body?: string[];
+  /** Optionales Gewicht (default 1) – höheres Gewicht = häufiger gewählt. */
+  weight?: number;
+}
+
 export interface FollowUpTemplate {
   id: FollowUpTemplateId;
   label: string;
@@ -22,6 +33,8 @@ export interface FollowUpTemplate {
   subject: string;
   /** Body als Array von Zeilen (wird mit '\n' gejoint). */
   body: string[];
+  /** Optionale A/B-Varianten. Leer = nur Standard verwenden. */
+  variants?: FollowUpVariant[];
 }
 
 export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
@@ -105,16 +118,47 @@ function applyPlaceholders(input: string, vars: Record<string, string>): string 
   );
 }
 
+/** Wählt zufällig (gewichtet) eine Variante – oder null, wenn keine vorhanden. */
+export function pickRandomVariant(template: FollowUpTemplate): FollowUpVariant | null {
+  const variants = template.variants ?? [];
+  if (variants.length === 0) return null;
+  const weights = variants.map((v) => Math.max(0, v.weight ?? 1));
+  const total = weights.reduce((a, b) => a + b, 0);
+  if (total <= 0) return variants[0];
+  let roll = Math.random() * total;
+  for (let i = 0; i < variants.length; i++) {
+    roll -= weights[i];
+    if (roll <= 0) return variants[i];
+  }
+  return variants[variants.length - 1];
+}
+
 /**
  * Liefert subject + body für ein Template – mit eingesetzten Platzhaltern.
+ * Wenn das Template Varianten hat (oder eine erzwungen ist), wird diese verwendet.
  */
 export function renderFollowUpTemplate(
   templateId: FollowUpTemplateId,
   ctx: FollowUpContext,
   templates: FollowUpTemplate[] = FOLLOW_UP_TEMPLATES,
-): { template: FollowUpTemplate; subject: string; body: string } {
+  options?: { variantId?: string },
+): {
+  template: FollowUpTemplate;
+  subject: string;
+  body: string;
+  variant: FollowUpVariant | null;
+  variantId: string;
+} {
   const pool = templates.length > 0 ? templates : FOLLOW_UP_TEMPLATES;
   const template = pool.find((t) => t.id === templateId) ?? pool[0];
+
+  const forced = options?.variantId
+    ? (template.variants ?? []).find((v) => v.id === options.variantId) ?? null
+    : null;
+  const variant = forced ?? pickRandomVariant(template);
+
+  const subjectSrc = variant?.subject ?? template.subject;
+  const bodySrc = variant?.body ?? template.body;
 
   const contextLine = ctx.company
     ? `Kontext: ${ctx.company} – Phase: ${ctx.stageLabel}`
@@ -128,8 +172,14 @@ export function renderFollowUpTemplate(
     context_line: contextLine,
   };
 
-  const subject = applyPlaceholders(template.subject, vars);
-  const body = template.body.map((line) => applyPlaceholders(line, vars)).join('\n');
+  const subject = applyPlaceholders(subjectSrc, vars);
+  const body = bodySrc.map((line) => applyPlaceholders(line, vars)).join('\n');
 
-  return { template, subject, body };
+  return {
+    template,
+    subject,
+    body,
+    variant,
+    variantId: variant?.id ?? 'default',
+  };
 }

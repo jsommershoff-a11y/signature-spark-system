@@ -146,6 +146,7 @@ export function useActivities({ lead_id, customer_id }: UseActivitiesOptions) {
       content: string;
       lead_id?: string;
       customer_id?: string;
+      metadata?: Record<string, unknown> | null;
     }) => {
       if (!profile?.id) throw new Error('Nicht eingeloggt');
       if (!input.content || input.content.length > 5000) {
@@ -161,6 +162,7 @@ export function useActivities({ lead_id, customer_id }: UseActivitiesOptions) {
         user_id: profile.id,
         type: input.type as 'anruf' | 'email' | 'meeting' | 'notiz' | 'fehler',
         content: input.content,
+        metadata: (input.metadata ?? null) as any,
       });
 
       if (error) throw error;
