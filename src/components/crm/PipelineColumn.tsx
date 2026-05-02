@@ -65,7 +65,7 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <CardHeader className="pb-3 flex-shrink-0 space-y-1.5 px-3 sm:px-6">
+      <CardHeader className="pb-3 flex-shrink-0 space-y-1.5 px-2.5 sm:px-6 pt-3 sm:pt-6">
         <div className="flex items-start justify-between gap-1.5 sm:gap-2">
           <div className="flex items-start gap-1.5 sm:gap-2 min-w-0 flex-1">
             <div className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 mt-1", getStageColor(stage))} />
