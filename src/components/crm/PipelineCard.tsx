@@ -93,6 +93,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const { createCall } = useCalls({ lead_id: lead.id });
   const { activities, createActivity } = useActivities({ lead_id: lead.id });
+  const { moveToStage } = usePipeline();
 
   // Cooldown-Tick: forciert Re-Render, wenn die 24h ablaufen,
   // damit der Button automatisch wieder freigegeben wird.
