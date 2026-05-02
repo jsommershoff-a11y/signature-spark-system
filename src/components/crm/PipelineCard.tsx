@@ -97,6 +97,10 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
 
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
+  const [followUpPreview, setFollowUpPreview] = useState<
+    | { templateId: FollowUpTemplateId; label: string; subject: string; body: string }
+    | null
+  >(null);
   const { createCall } = useCalls({ lead_id: lead.id });
   const { activities, createActivity } = useActivities({ lead_id: lead.id });
   const { moveToStage } = usePipeline();
