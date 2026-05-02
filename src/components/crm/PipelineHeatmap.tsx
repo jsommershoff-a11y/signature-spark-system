@@ -105,10 +105,13 @@ export function PipelineHeatmap({
               title={getStageTooltip(stage)}
             >
               <div className="flex items-start justify-between gap-2 mb-1.5">
-                <span className="text-xs font-medium leading-snug break-words flex-1 min-w-0">
+                <span
+                  className="text-xs font-medium leading-snug break-words flex-1 min-w-0"
+                  style={{ overflowWrap: 'anywhere' }}
+                >
                   {getStageLabel(stage)}
                 </span>
-                <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                <div className="flex items-center gap-1.5 shrink-0 mt-0.5 whitespace-nowrap">
                   <span className="text-xs tabular-nums font-semibold">
                     {current}
                   </span>
