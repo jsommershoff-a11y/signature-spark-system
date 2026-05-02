@@ -56,11 +56,11 @@ export function PipelineHeatmap({
   const max = Math.max(1, ...stats.map((s) => s.current));
 
   return (
-    <Card className="p-4 space-y-3 h-full">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold">Pipeline-Übersicht</h3>
-          <p className="text-xs text-muted-foreground">
+    <Card className="p-3 sm:p-4 space-y-3 h-full">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-semibold leading-tight">Pipeline-Übersicht</h3>
+          <p className="text-xs text-muted-foreground leading-snug break-words">
             {total} Leads · Trend vs. gestern
           </p>
         </div>
@@ -68,7 +68,7 @@ export function PipelineHeatmap({
           <Button
             size="sm"
             variant="ghost"
-            className="h-7 px-2 text-xs"
+            className="h-7 px-2 text-xs flex-shrink-0"
             onClick={() => onStageSelect(null)}
           >
             <X className="h-3 w-3 mr-1" />
