@@ -69,29 +69,23 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
         <div className="flex items-start justify-between gap-1.5 sm:gap-2">
           <div className="flex items-start gap-1.5 sm:gap-2 min-w-0 flex-1">
             <div className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 mt-1", getStageColor(stage))} />
-            <CardTitle
-              className="text-[13px] sm:text-sm font-medium leading-snug break-words hyphens-auto flex-1 min-w-0"
-              style={{ overflowWrap: 'anywhere' }}
-              title={getStageTooltip(stage)}
-            >
-              {getStageLabel(stage)}
-            </CardTitle>
-            <TooltipProvider delayDuration={150}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label={`Hinweis: ${getStageLabel(stage)}`}
-                    className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5 -mr-0.5"
-                  >
-                    <Info className="h-3.5 w-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[260px] text-xs leading-relaxed">
-                  {getStageHint(stage)}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <StageTooltip stage={stage} className="flex-1 min-w-0">
+              <CardTitle
+                className="text-[13px] sm:text-sm font-medium leading-snug break-words hyphens-auto"
+                style={{ overflowWrap: 'anywhere' }}
+              >
+                {getStageLabel(stage)}
+              </CardTitle>
+            </StageTooltip>
+            <StageTooltip stage={stage} asChild>
+              <button
+                type="button"
+                aria-label={`Hinweis: ${getStageLabel(stage)}`}
+                className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5 -mr-0.5"
+              >
+                <Info className="h-3.5 w-3.5" />
+              </button>
+            </StageTooltip>
           </div>
           <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 flex-shrink-0 mt-0.5">
             {items.length}
