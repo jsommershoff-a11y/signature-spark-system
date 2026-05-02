@@ -96,23 +96,27 @@ export function PipelineStatsWidget({ stats, isLoading }: PipelineStatsWidgetPro
             <span className="text-sm">Keine Pipeline-Daten</span>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {sortedStats.map((stat) => (
-              <div
-                key={stat.stage}
-                className="flex items-center justify-between p-2 rounded-lg bg-accent/50"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${STAGE_COLORS[stat.stage] || 'bg-gray-500'}`}
-                  />
-                  <span className="text-xs truncate">
-                    {PIPELINE_STAGE_LABELS[stat.stage as PipelineStage] || stat.stage}
-                  </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {sortedStats.map((stat) => {
+              const stage = stat.stage as PipelineStage;
+              return (
+                <div
+                  key={stat.stage}
+                  className="flex items-start justify-between gap-2 p-2 rounded-lg bg-accent/50"
+                  title={getStageTooltip(stage)}
+                >
+                  <div className="flex items-start gap-2 min-w-0 flex-1">
+                    <div
+                      className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${STAGE_COLORS[stat.stage] || 'bg-gray-500'}`}
+                    />
+                    <span className="text-xs leading-snug break-words flex-1 min-w-0">
+                      {getStageLabel(stage) || stat.stage}
+                    </span>
+                  </div>
+                  <span className="text-sm font-bold tabular-nums flex-shrink-0">{stat.count}</span>
                 </div>
-                <span className="text-sm font-bold">{stat.count}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>
