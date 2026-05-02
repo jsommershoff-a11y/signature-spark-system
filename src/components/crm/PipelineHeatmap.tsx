@@ -106,8 +106,10 @@ export function PipelineHeatmap({
               >
                 <div className="flex items-start justify-between gap-2 mb-1.5">
                   <span
-                    className="text-xs font-medium leading-snug break-words flex-1 min-w-0"
-                    style={{ overflowWrap: 'anywhere' }}
+                    className={cn(
+                      'text-xs font-medium leading-snug flex-1 min-w-0',
+                      STAGE_LABEL_WRAP_CLASS,
+                    )}
                   >
                     {getStageLabel(stage)}
                   </span>
