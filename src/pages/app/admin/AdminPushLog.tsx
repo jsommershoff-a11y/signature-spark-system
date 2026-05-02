@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePushLog, type PushLogStatus } from '@/hooks/usePushLog';
+import { PushTestCard } from '@/components/admin/PushTestCard';
 import { BellRing, CheckCircle2, AlertTriangle, XCircle, Clock, MinusCircle, ShieldAlert, UserCheck, PhoneIncoming, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -61,6 +62,8 @@ export default function AdminPushLog() {
         title="Push-Log"
         description={`Versendete Push-Benachrichtigungen der letzten ${days} Tage`}
       />
+
+      <PushTestCard />
 
       {/* KPI-Tiles */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">

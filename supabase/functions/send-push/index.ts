@@ -37,6 +37,8 @@ interface SendPushInput {
   data?: Record<string, string>;
   force?: boolean;
   log_id?: string;
+  dry_run?: boolean;
+  source?: string;
 }
 
 interface ServiceAccount {
@@ -197,7 +199,26 @@ serve(async (req) => {
       );
     }
 
+    // Wenn kein log_id übergeben (z.B. Direktaufruf aus Frontend-Testmodus): Log-Eintrag anlegen
+    if (!logId) {
+      const { data: created } = await client
+        .from("push_log")
+        .insert({
+          user_id: input.user_id,
+          category: input.category,
+          title: input.title,
+          body: input.body ?? null,
+          source: input.source ?? (input.dry_run ? "admin_test_dry" : "admin_test"),
+          status: "pending",
+        })
+        .select("id")
+        .single();
+      logId = created?.id;
+    }
+
     // 1) push_settings prüfen (es sei denn force = true)
+    let settingsAllowed = true;
+    let settingsReason: string | null = null;
     if (!input.force) {
       const { data: allowed, error: rpcErr } = await client.rpc(
         "should_send_push",
@@ -211,7 +232,9 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (!allowed) {
+      settingsAllowed = !!allowed;
+      if (!settingsAllowed) settingsReason = "user push settings (category off / quiet hours / global off)";
+      if (!settingsAllowed && !input.dry_run) {
         await updateLog({ status: "skipped", error: "user push settings" });
         return new Response(
           JSON.stringify({ skipped: "user push settings", sent: 0 }),
@@ -235,6 +258,35 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // ---- DRY RUN: nur Validierung, kein Versand ----
+    if (input.dry_run) {
+      const platforms = (tokens ?? []).reduce<Record<string, number>>((acc, t) => {
+        acc[t.platform ?? "unknown"] = (acc[t.platform ?? "unknown"] ?? 0) + 1;
+        return acc;
+      }, {});
+      const fcmConfigured = !!Deno.env.get("FCM_SERVICE_ACCOUNT_JSON");
+      await updateLog({
+        status: "skipped",
+        total_tokens: tokens?.length ?? 0,
+        error: "dry_run",
+        response: { dry_run: true, settings_allowed: settingsAllowed, settings_reason: settingsReason, platforms, fcm_configured: fcmConfigured },
+      });
+      return new Response(
+        JSON.stringify({
+          dry_run: true,
+          would_send: settingsAllowed && (tokens?.length ?? 0) > 0 && fcmConfigured,
+          settings_allowed: settingsAllowed,
+          settings_reason: settingsReason,
+          tokens: tokens?.length ?? 0,
+          platforms,
+          fcm_configured: fcmConfigured,
+          forced: !!input.force,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     if (!tokens || tokens.length === 0) {
       await updateLog({ status: "skipped", error: "no tokens", total_tokens: 0 });
       return new Response(
