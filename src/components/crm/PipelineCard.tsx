@@ -17,7 +17,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { PipelineItemWithLead } from '@/hooks/usePipeline';
+import { PipelineItemWithLead, usePipeline } from '@/hooks/usePipeline';
 import { useCalls } from '@/hooks/useCalls';
 import { useActivities } from '@/hooks/useActivities';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
@@ -29,7 +29,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getStageLabel, getPriorityTone, getPriorityLabel } from '@/lib/pipeline-stage';
+import {
+  getStageLabel,
+  getPriorityTone,
+  getPriorityLabel,
+  getAutoAdvanceStageAfterBooking,
+} from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -88,6 +93,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const { createCall } = useCalls({ lead_id: lead.id });
   const { activities, createActivity } = useActivities({ lead_id: lead.id });
+  const { moveToStage } = usePipeline();
 
   // Cooldown-Tick: forciert Re-Render, wenn die 24h ablaufen,
   // damit der Button automatisch wieder freigegeben wird.
@@ -172,12 +178,48 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         scheduledAt: (data as any)?.scheduled_at ?? created?.scheduled_at,
         type: (data as any)?.call_type ?? (created as any)?.call_type,
       });
-      toast.success('Termin angelegt', {
-        description: `${fullName} – Follow-up jetzt vorbereiten?`,
-        action: lead.email
-          ? { label: 'Follow-up', onClick: () => sendFollowUp() }
-          : undefined,
-      });
+
+      // Wenn Lead noch in einer frühen Phase ist → Auto-Advance vorschlagen.
+      // Mapping zentral in pipeline-stage.ts, damit hier KEIN Stage-Key hartkodiert ist.
+      const nextStage = getAutoAdvanceStageAfterBooking(item.stage);
+      if (nextStage) {
+        const nextLabel = getStageLabel(nextStage);
+        toast.success('Termin angelegt', {
+          description: `${fullName} ist aktuell in „${stageLabel}". Phase auf „${nextLabel}" setzen?`,
+          duration: 10_000,
+          action: {
+            label: `Auf „${nextLabel}"`,
+            onClick: async () => {
+              const ok = await moveToStage(item.id, nextStage);
+              if (ok) {
+                createActivity.mutate(
+                  {
+                    type: 'notiz',
+                    lead_id: lead.id,
+                    content: `Phase nach Terminbuchung automatisch von „${stageLabel}" auf „${nextLabel}" gesetzt.`,
+                  },
+                  { onError: (err) => console.warn('Activity log failed:', err) },
+                );
+                toast.success(`Phase auf „${nextLabel}" gesetzt`, {
+                  description: lead.email ? 'Jetzt Follow-up vorbereiten?' : undefined,
+                  action: lead.email
+                    ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+                    : undefined,
+                });
+              } else {
+                toast.error('Phase konnte nicht aktualisiert werden');
+              }
+            },
+          },
+        });
+      } else {
+        toast.success('Termin angelegt', {
+          description: `${fullName} – Follow-up jetzt vorbereiten?`,
+          action: lead.email
+            ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+            : undefined,
+        });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unbekannter Fehler';
       toast.error('Termin konnte nicht angelegt werden', { description: message });
