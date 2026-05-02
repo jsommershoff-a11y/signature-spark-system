@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFollowUpTemplatesAdmin, type FollowUpTemplateRow } from '@/hooks/useFollowUpTemplates';
 import type { FollowUpVariant } from '@/lib/sales-scripts/follow-up';
 import { validateFollowUpTemplate } from '@/lib/sales-scripts/template-validation';
@@ -111,7 +111,7 @@ export default function AdminFollowUpTemplates() {
 
   // Wenn sich Inhalte ändern, Warnungs-Bestätigung zurücksetzen
   const warningsKey = validation.warnings.map((w) => w.code + (w.placeholder ?? '') + (w.variantId ?? '')).join('|');
-  useMemo(() => { setWarningsAcked(false); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [warningsKey]);
+  useEffect(() => { setWarningsAcked(false); }, [warningsKey]);
 
   const startCreate = () => {
     setEditing(null);
