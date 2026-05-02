@@ -586,21 +586,31 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                       : 'Vorlage wählen'}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {followUpTemplates.map((tpl) => (
-                    <DropdownMenuItem
-                      key={tpl.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        sendFollowUp(tpl.id);
-                      }}
-                      className="flex flex-col items-start gap-0.5 py-2"
-                    >
-                      <span className="text-xs font-medium">{tpl.label}</span>
-                      <span className="text-[10px] text-muted-foreground leading-tight">
-                        {tpl.description}
-                      </span>
-                    </DropdownMenuItem>
-                  ))}
+                  {followUpTemplates.map((tpl) => {
+                    const isDefault = tpl.id === defaultTemplateId;
+                    return (
+                      <DropdownMenuItem
+                        key={tpl.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sendFollowUp(tpl.id);
+                        }}
+                        className="flex flex-col items-start gap-0.5 py-2"
+                      >
+                        <span className="text-xs font-medium flex items-center gap-1.5">
+                          {tpl.label}
+                          {isDefault && (
+                            <Badge variant="secondary" className="text-[9px] h-4 px-1">
+                              Default für Phase
+                            </Badge>
+                          )}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-tight">
+                          {tpl.description}
+                        </span>
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
