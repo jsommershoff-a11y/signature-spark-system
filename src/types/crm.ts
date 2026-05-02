@@ -174,13 +174,13 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
 };
 
 export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
-  new_lead: '🆕 Lead prüfen',
-  setter_call_scheduled: '📅 Termin halten',
-  setter_call_done: '📝 Call auswerten',
-  analysis_ready: '📊 Angebot bauen',
+  new_lead: '👆 Lead prüfen',
+  setter_call_scheduled: '📅 Termin vorbereiten',
+  setter_call_done: '📝 Gespräch auswerten',
+  analysis_ready: '📊 Angebot vorbereiten',
   offer_draft: '✏️ Angebot finalisieren',
-  offer_sent: '📤 Nachfassen',
-  payment_unlocked: '💳 Abschluss holen',
+  offer_sent: '📤 Angebot nachfassen',
+  payment_unlocked: '🤝 Abschluss klären',
   won: '✅ Gewonnen',
   lost: '❌ Verloren',
 };
