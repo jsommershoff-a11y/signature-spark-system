@@ -116,33 +116,20 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   }, []);
 
   const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-  const cooldownStorageKey = lead.email
-    ? `crm:followup:last:${lead.id}:${lead.email.toLowerCase()}`
-    : null;
 
-  // 1) Server-Quelle: gelöggte E-Mail-Activities mit Lead-E-Mail im Inhalt
+  // Optimistischer lokaler Override (nur bis Realtime-Refresh durch usePipeline ankommt)
+  const [optimisticLastFollowUpAt, setOptimisticLastFollowUpAt] = useState<number | null>(null);
+
+  // Server-Quelle: pipeline_items.last_followup_at (cross-device konsistent)
   const lastFollowUpServerAt = useMemo(() => {
-    if (!lead.email) return null;
-    const emailLc = lead.email.toLowerCase();
-    const hit = (activities ?? []).find((a) => {
-      if (a.type !== 'email') return false;
-      const content = (a.content || '').toLowerCase();
-      return content.includes(emailLc) && content.includes('follow-up');
-    });
-    return hit?.created_at ? new Date(hit.created_at).getTime() : null;
-  }, [activities, lead.email]);
-
-  // 2) Lokale Quelle: localStorage (sofortige Reaktion ohne Roundtrip)
-  const lastFollowUpLocalAt = useMemo(() => {
-    if (!cooldownStorageKey || typeof window === 'undefined') return null;
-    const raw = window.localStorage.getItem(cooldownStorageKey);
+    const raw = (item as any).last_followup_at as string | null | undefined;
     if (!raw) return null;
-    const ts = Number.parseInt(raw, 10);
+    const ts = new Date(raw).getTime();
     return Number.isFinite(ts) ? ts : null;
-    // Re-evaluiert über setNowTick (Re-Render) und nach sendFollowUp
-  }, [cooldownStorageKey, activities]);
+  }, [item]);
 
-  const lastFollowUpAt = Math.max(lastFollowUpServerAt ?? 0, lastFollowUpLocalAt ?? 0) || null;
+  const lastFollowUpAt =
+    Math.max(lastFollowUpServerAt ?? 0, optimisticLastFollowUpAt ?? 0) || null;
   const cooldownRemainingMs =
     lastFollowUpAt && Date.now() - lastFollowUpAt < COOLDOWN_MS
       ? COOLDOWN_MS - (Date.now() - lastFollowUpAt)
