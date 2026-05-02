@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   Clock,
   Target,
+  AlertTriangle,
 } from 'lucide-react';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
 import { getStageLabel } from '@/lib/pipeline-stage';
