@@ -539,17 +539,17 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                 )}
                 onClick={(e) => {
                   stop(e);
-                  sendFollowUp('confirm');
+                  sendFollowUp(defaultTemplateId);
                 }}
                 title={
                   isInCooldown
                     ? `Bereits gesendet – noch ${formatCooldown(cooldownRemainingMs)} Cooldown`
-                    : 'Follow-up: Bestätigung (Standard)'
+                    : `Follow-up: ${defaultFollowUpTemplate.label} (Default für „${stageLabel}")`
                 }
                 aria-label={
                   isInCooldown
                     ? 'Follow-up bereits gesendet'
-                    : 'Follow-up Bestätigung senden'
+                    : `Follow-up ${defaultFollowUpTemplate.label} senden`
                 }
               >
                 {isInCooldown ? (
@@ -558,7 +558,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                   <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
                 )}
                 <span className="hidden sm:inline">
-                  {isInCooldown ? 'Bereits gesendet' : 'Follow-up'}
+                  {isInCooldown ? 'Bereits gesendet' : defaultFollowUpTemplate.label}
                 </span>
               </Button>
               <DropdownMenu>
