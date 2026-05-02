@@ -6,7 +6,7 @@ import { PipelineCard } from './PipelineCard';
 import { StageTooltip } from './StageTooltip';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
 import { PipelineStage } from '@/types/crm';
-import { getStageLabel, getStageHint } from '@/lib/pipeline-stage';
+import { getStageLabel, getStageHint, STAGE_LABEL_WRAP_CLASS } from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
 
 interface PipelineColumnProps {
