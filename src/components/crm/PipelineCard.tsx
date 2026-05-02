@@ -416,8 +416,8 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
           </div>
         )}
 
-        {/* Owner + ICP */}
-        {(lead.owner || icp !== undefined) && (
+        {/* Owner + ICP + letztes Follow-up */}
+        {(lead.owner || icp !== undefined || lastFollowUpAt) && (
           <div className="flex items-center gap-2 flex-wrap">
             {lead.owner && (
               <Badge variant="secondary" className="text-[10px] font-normal h-5 px-1.5">
@@ -435,6 +435,29 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                 ICP {icp}%
               </Badge>
             )}
+            {lastFollowUpAt && (() => {
+              const ago = formatDistanceToNowStrict(new Date(lastFollowUpAt), { addSuffix: true, locale: de });
+              const tplId = (item as any).last_followup_template_id as string | null;
+              const varId = (item as any).last_followup_variant_id as string | null;
+              const tplLabel = tplId
+                ? followUpTemplates.find((t) => t.id === tplId)?.label ?? tplId
+                : null;
+              const parts = [tplLabel, varId ? `Variante ${varId}` : null].filter(Boolean).join(' · ');
+              const tooltip = `Letztes Follow-up ${ago}${parts ? ` – ${parts}` : ''}`;
+              return (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[10px] font-normal h-5 px-1.5',
+                    isInCooldown ? 'border-amber-400/60 text-amber-700 dark:text-amber-300' : 'text-muted-foreground',
+                  )}
+                  title={tooltip}
+                >
+                  <Send className="h-3 w-3 mr-1" />
+                  FU {ago}
+                </Badge>
+              );
+            })()}
           </div>
         )}
 
