@@ -153,12 +153,28 @@ serve(async (req) => {
     });
   }
 
-  try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const client = createClient(supabaseUrl, serviceRole);
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const client = createClient(supabaseUrl, serviceRole);
 
+  let logId: string | undefined;
+
+  const updateLog = async (patch: Record<string, unknown>) => {
+    if (!logId) return;
+    try {
+      await client
+        .from("push_log")
+        .update({ ...patch, completed_at: new Date().toISOString() })
+        .eq("id", logId);
+    } catch (e) {
+      console.error("push_log update failed", e);
+    }
+  };
+
+  try {
     const input: SendPushInput = await req.json().catch(() => ({}));
+    logId = input.log_id;
+
     const allowedCats: Category[] = [
       "admin_alerts",
       "member_alerts",
@@ -171,6 +187,7 @@ serve(async (req) => {
       !input.category ||
       !allowedCats.includes(input.category)
     ) {
+      await updateLog({ status: "failed", error: "invalid input" });
       return new Response(
         JSON.stringify({ error: "user_id, title, category required" }),
         {
@@ -188,12 +205,14 @@ serve(async (req) => {
       );
       if (rpcErr) {
         console.error("should_send_push failed", rpcErr);
+        await updateLog({ status: "failed", error: rpcErr.message });
         return new Response(JSON.stringify({ error: rpcErr.message }), {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (!allowed) {
+        await updateLog({ status: "skipped", error: "user push settings" });
         return new Response(
           JSON.stringify({ skipped: "user push settings", sent: 0 }),
           {
@@ -210,12 +229,14 @@ serve(async (req) => {
       .select("id, token, platform")
       .eq("user_id", input.user_id);
     if (tokErr) {
+      await updateLog({ status: "failed", error: tokErr.message });
       return new Response(JSON.stringify({ error: tokErr.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (!tokens || tokens.length === 0) {
+      await updateLog({ status: "skipped", error: "no tokens", total_tokens: 0 });
       return new Response(
         JSON.stringify({ skipped: "no tokens", sent: 0 }),
         {
@@ -228,13 +249,18 @@ serve(async (req) => {
     // 3) FCM Service Account
     const saRaw = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON");
     if (!saRaw) {
+      await updateLog({
+        status: "failed",
+        error: "FCM_SERVICE_ACCOUNT_JSON not configured",
+        total_tokens: tokens.length,
+      });
       return new Response(
         JSON.stringify({
           error: "FCM_SERVICE_ACCOUNT_JSON not configured",
           tokens: tokens.length,
         }),
         {
-          status: 200, // soft-fail damit Trigger nicht crashen
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
@@ -257,7 +283,6 @@ serve(async (req) => {
       if (r.ok) {
         sent++;
       } else {
-        // 404 / UNREGISTERED / INVALID_ARGUMENT => Token entfernen
         if (
           r.status === 404 ||
           (r.error && /UNREGISTERED|INVALID_ARGUMENT|NOT_FOUND/i.test(r.error))
@@ -272,13 +297,23 @@ serve(async (req) => {
       await client.from("push_tokens").delete().in("id", invalid);
     }
 
-    // last_seen_at refresh
     if (sent > 0) {
       await client
         .from("push_tokens")
         .update({ last_seen_at: new Date().toISOString() })
         .eq("user_id", input.user_id);
     }
+
+    const finalStatus =
+      sent === tokens.length ? "sent" : sent > 0 ? "partial" : "failed";
+    await updateLog({
+      status: finalStatus,
+      sent_count: sent,
+      total_tokens: tokens.length,
+      invalid_removed: invalid.length,
+      response: { errors: errors.slice(0, 5) },
+      error: sent === 0 && errors[0]?.error ? errors[0].error.slice(0, 500) : null,
+    });
 
     return new Response(
       JSON.stringify({
@@ -295,6 +330,7 @@ serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("send-push error", msg);
+    await updateLog({ status: "failed", error: msg.slice(0, 500) });
     return new Response(JSON.stringify({ error: msg }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
