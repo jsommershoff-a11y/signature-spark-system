@@ -46,6 +46,31 @@ export const STAGE_LABEL_WRAP_CLASS =
   'break-words hyphens-auto [overflow-wrap:anywhere] [word-break:break-word]';
 
 /* ==========================================================================
+ * Stage-Workflow-Mapping
+ *
+ * Zentrale Quelle für „semantische" Übergänge, damit UI-Komponenten keine
+ * Stage-Keys hartkodieren. Wer eine Phase umbenennt, ändert sie nur hier.
+ * ========================================================================== */
+
+/** Stages, in denen ein Termin noch nicht eingeplant ist (= „frühe" Phasen). */
+export const PRE_MEETING_STAGES: PipelineStage[] = ['new_lead'];
+
+/** Ziel-Stage, wenn ein Termin gebucht wurde. */
+export const STAGE_AFTER_MEETING_BOOKED: PipelineStage = 'setter_call_scheduled';
+
+/**
+ * Liefert die Stage, in die nach erfolgter Terminbuchung automatisch gewechselt
+ * werden sollte – oder `null`, wenn der Lead bereits weiter ist.
+ */
+export function getAutoAdvanceStageAfterBooking(
+  current: PipelineStage,
+): PipelineStage | null {
+  if (current === STAGE_AFTER_MEETING_BOOKED) return null;
+  if (!PRE_MEETING_STAGES.includes(current)) return null;
+  return STAGE_AFTER_MEETING_BOOKED;
+}
+
+/* ==========================================================================
  * Prioritäts-Tonalitäten (Single Source of Truth)
  *
  * Wird von PipelineCard, LeadTable, PipelineHeatmap und PipelineStatsWidget
