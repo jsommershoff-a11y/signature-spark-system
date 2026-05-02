@@ -125,6 +125,7 @@ export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
       '',
       'Beste Grüße',
     ],
+    stages: ['setter_call_done', 'analysis_ready'],
   },
 ];
 
