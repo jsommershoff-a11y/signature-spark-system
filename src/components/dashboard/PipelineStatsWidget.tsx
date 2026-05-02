@@ -101,21 +101,22 @@ export function PipelineStatsWidget({ stats, isLoading }: PipelineStatsWidgetPro
             {sortedStats.map((stat) => {
               const stage = stat.stage as PipelineStage;
               return (
-                <div
-                  key={stat.stage}
-                  className="flex items-start justify-between gap-2 p-2 rounded-lg bg-accent/50"
-                  title={getStageTooltip(stage)}
-                >
-                  <div className="flex items-start gap-2 min-w-0 flex-1">
-                    <div
-                      className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${STAGE_COLORS[stat.stage] || 'bg-gray-500'}`}
-                    />
-                    <span className="text-xs leading-snug break-words flex-1 min-w-0">
-                      {getStageLabel(stage) || stat.stage}
-                    </span>
+                <StageTooltip key={stat.stage} stage={stage} className="block">
+                  <div className="flex items-start justify-between gap-2 p-2 rounded-lg bg-accent/50">
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                      <div
+                        className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${STAGE_COLORS[stat.stage] || 'bg-gray-500'}`}
+                      />
+                      <span
+                        className="text-xs leading-snug break-words flex-1 min-w-0"
+                        style={{ overflowWrap: 'anywhere' }}
+                      >
+                        {getStageLabel(stage) || stat.stage}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold tabular-nums flex-shrink-0">{stat.count}</span>
                   </div>
-                  <span className="text-sm font-bold tabular-nums flex-shrink-0">{stat.count}</span>
-                </div>
+                </StageTooltip>
               );
             })}
           </div>
