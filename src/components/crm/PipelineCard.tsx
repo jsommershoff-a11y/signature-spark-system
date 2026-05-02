@@ -21,6 +21,7 @@ import { PipelineItemWithLead, usePipeline } from '@/hooks/usePipeline';
 import { useCalls } from '@/hooks/useCalls';
 import { useActivities } from '@/hooks/useActivities';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
+import { FollowUpPreviewDialog } from './FollowUpPreviewDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,6 +98,10 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
 
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
+  const [followUpPreview, setFollowUpPreview] = useState<
+    | { templateId: FollowUpTemplateId; label: string; subject: string; body: string }
+    | null
+  >(null);
   const { createCall } = useCalls({ lead_id: lead.id });
   const { activities, createActivity } = useActivities({ lead_id: lead.id });
   const { moveToStage } = usePipeline();
@@ -210,7 +215,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                 toast.success(`Phase auf „${nextLabel}" gesetzt`, {
                   description: lead.email ? 'Jetzt Follow-up vorbereiten?' : undefined,
                   action: lead.email
-                    ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+                    ? { label: 'Vorschau', onClick: () => previewFollowUp() }
                     : undefined,
                 });
               } else {
@@ -223,7 +228,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         toast.success('Termin angelegt', {
           description: `${fullName} – Follow-up jetzt vorbereiten?`,
           action: lead.email
-            ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+            ? { label: 'Vorschau', onClick: () => previewFollowUp() }
             : undefined,
         });
       }
@@ -247,6 +252,25 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   // damit Sales/Marketing sie pflegen kann ohne UI-Code zu touchen.
 
 
+  const buildFollowUp = (templateId: FollowUpTemplateId) => {
+    const greetingName = lead.first_name?.trim() || fullName;
+    const when = formatMeetingWhen(lastMeeting?.scheduledAt);
+    return renderFollowUpTemplate(
+      templateId,
+      { greetingName, when, company: lead.company, stageLabel },
+      followUpTemplates,
+    );
+  };
+
+  const previewFollowUp = (templateId: FollowUpTemplateId = 'confirm') => {
+    if (!lead.email) {
+      toast.error('Keine E-Mail-Adresse hinterlegt');
+      return;
+    }
+    const { template: tpl, subject, body } = buildFollowUp(templateId);
+    setFollowUpPreview({ templateId, label: tpl.label, subject, body });
+  };
+
   const sendFollowUp = (templateId: FollowUpTemplateId = 'confirm', force = false) => {
     if (!lead.email) {
       toast.error('Keine E-Mail-Adresse hinterlegt');
@@ -265,18 +289,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
       return;
     }
 
-    const greetingName = lead.first_name?.trim() || fullName;
-    const when = formatMeetingWhen(lastMeeting?.scheduledAt);
-    const { template: tpl, subject, body } = renderFollowUpTemplate(
-      templateId,
-      {
-        greetingName,
-        when,
-        company: lead.company,
-        stageLabel,
-      },
-      followUpTemplates,
-    );
+    const { template: tpl, subject, body } = buildFollowUp(templateId);
 
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
@@ -586,6 +599,23 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         onSchedule={handleScheduleSubmit}
         showContextToggle
         defaultAttachContext
+      />
+
+      <FollowUpPreviewDialog
+        open={!!followUpPreview}
+        onOpenChange={(o) => !o && setFollowUpPreview(null)}
+        recipient={lead.email}
+        label={followUpPreview?.label}
+        subject={followUpPreview?.subject ?? ''}
+        body={followUpPreview?.body ?? ''}
+        isInCooldown={isInCooldown}
+        cooldownText={isInCooldown ? formatCooldown(cooldownRemainingMs) : null}
+        onConfirm={() => {
+          if (!followUpPreview) return;
+          const id = followUpPreview.templateId;
+          setFollowUpPreview(null);
+          sendFollowUp(id);
+        }}
       />
     </Card>
   );
