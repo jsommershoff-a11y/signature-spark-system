@@ -15,8 +15,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ResponsiveFormDialog } from '@/components/app/ResponsiveFormDialog';
-import { Pencil, Plus, Trash2, Mail } from 'lucide-react';
+import { Pencil, Plus, Trash2, Mail, History } from 'lucide-react';
 import { toast } from 'sonner';
+import FollowUpTemplateHistoryDialog from './FollowUpTemplateHistoryDialog';
 
 const PLACEHOLDER_HINT =
   'Verfügbare Platzhalter: {{greeting_name}}, {{when}}, {{company}}, {{stage_label}}, {{context_line}}';
