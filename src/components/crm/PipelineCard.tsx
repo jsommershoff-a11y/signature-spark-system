@@ -12,7 +12,9 @@ import {
   Target,
   AlertTriangle,
   CalendarPlus,
+  Send,
 } from 'lucide-react';
+import { format } from 'date-fns';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
 import { useCalls } from '@/hooks/useCalls';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
@@ -72,6 +74,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const stagnation = getStagnation(item.stage_updated_at, item.stage);
 
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const { createCall } = useCalls({ lead_id: lead.id });
 
   // Mini-CTAs ohne Card-Click zu triggern
@@ -91,9 +94,16 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         ? `${data.notes}\n\n— Kontext —\n${contextLines}`
         : contextLines;
 
-      await createCall({ ...data, notes });
+      const created = await createCall({ ...data, notes });
+      setLastMeeting({
+        scheduledAt: (data as any)?.scheduled_at ?? created?.scheduled_at,
+        type: (data as any)?.call_type ?? (created as any)?.call_type,
+      });
       toast.success('Termin angelegt', {
-        description: `${fullName} – wird im Kalender angezeigt.`,
+        description: `${fullName} – Follow-up jetzt vorbereiten?`,
+        action: lead.email
+          ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+          : undefined,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unbekannter Fehler';
@@ -101,6 +111,47 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
       throw err; // Dialog-Loading-State zurücksetzen
     }
   };
+
+  const formatMeetingWhen = (iso?: string) => {
+    if (!iso) return 'unserem vereinbarten Termin';
+    try {
+      return format(new Date(iso), "dd.MM.yyyy 'um' HH:mm 'Uhr'");
+    } catch {
+      return 'unserem vereinbarten Termin';
+    }
+  };
+
+  const sendFollowUp = () => {
+    if (!lead.email) {
+      toast.error('Keine E-Mail-Adresse hinterlegt');
+      return;
+    }
+    const greetingName = lead.first_name?.trim() || fullName;
+    const when = formatMeetingWhen(lastMeeting?.scheduledAt);
+    const subject = `Bestätigung & nächste Schritte – ${when}`;
+    const body = [
+      `Hallo ${greetingName},`,
+      '',
+      `vielen Dank für die Zusage zu unserem Termin am ${when}.`,
+      '',
+      'Damit wir die Zeit optimal nutzen, hier kurz, was dich erwartet:',
+      '• Kurze Bestandsaufnahme deiner aktuellen Situation',
+      '• Konkrete nächste Schritte für deinen Engpass',
+      '• Klare Empfehlung, ob & wie wir zusammenarbeiten',
+      '',
+      lead.company ? `Kontext: ${lead.company} – Phase: ${stageLabel}` : `Phase: ${stageLabel}`,
+      '',
+      'Falls sich etwas ändert, gib mir bitte kurz Bescheid.',
+      '',
+      'Beste Grüße',
+    ].join('\n');
+    const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = href;
+    toast.success('Follow-up vorbereitet', {
+      description: 'E-Mail-Entwurf mit Kontext geöffnet.',
+    });
+  };
+
 
   return (
     <Card
@@ -262,6 +313,22 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
             <CalendarPlus className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
             <span className="hidden sm:inline">Termin</span>
           </Button>
+          {lastMeeting && lead.email && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-[11px] font-medium flex-shrink-0 touch-manipulation text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/15"
+              onClick={(e) => {
+                stop(e);
+                sendFollowUp();
+              }}
+              title="Follow-up E-Mail mit Termin-Kontext vorbereiten"
+              aria-label="Follow-up senden"
+            >
+              <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
+              <span className="hidden sm:inline">Follow-up</span>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
