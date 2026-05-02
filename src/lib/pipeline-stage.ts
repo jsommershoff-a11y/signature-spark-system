@@ -12,7 +12,9 @@
 import {
   PIPELINE_STAGE_LABELS,
   PIPELINE_STAGE_HINTS,
+  PIPELINE_STAGE_TOOLTIPS,
   type PipelineStage,
+  type PipelineStageTooltip,
 } from '@/types/crm';
 
 /** Aktionsorientiertes Stage-Label inkl. Emoji (z. B. „👆 Lead prüfen"). */
