@@ -97,10 +97,22 @@ export default function AdminFollowUpTemplates() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [historyTarget, setHistoryTarget] = useState<FollowUpTemplateRow | null>(null);
+  const [warningsAcked, setWarningsAcked] = useState(false);
+
+  const validation = useMemo(
+    () => validateFollowUpTemplate({
+      subject: form.subject,
+      body: form.body,
+      stages: form.stages,
+      variants: form.variants,
+    }),
+    [form.subject, form.body, form.stages, form.variants],
+  );
 
   const startCreate = () => {
     setEditing(null);
     setForm(EMPTY_FORM);
+    setWarningsAcked(false);
     setOpen(true);
   };
 
