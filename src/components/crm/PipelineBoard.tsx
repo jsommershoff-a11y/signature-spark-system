@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -10,14 +11,18 @@ import {
   PipelineFilters,
   EMPTY_FILTER,
   getIcpBand,
+  countActiveFilters,
   type PipelineFilterValue,
   type OwnerOption,
 } from './PipelineFilters';
 import { PipelineData, PipelineItemWithLead } from '@/hooks/usePipeline';
+import { useTasks } from '@/hooks/useTasks';
 import { getPriorityTier } from '@/lib/pipeline-stage';
+import { supabase } from '@/integrations/supabase/client';
 import {
   PipelineStage,
   PipelineGroup,
+  LeadSourceType,
   PIPELINE_GROUP_LABELS,
   PIPELINE_GROUP_HINTS,
   PIPELINE_GROUP_STAGES,
@@ -68,6 +73,42 @@ function matchesSearch(item: PipelineItemWithLead, q: string): boolean {
   return haystack.includes(q);
 }
 
+function getDateRangeBounds(
+  range: PipelineFilterValue['dateRange'],
+  customFrom?: string,
+  customTo?: string,
+): { from: Date | null; to: Date | null } {
+  const now = new Date();
+  if (range === 'today') {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+    return { from: start, to: end };
+  }
+  if (range === 'week') {
+    const start = new Date(now);
+    const day = (start.getDay() + 6) % 7; // Montag = 0
+    start.setDate(start.getDate() - day);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return { from: start, to: end };
+  }
+  if (range === 'month') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    return { from: start, to: end };
+  }
+  if (range === 'custom') {
+    return {
+      from: customFrom ? new Date(customFrom) : null,
+      to: customTo ? new Date(`${customTo}T23:59:59`) : null,
+    };
+  }
+  return { from: null, to: null };
+}
+
 export function PipelineBoard({
   pipelineByStage,
   loading,
@@ -79,27 +120,28 @@ export function PipelineBoard({
   const [stageFilter, setStageFilter] = useState<PipelineStage | null>(null);
   const [filters, setFilters] = useState<PipelineFilterValue>(EMPTY_FILTER);
 
+  // Aufgaben (für Überfälligkeitsfilter)
+  const { tasks } = useTasks();
+
   // Auswahl beim Mount aus localStorage laden
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (isGroup(stored)) setGroup(stored);
     } catch {
-      // localStorage nicht verfügbar – ignorieren
+      /* ignore */
     }
   }, []);
 
-  // Auswahl persistieren
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, group);
     } catch {
-      // ignorieren
+      /* ignore */
     }
   }, [group]);
 
   const activeStages = useMemo<Set<PipelineStage>>(() => {
-    // Einzel-Stage-Filter (aus Heatmap-Klick) hat Vorrang vor Gruppen-Tabs
     if (stageFilter) return new Set<PipelineStage>([stageFilter]);
     if (group === 'all') return new Set(STAGE_ORDER);
     return new Set(PIPELINE_GROUP_STAGES[group]);
@@ -127,33 +169,122 @@ export function PipelineBoard({
     );
   }, [pipelineByStage]);
 
+  // Quellen aus aktuell geladenen Items
+  const sourceOptions = useMemo<LeadSourceType[]>(() => {
+    const set = new Set<LeadSourceType>();
+    for (const stage of STAGE_ORDER) {
+      for (const item of pipelineByStage[stage] || []) {
+        if (item.lead?.source_type) set.add(item.lead.source_type);
+      }
+    }
+    return Array.from(set).sort();
+  }, [pipelineByStage]);
+
+  // Lead-IDs der aktuell geladenen Items
+  const allLeadIds = useMemo(() => {
+    const ids: string[] = [];
+    for (const stage of STAGE_ORDER) {
+      for (const item of pipelineByStage[stage] || []) {
+        if (item.lead?.id) ids.push(item.lead.id);
+      }
+    }
+    return ids;
+  }, [pipelineByStage]);
+
+  // Angebote pro Lead (Set von lead_ids mit ≥1 Angebot)
+  const { data: leadIdsWithOffer, isError: offersError } = useQuery({
+    queryKey: ['pipeline-board-offers', allLeadIds.length],
+    queryFn: async () => {
+      if (allLeadIds.length === 0) return new Set<string>();
+      const { data, error } = await supabase
+        .from('offers')
+        .select('lead_id')
+        .in('lead_id', allLeadIds);
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((r) => r.lead_id as string).filter(Boolean));
+    },
+    enabled: allLeadIds.length > 0,
+    staleTime: 60_000,
+  });
+
+  // Termine pro Lead (geplante Calls in Zukunft)
+  const { data: leadIdsWithAppointment, isError: callsError } = useQuery({
+    queryKey: ['pipeline-board-appointments', allLeadIds.length],
+    queryFn: async () => {
+      if (allLeadIds.length === 0) return new Set<string>();
+      const { data, error } = await supabase
+        .from('calls')
+        .select('lead_id, scheduled_at')
+        .in('lead_id', allLeadIds)
+        .gte('scheduled_at', new Date().toISOString());
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((r) => r.lead_id as string).filter(Boolean));
+    },
+    enabled: allLeadIds.length > 0,
+    staleTime: 60_000,
+  });
+
+  // Map lead_id → frühestes überfälliges Task (für Fälligkeitsfilter)
+  const overdueLeadIds = useMemo(() => {
+    const set = new Set<string>();
+    const now = new Date();
+    for (const t of tasks ?? []) {
+      if (t.status !== 'open') continue;
+      if (!t.due_at || !t.lead_id) continue;
+      if (new Date(t.due_at) < now) set.add(t.lead_id);
+    }
+    return set;
+  }, [tasks]);
+
   const matchesFilters = (item: PipelineItemWithLead): boolean => {
-    // Priorität
     if (filters.priorities.length > 0) {
       const tier = getPriorityTier(item.pipeline_priority_score);
       if (!filters.priorities.includes(tier)) return false;
     }
-    // Owner
     if (filters.owners.length > 0) {
       const ownerId = item.lead?.owner?.id ?? null;
       const key = ownerId ?? 'unassigned';
       if (!filters.owners.includes(key)) return false;
     }
-    // ICP-Fit
     if (filters.icpBands.length > 0) {
       const band = getIcpBand(item.lead?.icp_fit_score);
       if (!filters.icpBands.includes(band)) return false;
     }
+    if (filters.stages.length > 0) {
+      if (!filters.stages.includes(item.stage)) return false;
+    }
+    if (filters.sources.length > 0) {
+      const src = item.lead?.source_type;
+      if (!src || !filters.sources.includes(src)) return false;
+    }
+    if (filters.overdue !== 'all') {
+      const isOverdue = item.lead?.id ? overdueLeadIds.has(item.lead.id) : false;
+      if (filters.overdue === 'overdue' && !isOverdue) return false;
+      if (filters.overdue === 'on_track' && isOverdue) return false;
+    }
+    if (filters.hasOffer !== 'all' && leadIdsWithOffer) {
+      const has = item.lead?.id ? leadIdsWithOffer.has(item.lead.id) : false;
+      if (filters.hasOffer === 'with' && !has) return false;
+      if (filters.hasOffer === 'without' && has) return false;
+    }
+    if (filters.hasAppointment !== 'all' && leadIdsWithAppointment) {
+      const has = item.lead?.id ? leadIdsWithAppointment.has(item.lead.id) : false;
+      if (filters.hasAppointment === 'with' && !has) return false;
+      if (filters.hasAppointment === 'without' && has) return false;
+    }
+    if (filters.dateRange !== 'all') {
+      const { from, to } = getDateRangeBounds(filters.dateRange, filters.customFrom, filters.customTo);
+      const ref = item.stage_updated_at ? new Date(item.stage_updated_at) : null;
+      if (!ref) return false;
+      if (from && ref < from) return false;
+      if (to && ref > to) return false;
+    }
     return true;
   };
 
-  // Karten pro Stage nach Suche + Filtern filtern (Spalten bleiben sichtbar)
   const filteredByStage = useMemo<PipelineData>(() => {
     const noSearch = !normalizedSearch;
-    const noFilters =
-      filters.priorities.length === 0 &&
-      filters.owners.length === 0 &&
-      filters.icpBands.length === 0;
+    const noFilters = countActiveFilters(filters) === 0;
     if (noSearch && noFilters) return pipelineByStage;
 
     const out: PipelineData = {} as PipelineData;
@@ -164,18 +295,18 @@ export function PipelineBoard({
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pipelineByStage, normalizedSearch, filters]);
+  }, [pipelineByStage, normalizedSearch, filters, leadIdsWithOffer, leadIdsWithAppointment, overdueLeadIds]);
 
-  // Treffer-Count für Suche/Filter (über alle Stages, ohne Dimming-Filter)
-  const hasActiveQuery =
-    !!normalizedSearch ||
-    filters.priorities.length > 0 ||
-    filters.owners.length > 0 ||
-    filters.icpBands.length > 0;
-  const totalMatches = useMemo(() => {
-    if (!hasActiveQuery) return 0;
-    return STAGE_ORDER.reduce((acc, s) => acc + (filteredByStage[s]?.length || 0), 0);
-  }, [filteredByStage, hasActiveQuery]);
+  const totalLeads = useMemo(
+    () => STAGE_ORDER.reduce((acc, s) => acc + (pipelineByStage[s]?.length || 0), 0),
+    [pipelineByStage],
+  );
+  const visibleLeads = useMemo(
+    () => STAGE_ORDER.reduce((acc, s) => acc + (filteredByStage[s]?.length || 0), 0),
+    [filteredByStage],
+  );
+
+  const hasActiveQuery = !!normalizedSearch || countActiveFilters(filters) > 0;
 
   if (loading) {
     return (
@@ -210,33 +341,43 @@ export function PipelineBoard({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Suche: Name, Firma, E-Mail…"
+              placeholder="Suche: Name, Firma, E-Mail, Telefon…"
               className="pl-8 h-9"
             />
             {hasActiveQuery && (
               <Badge
                 variant="secondary"
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]"
-                title={`${totalMatches} Treffer mit aktuellen Filtern`}
+                title={`${visibleLeads} Treffer mit aktuellen Filtern`}
               >
-                {totalMatches}
+                {visibleLeads}
               </Badge>
             )}
           </div>
         </div>
 
-        {/* Filter-Leiste: Priorität, Owner, ICP-Fit */}
+        {/* Filter-Leiste */}
         <PipelineFilters
           value={filters}
           onChange={setFilters}
           ownerOptions={ownerOptions}
+          sourceOptions={sourceOptions}
+          offerFilterAvailable={!offersError}
+          appointmentFilterAvailable={!callsError}
         />
 
-        <p className="text-xs text-muted-foreground break-words">
-          {stageFilter
-            ? `Gefiltert auf eine Phase – Klick auf „Filter ✕" in der Übersicht zum Zurücksetzen.`
-            : PIPELINE_GROUP_HINTS[group]}
-        </p>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-xs text-muted-foreground break-words">
+            {stageFilter
+              ? `Gefiltert auf eine Phase – Klick auf „Filter ✕" in der Übersicht zum Zurücksetzen.`
+              : PIPELINE_GROUP_HINTS[group]}
+          </p>
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {hasActiveQuery
+              ? `${visibleLeads} von ${totalLeads} Leads sichtbar`
+              : `${totalLeads} Leads gesamt`}
+          </p>
+        </div>
 
         <ScrollArea className="w-full">
           <div className="flex gap-3 sm:gap-4 p-1 pb-4 h-[calc(100vh-280px)] min-h-[500px]">
