@@ -110,6 +110,7 @@ export function FollowUpTemplatePreview({
     () => ({
       id: (templateKey || 'preview') as FollowUpTemplateId,
       label: templateKey || 'Vorschau',
+      description: '',
       subject: subject || '',
       body: (body || '').split('\n'),
       variants: variants && variants.length > 0 ? variants : undefined,
