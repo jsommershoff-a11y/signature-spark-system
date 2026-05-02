@@ -3370,6 +3370,9 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          last_followup_at: string | null
+          last_followup_template_id: string | null
+          last_followup_variant_id: string | null
           lead_id: string
           pipeline_priority_score: number | null
           purchase_readiness: number | null
@@ -3381,6 +3384,9 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          last_followup_at?: string | null
+          last_followup_template_id?: string | null
+          last_followup_variant_id?: string | null
           lead_id: string
           pipeline_priority_score?: number | null
           purchase_readiness?: number | null
@@ -3392,6 +3398,9 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          last_followup_at?: string | null
+          last_followup_template_id?: string | null
+          last_followup_variant_id?: string | null
           lead_id?: string
           pipeline_priority_score?: number | null
           purchase_readiness?: number | null
