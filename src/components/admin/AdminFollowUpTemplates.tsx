@@ -32,6 +32,8 @@ interface FormState {
   body: string;
   sort_order: number;
   is_active: boolean;
+  active_from: string | null;
+  active_until: string | null;
   variants: FollowUpVariant[];
   stages: string[];
 }
@@ -44,6 +46,8 @@ const EMPTY_FORM: FormState = {
   body: '',
   sort_order: 100,
   is_active: true,
+  active_from: null,
+  active_until: null,
   variants: [],
   stages: [],
 };
@@ -84,6 +88,8 @@ export default function AdminFollowUpTemplates() {
       body: row.body,
       sort_order: row.sort_order,
       is_active: row.is_active,
+      active_from: row.active_from ?? null,
+      active_until: row.active_until ?? null,
       variants: Array.isArray(row.variants) ? row.variants : [],
       stages: Array.isArray(row.stages) ? row.stages : [],
     });
