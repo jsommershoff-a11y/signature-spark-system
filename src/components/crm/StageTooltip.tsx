@@ -65,7 +65,10 @@ export function StageTooltip({
         <TooltipContent
           side={side}
           sideOffset={6}
-          className="max-w-[260px] py-2 px-3 text-xs leading-relaxed"
+          align="center"
+          avoidCollisions
+          collisionPadding={8}
+          className="max-w-[min(260px,calc(100vw-16px))] py-2 px-3 text-xs leading-relaxed break-words"
         >
           <p className="font-semibold">{label}</p>
           <p className="mt-1 text-muted-foreground">{hint}</p>

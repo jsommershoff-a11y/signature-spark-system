@@ -94,7 +94,7 @@ export function PipelineHeatmap({
           }
 
           return (
-            <StageTooltip key={stage} stage={stage} side="left" asChild>
+            <StageTooltip key={stage} stage={stage} side="bottom" asChild>
               <button
                 type="button"
                 onClick={() => onStageSelect(isSelected ? null : stage)}

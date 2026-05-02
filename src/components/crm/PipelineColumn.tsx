@@ -58,14 +58,14 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
   return (
     <Card
       className={cn(
-        "flex flex-col h-full w-[260px] min-w-[260px] max-w-[260px] sm:w-[300px] sm:min-w-[300px] sm:max-w-[300px] transition-all duration-200",
+        "flex flex-col h-full w-[240px] min-w-[240px] max-w-[240px] xs:w-[260px] xs:min-w-[260px] xs:max-w-[260px] sm:w-[300px] sm:min-w-[300px] sm:max-w-[300px] transition-all duration-200",
         dimmed && "opacity-40 grayscale-[0.4] hover:opacity-70"
       )}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <CardHeader className="pb-3 flex-shrink-0 space-y-1.5 px-3 sm:px-6">
+      <CardHeader className="pb-3 flex-shrink-0 space-y-1.5 px-2.5 sm:px-6 pt-3 sm:pt-6">
         <div className="flex items-start justify-between gap-1.5 sm:gap-2">
           <div className="flex items-start gap-1.5 sm:gap-2 min-w-0 flex-1">
             <div className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 mt-1", getStageColor(stage))} />
