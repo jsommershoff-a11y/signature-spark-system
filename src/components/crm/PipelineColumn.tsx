@@ -58,7 +58,7 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop, dimmed = fal
   return (
     <Card
       className={cn(
-        "flex flex-col h-full w-[260px] min-w-[260px] max-w-[260px] sm:w-[300px] sm:min-w-[300px] sm:max-w-[300px] transition-all duration-200",
+        "flex flex-col h-full w-[240px] min-w-[240px] max-w-[240px] xs:w-[260px] xs:min-w-[260px] xs:max-w-[260px] sm:w-[300px] sm:min-w-[300px] sm:max-w-[300px] transition-all duration-200",
         dimmed && "opacity-40 grayscale-[0.4] hover:opacity-70"
       )}
       onDragOver={handleDragOver}
