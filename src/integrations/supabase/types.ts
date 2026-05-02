@@ -1645,6 +1645,8 @@ export type Database = {
       }
       follow_up_templates: {
         Row: {
+          active_from: string | null
+          active_until: string | null
           body: string
           created_at: string
           description: string
@@ -1660,6 +1662,8 @@ export type Database = {
           variants: Json
         }
         Insert: {
+          active_from?: string | null
+          active_until?: string | null
           body: string
           created_at?: string
           description?: string
@@ -1675,6 +1679,8 @@ export type Database = {
           variants?: Json
         }
         Update: {
+          active_from?: string | null
+          active_until?: string | null
           body?: string
           created_at?: string
           description?: string
