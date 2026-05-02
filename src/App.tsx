@@ -57,6 +57,7 @@ import AdminTrials from "./pages/app/admin/AdminTrials";
 import AdminSettings from "./pages/app/admin/AdminSettings";
 import AdminUpgradeFunnel from "./pages/app/admin/AdminUpgradeFunnel";
 import AdminAuditLog from "./pages/app/admin/AdminAuditLog";
+import AdminPushLog from "./pages/app/admin/AdminPushLog";
 import AdminWebhooks from "./pages/app/AdminWebhooks";
 import Unauthorized from "./pages/app/Unauthorized";
 import Calls from "./pages/app/Calls";
