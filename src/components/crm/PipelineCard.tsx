@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import {
   CalendarPlus,
   Send,
   ChevronDown,
+  CheckCircle2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
@@ -86,24 +87,85 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const { createCall } = useCalls({ lead_id: lead.id });
-  const { createActivity } = useActivities({ lead_id: lead.id });
+  const { activities, createActivity } = useActivities({ lead_id: lead.id });
+
+  // Cooldown-Tick: forciert Re-Render, wenn die 24h ablaufen,
+  // damit der Button automatisch wieder freigegeben wird.
+  const [, setNowTick] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick((t) => t + 1), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+  const cooldownStorageKey = lead.email
+    ? `crm:followup:last:${lead.id}:${lead.email.toLowerCase()}`
+    : null;
+
+  // 1) Server-Quelle: gelöggte E-Mail-Activities mit Lead-E-Mail im Inhalt
+  const lastFollowUpServerAt = useMemo(() => {
+    if (!lead.email) return null;
+    const emailLc = lead.email.toLowerCase();
+    const hit = (activities ?? []).find((a) => {
+      if (a.type !== 'email') return false;
+      const content = (a.content || '').toLowerCase();
+      return content.includes(emailLc) && content.includes('follow-up');
+    });
+    return hit?.created_at ? new Date(hit.created_at).getTime() : null;
+  }, [activities, lead.email]);
+
+  // 2) Lokale Quelle: localStorage (sofortige Reaktion ohne Roundtrip)
+  const lastFollowUpLocalAt = useMemo(() => {
+    if (!cooldownStorageKey || typeof window === 'undefined') return null;
+    const raw = window.localStorage.getItem(cooldownStorageKey);
+    if (!raw) return null;
+    const ts = Number.parseInt(raw, 10);
+    return Number.isFinite(ts) ? ts : null;
+    // Re-evaluiert über setNowTick (Re-Render) und nach sendFollowUp
+  }, [cooldownStorageKey, activities]);
+
+  const lastFollowUpAt = Math.max(lastFollowUpServerAt ?? 0, lastFollowUpLocalAt ?? 0) || null;
+  const cooldownRemainingMs =
+    lastFollowUpAt && Date.now() - lastFollowUpAt < COOLDOWN_MS
+      ? COOLDOWN_MS - (Date.now() - lastFollowUpAt)
+      : 0;
+  const isInCooldown = cooldownRemainingMs > 0;
+
+  const formatCooldown = (ms: number) => {
+    const totalMin = Math.ceil(ms / 60_000);
+    if (totalMin >= 60) {
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      return m > 0 ? `${h}h ${m}min` : `${h}h`;
+    }
+    return `${totalMin}min`;
+  };
+
 
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
-  const handleScheduleSubmit = async (data: Parameters<typeof createCall>[0]) => {
+  const handleScheduleSubmit = async (
+    data: Parameters<typeof createCall>[0],
+    options?: { attachContext: boolean },
+  ) => {
     try {
-      // Lead-Kontext in Notes vorbelegen, wenn leer
-      const contextLines = [
-        `Lead: ${fullName}`,
-        lead.company ? `Firma: ${lead.company}` : null,
-        lead.phone ? `Telefon: ${lead.phone}` : null,
-        lead.email ? `E-Mail: ${lead.email}` : null,
-        `Phase: ${stageLabel}`,
-      ].filter(Boolean).join('\n');
-      const notes = data.notes && data.notes.trim().length > 0
-        ? `${data.notes}\n\n— Kontext —\n${contextLines}`
-        : contextLines;
+      const attachContext = options?.attachContext ?? true;
+
+      // Lead-Kontext nur anhängen, wenn Nutzer es nicht abgewählt hat
+      let notes = data.notes;
+      if (attachContext) {
+        const contextLines = [
+          `Lead: ${fullName}`,
+          lead.company ? `Firma: ${lead.company}` : null,
+          lead.phone ? `Telefon: ${lead.phone}` : null,
+          lead.email ? `E-Mail: ${lead.email}` : null,
+          `Phase: ${stageLabel}`,
+        ].filter(Boolean).join('\n');
+        notes = data.notes && data.notes.trim().length > 0
+          ? `${data.notes}\n\n— Kontext —\n${contextLines}`
+          : contextLines;
+      }
 
       const created = await createCall({ ...data, notes });
       setLastMeeting({
@@ -217,11 +279,24 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     };
   };
 
-  const sendFollowUp = (templateId: FollowUpTemplateId = 'confirm') => {
+  const sendFollowUp = (templateId: FollowUpTemplateId = 'confirm', force = false) => {
     if (!lead.email) {
       toast.error('Keine E-Mail-Adresse hinterlegt');
       return;
     }
+
+    // 24h-Cooldown: nicht direkt öffnen, sondern Bestätigung verlangen.
+    if (isInCooldown && !force) {
+      toast.warning('Follow-up bereits gesendet', {
+        description: `An ${lead.email} ging vor weniger als 24h ein Follow-up raus. Verbleibend: ${formatCooldown(cooldownRemainingMs)}.`,
+        action: {
+          label: 'Trotzdem senden',
+          onClick: () => sendFollowUp(templateId, true),
+        },
+      });
+      return;
+    }
+
     const greetingName = lead.first_name?.trim() || fullName;
     const when = formatMeetingWhen(lastMeeting?.scheduledAt);
     const tpl = FOLLOW_UP_TEMPLATES.find((t) => t.id === templateId) ?? FOLLOW_UP_TEMPLATES[0];
@@ -229,6 +304,16 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
 
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
+
+    // Lokalen Cooldown-Stempel sofort setzen
+    if (cooldownStorageKey && typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(cooldownStorageKey, String(Date.now()));
+        setNowTick((t) => t + 1);
+      } catch {
+        /* Storage voll oder blockiert – ignorieren */
+      }
+    }
 
     // Activity loggen (best-effort, blockiert UI nicht)
     createActivity.mutate(
@@ -245,9 +330,12 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     );
 
     toast.success(`Follow-up vorbereitet: ${tpl.label}`, {
-      description: 'E-Mail-Entwurf geöffnet & im Verlauf protokolliert.',
+      description: force
+        ? 'Erneut gesendet – Cooldown zurückgesetzt.'
+        : 'E-Mail-Entwurf geöffnet & im Verlauf protokolliert.',
     });
   };
+
 
 
   return (
@@ -410,28 +498,59 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
             <CalendarPlus className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
             <span className="hidden sm:inline">Termin</span>
           </Button>
-          {lastMeeting && lead.email && (
-            <div className="flex items-center flex-shrink-0 rounded-md overflow-hidden bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+          {(lastMeeting || lastFollowUpAt) && lead.email && (
+            <div
+              className={cn(
+                'flex items-center flex-shrink-0 rounded-md overflow-hidden',
+                isInCooldown
+                  ? 'bg-muted text-muted-foreground'
+                  : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+              )}
+            >
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-[11px] font-medium rounded-none touch-manipulation hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                className={cn(
+                  'h-8 px-2 text-[11px] font-medium rounded-none touch-manipulation',
+                  isInCooldown
+                    ? 'hover:bg-muted/80 text-muted-foreground'
+                    : 'hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+                )}
                 onClick={(e) => {
                   stop(e);
                   sendFollowUp('confirm');
                 }}
-                title="Follow-up: Bestätigung (Standard)"
-                aria-label="Follow-up Bestätigung senden"
+                title={
+                  isInCooldown
+                    ? `Bereits gesendet – noch ${formatCooldown(cooldownRemainingMs)} Cooldown`
+                    : 'Follow-up: Bestätigung (Standard)'
+                }
+                aria-label={
+                  isInCooldown
+                    ? 'Follow-up bereits gesendet'
+                    : 'Follow-up Bestätigung senden'
+                }
               >
-                <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
-                <span className="hidden sm:inline">Follow-up</span>
+                {isInCooldown ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
+                ) : (
+                  <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
+                )}
+                <span className="hidden sm:inline">
+                  {isInCooldown ? 'Bereits gesendet' : 'Follow-up'}
+                </span>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-1 rounded-none border-l border-emerald-500/20 touch-manipulation hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                    className={cn(
+                      'h-8 px-1 rounded-none border-l touch-manipulation',
+                      isInCooldown
+                        ? 'border-border/60 hover:bg-muted/80 text-muted-foreground'
+                        : 'border-emerald-500/20 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+                    )}
                     onClick={stop}
                     title="Vorlage wählen"
                     aria-label="Follow-up Vorlage wählen"
@@ -439,8 +558,12 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                     <ChevronDown className="h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" onClick={stop} className="w-56">
-                  <DropdownMenuLabel className="text-[11px]">Vorlage wählen</DropdownMenuLabel>
+                <DropdownMenuContent align="end" onClick={stop} className="w-60">
+                  <DropdownMenuLabel className="text-[11px]">
+                    {isInCooldown
+                      ? `Cooldown – noch ${formatCooldown(cooldownRemainingMs)}`
+                      : 'Vorlage wählen'}
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {FOLLOW_UP_TEMPLATES.map((tpl) => (
                     <DropdownMenuItem
@@ -485,6 +608,8 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         leadId={lead.id}
         leadName={fullName}
         onSchedule={handleScheduleSubmit}
+        showContextToggle
+        defaultAttachContext
       />
     </Card>
   );

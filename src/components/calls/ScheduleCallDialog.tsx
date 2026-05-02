@@ -32,14 +32,19 @@ import {
   CALL_TYPE_LABELS,
   CALL_PROVIDER_LABELS,
 } from '@/types/calls';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, ShieldAlert } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface ScheduleCallDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leadId: string;
   leadName?: string;
-  onSchedule: (data: CreateCallInput) => Promise<void>;
+  onSchedule: (data: CreateCallInput, options?: { attachContext: boolean }) => Promise<void>;
+  /** Wenn true (Default), wird die "Lead-Kontext anhängen"-Checkbox eingeblendet. */
+  showContextToggle?: boolean;
+  /** Initialwert der Checkbox – Default true (Kontext anhängen). */
+  defaultAttachContext?: boolean;
 }
 
 export function ScheduleCallDialog({
@@ -48,6 +53,8 @@ export function ScheduleCallDialog({
   leadId,
   leadName,
   onSchedule,
+  showContextToggle = false,
+  defaultAttachContext = true,
 }: ScheduleCallDialogProps) {
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date>();
@@ -55,6 +62,7 @@ export function ScheduleCallDialog({
   const [callType, setCallType] = useState<CallType>('phone');
   const [provider, setProvider] = useState<CallProvider>('manual');
   const [notes, setNotes] = useState('');
+  const [attachContext, setAttachContext] = useState<boolean>(defaultAttachContext);
 
   const handleSubmit = async () => {
     if (!date) return;
@@ -65,13 +73,16 @@ export function ScheduleCallDialog({
       const scheduledAt = new Date(date);
       scheduledAt.setHours(hours, minutes, 0, 0);
 
-      await onSchedule({
-        lead_id: leadId,
-        call_type: callType,
-        provider,
-        scheduled_at: scheduledAt.toISOString(),
-        notes: notes || undefined,
-      });
+      await onSchedule(
+        {
+          lead_id: leadId,
+          call_type: callType,
+          provider,
+          scheduled_at: scheduledAt.toISOString(),
+          notes: notes || undefined,
+        },
+        { attachContext },
+      );
 
       // Reset form
       setDate(undefined);
@@ -79,6 +90,7 @@ export function ScheduleCallDialog({
       setCallType('phone');
       setProvider('manual');
       setNotes('');
+      setAttachContext(defaultAttachContext);
       onOpenChange(false);
     } finally {
       setLoading(false);
@@ -180,6 +192,30 @@ export function ScheduleCallDialog({
               rows={3}
             />
           </div>
+
+          {/* Lead-Kontext anhängen (optional, datenschutzfreundlich) */}
+          {showContextToggle && (
+            <div className="flex items-start gap-2 rounded-md border border-border/60 bg-muted/30 p-3">
+              <Checkbox
+                id="attach-context"
+                checked={attachContext}
+                onCheckedChange={(v) => setAttachContext(v === true)}
+                className="mt-0.5"
+              />
+              <div className="space-y-1 leading-snug">
+                <Label htmlFor="attach-context" className="text-sm font-medium cursor-pointer">
+                  Lead-Kontext an Notizen anhängen
+                </Label>
+                <p className="text-[11px] text-muted-foreground flex items-start gap-1">
+                  <ShieldAlert className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                  <span>
+                    Fügt Name, Firma, Telefon, E-Mail und Phase an die Notizen an. Bei sensiblen
+                    Inhalten deaktivieren.
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
