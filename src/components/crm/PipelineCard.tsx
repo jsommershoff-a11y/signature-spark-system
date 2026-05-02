@@ -498,28 +498,59 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
             <CalendarPlus className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
             <span className="hidden sm:inline">Termin</span>
           </Button>
-          {lastMeeting && lead.email && (
-            <div className="flex items-center flex-shrink-0 rounded-md overflow-hidden bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+          {(lastMeeting || lastFollowUpAt) && lead.email && (
+            <div
+              className={cn(
+                'flex items-center flex-shrink-0 rounded-md overflow-hidden',
+                isInCooldown
+                  ? 'bg-muted text-muted-foreground'
+                  : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+              )}
+            >
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-[11px] font-medium rounded-none touch-manipulation hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                className={cn(
+                  'h-8 px-2 text-[11px] font-medium rounded-none touch-manipulation',
+                  isInCooldown
+                    ? 'hover:bg-muted/80 text-muted-foreground'
+                    : 'hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+                )}
                 onClick={(e) => {
                   stop(e);
                   sendFollowUp('confirm');
                 }}
-                title="Follow-up: Bestätigung (Standard)"
-                aria-label="Follow-up Bestätigung senden"
+                title={
+                  isInCooldown
+                    ? `Bereits gesendet – noch ${formatCooldown(cooldownRemainingMs)} Cooldown`
+                    : 'Follow-up: Bestätigung (Standard)'
+                }
+                aria-label={
+                  isInCooldown
+                    ? 'Follow-up bereits gesendet'
+                    : 'Follow-up Bestätigung senden'
+                }
               >
-                <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
-                <span className="hidden sm:inline">Follow-up</span>
+                {isInCooldown ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
+                ) : (
+                  <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
+                )}
+                <span className="hidden sm:inline">
+                  {isInCooldown ? 'Bereits gesendet' : 'Follow-up'}
+                </span>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-1 rounded-none border-l border-emerald-500/20 touch-manipulation hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                    className={cn(
+                      'h-8 px-1 rounded-none border-l touch-manipulation',
+                      isInCooldown
+                        ? 'border-border/60 hover:bg-muted/80 text-muted-foreground'
+                        : 'border-emerald-500/20 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+                    )}
                     onClick={stop}
                     title="Vorlage wählen"
                     aria-label="Follow-up Vorlage wählen"
@@ -527,8 +558,12 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                     <ChevronDown className="h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" onClick={stop} className="w-56">
-                  <DropdownMenuLabel className="text-[11px]">Vorlage wählen</DropdownMenuLabel>
+                <DropdownMenuContent align="end" onClick={stop} className="w-60">
+                  <DropdownMenuLabel className="text-[11px]">
+                    {isInCooldown
+                      ? `Cooldown – noch ${formatCooldown(cooldownRemainingMs)}`
+                      : 'Vorlage wählen'}
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {FOLLOW_UP_TEMPLATES.map((tpl) => (
                     <DropdownMenuItem
