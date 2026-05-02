@@ -35,6 +35,28 @@ export interface FollowUpTemplate {
   body: string[];
   /** Optionale A/B-Varianten. Leer = nur Standard verwenden. */
   variants?: FollowUpVariant[];
+  /** Pipeline-Stages, für die diese Vorlage als Default vorgeschlagen wird. */
+  stages?: string[];
+}
+
+/**
+ * Wählt das passende Default-Template für eine Pipeline-Stage.
+ * Bevorzugt explizit zugeordnete Templates, fällt sonst auf 'confirm'
+ * (oder das erste verfügbare) zurück.
+ */
+export function pickDefaultTemplateForStage(
+  stage: string | null | undefined,
+  templates: FollowUpTemplate[] = FOLLOW_UP_TEMPLATES,
+): FollowUpTemplate {
+  if (stage) {
+    const match = templates.find((t) => (t.stages ?? []).includes(stage));
+    if (match) return match;
+  }
+  return (
+    templates.find((t) => t.id === 'confirm') ??
+    templates[0] ??
+    FOLLOW_UP_TEMPLATES[0]
+  );
 }
 
 export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
@@ -59,6 +81,7 @@ export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
       '',
       'Beste Grüße',
     ],
+    stages: ['setter_call_scheduled', 'new_lead'],
   },
   {
     id: 'reschedule',
@@ -81,6 +104,7 @@ export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
       '',
       'Danke dir & beste Grüße',
     ],
+    stages: ['setter_call_scheduled'],
   },
   {
     id: 'no_show',
@@ -101,6 +125,7 @@ export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
       '',
       'Beste Grüße',
     ],
+    stages: ['setter_call_done', 'analysis_ready'],
   },
 ];
 

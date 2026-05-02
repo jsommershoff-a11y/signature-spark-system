@@ -32,6 +32,7 @@ interface FormState {
   sort_order: number;
   is_active: boolean;
   variants: FollowUpVariant[];
+  stages: string[];
 }
 
 const EMPTY_FORM: FormState = {
@@ -43,7 +44,20 @@ const EMPTY_FORM: FormState = {
   sort_order: 100,
   is_active: true,
   variants: [],
+  stages: [],
 };
+
+const PIPELINE_STAGE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'new_lead', label: 'Neu' },
+  { value: 'setter_call_scheduled', label: 'Setter-Call geplant' },
+  { value: 'setter_call_done', label: 'Setter-Call gehalten' },
+  { value: 'analysis_ready', label: 'Analyse bereit' },
+  { value: 'offer_draft', label: 'Angebotsentwurf' },
+  { value: 'offer_sent', label: 'Angebot versendet' },
+  { value: 'payment_unlocked', label: 'Zahlung freigeschaltet' },
+  { value: 'won', label: 'Gewonnen' },
+  { value: 'lost', label: 'Verloren' },
+];
 
 export default function AdminFollowUpTemplates() {
   const { templates, isLoading, create, update, remove } = useFollowUpTemplatesAdmin();
@@ -70,6 +84,7 @@ export default function AdminFollowUpTemplates() {
       sort_order: row.sort_order,
       is_active: row.is_active,
       variants: Array.isArray(row.variants) ? row.variants : [],
+      stages: Array.isArray(row.stages) ? row.stages : [],
     });
     setOpen(true);
   };
@@ -261,6 +276,42 @@ export default function AdminFollowUpTemplates() {
                 onCheckedChange={(v) => setForm({ ...form, is_active: v })}
               />
               <Label htmlFor="active">Aktiv (in Pipeline-Karte sichtbar)</Label>
+            </div>
+          </div>
+
+          {/* Pipeline-Stage-Zuordnung */}
+          <div className="space-y-2 border-t pt-4">
+            <div>
+              <Label>Pipeline-Stages (Default-Vorlage)</Label>
+              <p className="text-xs text-muted-foreground">
+                Diese Vorlage wird in der PipelineCard automatisch vorgeschlagen,
+                wenn der Lead in einer der angehakten Phasen ist.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {PIPELINE_STAGE_OPTIONS.map((opt) => {
+                const active = form.stages.includes(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      const next = active
+                        ? form.stages.filter((s) => s !== opt.value)
+                        : [...form.stages, opt.value];
+                      setForm({ ...form, stages: next });
+                    }}
+                    className={
+                      'text-left text-xs rounded-md border px-2 py-1.5 transition ' +
+                      (active
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border hover:bg-muted/40 text-muted-foreground')
+                    }
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

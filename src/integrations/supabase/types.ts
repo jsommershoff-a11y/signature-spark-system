@@ -1590,6 +1590,7 @@ export type Database = {
           is_active: boolean
           label: string
           sort_order: number
+          stages: string[]
           subject: string
           template_id: string
           template_key: string
@@ -1607,6 +1608,7 @@ export type Database = {
           is_active?: boolean
           label: string
           sort_order?: number
+          stages?: string[]
           subject: string
           template_id: string
           template_key: string
@@ -1624,6 +1626,7 @@ export type Database = {
           is_active?: boolean
           label?: string
           sort_order?: number
+          stages?: string[]
           subject?: string
           template_id?: string
           template_key?: string
@@ -1649,6 +1652,7 @@ export type Database = {
           is_active: boolean
           label: string
           sort_order: number
+          stages: string[]
           subject: string
           template_key: string
           updated_at: string
@@ -1663,6 +1667,7 @@ export type Database = {
           is_active?: boolean
           label: string
           sort_order?: number
+          stages?: string[]
           subject: string
           template_key: string
           updated_at?: string
@@ -1677,6 +1682,7 @@ export type Database = {
           is_active?: boolean
           label?: string
           sort_order?: number
+          stages?: string[]
           subject?: string
           template_key?: string
           updated_at?: string
