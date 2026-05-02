@@ -17,6 +17,7 @@ import {
 import { format } from 'date-fns';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
 import { useCalls } from '@/hooks/useCalls';
+import { useActivities } from '@/hooks/useActivities';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
 import { getStageLabel, getPriorityTone, getPriorityLabel } from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
@@ -76,6 +77,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [lastMeeting, setLastMeeting] = useState<{ scheduledAt?: string; type?: string } | null>(null);
   const { createCall } = useCalls({ lead_id: lead.id });
+  const { createActivity } = useActivities({ lead_id: lead.id });
 
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -147,8 +149,23 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     ].join('\n');
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
+
+    // Activity loggen (best-effort, blockiert UI nicht)
+    createActivity.mutate(
+      {
+        type: 'email',
+        lead_id: lead.id,
+        content: `Follow-up E-Mail vorbereitet an ${lead.email} – Betreff: "${subject}" (Phase: ${stageLabel})`,
+      },
+      {
+        onError: (err) => {
+          console.warn('Activity log failed:', err);
+        },
+      },
+    );
+
     toast.success('Follow-up vorbereitet', {
-      description: 'E-Mail-Entwurf mit Kontext geöffnet.',
+      description: 'E-Mail-Entwurf geöffnet & im Verlauf protokolliert.',
     });
   };
 
