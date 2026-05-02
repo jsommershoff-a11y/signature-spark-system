@@ -32,14 +32,19 @@ import {
   CALL_TYPE_LABELS,
   CALL_PROVIDER_LABELS,
 } from '@/types/calls';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, ShieldAlert } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface ScheduleCallDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leadId: string;
   leadName?: string;
-  onSchedule: (data: CreateCallInput) => Promise<void>;
+  onSchedule: (data: CreateCallInput, options?: { attachContext: boolean }) => Promise<void>;
+  /** Wenn true (Default), wird die "Lead-Kontext anhängen"-Checkbox eingeblendet. */
+  showContextToggle?: boolean;
+  /** Initialwert der Checkbox – Default true (Kontext anhängen). */
+  defaultAttachContext?: boolean;
 }
 
 export function ScheduleCallDialog({
