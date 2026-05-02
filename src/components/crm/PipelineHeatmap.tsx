@@ -102,13 +102,13 @@ export function PipelineHeatmap({
                 'hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-ring',
                 isSelected && 'bg-muted ring-1 ring-primary/40'
               )}
-              title={`Klick: nur „${PIPELINE_STAGE_LABELS[stage]}“ anzeigen`}
+              title={getStageTooltip(stage)}
             >
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="text-xs font-medium truncate">
-                  {PIPELINE_STAGE_LABELS[stage]}
+              <div className="flex items-start justify-between gap-2 mb-1.5">
+                <span className="text-xs font-medium leading-snug break-words flex-1 min-w-0">
+                  {getStageLabel(stage)}
                 </span>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
                   <span className="text-xs tabular-nums font-semibold">
                     {current}
                   </span>
