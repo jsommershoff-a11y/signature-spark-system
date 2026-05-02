@@ -109,8 +109,10 @@ export function PipelineStatsWidget({ stats, isLoading }: PipelineStatsWidgetPro
                         className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${STAGE_COLORS[stat.stage] || 'bg-gray-500'}`}
                       />
                       <span
-                        className="text-xs leading-snug break-words flex-1 min-w-0"
-                        style={{ overflowWrap: 'anywhere' }}
+                        className={cn(
+                          'text-xs leading-snug flex-1 min-w-0',
+                          STAGE_LABEL_WRAP_CLASS,
+                        )}
                       >
                         {getStageLabel(stage) || stat.stage}
                       </span>
