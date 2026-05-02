@@ -17,6 +17,7 @@ import {
 import { format } from 'date-fns';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
 import { useCalls } from '@/hooks/useCalls';
+import { useActivities } from '@/hooks/useActivities';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
 import { getStageLabel, getPriorityTone, getPriorityLabel } from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
