@@ -219,7 +219,7 @@ describe('Label-Änderungen propagieren in alle Komponenten', () => {
       </>
     );
 
-    const matches = screen.getAllByText('🧪 TEST_LABEL_NEW_LEAD');
+    const matches = screen.getAllByText('TEST_LABEL_NEW_LEAD');
     // Erwartet: 1× Column (Title), 1× Heatmap, 1× Widget = 3 Treffer minimum
     expect(matches.length).toBeGreaterThanOrEqual(3);
 
