@@ -121,7 +121,11 @@ export function LeadDetailSidebar({ lead, open, onOpenChange }: LeadDetailSideba
   const lastActivity = activities?.[0];
 
   const totalOfferValue = useMemo(
-    () => (offers ?? []).reduce((acc, o) => acc + (o.amount_total_cents ?? 0), 0),
+    () =>
+      (offers ?? []).reduce((acc, o) => {
+        const t = (o.offer_json as { total_cents?: number } | undefined)?.total_cents ?? 0;
+        return acc + t;
+      }, 0),
     [offers],
   );
 
@@ -224,7 +228,7 @@ export function LeadDetailSidebar({ lead, open, onOpenChange }: LeadDetailSideba
                     label="Letzter Kontakt"
                     value={
                       lastActivity
-                        ? `${lastActivity.title || lastActivity.activity_type} · ${fmtRelative(lastActivity.created_at)}`
+                        ? `${lastActivity.type} · ${fmtRelative(lastActivity.created_at)}`
                         : null
                     }
                     fallback="Noch kein Kontakt erfasst"
@@ -233,7 +237,7 @@ export function LeadDetailSidebar({ lead, open, onOpenChange }: LeadDetailSideba
                     label="Letzter Call"
                     value={
                       lastCall
-                        ? `${fmtDate(lastCall.ended_at || lastCall.started_at)}${lastCall.outcome ? ` · ${lastCall.outcome}` : ''}`
+                        ? `${fmtDate(lastCall.ended_at || lastCall.started_at)}${lastCall.status ? ` · ${lastCall.status}` : ''}`
                         : null
                     }
                     fallback="Noch kein Call durchgeführt"
