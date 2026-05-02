@@ -3563,6 +3563,36 @@ export type Database = {
         }
         Relationships: []
       }
+      push_tokens: {
+        Row: {
+          created_at: string
+          device_info: Json | null
+          id: string
+          last_seen_at: string
+          platform: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          last_seen_at?: string
+          platform: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          last_seen_at?: string
+          platform?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           affiliate_id: string
@@ -4630,6 +4660,10 @@ export type Database = {
       restore_customer: {
         Args: { _id: string; _source: string }
         Returns: undefined
+      }
+      should_send_push: {
+        Args: { _category: string; _user_id: string }
+        Returns: boolean
       }
       soft_delete_customer: {
         Args: { _id: string; _source: string }
