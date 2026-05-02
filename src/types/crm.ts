@@ -185,6 +185,19 @@ export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
   lost: 'Kein Abschluss',
 };
 
+// Kurze Aktions-Hinweise pro Pipeline-Phase ("Was ist hier als Nächstes zu tun?")
+export const PIPELINE_STAGE_HINTS: Record<PipelineStage, string> = {
+  new_lead: 'Lead sichten und qualifizieren: passt ICP? Dann Erstgespräch anbieten.',
+  setter_call_scheduled: 'Termin bestätigen, Reminder senden, No-Show vermeiden.',
+  setter_call_done: 'Bedarf dokumentieren und Analyse / Lösungsvorschlag vorbereiten.',
+  analysis_ready: 'Angebot konfigurieren – Module, Preis und Laufzeit festlegen.',
+  offer_draft: 'Angebot finalisieren und an den Lead versenden.',
+  offer_sent: 'Aktiv nachfassen: offene Fragen klären, Entscheidung herbeiführen.',
+  payment_unlocked: 'Closing absichern: Vertrag, Zahlung und Onboarding-Start abstimmen.',
+  won: 'Onboarding starten und in Kundenbetreuung übergeben.',
+  lost: 'Verlustgrund dokumentieren und ggf. in Nurture-Sequenz aufnehmen.',
+};
+
 export const TASK_TYPE_LABELS: Record<TaskType, string> = {
   call: 'Anruf',
   followup: 'Follow-up',
