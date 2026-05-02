@@ -2,24 +2,24 @@ import { useState } from 'react';
 import { usePipeline, PipelineItemWithLead } from '@/hooks/usePipeline';
 import { useLeads } from '@/hooks/useLeads';
 import { PipelineBoard } from '@/components/crm/PipelineBoard';
-import { LeadDetailModal } from '@/components/crm/LeadDetailModal';
+import { LeadDetailSidebar } from '@/components/crm/LeadDetailSidebar';
+import { StageTransitionDialog } from '@/components/crm/StageTransitionDialog';
 import { PipelineStage, CrmLead } from '@/types/crm';
 
 export default function Pipeline() {
   const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingTransition, setPendingTransition] = useState<{
+    itemId: string;
+    fromStage: PipelineStage | null;
+    toStage: PipelineStage;
+  } | null>(null);
 
-  const { 
-    pipelineByStage, 
-    loading,
-    moveToStage,
-  } = usePipeline();
-
-  const { updateLead, updatePipelineStage } = useLeads();
+  const { pipelineByStage, loading, moveToStage } = usePipeline();
+  const { updateLead } = useLeads();
 
   const handleItemClick = (item: PipelineItemWithLead) => {
     if (item.lead) {
-      // Transform the lead to include pipeline_item
       const leadWithPipeline: CrmLead = {
         ...item.lead,
         pipeline_item: {
@@ -32,16 +32,33 @@ export default function Pipeline() {
           pipeline_priority_score: item.pipeline_priority_score,
           purchase_readiness: item.purchase_readiness,
           urgency: item.urgency,
-        }
+        },
       };
       setSelectedLead(leadWithPipeline);
-      setDetailModalOpen(true);
+      setSidebarOpen(true);
     }
   };
 
-  const handleStageChange = async (itemId: string, stage: PipelineStage) => {
-    await moveToStage(itemId, stage);
+  const handleStageChange = (itemId: string, stage: PipelineStage) => {
+    // Aktuellen Stage des Items aus pipelineByStage ermitteln
+    let fromStage: PipelineStage | null = null;
+    for (const s of Object.keys(pipelineByStage) as PipelineStage[]) {
+      if ((pipelineByStage[s] || []).some((it) => it.id === itemId)) {
+        fromStage = s;
+        break;
+      }
+    }
+    if (fromStage === stage) return; // kein Wechsel
+    setPendingTransition({ itemId, fromStage, toStage: stage });
   };
+
+  const confirmTransition = async () => {
+    if (!pendingTransition) return;
+    await moveToStage(pendingTransition.itemId, pendingTransition.toStage);
+    setPendingTransition(null);
+  };
+
+  const cancelTransition = () => setPendingTransition(null);
 
   return (
     <div className="space-y-6">
@@ -59,12 +76,26 @@ export default function Pipeline() {
         onStageChange={handleStageChange}
       />
 
-      <LeadDetailModal
+      <LeadDetailSidebar
         lead={selectedLead}
-        open={detailModalOpen}
-        onOpenChange={setDetailModalOpen}
-        onSave={updateLead}
-        onStageChange={updatePipelineStage}
+        open={sidebarOpen}
+        onOpenChange={setSidebarOpen}
+      />
+
+      <StageTransitionDialog
+        transition={pendingTransition}
+        onConfirm={confirmTransition}
+        onCancel={cancelTransition}
+        onUpdateLeadNotes={async (leadId, notes) => {
+          await updateLead({ id: leadId, notes });
+        }}
+        leadIdForItem={(itemId) => {
+          for (const s of Object.keys(pipelineByStage) as PipelineStage[]) {
+            const it = (pipelineByStage[s] || []).find((x) => x.id === itemId);
+            if (it?.lead_id) return it.lead_id;
+          }
+          return null;
+        }}
       />
     </div>
   );
