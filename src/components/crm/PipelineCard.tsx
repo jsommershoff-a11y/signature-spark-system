@@ -599,6 +599,23 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         showContextToggle
         defaultAttachContext
       />
+
+      <FollowUpPreviewDialog
+        open={!!followUpPreview}
+        onOpenChange={(o) => !o && setFollowUpPreview(null)}
+        recipient={lead.email}
+        label={followUpPreview?.label}
+        subject={followUpPreview?.subject ?? ''}
+        body={followUpPreview?.body ?? ''}
+        isInCooldown={isInCooldown}
+        cooldownText={isInCooldown ? formatCooldown(cooldownRemainingMs) : null}
+        onConfirm={() => {
+          if (!followUpPreview) return;
+          const id = followUpPreview.templateId;
+          setFollowUpPreview(null);
+          sendFollowUp(id);
+        }}
+      />
     </Card>
   );
 }
