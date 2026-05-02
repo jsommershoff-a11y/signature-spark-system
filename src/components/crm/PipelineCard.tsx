@@ -35,6 +35,11 @@ import {
   getPriorityLabel,
   getAutoAdvanceStageAfterBooking,
 } from '@/lib/pipeline-stage';
+import {
+  FOLLOW_UP_TEMPLATES,
+  renderFollowUpTemplate,
+  type FollowUpTemplateId,
+} from '@/lib/sales-scripts/follow-up';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
