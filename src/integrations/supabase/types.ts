@@ -1578,6 +1578,65 @@ export type Database = {
           },
         ]
       }
+      follow_up_template_versions: {
+        Row: {
+          body: string
+          change_note: string | null
+          change_type: string
+          changed_by: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          label: string
+          sort_order: number
+          subject: string
+          template_id: string
+          template_key: string
+          version_number: number
+        }
+        Insert: {
+          body: string
+          change_note?: string | null
+          change_type?: string
+          changed_by?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          label: string
+          sort_order?: number
+          subject: string
+          template_id: string
+          template_key: string
+          version_number: number
+        }
+        Update: {
+          body?: string
+          change_note?: string | null
+          change_type?: string
+          changed_by?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          sort_order?: number
+          subject?: string
+          template_id?: string
+          template_key?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_up_template_versions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "follow_up_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_up_templates: {
         Row: {
           body: string
@@ -4805,6 +4864,10 @@ export type Database = {
       restore_customer: {
         Args: { _id: string; _source: string }
         Returns: undefined
+      }
+      rollback_follow_up_template: {
+        Args: { _version_id: string }
+        Returns: string
       }
       should_send_push: {
         Args: { _category: string; _user_id: string }
