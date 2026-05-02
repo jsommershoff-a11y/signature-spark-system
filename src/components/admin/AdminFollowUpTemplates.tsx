@@ -69,6 +69,7 @@ export default function AdminFollowUpTemplates() {
       body: row.body,
       sort_order: row.sort_order,
       is_active: row.is_active,
+      variants: Array.isArray(row.variants) ? row.variants : [],
     });
     setOpen(true);
   };
