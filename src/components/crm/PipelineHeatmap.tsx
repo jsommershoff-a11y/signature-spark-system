@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PipelineData, PipelineItemWithLead } from '@/hooks/usePipeline';
 import { PipelineStage } from '@/types/crm';
-import { getStageLabel, getStageTooltip } from '@/lib/pipeline-stage';
+import { getStageLabel } from '@/lib/pipeline-stage';
+import { StageTooltip } from './StageTooltip';
 
 interface PipelineHeatmapProps {
   pipelineByStage: PipelineData;
