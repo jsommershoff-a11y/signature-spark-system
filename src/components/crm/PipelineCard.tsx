@@ -621,9 +621,9 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         cooldownText={isInCooldown ? formatCooldown(cooldownRemainingMs) : null}
         onConfirm={() => {
           if (!followUpPreview) return;
-          const id = followUpPreview.templateId;
+          const { templateId, variantId } = followUpPreview;
           setFollowUpPreview(null);
-          sendFollowUp(id);
+          sendFollowUp(templateId, false, variantId);
         }}
       />
     </Card>
