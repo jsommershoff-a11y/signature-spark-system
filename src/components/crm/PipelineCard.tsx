@@ -149,8 +149,23 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     ].join('\n');
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
+
+    // Activity loggen (best-effort, blockiert UI nicht)
+    createActivity.mutate(
+      {
+        type: 'email',
+        lead_id: lead.id,
+        content: `Follow-up E-Mail vorbereitet an ${lead.email} – Betreff: "${subject}" (Phase: ${stageLabel})`,
+      },
+      {
+        onError: (err) => {
+          console.warn('Activity log failed:', err);
+        },
+      },
+    );
+
     toast.success('Follow-up vorbereitet', {
-      description: 'E-Mail-Entwurf mit Kontext geöffnet.',
+      description: 'E-Mail-Entwurf geöffnet & im Verlauf protokolliert.',
     });
   };
 
