@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,12 +11,16 @@ import {
   Clock,
   Target,
   AlertTriangle,
+  CalendarPlus,
 } from 'lucide-react';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
+import { useCalls } from '@/hooks/useCalls';
+import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
 import { getStageLabel, getPriorityTone, getPriorityLabel } from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 interface PipelineCardProps {
   item: PipelineItemWithLead;
@@ -66,8 +71,36 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const icp = lead.icp_fit_score;
   const stagnation = getStagnation(item.stage_updated_at, item.stage);
 
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const { createCall } = useCalls({ lead_id: lead.id });
+
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
+
+  const handleScheduleSubmit = async (data: Parameters<typeof createCall>[0]) => {
+    try {
+      // Lead-Kontext in Notes vorbelegen, wenn leer
+      const contextLines = [
+        `Lead: ${fullName}`,
+        lead.company ? `Firma: ${lead.company}` : null,
+        lead.phone ? `Telefon: ${lead.phone}` : null,
+        lead.email ? `E-Mail: ${lead.email}` : null,
+        `Phase: ${stageLabel}`,
+      ].filter(Boolean).join('\n');
+      const notes = data.notes && data.notes.trim().length > 0
+        ? `${data.notes}\n\n— Kontext —\n${contextLines}`
+        : contextLines;
+
+      await createCall({ ...data, notes });
+      toast.success('Termin angelegt', {
+        description: `${fullName} – wird im Kalender angezeigt.`,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unbekannter Fehler';
+      toast.error('Termin konnte nicht angelegt werden', { description: message });
+      throw err; // Dialog-Loading-State zurücksetzen
+    }
+  };
 
   return (
     <Card
@@ -218,6 +251,20 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
           <Button
             variant="ghost"
             size="sm"
+            className="h-8 px-2 text-[11px] font-normal flex-shrink-0 touch-manipulation"
+            onClick={(e) => {
+              stop(e);
+              setScheduleOpen(true);
+            }}
+            title="Termin buchen"
+            aria-label="Termin buchen"
+          >
+            <CalendarPlus className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
+            <span className="hidden sm:inline">Termin</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-8 px-2 text-[11px] font-normal text-primary flex-shrink-0 touch-manipulation md:opacity-70 md:group-hover:opacity-100 md:transition-opacity"
             onClick={(e) => {
               stop(e);
@@ -231,6 +278,15 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
           </Button>
         </div>
       </CardContent>
+
+      {/* Termin buchen Dialog – nutzt vorhandene Lead-Kontaktdaten als Kontext */}
+      <ScheduleCallDialog
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+        leadId={lead.id}
+        leadName={fullName}
+        onSchedule={handleScheduleSubmit}
+      />
     </Card>
   );
 }
