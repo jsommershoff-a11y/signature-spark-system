@@ -153,6 +153,24 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
           )}
         </div>
 
+        {/* Stillstand-Hinweis */}
+        {stagnation && (
+          <div
+            className={cn(
+              'flex items-start gap-1.5 rounded-md px-2 py-1.5 text-[11px] leading-snug',
+              stagnation.severe
+                ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                : 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+            )}
+            role="status"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+            <span className="font-medium">
+              {stagnation.label} – nächsten Schritt planen
+            </span>
+          </div>
+        )}
+
         {/* Owner + ICP */}
         {(lead.owner || icp !== undefined) && (
           <div className="flex items-center gap-2 flex-wrap">
