@@ -319,6 +319,7 @@ export function PipelineBoard({
   return (
     <div className="flex flex-col lg:flex-row gap-4">
       <div className="flex-1 min-w-0 space-y-3 order-2 lg:order-1">
+        {/* Tabs (Desktop in Zeile mit Suche, Mobile darüber, scrollbar) */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Tabs
             value={group}
@@ -326,17 +327,22 @@ export function PipelineBoard({
               setGroup(v as PipelineGroup);
               setStageFilter(null);
             }}
+            className="min-w-0"
           >
-            <TabsList className="flex-wrap h-auto">
-              {GROUP_ORDER.map((g) => (
-                <TabsTrigger key={g} value={g} title={PIPELINE_GROUP_HINTS[g]}>
-                  {PIPELINE_GROUP_LABELS[g]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <ScrollArea className="w-full sm:w-auto">
+              <TabsList className="h-auto inline-flex">
+                {GROUP_ORDER.map((g) => (
+                  <TabsTrigger key={g} value={g} title={PIPELINE_GROUP_HINTS[g]}>
+                    {PIPELINE_GROUP_LABELS[g]}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              <ScrollBar orientation="horizontal" className="h-1.5" />
+            </ScrollArea>
           </Tabs>
 
-          <div className="relative w-full sm:w-72">
+          {/* Suche – Desktop sichtbar, Mobile siehe unten in einer Zeile mit Filter */}
+          <div className="relative w-full sm:w-72 hidden sm:block">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               value={search}
@@ -356,15 +362,52 @@ export function PipelineBoard({
           </div>
         </div>
 
-        {/* Filter-Leiste */}
-        <PipelineFilters
-          value={filters}
-          onChange={setFilters}
-          ownerOptions={ownerOptions}
-          sourceOptions={sourceOptions}
-          offerFilterAvailable={!offersError}
-          appointmentFilterAvailable={!callsError}
-        />
+        {/* Mobile: Suche + Filter-Trigger nebeneinander, kompakt */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Suche…"
+              className="pl-8 h-9 text-sm"
+            />
+            {hasActiveQuery && (
+              <Badge
+                variant="secondary"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]"
+              >
+                {visibleLeads}
+              </Badge>
+            )}
+          </div>
+          <div className="w-32 shrink-0">
+            <PipelineFilters
+              value={filters}
+              onChange={setFilters}
+              ownerOptions={ownerOptions}
+              sourceOptions={sourceOptions}
+              offerFilterAvailable={!offersError}
+              appointmentFilterAvailable={!callsError}
+              visibleCount={visibleLeads}
+              totalCount={totalLeads}
+            />
+          </div>
+        </div>
+
+        {/* Filter-Leiste (Desktop) */}
+        <div className="hidden sm:block">
+          <PipelineFilters
+            value={filters}
+            onChange={setFilters}
+            ownerOptions={ownerOptions}
+            sourceOptions={sourceOptions}
+            offerFilterAvailable={!offersError}
+            appointmentFilterAvailable={!callsError}
+            visibleCount={visibleLeads}
+            totalCount={totalLeads}
+          />
+        </div>
 
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <p className="text-xs text-muted-foreground break-words">

@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -145,6 +146,9 @@ interface PipelineFiltersProps {
   offerFilterAvailable?: boolean;
   /** Wenn false → Filter „Termin" ausgeblendet */
   appointmentFilterAvailable?: boolean;
+  /** Optional: Anzahl der aktuell sichtbaren Treffer (für Mobile-Sheet-Header) */
+  visibleCount?: number;
+  totalCount?: number;
 }
 
 function toggle<T>(arr: T[], v: T): T[] {
@@ -356,6 +360,8 @@ function FiltersInner({
 
 export function PipelineFilters(props: PipelineFiltersProps) {
   const activeCount = countActiveFilters(props.value);
+  const reset = () => props.onChange(EMPTY_FILTER);
+  const hasCounts = props.visibleCount !== undefined && props.totalCount !== undefined;
   return (
     <>
       {/* Desktop / Tablet */}
@@ -363,26 +369,66 @@ export function PipelineFilters(props: PipelineFiltersProps) {
         <FiltersInner {...props} />
       </div>
 
-      {/* Mobile: Aufklappbares Sheet */}
+      {/* Mobile: Kompakter Trigger, Inhalte im Bottom-Sheet */}
       <div className="md:hidden">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              Filter
-              {activeCount > 0 && (
-                <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-0.5">
-                  {activeCount}
-                </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                'h-9 w-full justify-between gap-2 text-xs',
+                activeCount > 0 && 'border-primary/60 bg-primary/5',
+              )}
+            >
+              <span className="flex items-center gap-1.5">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Filter
+                {activeCount > 0 && (
+                  <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-0.5">
+                    {activeCount}
+                  </Badge>
+                )}
+              </span>
+              {hasCounts && (
+                <span className="text-muted-foreground tabular-nums">
+                  {props.visibleCount}/{props.totalCount}
+                </span>
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Pipeline-Filter</SheetTitle>
+          <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0">
+            <SheetHeader className="px-4 pt-4 pb-3 border-b shrink-0">
+              <div className="flex items-center justify-between gap-2">
+                <SheetTitle className="text-base">Pipeline-Filter</SheetTitle>
+                {hasCounts && (
+                  <Badge variant="secondary" className="text-[11px] tabular-nums">
+                    {props.visibleCount} / {props.totalCount} sichtbar
+                  </Badge>
+                )}
+              </div>
             </SheetHeader>
-            <div className="mt-4">
+
+            <div className="flex-1 overflow-y-auto px-4 py-4">
               <FiltersInner {...props} />
+            </div>
+
+            <div className="border-t bg-background px-4 py-3 flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 h-9 text-xs"
+                onClick={reset}
+                disabled={activeCount === 0}
+              >
+                <X className="h-3.5 w-3.5 mr-1" />
+                Zurücksetzen
+              </Button>
+              <SheetClose asChild>
+                <Button size="sm" className="flex-1 h-9 text-xs">
+                  Anwenden
+                </Button>
+              </SheetClose>
             </div>
           </SheetContent>
         </Sheet>
