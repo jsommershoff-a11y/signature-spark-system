@@ -4479,6 +4479,7 @@ export type Database = {
         }[]
       }
       convert_contact_to_lead: { Args: { _lead_id: string }; Returns: string }
+      cron_push_lifecycle: { Args: never; Returns: undefined }
       find_duplicate_contacts: {
         Args: { _company?: string; _email?: string; _exclude_id?: string }
         Returns: {
@@ -4690,6 +4691,18 @@ export type Database = {
           _trial_start: string
         }
         Returns: string
+      }
+      trigger_send_push: {
+        Args: {
+          _body?: string
+          _category: string
+          _data?: Json
+          _force?: boolean
+          _link?: string
+          _title: string
+          _user_id: string
+        }
+        Returns: number
       }
       update_slot_for_google_event: {
         Args: {
