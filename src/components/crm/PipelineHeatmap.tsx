@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PipelineData, PipelineItemWithLead } from '@/hooks/usePipeline';
 import { PipelineStage } from '@/types/crm';
-import { getStageLabel, getStageTooltip } from '@/lib/pipeline-stage';
+import { getStageLabel } from '@/lib/pipeline-stage';
+import { StageTooltip } from './StageTooltip';
 
 interface PipelineHeatmapProps {
   pipelineByStage: PipelineData;
@@ -93,44 +94,44 @@ export function PipelineHeatmap({
           }
 
           return (
-            <button
-              key={stage}
-              type="button"
-              onClick={() => onStageSelect(isSelected ? null : stage)}
-              className={cn(
-                'w-full text-left rounded-md px-2 py-1.5 transition-colors group',
-                'hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-ring',
-                isSelected && 'bg-muted ring-1 ring-primary/40'
-              )}
-              title={getStageTooltip(stage)}
-            >
-              <div className="flex items-start justify-between gap-2 mb-1.5">
-                <span
-                  className="text-xs font-medium leading-snug break-words flex-1 min-w-0"
-                  style={{ overflowWrap: 'anywhere' }}
-                >
-                  {getStageLabel(stage)}
-                </span>
-                <div className="flex items-center gap-1.5 shrink-0 mt-0.5 whitespace-nowrap">
-                  <span className="text-xs tabular-nums font-semibold">
-                    {current}
+            <StageTooltip key={stage} stage={stage} side="left" asChild>
+              <button
+                type="button"
+                onClick={() => onStageSelect(isSelected ? null : stage)}
+                className={cn(
+                  'w-full text-left rounded-md px-2 py-1.5 transition-colors group',
+                  'hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-ring',
+                  isSelected && 'bg-muted ring-1 ring-primary/40'
+                )}
+              >
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <span
+                    className="text-xs font-medium leading-snug break-words flex-1 min-w-0"
+                    style={{ overflowWrap: 'anywhere' }}
+                  >
+                    {getStageLabel(stage)}
                   </span>
-                  <span className={cn('flex items-center gap-0.5 text-[10px] tabular-nums', trendClass)}>
-                    <TrendIcon className="h-3 w-3" />
-                    {delta > 0 ? `+${delta}` : delta}
-                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5 whitespace-nowrap">
+                    <span className="text-xs tabular-nums font-semibold">
+                      {current}
+                    </span>
+                    <span className={cn('flex items-center gap-0.5 text-[10px] tabular-nums', trendClass)}>
+                      <TrendIcon className="h-3 w-3" />
+                      {delta > 0 ? `+${delta}` : delta}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                <div
-                  className={cn(
-                    'h-full rounded-full transition-all',
-                    isSelected ? 'bg-primary' : 'bg-primary/60 group-hover:bg-primary/80'
-                  )}
-                  style={{ width: `${fillPct}%` }}
-                />
-              </div>
-            </button>
+                <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all',
+                      isSelected ? 'bg-primary' : 'bg-primary/60 group-hover:bg-primary/80'
+                    )}
+                    style={{ width: `${fillPct}%` }}
+                  />
+                </div>
+              </button>
+            </StageTooltip>
           );
         })}
       </div>
