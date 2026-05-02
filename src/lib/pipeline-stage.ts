@@ -32,3 +32,12 @@ export function getStageHint(stage: PipelineStage): string {
 export function getStageTooltip(stage: PipelineStage): string {
   return `${PIPELINE_STAGE_LABELS[stage]} – ${PIPELINE_STAGE_HINTS[stage]}`;
 }
+
+/**
+ * Tailwind-Klassen für robustes Label-Wrapping in allen Pipeline-Komponenten.
+ * MUSS auf jedes Stage-Label-Element angewandt werden, damit lange Wörter
+ * nie über Container-Grenzen hinauslaufen.
+ */
+export const STAGE_LABEL_WRAP_CLASS =
+  'break-words hyphens-auto [overflow-wrap:anywhere] [word-break:break-word]';
+
