@@ -218,6 +218,7 @@ export function StageTransitionDialog({
               type: 'followup',
               title: `Aufgabe nach Wechsel in „${targetLabel}"`,
               lead_id: leadId,
+              assigned_user_id: assignedUserId,
             });
             toast.success('Aufgabe angelegt');
           }
@@ -237,6 +238,7 @@ export function StageTransitionDialog({
               title: `Follow-up zum Angebot (${action.hours}h)`,
               lead_id: leadId,
               due_at: due.toISOString(),
+              assigned_user_id: assignedUserId,
             });
             toast.success(`Follow-up in ${action.hours}h geplant`);
           }
