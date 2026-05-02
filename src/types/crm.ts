@@ -187,16 +187,17 @@ export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
 
 // Kurze Aktions-Hinweise pro Pipeline-Phase ("Was ist hier als Nächstes zu tun?")
 export const PIPELINE_STAGE_HINTS: Record<PipelineStage, string> = {
-  new_lead: 'Lead sichten und qualifizieren: passt ICP? Dann Erstgespräch anbieten.',
-  setter_call_scheduled: 'Termin bestätigen, Reminder senden, No-Show vermeiden.',
-  setter_call_done: 'Bedarf dokumentieren und Analyse / Lösungsvorschlag vorbereiten.',
-  analysis_ready: 'Angebot konfigurieren – Module, Preis und Laufzeit festlegen.',
-  offer_draft: 'Angebot finalisieren und an den Lead versenden.',
-  offer_sent: 'Aktiv nachfassen: offene Fragen klären, Entscheidung herbeiführen.',
-  payment_unlocked: 'Closing absichern: Vertrag, Zahlung und Onboarding-Start abstimmen.',
-  won: 'Onboarding starten und in Kundenbetreuung übergeben.',
-  lost: 'Verlustgrund dokumentieren und ggf. in Nurture-Sequenz aufnehmen.',
+  new_lead: 'ICP-Fit checken, dann Erstgespräch anbieten.',
+  setter_call_scheduled: 'Termin bestätigen, Reminder senden, No-Show verhindern.',
+  setter_call_done: 'Bedarf dokumentieren, Analyse vorbereiten.',
+  analysis_ready: 'Module, Preis und Laufzeit konfigurieren.',
+  offer_draft: 'Letzte Korrekturen, dann an den Lead versenden.',
+  offer_sent: 'Aktiv nachfassen, offene Fragen klären, Entscheidung herbeiführen.',
+  payment_unlocked: 'Vertrag, Zahlung und Onboarding-Start abstimmen.',
+  won: 'Onboarding starten, an Kundenbetreuung übergeben.',
+  lost: 'Verlustgrund dokumentieren, ggf. Nurture-Sequenz starten.',
 };
+
 
 // Pipeline-Filter-Gruppen (nach Team-Verantwortung)
 export type PipelineGroup = 'all' | 'active' | 'setter' | 'closer' | 'archive';
