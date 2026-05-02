@@ -60,18 +60,37 @@ export function PipelineColumn({ stage, items, onItemClick, onDrop }: PipelineCo
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <CardHeader className="pb-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={cn("w-3 h-3 rounded-full", getStageColor(stage))} />
-            <CardTitle className="text-sm font-medium">
+      <CardHeader className="pb-3 flex-shrink-0 space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className={cn("w-3 h-3 rounded-full flex-shrink-0", getStageColor(stage))} />
+            <CardTitle className="text-sm font-medium truncate" title={PIPELINE_STAGE_LABELS[stage]}>
               {PIPELINE_STAGE_LABELS[stage]}
             </CardTitle>
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={`Hinweis: ${PIPELINE_STAGE_LABELS[stage]}`}
+                    className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[240px] text-xs leading-relaxed">
+                  {PIPELINE_STAGE_HINTS[stage]}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs flex-shrink-0">
             {items.length}
           </Badge>
         </div>
+        <p className="text-[11px] leading-snug text-muted-foreground line-clamp-2">
+          {PIPELINE_STAGE_HINTS[stage]}
+        </p>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-2 pt-0">
         <ScrollArea className="h-full">
