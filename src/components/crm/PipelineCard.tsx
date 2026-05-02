@@ -178,12 +178,48 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         scheduledAt: (data as any)?.scheduled_at ?? created?.scheduled_at,
         type: (data as any)?.call_type ?? (created as any)?.call_type,
       });
-      toast.success('Termin angelegt', {
-        description: `${fullName} – Follow-up jetzt vorbereiten?`,
-        action: lead.email
-          ? { label: 'Follow-up', onClick: () => sendFollowUp() }
-          : undefined,
-      });
+
+      // Wenn Lead noch in einer frühen Phase ist → Auto-Advance vorschlagen.
+      // Mapping zentral in pipeline-stage.ts, damit hier KEIN Stage-Key hartkodiert ist.
+      const nextStage = getAutoAdvanceStageAfterBooking(item.stage);
+      if (nextStage) {
+        const nextLabel = getStageLabel(nextStage);
+        toast.success('Termin angelegt', {
+          description: `${fullName} ist aktuell in „${stageLabel}". Phase auf „${nextLabel}" setzen?`,
+          duration: 10_000,
+          action: {
+            label: `Auf „${nextLabel}"`,
+            onClick: async () => {
+              const ok = await moveToStage(item.id, nextStage);
+              if (ok) {
+                createActivity.mutate(
+                  {
+                    type: 'notiz',
+                    lead_id: lead.id,
+                    content: `Phase nach Terminbuchung automatisch von „${stageLabel}" auf „${nextLabel}" gesetzt.`,
+                  },
+                  { onError: (err) => console.warn('Activity log failed:', err) },
+                );
+                toast.success(`Phase auf „${nextLabel}" gesetzt`, {
+                  description: lead.email ? 'Jetzt Follow-up vorbereiten?' : undefined,
+                  action: lead.email
+                    ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+                    : undefined,
+                });
+              } else {
+                toast.error('Phase konnte nicht aktualisiert werden');
+              }
+            },
+          },
+        });
+      } else {
+        toast.success('Termin angelegt', {
+          description: `${fullName} – Follow-up jetzt vorbereiten?`,
+          action: lead.email
+            ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+            : undefined,
+        });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unbekannter Fehler';
       toast.error('Termin konnte nicht angelegt werden', { description: message });
