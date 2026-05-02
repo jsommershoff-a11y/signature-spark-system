@@ -285,14 +285,20 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
 
-    if (cooldownStorageKey && typeof window !== 'undefined') {
-      try {
-        window.localStorage.setItem(cooldownStorageKey, String(Date.now()));
-        setNowTick((t) => t + 1);
-      } catch {
-        /* ignore */
-      }
-    }
+    // Cross-Device-Cooldown: Server-State updaten + optimistisch lokal vormerken
+    const nowIso = new Date().toISOString();
+    setOptimisticLastFollowUpAt(Date.now());
+    void supabase
+      .from('pipeline_items')
+      .update({
+        last_followup_at: nowIso,
+        last_followup_template_id: templateId,
+        last_followup_variant_id: usedVariantId,
+      } as any)
+      .eq('id', item.id)
+      .then(({ error }) => {
+        if (error) console.warn('last_followup_at update failed:', error);
+      });
 
     // Activity inkl. Variante loggen → A/B-Performance auswertbar
     createActivity.mutate(
