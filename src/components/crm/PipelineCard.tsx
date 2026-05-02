@@ -56,6 +56,23 @@ function getRelativeTime(iso?: string) {
   }
 }
 
+const STAGNATION_DAYS = 7;
+
+function getStagnation(iso?: string, stage?: string) {
+  if (!iso) return null;
+  // Geschlossene Phasen ignorieren
+  if (stage === 'won' || stage === 'lost') return null;
+  const updated = new Date(iso).getTime();
+  if (Number.isNaN(updated)) return null;
+  const days = Math.floor((Date.now() - updated) / (1000 * 60 * 60 * 24));
+  if (days < STAGNATION_DAYS) return null;
+  return {
+    days,
+    severe: days >= 14,
+    label: days >= 30 ? `Über 30 Tage ohne Bewegung` : `${days} Tage ohne Bewegung`,
+  };
+}
+
 export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const lead = item.lead;
   const fullName = `${lead.first_name ?? ''} ${lead.last_name ?? ''}`.trim() || lead.email;
