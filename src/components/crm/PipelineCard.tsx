@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,12 +11,16 @@ import {
   Clock,
   Target,
   AlertTriangle,
+  CalendarPlus,
 } from 'lucide-react';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
+import { useCalls } from '@/hooks/useCalls';
+import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
 import { getStageLabel, getPriorityTone, getPriorityLabel } from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 interface PipelineCardProps {
   item: PipelineItemWithLead;
