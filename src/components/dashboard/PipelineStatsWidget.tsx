@@ -4,8 +4,9 @@ import { ArrowRight, Kanban } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { PipelineStats } from '@/hooks/useDashboardData';
 import { type PipelineStage } from '@/types/crm';
-import { getStageLabel } from '@/lib/pipeline-stage';
+import { getStageLabel, STAGE_LABEL_WRAP_CLASS } from '@/lib/pipeline-stage';
 import { StageTooltip } from '@/components/crm/StageTooltip';
+import { cn } from '@/lib/utils';
 
 interface PipelineStatsWidgetProps {
   stats: PipelineStats[];
