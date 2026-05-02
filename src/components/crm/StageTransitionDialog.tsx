@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
 import { useActivities } from '@/hooks/useActivities';
 import { useTasks } from '@/hooks/useTasks';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type StageTransitionAction =
   | { kind: 'open_calendar' }
@@ -145,6 +146,8 @@ export function StageTransitionDialog({
   const leadId = transition ? leadIdForItem(transition.itemId) : null;
   const { createActivity } = useActivities({ lead_id: leadId ?? undefined });
   const { createTask } = useTasks();
+  const { profile } = useAuth();
+  const assignedUserId = profile?.id ?? '';
 
   const [busy, setBusy] = useState(false);
   const [lossReason, setLossReason] = useState<string>(LOSS_REASONS[0]);
