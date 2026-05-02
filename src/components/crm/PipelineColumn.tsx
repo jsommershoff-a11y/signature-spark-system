@@ -5,7 +5,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Info } from 'lucide-react';
 import { PipelineCard } from './PipelineCard';
 import { PipelineItemWithLead } from '@/hooks/usePipeline';
-import { PipelineStage, PIPELINE_STAGE_LABELS, PIPELINE_STAGE_HINTS } from '@/types/crm';
+import { PipelineStage } from '@/types/crm';
+import { getStageLabel, getStageHint, getStageTooltip } from '@/lib/pipeline-stage';
 import { cn } from '@/lib/utils';
 
 interface PipelineColumnProps {
