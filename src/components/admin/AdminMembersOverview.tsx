@@ -190,12 +190,8 @@ export function InviteMemberDialog({ open, onOpenChange, prefillEmail, prefillNa
   };
 
   const stageLabel = (stage?: string) => {
-    const map: Record<string, string> = {
-      new_lead: 'Neuer Lead', setter_call_scheduled: 'Call geplant', setter_call_done: 'Call erledigt',
-      analysis_ready: 'Analyse fertig', offer_draft: 'Angebot Entwurf', offer_sent: 'Angebot gesendet',
-      payment_unlocked: 'Zahlung freigeschaltet', won: 'Gewonnen', lost: 'Verloren',
-    };
-    return stage ? map[stage] || stage : '';
+    if (!stage) return '';
+    return (PIPELINE_STAGE_LABELS as Record<string, string>)[stage] || stage;
   };
 
   return (
