@@ -32,6 +32,7 @@ interface FormState {
   sort_order: number;
   is_active: boolean;
   variants: FollowUpVariant[];
+  stages: string[];
 }
 
 const EMPTY_FORM: FormState = {
@@ -43,7 +44,20 @@ const EMPTY_FORM: FormState = {
   sort_order: 100,
   is_active: true,
   variants: [],
+  stages: [],
 };
+
+const PIPELINE_STAGE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'new_lead', label: 'Neu' },
+  { value: 'setter_call_scheduled', label: 'Setter-Call geplant' },
+  { value: 'setter_call_done', label: 'Setter-Call gehalten' },
+  { value: 'analysis_ready', label: 'Analyse bereit' },
+  { value: 'offer_draft', label: 'Angebotsentwurf' },
+  { value: 'offer_sent', label: 'Angebot versendet' },
+  { value: 'payment_unlocked', label: 'Zahlung freigeschaltet' },
+  { value: 'won', label: 'Gewonnen' },
+  { value: 'lost', label: 'Verloren' },
+];
 
 export default function AdminFollowUpTemplates() {
   const { templates, isLoading, create, update, remove } = useFollowUpTemplatesAdmin();
