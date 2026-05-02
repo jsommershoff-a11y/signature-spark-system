@@ -14,6 +14,17 @@
 
 export type FollowUpTemplateId = 'confirm' | 'reschedule' | 'no_show';
 
+export interface FollowUpVariant {
+  /** Stabile ID innerhalb des Templates, z.B. 'A' / 'B' / 'short'. */
+  id: string;
+  /** Optional: überschreibt Subject des Templates. */
+  subject?: string;
+  /** Optional: überschreibt Body (Array von Zeilen). */
+  body?: string[];
+  /** Optionales Gewicht (default 1) – höheres Gewicht = häufiger gewählt. */
+  weight?: number;
+}
+
 export interface FollowUpTemplate {
   id: FollowUpTemplateId;
   label: string;
@@ -22,6 +33,8 @@ export interface FollowUpTemplate {
   subject: string;
   /** Body als Array von Zeilen (wird mit '\n' gejoint). */
   body: string[];
+  /** Optionale A/B-Varianten. Leer = nur Standard verwenden. */
+  variants?: FollowUpVariant[];
 }
 
 export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
