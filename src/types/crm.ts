@@ -174,13 +174,13 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
 };
 
 export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
-  new_lead: '🆕 Lead prüfen',
-  setter_call_scheduled: '📅 Termin halten',
-  setter_call_done: '📝 Call auswerten',
-  analysis_ready: '📊 Angebot bauen',
+  new_lead: '👆 Lead prüfen',
+  setter_call_scheduled: '📅 Termin vorbereiten',
+  setter_call_done: '📝 Gespräch auswerten',
+  analysis_ready: '📊 Angebot vorbereiten',
   offer_draft: '✏️ Angebot finalisieren',
-  offer_sent: '📤 Nachfassen',
-  payment_unlocked: '💳 Abschluss holen',
+  offer_sent: '📤 Angebot nachfassen',
+  payment_unlocked: '🤝 Abschluss klären',
   won: '✅ Gewonnen',
   lost: '❌ Verloren',
 };
@@ -212,8 +212,8 @@ export const PIPELINE_GROUP_LABELS: Record<PipelineGroup, string> = {
 export const PIPELINE_GROUP_HINTS: Record<PipelineGroup, string> = {
   all: 'Alle Phasen anzeigen.',
   active: 'Alles, woran aktuell gearbeitet wird (ohne Gewonnen/Verloren).',
-  setter: 'Lead prüfen, Termin halten, Call auswerten.',
-  closer: 'Angebot bauen, finalisieren, nachfassen, Abschluss holen.',
+  setter: 'Lead prüfen, Termin vorbereiten, Gespräch auswerten.',
+  closer: 'Angebot vorbereiten, finalisieren, nachfassen, Abschluss klären.',
   archive: 'Abgeschlossene Deals: Gewonnen oder Verloren.',
 };
 
