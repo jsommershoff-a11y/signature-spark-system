@@ -21,6 +21,7 @@ import { PipelineItemWithLead, usePipeline } from '@/hooks/usePipeline';
 import { useCalls } from '@/hooks/useCalls';
 import { useActivities } from '@/hooks/useActivities';
 import { ScheduleCallDialog } from '@/components/calls/ScheduleCallDialog';
+import { FollowUpPreviewDialog } from './FollowUpPreviewDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
