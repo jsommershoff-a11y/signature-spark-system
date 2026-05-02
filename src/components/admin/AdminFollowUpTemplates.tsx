@@ -109,6 +109,10 @@ export default function AdminFollowUpTemplates() {
     [form.subject, form.body, form.stages, form.variants],
   );
 
+  // Wenn sich Inhalte ändern, Warnungs-Bestätigung zurücksetzen
+  const warningsKey = validation.warnings.map((w) => w.code + (w.placeholder ?? '') + (w.variantId ?? '')).join('|');
+  useMemo(() => { setWarningsAcked(false); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [warningsKey]);
+
   const startCreate = () => {
     setEditing(null);
     setForm(EMPTY_FORM);
