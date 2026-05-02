@@ -6,7 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { PipelineColumn } from './PipelineColumn';
 import { PipelineHeatmap } from './PipelineHeatmap';
+import {
+  PipelineFilters,
+  EMPTY_FILTER,
+  getIcpBand,
+  type PipelineFilterValue,
+  type OwnerOption,
+} from './PipelineFilters';
 import { PipelineData, PipelineItemWithLead } from '@/hooks/usePipeline';
+import { getPriorityTier } from '@/lib/pipeline-stage';
 import {
   PipelineStage,
   PipelineGroup,
