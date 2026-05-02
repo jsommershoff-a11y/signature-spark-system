@@ -6,22 +6,19 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { type PipelineStage } from '@/types/crm';
-import { getStageLabel, getStageHint } from '@/lib/pipeline-stage';
+import { getStageLabel, getStageTooltipContent, getStageTooltip } from '@/lib/pipeline-stage';
 
 /**
  * Einheitlicher Tooltip-Stil für alle Pipeline-Stage-Anzeigen.
  *
- * STIL-VERTRAG (zentral, hier definiert):
- *  - Breite:        max. 260px
- *  - Schriftgröße:  text-xs
- *  - Zeilenhöhe:    leading-relaxed
- *  - Padding:       py-2 px-3 (vom shadcn-Default überschrieben)
- *  - Spacing:       Label fett, Hint darunter mit mt-1
- *  - Position:      side="bottom" (Default)
+ * STIL-VERTRAG:
+ *  - Breite:        max. 280px (mobil viewport-relativ)
+ *  - Schrift:       text-xs / leading-relaxed
+ *  - Layout:        Label fett, dann Status / Aufgabe / Ziel als Mini-Sektionen
+ *  - Position:      bottom (Default), kollisionssicher
  *  - Delay:         150ms
  *
- * MUSS überall verwendet werden, wo eine Pipeline-Stage erklärt wird:
- * PipelineColumn, PipelineHeatmap, PipelineStatsWidget.
+ * MUSS überall verwendet werden, wo eine Pipeline-Stage erklärt wird.
  */
 interface StageTooltipProps {
   stage: PipelineStage;
@@ -45,7 +42,7 @@ export function StageTooltip({
   asChild = false,
 }: StageTooltipProps) {
   const label = getStageLabel(stage);
-  const hint = getStageHint(stage);
+  const { status, task, goal } = getStageTooltipContent(stage);
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -56,7 +53,7 @@ export function StageTooltip({
           ) : (
             <span
               className={className}
-              title={withNativeTitle ? `${label} – ${hint}` : undefined}
+              title={withNativeTitle ? getStageTooltip(stage) : undefined}
             >
               {children}
             </span>
@@ -68,10 +65,29 @@ export function StageTooltip({
           align="center"
           avoidCollisions
           collisionPadding={8}
-          className="max-w-[min(260px,calc(100vw-16px))] py-2 px-3 text-xs leading-relaxed break-words"
+          className="max-w-[min(280px,calc(100vw-16px))] py-2.5 px-3 text-xs leading-relaxed break-words space-y-1.5"
         >
-          <p className="font-semibold">{label}</p>
-          <p className="mt-1 text-muted-foreground">{hint}</p>
+          <p className="font-semibold text-foreground">{label}</p>
+          <div className="space-y-1.5 text-muted-foreground">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-foreground/70">
+                Status
+              </p>
+              <p>{status}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-foreground/70">
+                Aufgabe
+              </p>
+              <p>{task}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-foreground/70">
+                Ziel
+              </p>
+              <p>{goal}</p>
+            </div>
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
