@@ -252,13 +252,14 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   // damit Sales/Marketing sie pflegen kann ohne UI-Code zu touchen.
 
 
-  const buildFollowUp = (templateId: FollowUpTemplateId) => {
+  const buildFollowUp = (templateId: FollowUpTemplateId, variantId?: string) => {
     const greetingName = lead.first_name?.trim() || fullName;
     const when = formatMeetingWhen(lastMeeting?.scheduledAt);
     return renderFollowUpTemplate(
       templateId,
       { greetingName, when, company: lead.company, stageLabel },
       followUpTemplates,
+      { variantId },
     );
   };
 
@@ -267,50 +268,58 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
       toast.error('Keine E-Mail-Adresse hinterlegt');
       return;
     }
-    const { template: tpl, subject, body } = buildFollowUp(templateId);
-    setFollowUpPreview({ templateId, label: tpl.label, subject, body });
+    const { template: tpl, subject, body, variantId } = buildFollowUp(templateId);
+    setFollowUpPreview({ templateId, label: tpl.label, subject, body, variantId });
   };
 
-  const sendFollowUp = (templateId: FollowUpTemplateId = 'confirm', force = false) => {
+  const sendFollowUp = (
+    templateId: FollowUpTemplateId = 'confirm',
+    force = false,
+    variantId?: string,
+  ) => {
     if (!lead.email) {
       toast.error('Keine E-Mail-Adresse hinterlegt');
       return;
     }
 
-    // 24h-Cooldown: nicht direkt öffnen, sondern Bestätigung verlangen.
     if (isInCooldown && !force) {
       toast.warning('Follow-up bereits gesendet', {
         description: `An ${lead.email} ging vor weniger als 24h ein Follow-up raus. Verbleibend: ${formatCooldown(cooldownRemainingMs)}.`,
         action: {
           label: 'Trotzdem senden',
-          onClick: () => sendFollowUp(templateId, true),
+          onClick: () => sendFollowUp(templateId, true, variantId),
         },
       });
       return;
     }
 
-    const { template: tpl, subject, body } = buildFollowUp(templateId);
+    const { template: tpl, subject, body, variantId: usedVariantId } = buildFollowUp(templateId, variantId);
 
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
 
-    // Lokalen Cooldown-Stempel sofort setzen
     if (cooldownStorageKey && typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(cooldownStorageKey, String(Date.now()));
         setNowTick((t) => t + 1);
       } catch {
-        /* Storage voll oder blockiert – ignorieren */
+        /* ignore */
       }
     }
 
-    // Activity loggen (best-effort, blockiert UI nicht)
+    // Activity inkl. Variante loggen → A/B-Performance auswertbar
     createActivity.mutate(
       {
         type: 'email',
         lead_id: lead.id,
-        content: `Follow-up "${tpl.label}" vorbereitet an ${lead.email} – Betreff: "${subject}" (Phase: ${stageLabel})`,
-      },
+        content: `Follow-up "${tpl.label}" [Variante: ${usedVariantId}] vorbereitet an ${lead.email} – Betreff: "${subject}" (Phase: ${stageLabel})`,
+        metadata: {
+          followup_template_id: templateId,
+          followup_template_label: tpl.label,
+          followup_variant_id: usedVariantId,
+          stage: item.stage,
+        },
+      } as any,
       {
         onError: (err) => {
           console.warn('Activity log failed:', err);
@@ -318,7 +327,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
       },
     );
 
-    toast.success(`Follow-up vorbereitet: ${tpl.label}`, {
+    toast.success(`Follow-up vorbereitet: ${tpl.label} (Variante ${usedVariantId})`, {
       description: force
         ? 'Erneut gesendet – Cooldown zurückgesetzt.'
         : 'E-Mail-Entwurf geöffnet & im Verlauf protokolliert.',
