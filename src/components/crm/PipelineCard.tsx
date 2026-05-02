@@ -537,7 +537,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
                       : 'Vorlage wählen'}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {FOLLOW_UP_TEMPLATES.map((tpl) => (
+                  {followUpTemplates.map((tpl) => (
                     <DropdownMenuItem
                       key={tpl.id}
                       onClick={(e) => {
