@@ -53,6 +53,8 @@ export function ScheduleCallDialog({
   leadId,
   leadName,
   onSchedule,
+  showContextToggle = false,
+  defaultAttachContext = true,
 }: ScheduleCallDialogProps) {
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date>();
@@ -60,6 +62,7 @@ export function ScheduleCallDialog({
   const [callType, setCallType] = useState<CallType>('phone');
   const [provider, setProvider] = useState<CallProvider>('manual');
   const [notes, setNotes] = useState('');
+  const [attachContext, setAttachContext] = useState<boolean>(defaultAttachContext);
 
   const handleSubmit = async () => {
     if (!date) return;
@@ -70,13 +73,16 @@ export function ScheduleCallDialog({
       const scheduledAt = new Date(date);
       scheduledAt.setHours(hours, minutes, 0, 0);
 
-      await onSchedule({
-        lead_id: leadId,
-        call_type: callType,
-        provider,
-        scheduled_at: scheduledAt.toISOString(),
-        notes: notes || undefined,
-      });
+      await onSchedule(
+        {
+          lead_id: leadId,
+          call_type: callType,
+          provider,
+          scheduled_at: scheduledAt.toISOString(),
+          notes: notes || undefined,
+        },
+        { attachContext },
+      );
 
       // Reset form
       setDate(undefined);
@@ -84,6 +90,7 @@ export function ScheduleCallDialog({
       setCallType('phone');
       setProvider('manual');
       setNotes('');
+      setAttachContext(defaultAttachContext);
       onOpenChange(false);
     } finally {
       setLoading(false);
