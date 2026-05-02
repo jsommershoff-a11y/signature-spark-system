@@ -212,8 +212,8 @@ export const PIPELINE_GROUP_LABELS: Record<PipelineGroup, string> = {
 export const PIPELINE_GROUP_HINTS: Record<PipelineGroup, string> = {
   all: 'Alle Phasen anzeigen.',
   active: 'Alles, woran aktuell gearbeitet wird (ohne Gewonnen/Verloren).',
-  setter: 'Lead prüfen, Termin halten, Call auswerten.',
-  closer: 'Angebot bauen, finalisieren, nachfassen, Abschluss holen.',
+  setter: 'Lead prüfen, Termin vorbereiten, Gespräch auswerten.',
+  closer: 'Angebot vorbereiten, finalisieren, nachfassen, Abschluss klären.',
   archive: 'Abgeschlossene Deals: Gewonnen oder Verloren.',
 };
 
