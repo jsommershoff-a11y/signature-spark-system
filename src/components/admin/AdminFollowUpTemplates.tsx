@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFollowUpTemplatesAdmin, type FollowUpTemplateRow } from '@/hooks/useFollowUpTemplates';
 import type { FollowUpVariant } from '@/lib/sales-scripts/follow-up';
+import { validateFollowUpTemplate } from '@/lib/sales-scripts/template-validation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -16,7 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ResponsiveFormDialog } from '@/components/app/ResponsiveFormDialog';
-import { Pencil, Plus, Trash2, Mail, History } from 'lucide-react';
+import { Pencil, Plus, Trash2, Mail, History, AlertTriangle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import FollowUpTemplateHistoryDialog from './FollowUpTemplateHistoryDialog';
 import { FollowUpTemplatePreview } from './FollowUpTemplatePreview';
@@ -95,10 +97,26 @@ export default function AdminFollowUpTemplates() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [historyTarget, setHistoryTarget] = useState<FollowUpTemplateRow | null>(null);
+  const [warningsAcked, setWarningsAcked] = useState(false);
+
+  const validation = useMemo(
+    () => validateFollowUpTemplate({
+      subject: form.subject,
+      body: form.body,
+      stages: form.stages,
+      variants: form.variants,
+    }),
+    [form.subject, form.body, form.stages, form.variants],
+  );
+
+  // Wenn sich Inhalte ändern, Warnungs-Bestätigung zurücksetzen
+  const warningsKey = validation.warnings.map((w) => w.code + (w.placeholder ?? '') + (w.variantId ?? '')).join('|');
+  useEffect(() => { setWarningsAcked(false); }, [warningsKey]);
 
   const startCreate = () => {
     setEditing(null);
     setForm(EMPTY_FORM);
+    setWarningsAcked(false);
     setOpen(true);
   };
 
@@ -117,6 +135,7 @@ export default function AdminFollowUpTemplates() {
       variants: Array.isArray(row.variants) ? row.variants : [],
       stages: Array.isArray(row.stages) ? row.stages : [],
     });
+    setWarningsAcked(false);
     setOpen(true);
   };
 
@@ -129,6 +148,19 @@ export default function AdminFollowUpTemplates() {
     if (form.active_from && form.active_until &&
         new Date(form.active_from).getTime() >= new Date(form.active_until).getTime()) {
       toast.error('„Aktiv bis" muss später als „Go-Live ab" sein');
+      return;
+    }
+    if (validation.errors.length > 0) {
+      toast.error('Vorlage hat Fehler', {
+        description: validation.errors[0].message,
+      });
+      return;
+    }
+    if (validation.warnings.length > 0 && !warningsAcked) {
+      setWarningsAcked(true);
+      toast.warning(`${validation.warnings.length} Warnung(en) – nochmal „Speichern" drücken zum Bestätigen`, {
+        description: validation.warnings[0].message,
+      });
       return;
     }
     try {
@@ -503,6 +535,45 @@ export default function AdminFollowUpTemplates() {
               ))
             )}
           </div>
+
+          {/* Validierung */}
+          {(validation.errors.length > 0 || validation.warnings.length > 0) && (
+            <div className="border-t pt-4 space-y-2">
+              {validation.errors.length > 0 && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Fehler – Speichern blockiert</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc pl-4 space-y-0.5 text-xs mt-1">
+                      {validation.errors.map((iss, i) => (
+                        <li key={i}>{iss.message}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {validation.warnings.length > 0 && (
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>
+                    Warnungen ({validation.warnings.length})
+                    {warningsAcked && (
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        – bestätigt, Speichern möglich
+                      </span>
+                    )}
+                  </AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc pl-4 space-y-0.5 text-xs mt-1">
+                      {validation.warnings.map((iss, i) => (
+                        <li key={i}>{iss.message}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
 
           {/* Live-Vorschau */}
           <div className="border-t pt-4">
