@@ -104,6 +104,7 @@ export const FOLLOW_UP_TEMPLATES: FollowUpTemplate[] = [
       '',
       'Danke dir & beste Grüße',
     ],
+    stages: ['setter_call_scheduled'],
   },
   {
     id: 'no_show',
