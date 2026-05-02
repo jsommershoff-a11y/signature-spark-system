@@ -279,11 +279,24 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     };
   };
 
-  const sendFollowUp = (templateId: FollowUpTemplateId = 'confirm') => {
+  const sendFollowUp = (templateId: FollowUpTemplateId = 'confirm', force = false) => {
     if (!lead.email) {
       toast.error('Keine E-Mail-Adresse hinterlegt');
       return;
     }
+
+    // 24h-Cooldown: nicht direkt öffnen, sondern Bestätigung verlangen.
+    if (isInCooldown && !force) {
+      toast.warning('Follow-up bereits gesendet', {
+        description: `An ${lead.email} ging vor weniger als 24h ein Follow-up raus. Verbleibend: ${formatCooldown(cooldownRemainingMs)}.`,
+        action: {
+          label: 'Trotzdem senden',
+          onClick: () => sendFollowUp(templateId, true),
+        },
+      });
+      return;
+    }
+
     const greetingName = lead.first_name?.trim() || fullName;
     const when = formatMeetingWhen(lastMeeting?.scheduledAt);
     const tpl = FOLLOW_UP_TEMPLATES.find((t) => t.id === templateId) ?? FOLLOW_UP_TEMPLATES[0];
@@ -291,6 +304,16 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
 
     const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
+
+    // Lokalen Cooldown-Stempel sofort setzen
+    if (cooldownStorageKey && typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(cooldownStorageKey, String(Date.now()));
+        setNowTick((t) => t + 1);
+      } catch {
+        /* Storage voll oder blockiert – ignorieren */
+      }
+    }
 
     // Activity loggen (best-effort, blockiert UI nicht)
     createActivity.mutate(
@@ -307,9 +330,12 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
     );
 
     toast.success(`Follow-up vorbereitet: ${tpl.label}`, {
-      description: 'E-Mail-Entwurf geöffnet & im Verlauf protokolliert.',
+      description: force
+        ? 'Erneut gesendet – Cooldown zurückgesetzt.'
+        : 'E-Mail-Entwurf geöffnet & im Verlauf protokolliert.',
     });
   };
+
 
 
   return (
