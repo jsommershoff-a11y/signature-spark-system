@@ -94,9 +94,16 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
         ? `${data.notes}\n\n— Kontext —\n${contextLines}`
         : contextLines;
 
-      await createCall({ ...data, notes });
+      const created = await createCall({ ...data, notes });
+      setLastMeeting({
+        scheduledAt: (data as any)?.scheduled_at ?? created?.scheduled_at,
+        type: (data as any)?.call_type ?? (created as any)?.call_type,
+      });
       toast.success('Termin angelegt', {
-        description: `${fullName} – wird im Kalender angezeigt.`,
+        description: `${fullName} – Follow-up jetzt vorbereiten?`,
+        action: lead.email
+          ? { label: 'Follow-up', onClick: () => sendFollowUp() }
+          : undefined,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unbekannter Fehler';
@@ -104,6 +111,47 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
       throw err; // Dialog-Loading-State zurücksetzen
     }
   };
+
+  const formatMeetingWhen = (iso?: string) => {
+    if (!iso) return 'unserem vereinbarten Termin';
+    try {
+      return format(new Date(iso), "dd.MM.yyyy 'um' HH:mm 'Uhr'");
+    } catch {
+      return 'unserem vereinbarten Termin';
+    }
+  };
+
+  const sendFollowUp = () => {
+    if (!lead.email) {
+      toast.error('Keine E-Mail-Adresse hinterlegt');
+      return;
+    }
+    const greetingName = lead.first_name?.trim() || fullName;
+    const when = formatMeetingWhen(lastMeeting?.scheduledAt);
+    const subject = `Bestätigung & nächste Schritte – ${when}`;
+    const body = [
+      `Hallo ${greetingName},`,
+      '',
+      `vielen Dank für die Zusage zu unserem Termin am ${when}.`,
+      '',
+      'Damit wir die Zeit optimal nutzen, hier kurz, was dich erwartet:',
+      '• Kurze Bestandsaufnahme deiner aktuellen Situation',
+      '• Konkrete nächste Schritte für deinen Engpass',
+      '• Klare Empfehlung, ob & wie wir zusammenarbeiten',
+      '',
+      lead.company ? `Kontext: ${lead.company} – Phase: ${stageLabel}` : `Phase: ${stageLabel}`,
+      '',
+      'Falls sich etwas ändert, gib mir bitte kurz Bescheid.',
+      '',
+      'Beste Grüße',
+    ].join('\n');
+    const href = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = href;
+    toast.success('Follow-up vorbereitet', {
+      description: 'E-Mail-Entwurf mit Kontext geöffnet.',
+    });
+  };
+
 
   return (
     <Card
