@@ -145,6 +145,9 @@ interface PipelineFiltersProps {
   offerFilterAvailable?: boolean;
   /** Wenn false → Filter „Termin" ausgeblendet */
   appointmentFilterAvailable?: boolean;
+  /** Optional: Anzahl der aktuell sichtbaren Treffer (für Mobile-Sheet-Header) */
+  visibleCount?: number;
+  totalCount?: number;
 }
 
 function toggle<T>(arr: T[], v: T): T[] {
