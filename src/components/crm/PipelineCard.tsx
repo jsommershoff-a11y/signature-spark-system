@@ -313,6 +313,22 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
             <CalendarPlus className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
             <span className="hidden sm:inline">Termin</span>
           </Button>
+          {lastMeeting && lead.email && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-[11px] font-medium flex-shrink-0 touch-manipulation text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/15"
+              onClick={(e) => {
+                stop(e);
+                sendFollowUp();
+              }}
+              title="Follow-up E-Mail mit Termin-Kontext vorbereiten"
+              aria-label="Follow-up senden"
+            >
+              <Send className="h-3.5 w-3.5 sm:mr-1 flex-shrink-0" />
+              <span className="hidden sm:inline">Follow-up</span>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
