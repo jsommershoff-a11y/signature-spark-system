@@ -2548,6 +2548,50 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_revenue_entries: {
+        Row: {
+          amount_net_cents: number
+          created_at: string
+          created_by: string
+          entity: string
+          entry_date: string
+          id: string
+          note: string | null
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          amount_net_cents: number
+          created_at?: string
+          created_by: string
+          entity?: string
+          entry_date: string
+          id?: string
+          note?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_net_cents?: number
+          created_at?: string
+          created_by?: string
+          entity?: string
+          entry_date?: string
+          id?: string
+          note?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_revenue_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_kpis: {
         Row: {
           activity_score: number | null
