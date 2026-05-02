@@ -80,6 +80,7 @@ export function PipelineCard({ item, onClick, isDragging }: PipelineCardProps) {
   const movedAgo = getRelativeTime(item.stage_updated_at);
   const priority = item.pipeline_priority_score;
   const icp = lead.icp_fit_score;
+  const stagnation = getStagnation(item.stage_updated_at, item.stage);
 
   // Mini-CTAs ohne Card-Click zu triggern
   const stop = (e: React.MouseEvent) => e.stopPropagation();
