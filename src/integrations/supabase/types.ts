@@ -3524,6 +3524,63 @@ export type Database = {
           },
         ]
       }
+      push_log: {
+        Row: {
+          body: string | null
+          category: string
+          completed_at: string | null
+          created_at: string
+          data: Json | null
+          error: string | null
+          id: string
+          invalid_removed: number
+          link: string | null
+          response: Json | null
+          sent_count: number
+          source: string | null
+          status: string
+          title: string
+          total_tokens: number
+          user_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          category: string
+          completed_at?: string | null
+          created_at?: string
+          data?: Json | null
+          error?: string | null
+          id?: string
+          invalid_removed?: number
+          link?: string | null
+          response?: Json | null
+          sent_count?: number
+          source?: string | null
+          status?: string
+          title: string
+          total_tokens?: number
+          user_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          data?: Json | null
+          error?: string | null
+          id?: string
+          invalid_removed?: number
+          link?: string | null
+          response?: Json | null
+          sent_count?: number
+          source?: string | null
+          status?: string
+          title?: string
+          total_tokens?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       push_settings: {
         Row: {
           admin_alerts: boolean
@@ -4479,6 +4536,7 @@ export type Database = {
         }[]
       }
       convert_contact_to_lead: { Args: { _lead_id: string }; Returns: string }
+      cron_cleanup_push_log: { Args: never; Returns: undefined }
       cron_push_lifecycle: { Args: never; Returns: undefined }
       find_duplicate_contacts: {
         Args: { _company?: string; _email?: string; _exclude_id?: string }
@@ -4692,18 +4750,32 @@ export type Database = {
         }
         Returns: string
       }
-      trigger_send_push: {
-        Args: {
-          _body?: string
-          _category: string
-          _data?: Json
-          _force?: boolean
-          _link?: string
-          _title: string
-          _user_id: string
-        }
-        Returns: number
-      }
+      trigger_send_push:
+        | {
+            Args: {
+              _body?: string
+              _category: string
+              _data?: Json
+              _force?: boolean
+              _link?: string
+              _title: string
+              _user_id: string
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              _body?: string
+              _category: string
+              _data?: Json
+              _force?: boolean
+              _link?: string
+              _source?: string
+              _title: string
+              _user_id: string
+            }
+            Returns: string
+          }
       update_slot_for_google_event: {
         Args: {
           _google_event_id: string
