@@ -100,6 +100,32 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
     }
   };
 
+  const advanceStage = async () => {
+    if (!pipelineItemId || !nextStage) return;
+    setAdvancing(true);
+    try {
+      const { error } = await supabase
+        .from('pipeline_items')
+        .update({
+          stage: nextStage,
+          stage_updated_at: new Date().toISOString(),
+        })
+        .eq('id', pipelineItemId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      toast.success('Lead verschoben', {
+        description: `Neue Phase: ${PIPELINE_STAGE_LABELS[nextStage]}`,
+      });
+    } catch (err) {
+      toast.error('Stage konnte nicht aktualisiert werden', {
+        description: (err as Error).message,
+      });
+    } finally {
+      setAdvancing(false);
+    }
+  };
+
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
