@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { PublicLayout, Hero, FinalCTA } from "@/components/landing";
 import { SEOHead } from "@/components/landing/SEOHead";
+import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
+import { TestimonialGrid } from "@/components/landing/conversion/TestimonialGrid";
 import { landingTokens } from "@/styles/landing-tokens";
 import { CheckCircle2, Calendar, Target, ShieldCheck } from "lucide-react";
 
@@ -50,6 +52,10 @@ const Erstgespraech = () => {
         ctaText="Termin sichern"
         onCtaClick={goToBooking}
       />
+
+      {/* Trust: Tool-Logos + Testimonials direkt unter Hero */}
+      <TrustLogosSection />
+      <TestimonialGrid />
 
       {/* Benefits */}
       <section className={`${landingTokens.sectionPadding} bg-background`}>
