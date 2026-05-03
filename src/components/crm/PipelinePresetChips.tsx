@@ -53,7 +53,7 @@ const PRESETS: PresetDef[] = [
     label: 'Stuck > 14d',
     icon: Clock,
     build: () => ({
-      filters: { ...EMPTY_FILTER, dateRange: 'custom', customTo: isoDateDaysAgo(14) },
+      filters: { ...EMPTY_FILTER, stuckDays: 14 },
       search: '',
     }),
   },
