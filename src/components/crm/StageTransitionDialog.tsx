@@ -218,6 +218,7 @@ export function StageTransitionDialog({
       setQualSourceConfirmed(false);
       setQualAcknowledged(false);
       setDontAskAgain(false);
+      setSkipDontAskAgain(false);
     }
   }, [transition]);
 
