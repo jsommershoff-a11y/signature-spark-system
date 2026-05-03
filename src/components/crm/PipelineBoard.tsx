@@ -254,6 +254,8 @@ export function PipelineBoard({
   onStageChange,
 }: PipelineBoardProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { profile } = useAuth();
+  const currentUserId = profile?.id ?? null;
 
   // Initial-State: URL-Params haben Vorrang vor localStorage
   const initialFromUrl = useMemo(() => readStateFromParams(searchParams), []);
