@@ -214,7 +214,6 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
     }
   };
 
-  const [resetting, setResetting] = useState(false);
   const resetChecklist = async () => {
     if (!pipelineItemId || done === 0) return;
     const confirmed = window.confirm(
