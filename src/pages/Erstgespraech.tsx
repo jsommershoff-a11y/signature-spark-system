@@ -176,6 +176,7 @@ const Erstgespraech = () => {
         subline="Wähle einen freien Termin – wir freuen uns auf dich."
         ctaText="Jetzt Termin sichern"
         onCtaClick={goToBooking}
+        trackingCta={TRACKING_CTA}
       />
     </PublicLayout>
   );
