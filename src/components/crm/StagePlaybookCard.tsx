@@ -316,9 +316,23 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
           </div>
         </div>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
-            Checkliste {saving && <span className="ml-1 italic">· speichert…</span>}
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Checkliste {saving && <span className="ml-1 italic">· speichert…</span>}
+            </p>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetChecklist}
+              disabled={!pipelineItemId || done === 0 || resetting || saving}
+              className="h-6 px-2 text-[11px] gap-1 text-muted-foreground hover:text-destructive"
+              aria-label="Checkliste zurücksetzen"
+            >
+              <RotateCcw className={cn('h-3 w-3', resetting && 'animate-spin')} />
+              {resetting ? 'Reset…' : 'Reset'}
+            </Button>
+          </div>
           <ul className="space-y-2">
             {entry.fragen.map((q, idx) => {
               const id = `playbook-${stage}-${idx}`;
