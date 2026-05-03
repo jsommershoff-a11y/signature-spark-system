@@ -198,17 +198,74 @@ export function StageTransitionDialog({
   const [skipConfirmed, setSkipConfirmed] = useState<Record<string, boolean>>({});
   const [skipAcknowledged, setSkipAcknowledged] = useState(false);
 
+  // new_lead-Qualifizierung: Owner + Quelle bestätigen, bevor weiterverschoben werden darf.
+  const [qualOwnerId, setQualOwnerId] = useState<string>('');
+  const [qualSource, setQualSource] = useState<LeadSourceType | ''>('');
+  const [qualSourceConfirmed, setQualSourceConfirmed] = useState(false);
+  const [qualAcknowledged, setQualAcknowledged] = useState(false);
+
   useEffect(() => {
     if (transition) {
       setLossReason(LOSS_REASONS[0]);
       setBackwardNote('');
       setSkipConfirmed({});
       setSkipAcknowledged(false);
+      setQualOwnerId('');
+      setQualSource('');
+      setQualSourceConfirmed(false);
+      setQualAcknowledged(false);
     }
   }, [transition]);
 
   const isBackward = transition ? isBackwardMove(transition.fromStage, transition.toStage) : false;
   const skippedStages = transition ? getSkippedStages(transition.fromStage, transition.toStage) : [];
+  // Qualifizierungs-Gate aktiv, wenn Lead die `new_lead`-Stage verlässt (außer in `lost`).
+  const needsQualification =
+    !!transition &&
+    transition.fromStage === 'new_lead' &&
+    transition.toStage !== 'new_lead' &&
+    transition.toStage !== 'lost';
+
+  // Lead-Daten für Qualifizierungs-Vorbelegung & Owner-Update
+  const { data: leadData } = useQuery({
+    queryKey: ['crm-lead-qual', leadId],
+    enabled: !!leadId && needsQualification && !qualAcknowledged,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crm_leads')
+        .select('id, owner_user_id, source_type, first_name, last_name, company')
+        .eq('id', leadId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Verfügbare Owner (Sales-Rollen) für Auswahl
+  const { data: owners = [] } = useQuery({
+    queryKey: ['crm-qual-owners'],
+    enabled: needsQualification && !qualAcknowledged,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, full_name')
+        .order('full_name', { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map((p) => ({
+        id: p.id as string,
+        name: (p.full_name as string) || `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || 'Unbenannt',
+      }));
+    },
+  });
+
+  // Vorbelegung aus existierendem Lead (nur einmal pro Transition)
+  useEffect(() => {
+    if (!needsQualification || !leadData) return;
+    if (!qualOwnerId && leadData.owner_user_id) setQualOwnerId(leadData.owner_user_id as string);
+    if (!qualSource && leadData.source_type) setQualSource(leadData.source_type as LeadSourceType);
+  }, [needsQualification, leadData, qualOwnerId, qualSource]);
+
 
   const config = useMemo<PromptConfig | null>(() => {
     if (!transition) return null;
