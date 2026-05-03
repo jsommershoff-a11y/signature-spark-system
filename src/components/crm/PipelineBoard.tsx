@@ -147,6 +147,7 @@ const URL_KEYS = {
   dateRange: 'dr',
   customFrom: 'df',
   customTo: 'dt',
+  stuckDays: 'sd',
 } as const;
 
 function csvSet<T extends string>(value: string | null, allowed: readonly T[] | null): T[] {
@@ -202,6 +203,11 @@ function readStateFromParams(sp: URLSearchParams): {
     ),
     customFrom: sp.get(URL_KEYS.customFrom) || undefined,
     customTo: sp.get(URL_KEYS.customTo) || undefined,
+    stuckDays: (() => {
+      const raw = sp.get(URL_KEYS.stuckDays);
+      const n = raw ? parseInt(raw, 10) : 0;
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    })(),
   };
 
   return {
@@ -243,6 +249,7 @@ function writeStateToParams(
   set(URL_KEYS.dateRange, f.dateRange !== 'all' ? f.dateRange : null);
   set(URL_KEYS.customFrom, f.customFrom ?? null);
   set(URL_KEYS.customTo, f.customTo ?? null);
+  set(URL_KEYS.stuckDays, f.stuckDays && f.stuckDays > 0 ? String(f.stuckDays) : null);
 
   return next;
 }
@@ -479,6 +486,12 @@ export function PipelineBoard({
       if (!ref) return false;
       if (from && ref < from) return false;
       if (to && ref > to) return false;
+    }
+    if (filters.stuckDays && filters.stuckDays > 0) {
+      const ref = item.stage_updated_at ? new Date(item.stage_updated_at) : null;
+      if (!ref) return false;
+      const ageDays = (Date.now() - ref.getTime()) / 86_400_000;
+      if (ageDays < filters.stuckDays) return false;
     }
     return true;
   };

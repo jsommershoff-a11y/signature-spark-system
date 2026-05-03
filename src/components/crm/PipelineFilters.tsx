@@ -43,6 +43,7 @@ import {
   CalendarClock,
   Clock,
   SlidersHorizontal,
+  Hourglass,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PriorityTier } from '@/lib/pipeline-stage';
@@ -75,6 +76,8 @@ export interface PipelineFilterValue {
   dateRange: DateRangeKey;
   customFrom?: string;
   customTo?: string;
+  /** Mindestanzahl Tage seit `stage_updated_at`. 0/undefined = aus. */
+  stuckDays?: number;
 }
 
 export const EMPTY_FILTER: PipelineFilterValue = {
@@ -87,6 +90,7 @@ export const EMPTY_FILTER: PipelineFilterValue = {
   hasOffer: 'all',
   hasAppointment: 'all',
   dateRange: 'all',
+  stuckDays: 0,
 };
 
 const PRIORITY_OPTIONS: { value: PriorityTier; label: string }[] = [
@@ -133,7 +137,8 @@ export function countActiveFilters(v: PipelineFilterValue): number {
     (v.overdue !== 'all' ? 1 : 0) +
     (v.hasOffer !== 'all' ? 1 : 0) +
     (v.hasAppointment !== 'all' ? 1 : 0) +
-    (v.dateRange !== 'all' ? 1 : 0)
+    (v.dateRange !== 'all' ? 1 : 0) +
+    (v.stuckDays && v.stuckDays > 0 ? 1 : 0)
   );
 }
 
@@ -341,6 +346,30 @@ function FiltersInner({
             </>
           )}
         </div>
+
+        {/* Stuck (Tage in Phase) */}
+        <Select
+          value={String(value.stuckDays ?? 0)}
+          onValueChange={(v) => onChange({ ...value, stuckDays: Number(v) })}
+        >
+          <SelectTrigger
+            className={cn(
+              'h-8 text-xs gap-1.5 w-auto px-2.5',
+              (value.stuckDays ?? 0) > 0 && 'border-primary/60 bg-primary/5',
+            )}
+            title="Filtert Leads, die seit X Tagen in der gleichen Phase liegen"
+          >
+            <Hourglass className="h-3.5 w-3.5" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="0">Stuck: Aus</SelectItem>
+            <SelectItem value="3">≥ 3 Tage in Phase</SelectItem>
+            <SelectItem value="7">≥ 7 Tage in Phase</SelectItem>
+            <SelectItem value="14">≥ 14 Tage in Phase</SelectItem>
+            <SelectItem value="30">≥ 30 Tage in Phase</SelectItem>
+          </SelectContent>
+        </Select>
 
         {activeCount > 0 && (
           <Button

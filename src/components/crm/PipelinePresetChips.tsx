@@ -20,11 +20,6 @@ interface PresetDef {
   build: (ctx: { userId?: string | null }) => { filters: PipelineFilterValue; search?: string } | null;
 }
 
-function isoDateDaysAgo(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return d.toISOString().slice(0, 10);
-}
 
 const PRESETS: PresetDef[] = [
   {
@@ -53,7 +48,7 @@ const PRESETS: PresetDef[] = [
     label: 'Stuck > 14d',
     icon: Clock,
     build: () => ({
-      filters: { ...EMPTY_FILTER, dateRange: 'custom', customTo: isoDateDaysAgo(14) },
+      filters: { ...EMPTY_FILTER, stuckDays: 14 },
       search: '',
     }),
   },
