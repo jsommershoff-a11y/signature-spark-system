@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -39,6 +40,16 @@ const isBackwardMove = (from: PipelineStage | null, to: PipelineStage): boolean 
   const ti = STAGE_ORDER.indexOf(to);
   if (fi < 0 || ti < 0) return false;
   return ti < fi;
+};
+
+/** Liefert übersprungene Stages bei Vorwärts-Sprung (>1 Schritt). Leeres Array = kein Skip. */
+const getSkippedStages = (from: PipelineStage | null, to: PipelineStage): PipelineStage[] => {
+  if (!from) return [];
+  const fi = STAGE_ORDER.indexOf(from);
+  const ti = STAGE_ORDER.indexOf(to);
+  if (fi < 0 || ti < 0) return [];
+  if (ti - fi <= 1) return [];
+  return STAGE_ORDER.slice(fi + 1, ti);
 };
 
 export type StageTransitionAction =
@@ -175,15 +186,20 @@ export function StageTransitionDialog({
   const [busy, setBusy] = useState(false);
   const [lossReason, setLossReason] = useState<string>(LOSS_REASONS[0]);
   const [backwardNote, setBackwardNote] = useState<string>('');
+  const [skipConfirmed, setSkipConfirmed] = useState<Record<string, boolean>>({});
+  const [skipAcknowledged, setSkipAcknowledged] = useState(false);
 
   useEffect(() => {
     if (transition) {
       setLossReason(LOSS_REASONS[0]);
       setBackwardNote('');
+      setSkipConfirmed({});
+      setSkipAcknowledged(false);
     }
   }, [transition]);
 
   const isBackward = transition ? isBackwardMove(transition.fromStage, transition.toStage) : false;
+  const skippedStages = transition ? getSkippedStages(transition.fromStage, transition.toStage) : [];
 
   const config = useMemo<PromptConfig | null>(() => {
     if (!transition) return null;
@@ -195,6 +211,90 @@ export function StageTransitionDialog({
   const targetLabel = PIPELINE_STAGE_LABELS[transition.toStage];
 
   // Rückwärts-Wechsel: Pflicht-Notiz bevor gespeichert wird.
+  // Stage-Skip: Vorwärts-Sprung über mindestens eine Stage hinweg → aktive Bestätigung.
+  if (skippedStages.length > 0 && !skipAcknowledged) {
+    const fromLabel = transition.fromStage ? PIPELINE_STAGE_LABELS[transition.fromStage] : '';
+    const allChecked = skippedStages.every((s) => skipConfirmed[s]);
+    return (
+      <AlertDialog open onOpenChange={(o) => !o && !busy && onCancel()}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-5 w-5" />
+              {skippedStages.length === 1 ? 'Eine Stage' : `${skippedStages.length} Stages`} überspringen?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Du verschiebst den Lead von <strong>{fromLabel}</strong> direkt zu{' '}
+              <strong>{targetLabel}</strong>. Bitte bestätige, dass die folgenden Schritte bewusst übersprungen werden:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <ul className="space-y-2 py-2">
+            {skippedStages.map((s) => (
+              <li key={s} className="flex items-start gap-2">
+                <Checkbox
+                  id={`skip-${s}`}
+                  checked={!!skipConfirmed[s]}
+                  onCheckedChange={(v) =>
+                    setSkipConfirmed((prev) => ({ ...prev, [s]: v === true }))
+                  }
+                  className="mt-0.5"
+                />
+                <Label htmlFor={`skip-${s}`} className="cursor-pointer text-sm leading-snug">
+                  <span className="font-medium">{PIPELINE_STAGE_LABELS[s]}</span>
+                  <span className="text-muted-foreground"> wird übersprungen</span>
+                </Label>
+              </li>
+            ))}
+          </ul>
+
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={onCancel} disabled={busy}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!allChecked) return;
+                setBusy(true);
+                try {
+                  await onConfirm();
+                  if (leadId) {
+                    await createActivity.mutateAsync({
+                      type: 'notiz',
+                      content: `Stage-Sprung: ${fromLabel} → ${targetLabel}. Übersprungen: ${skippedStages
+                        .map((s) => PIPELINE_STAGE_LABELS[s])
+                        .join(', ')}`,
+                      lead_id: leadId,
+                      metadata: {
+                        stage_skip: true,
+                        from_stage: transition.fromStage,
+                        to_stage: transition.toStage,
+                        skipped_stages: skippedStages,
+                      },
+                    });
+                  }
+                  toast.success('Sprung dokumentiert', {
+                    description: `Übersprungen: ${skippedStages.length} Stage${skippedStages.length > 1 ? 's' : ''}`,
+                  });
+                  onCancel();
+                } catch (e) {
+                  console.error('Stage-Skip fehlgeschlagen', e);
+                  toast.error('Sprung konnte nicht gespeichert werden');
+                } finally {
+                  setBusy(false);
+                }
+              }}
+              disabled={busy || !allChecked}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {busy ? 'Speichert…' : 'Sprung bestätigen & verschieben'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
   if (isBackward) {
     const fromLabel = transition.fromStage ? PIPELINE_STAGE_LABELS[transition.fromStage] : '';
     const noteValid = backwardNote.trim().length >= 10;
