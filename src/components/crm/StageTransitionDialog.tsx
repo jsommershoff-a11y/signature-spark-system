@@ -749,6 +749,24 @@ export function StageTransitionDialog({
           </RadioGroup>
         )}
 
+        {!config.lossReasonPicker && !config.wonConfirmation && (
+          <div className="flex items-start gap-2 pt-1 border-t pt-3">
+            <Checkbox
+              id="dont-ask-again"
+              checked={dontAskAgain}
+              onCheckedChange={(v) => setDontAskAgain(v === true)}
+              disabled={busy}
+              className="mt-0.5"
+            />
+            <Label
+              htmlFor="dont-ask-again"
+              className="cursor-pointer text-xs leading-snug text-muted-foreground"
+            >
+              Diesen Dialog für <strong>{targetLabel}</strong> nicht erneut zeigen (gilt nur für Vorwärts-Sprünge um eine Stage; Sicherheits-Gates wie Rückstufung oder Skip bleiben aktiv).
+            </Label>
+          </div>
+        )}
+
         <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-2">
           {config.lossReasonPicker ? (
             <>
