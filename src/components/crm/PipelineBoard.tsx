@@ -128,6 +128,123 @@ function getDateRangeBounds(
   return { from: null, to: null };
 }
 
+// ---------- URL <-> State Sync ----------
+
+const URL_KEYS = {
+  group: 'g',
+  search: 'q',
+  stage: 'stage',
+  priorities: 'pri',
+  owners: 'own',
+  icpBands: 'icp',
+  stages: 'st',
+  sources: 'src',
+  overdue: 'od',
+  hasOffer: 'off',
+  hasAppointment: 'apt',
+  dateRange: 'dr',
+  customFrom: 'df',
+  customTo: 'dt',
+} as const;
+
+function csvSet<T extends string>(value: string | null, allowed: readonly T[] | null): T[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((v) => v.trim())
+    .filter((v): v is T => v.length > 0 && (!allowed || (allowed as readonly string[]).includes(v))) as T[];
+}
+
+function paramOr<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
+  return value && (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
+}
+
+function readStateFromParams(sp: URLSearchParams): {
+  group: PipelineGroup | null;
+  search: string;
+  stageFilter: PipelineStage | null;
+  filters: PipelineFilterValue;
+} {
+  const groupRaw = sp.get(URL_KEYS.group);
+  const stageRaw = sp.get(URL_KEYS.stage);
+  const stageAllowed = STAGE_ORDER as readonly PipelineStage[];
+  const stageFilter =
+    stageRaw && (stageAllowed as readonly string[]).includes(stageRaw)
+      ? (stageRaw as PipelineStage)
+      : null;
+
+  const filters: PipelineFilterValue = {
+    ...EMPTY_FILTER,
+    priorities: csvSet<'high' | 'medium' | 'low'>(
+      sp.get(URL_KEYS.priorities),
+      ['high', 'medium', 'low'],
+    ),
+    owners: csvSet<string>(sp.get(URL_KEYS.owners), null),
+    icpBands: csvSet<'a' | 'b' | 'c' | 'unscored'>(
+      sp.get(URL_KEYS.icpBands),
+      ['a', 'b', 'c', 'unscored'],
+    ),
+    stages: csvSet<PipelineStage>(sp.get(URL_KEYS.stages), stageAllowed),
+    sources: csvSet<LeadSourceType>(sp.get(URL_KEYS.sources), null),
+    overdue: paramOr(sp.get(URL_KEYS.overdue), ['all', 'overdue', 'on_track'] as const, 'all'),
+    hasOffer: paramOr(sp.get(URL_KEYS.hasOffer), ['all', 'with', 'without'] as const, 'all'),
+    hasAppointment: paramOr(
+      sp.get(URL_KEYS.hasAppointment),
+      ['all', 'with', 'without'] as const,
+      'all',
+    ),
+    dateRange: paramOr(
+      sp.get(URL_KEYS.dateRange),
+      ['all', 'today', 'week', 'month', 'custom'] as const,
+      'all',
+    ),
+    customFrom: sp.get(URL_KEYS.customFrom) || undefined,
+    customTo: sp.get(URL_KEYS.customTo) || undefined,
+  };
+
+  return {
+    group: isGroup(groupRaw) ? groupRaw : null,
+    search: sp.get(URL_KEYS.search) ?? '',
+    stageFilter,
+    filters,
+  };
+}
+
+function writeStateToParams(
+  current: URLSearchParams,
+  state: {
+    group: PipelineGroup;
+    search: string;
+    stageFilter: PipelineStage | null;
+    filters: PipelineFilterValue;
+  },
+): URLSearchParams {
+  const next = new URLSearchParams(current);
+  const set = (key: string, value: string | null | undefined) => {
+    if (value && value.length > 0) next.set(key, value);
+    else next.delete(key);
+  };
+
+  set(URL_KEYS.group, state.group !== DEFAULT_GROUP ? state.group : null);
+  set(URL_KEYS.search, state.search.trim() || null);
+  set(URL_KEYS.stage, state.stageFilter ?? null);
+
+  const f = state.filters;
+  set(URL_KEYS.priorities, f.priorities.join(',') || null);
+  set(URL_KEYS.owners, f.owners.join(',') || null);
+  set(URL_KEYS.icpBands, f.icpBands.join(',') || null);
+  set(URL_KEYS.stages, f.stages.join(',') || null);
+  set(URL_KEYS.sources, f.sources.join(',') || null);
+  set(URL_KEYS.overdue, f.overdue !== 'all' ? f.overdue : null);
+  set(URL_KEYS.hasOffer, f.hasOffer !== 'all' ? f.hasOffer : null);
+  set(URL_KEYS.hasAppointment, f.hasAppointment !== 'all' ? f.hasAppointment : null);
+  set(URL_KEYS.dateRange, f.dateRange !== 'all' ? f.dateRange : null);
+  set(URL_KEYS.customFrom, f.customFrom ?? null);
+  set(URL_KEYS.customTo, f.customTo ?? null);
+
+  return next;
+}
+
 export function PipelineBoard({
   pipelineByStage,
   loading,
