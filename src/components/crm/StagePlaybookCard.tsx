@@ -54,6 +54,7 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
   const [checklist, setChecklist] = useState<ChecklistMap>(initialChecklist);
   const [saving, setSaving] = useState(false);
   const [advancing, setAdvancing] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   // Refs für Debounce + Konflikt-freies Speichern bei schnellen Klicks.
   const checklistRef = useRef<ChecklistMap>(initialChecklist);
