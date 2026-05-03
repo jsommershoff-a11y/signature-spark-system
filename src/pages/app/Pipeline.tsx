@@ -5,7 +5,7 @@ import { PipelineBoard } from '@/components/crm/PipelineBoard';
 import { LeadDetailSidebar } from '@/components/crm/LeadDetailSidebar';
 import { StageTransitionDialog } from '@/components/crm/StageTransitionDialog';
 import { PipelineStage, CrmLead } from '@/types/crm';
-import { isStageDialogSuppressed } from '@/lib/crm/stage-dialog-prefs';
+import { isStageDialogSuppressed, isSkipDialogSuppressed } from '@/lib/crm/stage-dialog-prefs';
 
 export default function Pipeline() {
   const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
