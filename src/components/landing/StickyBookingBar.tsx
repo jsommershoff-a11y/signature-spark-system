@@ -56,7 +56,7 @@ export const StickyBookingBar = ({
         <Button
           onClick={() => {
             trackCtaClick({
-              stage: "sticky_bottom",
+              stage: "sticky_banner",
               cta: trackingCta,
               label: ctaText,
             });
