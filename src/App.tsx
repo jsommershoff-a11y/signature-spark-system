@@ -15,6 +15,7 @@ initApolloAutoload();
 
 // Public landing pages
 import MasterHome from "./pages/landing/MasterHome";
+import Erstgespraech from "./pages/Erstgespraech";
 import Handwerk from "./pages/landing/Handwerk";
 import Praxen from "./pages/landing/Praxen";
 import Dienstleister from "./pages/landing/Dienstleister";
@@ -115,6 +116,7 @@ const App = () => (
             <Route path="/immobilien" element={<Immobilien />} />
             <Route path="/kurzzeitvermietung" element={<Kurzzeitvermietung />} />
             <Route path="/qualifizierung" element={<Qualifizierung />} />
+            <Route path="/erstgespraech" element={<Erstgespraech />} />
             <Route path="/danke" element={<Thanks />} />
             <Route path="/agb" element={<AGB />} />
             <Route path="/widerruf" element={<Widerruf />} />
