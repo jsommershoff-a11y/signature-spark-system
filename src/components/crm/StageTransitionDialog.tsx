@@ -29,6 +29,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { suppressStageDialog } from '@/lib/crm/stage-dialog-prefs';
 
 // Lineare Reihenfolge zur Erkennung von Rückwärts-Wechseln.
 // `lost` ist seitwärts (kein Vor/Zurück).
@@ -197,6 +198,7 @@ export function StageTransitionDialog({
   const [backwardNote, setBackwardNote] = useState<string>('');
   const [skipConfirmed, setSkipConfirmed] = useState<Record<string, boolean>>({});
   const [skipAcknowledged, setSkipAcknowledged] = useState(false);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
 
   // new_lead-Qualifizierung: Owner + Quelle bestätigen, bevor weiterverschoben werden darf.
   const [qualOwnerId, setQualOwnerId] = useState<string>('');
@@ -214,6 +216,7 @@ export function StageTransitionDialog({
       setQualSource('');
       setQualSourceConfirmed(false);
       setQualAcknowledged(false);
+      setDontAskAgain(false);
     }
   }, [transition]);
 
@@ -614,6 +617,7 @@ export function StageTransitionDialog({
     try {
       // 1. Stage-Wechsel ausführen
       await onConfirm();
+      if (dontAskAgain) suppressStageDialog(transition.toStage);
 
       // 2. Folgeaktion
       switch (action.kind) {
@@ -743,6 +747,24 @@ export function StageTransitionDialog({
               </div>
             ))}
           </RadioGroup>
+        )}
+
+        {!config.lossReasonPicker && !config.wonConfirmation && (
+          <div className="flex items-start gap-2 pt-1 border-t pt-3">
+            <Checkbox
+              id="dont-ask-again"
+              checked={dontAskAgain}
+              onCheckedChange={(v) => setDontAskAgain(v === true)}
+              disabled={busy}
+              className="mt-0.5"
+            />
+            <Label
+              htmlFor="dont-ask-again"
+              className="cursor-pointer text-xs leading-snug text-muted-foreground"
+            >
+              Diesen Dialog für <strong>{targetLabel}</strong> nicht erneut zeigen (gilt nur für Vorwärts-Sprünge um eine Stage; Sicherheits-Gates wie Rückstufung oder Skip bleiben aktiv).
+            </Label>
+          </div>
         )}
 
         <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-2">
