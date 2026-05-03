@@ -174,10 +174,16 @@ export function StageTransitionDialog({
 
   const [busy, setBusy] = useState(false);
   const [lossReason, setLossReason] = useState<string>(LOSS_REASONS[0]);
+  const [backwardNote, setBackwardNote] = useState<string>('');
 
   useEffect(() => {
-    if (transition) setLossReason(LOSS_REASONS[0]);
+    if (transition) {
+      setLossReason(LOSS_REASONS[0]);
+      setBackwardNote('');
+    }
   }, [transition]);
+
+  const isBackward = transition ? isBackwardMove(transition.fromStage, transition.toStage) : false;
 
   const config = useMemo<PromptConfig | null>(() => {
     if (!transition) return null;
