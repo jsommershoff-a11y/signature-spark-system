@@ -19,6 +19,8 @@ const TYPE_CONFIG: Record<ActivityType, { icon: typeof Phone; label: string; col
   notiz: { icon: FileText, label: 'Notiz', color: 'text-muted-foreground' },
   fehler: { icon: AlertTriangle, label: 'Fehler', color: 'text-destructive' },
   login: { icon: LogIn, label: 'Portal-Login', color: 'text-emerald-500' },
+  stage_changed: { icon: ArrowRightLeft, label: 'Stage-Wechsel', color: 'text-amber-500' },
+  playbook_check: { icon: CheckSquare, label: 'Sales-Skript', color: 'text-primary' },
 };
 
 // Only these can be created manually
