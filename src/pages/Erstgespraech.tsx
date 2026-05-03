@@ -1,9 +1,12 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PublicLayout, Hero, FinalCTA } from "@/components/landing";
 import { SEOHead } from "@/components/landing/SEOHead";
 import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { TestimonialGrid } from "@/components/landing/conversion/TestimonialGrid";
+import { FAQSection } from "@/components/landing/FAQSection";
 import { landingTokens } from "@/styles/landing-tokens";
+import { trackEvent } from "@/lib/analytics";
 import { CheckCircle2, Calendar, Target, ShieldCheck } from "lucide-react";
 
 const benefits = [
@@ -31,9 +34,58 @@ const agenda = [
   "Nächster Schritt: Lohnt sich eine tiefere Potenzial-Analyse?",
 ];
 
+const faqItems = [
+  {
+    question: "Was kostet das Erstgespräch?",
+    answer:
+      "Das Erstgespräch ist zu 100 % kostenlos und unverbindlich. Es entstehen keinerlei Kosten – auch nicht im Nachgang, falls wir nicht zusammenarbeiten.",
+  },
+  {
+    question: "Wie lange dauert das Erstgespräch?",
+    answer:
+      "Plane rund 30 Minuten ein. In dieser Zeit klären wir deinen Status quo, deine größten Engpässe und ob eine tiefere Potenzial-Analyse für dich sinnvoll ist.",
+  },
+  {
+    question: "Wie bereite ich mich auf das Gespräch vor?",
+    answer:
+      "Du brauchst nichts vorbereiten – ein paar Stichpunkte zu deinen aktuell zeitintensivsten Prozessen (z. B. Angebotserstellung, Lead-Bearbeitung, Personalplanung) und ein grobes Gefühl für deine Ziele in den nächsten 12 Monaten reichen aus.",
+  },
+  {
+    question: "Wer sollte am Gespräch teilnehmen?",
+    answer:
+      "Idealerweise du als Entscheider:in (Geschäftsführung / Inhaber:in). Wenn dein:e Operations- oder IT-Verantwortliche:r früh eingebunden werden soll, lade ihn/sie gern dazu – das spart später eine Schleife.",
+  },
+  {
+    question: "Wird mir im Gespräch direkt etwas verkauft?",
+    answer:
+      "Nein. Das Gespräch dient ausschließlich der Analyse und gegenseitigen Einschätzung. Wenn wir einen Hebel sehen, schlagen wir einen nächsten Schritt vor – die Entscheidung liegt zu 100 % bei dir.",
+  },
+  {
+    question: "Über welches Tool findet das Gespräch statt?",
+    answer:
+      "Per Zoom oder Google Meet (Link bekommst du nach Terminbestätigung per E-Mail). Auf Wunsch auch per Telefon.",
+  },
+  {
+    question: "Was passiert, wenn wir nicht zusammenpassen?",
+    answer:
+      "Dann sagen wir es dir direkt und ehrlich – inklusive einer kurzen Empfehlung, was für dich aktuell der bessere Weg wäre. Kein Pitch, kein Druck.",
+  },
+];
+
+const TRACKING_CTA = "erstgespraech";
+
 const Erstgespraech = () => {
   const navigate = useNavigate();
   const goToBooking = () => navigate("/qualifizierung");
+
+  // Page-View tracken (einmalig pro Mount)
+  useEffect(() => {
+    void trackEvent("erstgespraech_view", {
+      path: "/erstgespraech",
+      tracking_cta: TRACKING_CTA,
+      referrer: typeof document !== "undefined" ? document.referrer : "",
+    });
+  }, []);
 
   return (
     <PublicLayout>
@@ -51,6 +103,7 @@ const Erstgespraech = () => {
         subline=""
         ctaText="Termin sichern"
         onCtaClick={goToBooking}
+        trackingCta={TRACKING_CTA}
       />
 
       {/* Trust: Tool-Logos + Testimonials direkt unter Hero */}
@@ -111,11 +164,19 @@ const Erstgespraech = () => {
         </div>
       </section>
 
+      <FAQSection
+        headline="Häufige Fragen zum Erstgespräch"
+        items={faqItems}
+        mobilePriority={["kostet", "dauert", "vorbereit", "teilnehmen"]}
+        trackingSection="erstgespraech"
+      />
+
       <FinalCTA
         headline="Bereit für dein Erstgespräch?"
         subline="Wähle einen freien Termin – wir freuen uns auf dich."
         ctaText="Jetzt Termin sichern"
         onCtaClick={goToBooking}
+        trackingCta={TRACKING_CTA}
       />
     </PublicLayout>
   );
