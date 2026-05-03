@@ -8,3 +8,4 @@ export { TodayPrioritiesWidget } from './TodayPrioritiesWidget';
 export { QuickActionsWidget } from './QuickActionsWidget';
 export { RecentActivitiesWidget } from './RecentActivitiesWidget';
 export { CommunicationStatusWidget } from './CommunicationStatusWidget';
+export { StageDurationWidget } from './StageDurationWidget';
