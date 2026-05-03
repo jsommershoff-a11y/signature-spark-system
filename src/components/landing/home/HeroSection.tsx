@@ -1,4 +1,4 @@
-import { Shield, Zap, GitBranch, TrendingUp, ShieldCheck, UserCheck, Clock, ArrowRight } from "lucide-react";
+import { Euro, ShieldCheck as ShieldIcon, Zap, TrendingUp, ShieldCheck, UserCheck, Clock, ArrowRight } from "lucide-react";
 import founderPortrait from "@/assets/founder-hero.jpeg";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
@@ -7,10 +7,10 @@ interface HeroSectionProps {
 }
 
 const benefits = [
-  { icon: Shield, text: "Weniger operative Abhängigkeit von einzelnen Personen" },
-  { icon: Zap, text: "Schnellere Reaktionszeiten – z. B. Lead-Antwort in unter 2 Min. statt 4 Std." },
-  { icon: GitBranch, text: "Saubere Prozesse statt manueller Übergaben" },
-  { icon: TrendingUp, text: "Mehr Planbarkeit für Wachstum und Skalierung" },
+  { icon: Euro, text: "Bis zu 40 % weniger operative Kosten durch automatisierte Prozesse" },
+  { icon: Zap, text: "Aufgaben, die früher Stunden dauerten, laufen in Minuten – ohne Personal" },
+  { icon: ShieldIcon, text: "Krisenfest: dein Unternehmen läuft auch bei Ausfall, Wechsel oder Auftragsdelle weiter" },
+  { icon: TrendingUp, text: "Mehr Marge, mehr Planbarkeit, mehr Geschwindigkeit für Wachstum" },
 ];
 
 const trustBadges = [
