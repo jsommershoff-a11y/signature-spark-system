@@ -50,7 +50,25 @@ const STAGE_ORDER: PipelineStage[] = [
 const GROUP_ORDER: PipelineGroup[] = ['active', 'setter', 'closer', 'archive', 'all'];
 
 const STORAGE_KEY = 'crm.pipeline.group';
+const STORAGE_KEY_STATE = 'crm.pipeline.state.v1';
 const DEFAULT_GROUP: PipelineGroup = 'active';
+
+interface PersistedState {
+  search?: string;
+  stageFilter?: PipelineStage | null;
+  filters?: PipelineFilterValue;
+}
+
+function loadPersistedState(): PersistedState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_STATE);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as PersistedState;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
 function isGroup(value: string | null): value is PipelineGroup {
   return value === 'all' || value === 'active' || value === 'setter' || value === 'closer' || value === 'archive';
