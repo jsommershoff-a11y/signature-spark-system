@@ -249,6 +249,7 @@ function writeStateToParams(
   set(URL_KEYS.dateRange, f.dateRange !== 'all' ? f.dateRange : null);
   set(URL_KEYS.customFrom, f.customFrom ?? null);
   set(URL_KEYS.customTo, f.customTo ?? null);
+  set(URL_KEYS.stuckDays, f.stuckDays && f.stuckDays > 0 ? String(f.stuckDays) : null);
 
   return next;
 }
