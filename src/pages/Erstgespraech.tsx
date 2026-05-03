@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { PublicLayout, Hero, SEOHead, FinalCTA } from "@/components/landing";
+import { PublicLayout, Hero, FinalCTA } from "@/components/landing";
+import { SEOHead } from "@/components/landing/SEOHead";
 import { landingTokens } from "@/styles/landing-tokens";
 import { CheckCircle2, Calendar, Target, ShieldCheck } from "lucide-react";
 
