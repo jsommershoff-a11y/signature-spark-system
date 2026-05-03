@@ -216,6 +216,33 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
             </p>
           )}
         </div>
+
+        {/* Auto-Stage-Vorschlag bei 100% Erfüllung */}
+        {canAdvance && nextStage && (
+          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-2 animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-start gap-2">
+              <Sparkles className="h-4 w-4 mt-0.5 text-emerald-600 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                  Alle Punkte abgehakt – bereit für die nächste Phase
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  Vorschlag: <span className="font-medium text-foreground">{PIPELINE_STAGE_LABELS[nextStage]}</span>
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={advanceStage}
+              disabled={advancing}
+              className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {advancing ? 'Verschiebe…' : 'In nächste Phase verschieben'}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
+
         <div className="flex items-start gap-2 rounded-md bg-muted/40 p-2">
           <Lightbulb className="h-3.5 w-3.5 mt-0.5 text-amber-500 shrink-0" />
           <p className="text-xs text-muted-foreground">{entry.hinweis}</p>
