@@ -136,7 +136,8 @@ export function countActiveFilters(v: PipelineFilterValue): number {
     (v.overdue !== 'all' ? 1 : 0) +
     (v.hasOffer !== 'all' ? 1 : 0) +
     (v.hasAppointment !== 'all' ? 1 : 0) +
-    (v.dateRange !== 'all' ? 1 : 0)
+    (v.dateRange !== 'all' ? 1 : 0) +
+    (v.stuckDays && v.stuckDays > 0 ? 1 : 0)
   );
 }
 
