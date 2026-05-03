@@ -72,9 +72,20 @@ const faqItems = [
   },
 ];
 
+const TRACKING_CTA = "erstgespraech";
+
 const Erstgespraech = () => {
   const navigate = useNavigate();
   const goToBooking = () => navigate("/qualifizierung");
+
+  // Page-View tracken (einmalig pro Mount)
+  useEffect(() => {
+    void trackEvent("erstgespraech_view", {
+      path: "/erstgespraech",
+      tracking_cta: TRACKING_CTA,
+      referrer: typeof document !== "undefined" ? document.referrer : "",
+    });
+  }, []);
 
   return (
     <PublicLayout>
@@ -92,6 +103,7 @@ const Erstgespraech = () => {
         subline=""
         ctaText="Termin sichern"
         onCtaClick={goToBooking}
+        trackingCta={TRACKING_CTA}
       />
 
       {/* Trust: Tool-Logos + Testimonials direkt unter Hero */}
