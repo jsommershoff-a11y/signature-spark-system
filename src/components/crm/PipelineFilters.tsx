@@ -43,6 +43,7 @@ import {
   CalendarClock,
   Clock,
   SlidersHorizontal,
+  Hourglass,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PriorityTier } from '@/lib/pipeline-stage';
