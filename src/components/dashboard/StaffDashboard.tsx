@@ -52,6 +52,7 @@ export function StaffDashboard({
         <PipelineStatsWidget stats={pipelineStats} isLoading={pipelineStatsLoading} />
         <FollowupApprovalsWidget />
         <CustomerAvatarWidget />
+        <StageDurationWidget />
       </div>
     </div>
   );
