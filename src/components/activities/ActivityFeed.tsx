@@ -168,18 +168,58 @@ export function ActivityFeed({ leadId, customerId }: ActivityFeedProps) {
         />
       </div>
 
+      {/* Filter chips */}
+      {presentTypes.size > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {CHIP_ORDER.filter((t) => presentTypes.has(t)).map((t) => {
+            const cfg = TYPE_CONFIG[t];
+            const ChipIcon = cfg.icon;
+            const isHidden = hiddenTypes.has(t);
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => toggleType(t)}
+                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors ${
+                  isHidden
+                    ? 'bg-muted/40 text-muted-foreground border-dashed opacity-60 hover:opacity-100'
+                    : 'bg-background hover:bg-muted/40'
+                }`}
+                aria-pressed={!isHidden}
+                title={isHidden ? `${cfg.label} einblenden` : `${cfg.label} ausblenden`}
+              >
+                <ChipIcon className={`h-3 w-3 ${isHidden ? 'text-muted-foreground' : cfg.color}`} />
+                <span>{cfg.label}</span>
+                <span className="text-muted-foreground">({typeCounts[t] ?? 0})</span>
+              </button>
+            );
+          })}
+          {hiddenTypes.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setHiddenTypes(new Set())}
+              className="text-[11px] text-muted-foreground underline-offset-2 hover:underline ml-1"
+            >
+              Filter zurücksetzen
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Activity list */}
       {isLoading ? (
         <div className="flex justify-center py-8">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
-      ) : activities.length === 0 ? (
+      ) : filteredActivities.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-8">
-          Noch keine Aktivitäten vorhanden
+          {activities.length === 0
+            ? 'Noch keine Aktivitäten vorhanden'
+            : 'Keine Aktivitäten passen zum aktuellen Filter'}
         </p>
       ) : (
         <div className="space-y-2">
-          {activities.map((a) => {
+          {filteredActivities.map((a) => {
             const cfg = TYPE_CONFIG[a.type] || TYPE_CONFIG.notiz;
             const Icon = cfg.icon;
             const eventBadge = getEventLabel(a);
