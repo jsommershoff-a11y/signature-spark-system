@@ -11,12 +11,35 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
 import { useActivities } from '@/hooks/useActivities';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Lineare Reihenfolge zur Erkennung von Rückwärts-Wechseln.
+// `lost` ist seitwärts (kein Vor/Zurück).
+const STAGE_ORDER: PipelineStage[] = [
+  'new_lead',
+  'setter_call_scheduled',
+  'setter_call_done',
+  'analysis_ready',
+  'offer_draft',
+  'offer_sent',
+  'payment_unlocked',
+  'won',
+];
+
+const isBackwardMove = (from: PipelineStage | null, to: PipelineStage): boolean => {
+  if (!from) return false;
+  const fi = STAGE_ORDER.indexOf(from);
+  const ti = STAGE_ORDER.indexOf(to);
+  if (fi < 0 || ti < 0) return false;
+  return ti < fi;
+};
 
 export type StageTransitionAction =
   | { kind: 'open_calendar' }
@@ -151,10 +174,16 @@ export function StageTransitionDialog({
 
   const [busy, setBusy] = useState(false);
   const [lossReason, setLossReason] = useState<string>(LOSS_REASONS[0]);
+  const [backwardNote, setBackwardNote] = useState<string>('');
 
   useEffect(() => {
-    if (transition) setLossReason(LOSS_REASONS[0]);
+    if (transition) {
+      setLossReason(LOSS_REASONS[0]);
+      setBackwardNote('');
+    }
   }, [transition]);
+
+  const isBackward = transition ? isBackwardMove(transition.fromStage, transition.toStage) : false;
 
   const config = useMemo<PromptConfig | null>(() => {
     if (!transition) return null;
@@ -164,6 +193,91 @@ export function StageTransitionDialog({
   if (!transition) return null;
 
   const targetLabel = PIPELINE_STAGE_LABELS[transition.toStage];
+
+  // Rückwärts-Wechsel: Pflicht-Notiz bevor gespeichert wird.
+  if (isBackward) {
+    const fromLabel = transition.fromStage ? PIPELINE_STAGE_LABELS[transition.fromStage] : '';
+    const noteValid = backwardNote.trim().length >= 10;
+    const handleBackward = async () => {
+      if (!noteValid) return;
+      setBusy(true);
+      try {
+        await onConfirm();
+        if (leadId) {
+          const reason = backwardNote.trim();
+          await createActivity.mutateAsync({
+            type: 'notiz',
+            content: `Stage rückwärts verschoben: ${fromLabel} → ${targetLabel}\nGrund: ${reason}`,
+            lead_id: leadId,
+            metadata: {
+              backward_move: true,
+              from_stage: transition.fromStage,
+              to_stage: transition.toStage,
+              reason,
+            },
+          });
+        }
+        toast.success('Lead zurückgesetzt', {
+          description: `Notiz dokumentiert (${fromLabel} → ${targetLabel}).`,
+        });
+      } catch (e) {
+        console.error('Backward-Move fehlgeschlagen', e);
+        toast.error('Rückwärts-Wechsel konnte nicht gespeichert werden');
+      } finally {
+        setBusy(false);
+      }
+    };
+
+    return (
+      <AlertDialog open onOpenChange={(o) => !o && !busy && onCancel()}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-5 w-5" />
+              Lead in vorherige Phase verschieben?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Du verschiebst den Lead von <strong>{fromLabel}</strong> zurück zu{' '}
+              <strong>{targetLabel}</strong>. Bitte dokumentiere den Grund (mind. 10 Zeichen) – das hilft Coaching und Audit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2 py-2">
+            <Label htmlFor="backward-note" className="text-sm font-medium">
+              Grund für Rückstufung <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="backward-note"
+              value={backwardNote}
+              onChange={(e) => setBackwardNote(e.target.value)}
+              placeholder="z. B. Kunde will Angebot nochmals überarbeiten lassen, Termin geplatzt, weitere Discovery nötig …"
+              rows={4}
+              maxLength={500}
+              disabled={busy}
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground text-right tabular-nums">
+              {backwardNote.trim().length}/500 · mindestens 10 Zeichen
+            </p>
+          </div>
+
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={onCancel} disabled={busy}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleBackward}
+              disabled={busy || !noteValid}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {busy ? 'Speichert…' : 'Rückstufung speichern'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
 
   // Wenn keine Konfiguration für diese Stage → direkt bestätigen
   if (!config) {

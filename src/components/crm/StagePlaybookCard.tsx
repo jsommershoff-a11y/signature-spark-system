@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Target, Lightbulb, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, Target, Lightbulb, CheckCircle2, ArrowRight, Sparkles, RotateCcw } from 'lucide-react';
 import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
 import { STAGE_PLAYBOOK } from '@/lib/sales-scripts/stage-playbook';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,6 +54,7 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
   const [checklist, setChecklist] = useState<ChecklistMap>(initialChecklist);
   const [saving, setSaving] = useState(false);
   const [advancing, setAdvancing] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   // Refs für Debounce + Konflikt-freies Speichern bei schnellen Klicks.
   const checklistRef = useRef<ChecklistMap>(initialChecklist);
@@ -214,6 +215,52 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
     }
   };
 
+  const resetChecklist = async () => {
+    if (!pipelineItemId || done === 0) return;
+    const confirmed = window.confirm(
+      `Checkliste für „${PIPELINE_STAGE_LABELS[stage]}" wirklich zurücksetzen?`,
+    );
+    if (!confirmed) return;
+    setResetting(true);
+    const prev = checklistRef.current;
+    const next: ChecklistMap = { ...prev, [stage]: {} };
+    checklistRef.current = next;
+    setChecklist(next);
+    // Pending Activity-Logs für diese Stage verwerfen.
+    pendingActivitiesRef.current = [];
+    // Erlaube Re-Logging beim erneuten Anhaken.
+    for (const key of Array.from(loggedActivitiesRef.current)) {
+      if (key.startsWith(`${stage}:`)) loggedActivitiesRef.current.delete(key);
+    }
+    try {
+      if (inFlightRef.current) {
+        try { await inFlightRef.current; } catch { /* noop */ }
+      }
+      const { data: current, error: readErr } = await supabase
+        .from('pipeline_items')
+        .select('meta')
+        .eq('id', pipelineItemId)
+        .maybeSingle();
+      if (readErr) throw readErr;
+      const meta = ((current?.meta as Record<string, unknown> | null) ?? {}) as Record<string, unknown>;
+      const newMeta = { ...meta, checklist: next };
+      const { error } = await supabase
+        .from('pipeline_items')
+        .update({ meta: newMeta })
+        .eq('id', pipelineItemId);
+      if (error) throw error;
+      lastSavedRef.current = next;
+      queryClient.invalidateQueries({ queryKey: ['pipeline'] });
+      toast.success('Checkliste zurückgesetzt');
+    } catch (err) {
+      checklistRef.current = prev;
+      setChecklist(prev);
+      toast.error('Reset fehlgeschlagen', { description: (err as Error).message });
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
@@ -269,9 +316,23 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
           </div>
         </div>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
-            Checkliste {saving && <span className="ml-1 italic">· speichert…</span>}
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Checkliste {saving && <span className="ml-1 italic">· speichert…</span>}
+            </p>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetChecklist}
+              disabled={!pipelineItemId || done === 0 || resetting || saving}
+              className="h-6 px-2 text-[11px] gap-1 text-muted-foreground hover:text-destructive"
+              aria-label="Checkliste zurücksetzen"
+            >
+              <RotateCcw className={cn('h-3 w-3', resetting && 'animate-spin')} />
+              {resetting ? 'Reset…' : 'Reset'}
+            </Button>
+          </div>
           <ul className="space-y-2">
             {entry.fragen.map((q, idx) => {
               const id = `playbook-${stage}-${idx}`;
