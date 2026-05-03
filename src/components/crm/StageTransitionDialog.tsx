@@ -617,6 +617,7 @@ export function StageTransitionDialog({
     try {
       // 1. Stage-Wechsel ausführen
       await onConfirm();
+      if (dontAskAgain) suppressStageDialog(transition.toStage);
 
       // 2. Folgeaktion
       switch (action.kind) {
