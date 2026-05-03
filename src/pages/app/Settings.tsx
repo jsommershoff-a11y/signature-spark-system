@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Settings as SettingsIcon, User, Loader2, Lock, Bell, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import GoogleCalendarStatusCard from '@/components/settings/GoogleCalendarStatusCard';
 import PushNotificationsCard from '@/components/settings/PushNotificationsCard';
+import CrmDialogPrefsCard from '@/components/settings/CrmDialogPrefsCard';
 
 export default function Settings() {
   const { profile, user, refreshProfile } = useAuth();
@@ -361,6 +362,9 @@ export default function Settings() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* CRM Dialog Preferences */}
+        <CrmDialogPrefsCard />
 
         {/* Push Notifications */}
         <PushNotificationsCard />

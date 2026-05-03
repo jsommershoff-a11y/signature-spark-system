@@ -53,3 +53,27 @@ export const suppressSkipDialog = (toStage: PipelineStage) => {
   write(SKIP_STORAGE_KEY, data);
 };
 
+export const listSuppressedStageDialogs = (): PipelineStage[] => {
+  return Object.entries(read(STORAGE_KEY))
+    .filter(([, v]) => !!v)
+    .map(([k]) => k as PipelineStage);
+};
+
+export const listSuppressedSkipDialogs = (): PipelineStage[] => {
+  return Object.entries(read(SKIP_STORAGE_KEY))
+    .filter(([, v]) => !!v)
+    .map(([k]) => k as PipelineStage);
+};
+
+export const clearStageDialogSuppression = (stage: PipelineStage) => {
+  const data = read(STORAGE_KEY);
+  delete data[stage];
+  write(STORAGE_KEY, data);
+};
+
+export const clearSkipDialogSuppression = (toStage: PipelineStage) => {
+  const data = read(SKIP_STORAGE_KEY);
+  delete data[toStage];
+  write(SKIP_STORAGE_KEY, data);
+};
+
