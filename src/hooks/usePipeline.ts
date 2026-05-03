@@ -79,18 +79,58 @@ export function usePipeline() {
 
   const moveToStage = async (itemId: string, newStage: PipelineStage): Promise<boolean> => {
     try {
+      // Aktuellen Stand für From/To-Logging holen
+      const { data: existing, error: readErr } = await supabase
+        .from('pipeline_items')
+        .select('stage, lead_id')
+        .eq('id', itemId)
+        .maybeSingle();
+      if (readErr) throw readErr;
+
+      const fromStage = (existing?.stage as PipelineStage | undefined) ?? null;
+      if (fromStage === newStage) return true; // kein Wechsel
+
       const { error } = await supabase
         .from('pipeline_items')
-        .update({ 
-          stage: newStage, 
-          stage_updated_at: new Date().toISOString() 
+        .update({
+          stage: newStage,
+          stage_updated_at: new Date().toISOString(),
         })
         .eq('id', itemId);
 
       if (error) throw error;
 
+      // Audit-Log: stage_changed mit From/To
+      if (existing?.lead_id) {
+        const { data: userRes } = await supabase.auth.getUser();
+        const authUserId = userRes?.user?.id;
+        let actorProfileId: string | null = null;
+        if (authUserId) {
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('user_id', authUserId)
+            .maybeSingle();
+          actorProfileId = (prof?.id as string | undefined) ?? null;
+        }
+
+        const { error: actErr } = await supabase.from('activities').insert({
+          lead_id: existing.lead_id as string,
+          user_id: actorProfileId,
+          type: 'stage_changed' as never,
+          content: `Stage gewechselt: ${fromStage ?? '—'} → ${newStage}`,
+          metadata: {
+            from_stage: fromStage,
+            to_stage: newStage,
+            pipeline_item_id: itemId,
+          } as never,
+        });
+        if (actErr) console.warn('[stage_changed] activity log failed', actErr);
+      }
+
       queryClient.invalidateQueries({ queryKey: ['pipeline'] });
       queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
 
       toast({
         title: 'Pipeline aktualisiert',
