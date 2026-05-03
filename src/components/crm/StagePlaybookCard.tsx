@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Target, Lightbulb, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, Target, Lightbulb, CheckCircle2, ArrowRight, Sparkles, RotateCcw } from 'lucide-react';
 import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
 import { STAGE_PLAYBOOK } from '@/lib/sales-scripts/stage-playbook';
 import { supabase } from '@/integrations/supabase/client';
