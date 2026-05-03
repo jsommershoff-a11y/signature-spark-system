@@ -179,6 +179,13 @@ const Erstgespraech = () => {
         onCtaClick={goToBooking}
         trackingCta={TRACKING_CTA}
       />
+
+      <StickyBookingBar
+        onCtaClick={goToBooking}
+        ctaText="Termin sichern"
+        label="Kostenloses 30-Min. Erstgespräch – unverbindlich"
+        trackingCta={TRACKING_CTA}
+      />
     </PublicLayout>
   );
 };
