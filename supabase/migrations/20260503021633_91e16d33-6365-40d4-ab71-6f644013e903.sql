@@ -1,0 +1,1 @@
+ALTER TABLE public.pipeline_items ADD COLUMN IF NOT EXISTS meta jsonb NOT NULL DEFAULT '{}'::jsonb;
