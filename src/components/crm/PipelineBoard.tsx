@@ -16,7 +16,9 @@ import {
   type PipelineFilterValue,
   type OwnerOption,
 } from './PipelineFilters';
+import { PipelinePresetChips } from './PipelinePresetChips';
 import { PipelineData, PipelineItemWithLead } from '@/hooks/usePipeline';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTasks } from '@/hooks/useTasks';
 import { getPriorityTier } from '@/lib/pipeline-stage';
 import { supabase } from '@/integrations/supabase/client';
