@@ -7,6 +7,7 @@ import {
   CallQueueWidget,
   FollowupApprovalsWidget,
   CustomerAvatarWidget,
+  StageDurationWidget,
 } from '@/components/dashboard';
 import GoalsMotivationPanel from '@/components/dashboard/GoalsMotivationPanel';
 import { SALES_TARGETS, PRODUCT_TIERS, FUNNEL_STAGES, DAILY_ACTIVITIES } from '@/lib/sales-scripts';
@@ -51,6 +52,7 @@ export function StaffDashboard({
         <PipelineStatsWidget stats={pipelineStats} isLoading={pipelineStatsLoading} />
         <FollowupApprovalsWidget />
         <CustomerAvatarWidget />
+        <StageDurationWidget />
       </div>
     </div>
   );

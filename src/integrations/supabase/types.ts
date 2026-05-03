@@ -4777,6 +4777,18 @@ export type Database = {
           viewed_at: string
         }[]
       }
+      get_stage_duration_stats: {
+        Args: { _days?: number }
+        Returns: {
+          avg_hours: number
+          max_hours: number
+          median_hours: number
+          min_hours: number
+          p90_hours: number
+          stage: string
+          transitions_count: number
+        }[]
+      }
       get_team_member_ids: { Args: { _user_id: string }; Returns: string[] }
       get_trial_kpis: {
         Args: never
