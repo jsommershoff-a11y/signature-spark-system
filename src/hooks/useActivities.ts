@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type ActivityType = 'anruf' | 'email' | 'meeting' | 'notiz' | 'fehler' | 'login';
+export type ActivityType = 'anruf' | 'email' | 'meeting' | 'notiz' | 'fehler' | 'login' | 'stage_changed' | 'playbook_check';
 
 export interface Activity {
   id: string;
