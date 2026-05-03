@@ -3386,6 +3386,7 @@ export type Database = {
           last_followup_template_id: string | null
           last_followup_variant_id: string | null
           lead_id: string
+          meta: Json
           pipeline_priority_score: number | null
           purchase_readiness: number | null
           stage: Database["public"]["Enums"]["pipeline_stage"] | null
@@ -3400,6 +3401,7 @@ export type Database = {
           last_followup_template_id?: string | null
           last_followup_variant_id?: string | null
           lead_id: string
+          meta?: Json
           pipeline_priority_score?: number | null
           purchase_readiness?: number | null
           stage?: Database["public"]["Enums"]["pipeline_stage"] | null
@@ -3414,6 +3416,7 @@ export type Database = {
           last_followup_template_id?: string | null
           last_followup_variant_id?: string | null
           lead_id?: string
+          meta?: Json
           pipeline_priority_score?: number | null
           purchase_readiness?: number | null
           stage?: Database["public"]["Enums"]["pipeline_stage"] | null

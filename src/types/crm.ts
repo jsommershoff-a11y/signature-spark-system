@@ -71,6 +71,7 @@ export interface PipelineItem {
   pipeline_priority_score?: number;
   purchase_readiness?: number;
   urgency?: number;
+  meta?: Record<string, unknown>;
   // Joined data
   lead?: CrmLead;
 }

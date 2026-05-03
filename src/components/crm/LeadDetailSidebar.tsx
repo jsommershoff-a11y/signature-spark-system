@@ -263,7 +263,11 @@ export function LeadDetailSidebar({ lead, open, onOpenChange }: LeadDetailSideba
               </Card>
 
               {/* Sales-Skript */}
-              <StagePlaybookCard stage={stage} />
+              <StagePlaybookCard
+                stage={stage}
+                pipelineItemId={lead.pipeline_item?.id}
+                initialMeta={(lead.pipeline_item as { meta?: Record<string, unknown> } | undefined)?.meta ?? null}
+              />
 
               {/* Angebot / Analyse */}
               <Card>
