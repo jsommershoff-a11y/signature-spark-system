@@ -420,9 +420,13 @@ export function PipelineFilters(props: PipelineFiltersProps) {
                 )}
               </span>
               {hasCounts && (
-                <span className="text-muted-foreground tabular-nums">
+                <Badge
+                  variant={activeCount > 0 ? 'default' : 'secondary'}
+                  className="h-4 px-1.5 text-[10px] tabular-nums"
+                  title={`${props.visibleCount} von ${props.totalCount} sichtbar`}
+                >
                   {props.visibleCount}/{props.totalCount}
-                </span>
+                </Badge>
               )}
             </Button>
           </SheetTrigger>
