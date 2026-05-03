@@ -201,8 +201,32 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
         })
         .eq('id', pipelineItemId);
       if (error) throw error;
+
+      // Audit-Log: stage_changed (From = aktuelle Stage, To = nextStage)
+      const { data: itemRow } = await supabase
+        .from('pipeline_items')
+        .select('lead_id')
+        .eq('id', pipelineItemId)
+        .maybeSingle();
+      if (itemRow?.lead_id && profile?.id) {
+        const { error: actErr } = await supabase.from('activities').insert({
+          lead_id: itemRow.lead_id as string,
+          user_id: profile.id,
+          type: 'stage_changed' as never,
+          content: `Stage gewechselt: ${stage} → ${nextStage} (über Sales-Skript)`,
+          metadata: {
+            from_stage: stage,
+            to_stage: nextStage,
+            pipeline_item_id: pipelineItemId,
+            via: 'playbook_advance',
+          } as never,
+        });
+        if (actErr) console.warn('[stage_changed] activity log failed', actErr);
+      }
+
       queryClient.invalidateQueries({ queryKey: ['pipeline'] });
       queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
       toast.success('Lead verschoben', {
         description: `Neue Phase: ${PIPELINE_STAGE_LABELS[nextStage]}`,
       });

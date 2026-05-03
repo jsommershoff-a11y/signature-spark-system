@@ -199,6 +199,16 @@ export function useLeads(filters?: LeadFilters) {
 
   const updatePipelineStage = async (leadId: string, stage: PipelineStage): Promise<boolean> => {
     try {
+      // Vorherigen Stand für stage_changed-Log holen
+      const { data: existing, error: readErr } = await supabase
+        .from('pipeline_items')
+        .select('stage')
+        .eq('lead_id', leadId)
+        .maybeSingle();
+      if (readErr) throw readErr;
+      const fromStage = (existing?.stage as PipelineStage | undefined) ?? null;
+      if (fromStage === stage) return true;
+
       const { error } = await supabase
         .from('pipeline_items')
         .update({ 
@@ -209,8 +219,30 @@ export function useLeads(filters?: LeadFilters) {
 
       if (error) throw error;
 
+      // Audit-Log: stage_changed
+      const { data: userRes } = await supabase.auth.getUser();
+      const authUserId = userRes?.user?.id;
+      let actorProfileId: string | null = null;
+      if (authUserId) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', authUserId)
+          .maybeSingle();
+        actorProfileId = (prof?.id as string | undefined) ?? null;
+      }
+      const { error: actErr } = await supabase.from('activities').insert({
+        lead_id: leadId,
+        user_id: actorProfileId,
+        type: 'stage_changed' as never,
+        content: `Stage gewechselt: ${fromStage ?? '—'} → ${stage}`,
+        metadata: { from_stage: fromStage, to_stage: stage } as never,
+      });
+      if (actErr) console.warn('[stage_changed] activity log failed', actErr);
+
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       queryClient.invalidateQueries({ queryKey: ['pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
 
       toast({
         title: 'Pipeline aktualisiert',

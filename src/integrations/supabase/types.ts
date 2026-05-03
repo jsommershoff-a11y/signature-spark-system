@@ -4974,6 +4974,7 @@ export type Database = {
         | "notiz"
         | "fehler"
         | "playbook_check"
+        | "stage_changed"
       affiliate_status: "pending" | "onboarding" | "active" | "disabled"
       app_role:
         | "admin"
@@ -5206,6 +5207,7 @@ export const Constants = {
         "notiz",
         "fehler",
         "playbook_check",
+        "stage_changed",
       ],
       affiliate_status: ["pending", "onboarding", "active", "disabled"],
       app_role: [
