@@ -16,7 +16,9 @@ import {
   type PipelineFilterValue,
   type OwnerOption,
 } from './PipelineFilters';
+import { PipelinePresetChips } from './PipelinePresetChips';
 import { PipelineData, PipelineItemWithLead } from '@/hooks/usePipeline';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTasks } from '@/hooks/useTasks';
 import { getPriorityTier } from '@/lib/pipeline-stage';
 import { supabase } from '@/integrations/supabase/client';
@@ -252,6 +254,8 @@ export function PipelineBoard({
   onStageChange,
 }: PipelineBoardProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { profile } = useAuth();
+  const currentUserId = profile?.id ?? null;
 
   // Initial-State: URL-Params haben Vorrang vor localStorage
   const initialFromUrl = useMemo(() => readStateFromParams(searchParams), []);
@@ -516,6 +520,18 @@ export function PipelineBoard({
   return (
     <div className="flex flex-col lg:flex-row gap-4">
       <div className="flex-1 min-w-0 space-y-3 order-2 lg:order-1">
+        {/* Saved Views / Schnell-Ansichten */}
+        <PipelinePresetChips
+          currentUserId={currentUserId}
+          filters={filters}
+          search={search}
+          onApply={({ filters: nextFilters, search: nextSearch }) => {
+            setFilters(nextFilters);
+            if (typeof nextSearch === 'string') setSearch(nextSearch);
+            setStageFilter(null);
+          }}
+        />
+
         {/* Tabs (Desktop in Zeile mit Suche, Mobile darüber, scrollbar) */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Tabs
