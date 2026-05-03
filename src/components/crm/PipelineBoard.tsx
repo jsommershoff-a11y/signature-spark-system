@@ -147,6 +147,7 @@ const URL_KEYS = {
   dateRange: 'dr',
   customFrom: 'df',
   customTo: 'dt',
+  stuckDays: 'sd',
 } as const;
 
 function csvSet<T extends string>(value: string | null, allowed: readonly T[] | null): T[] {
