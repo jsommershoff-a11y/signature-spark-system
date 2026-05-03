@@ -10,7 +10,7 @@ import { STAGE_PLAYBOOK } from '@/lib/sales-scripts/stage-playbook';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 // Lineare Default-Reihenfolge der Stages für Auto-Vorschlag.
