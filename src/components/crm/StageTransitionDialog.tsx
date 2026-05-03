@@ -253,11 +253,41 @@ export function StageTransitionDialog({
               Abbrechen
             </Button>
             <Button
-              onClick={() => setSkipAcknowledged(true)}
+              onClick={async () => {
+                if (!allChecked) return;
+                setBusy(true);
+                try {
+                  await onConfirm();
+                  if (leadId) {
+                    await createActivity.mutateAsync({
+                      type: 'notiz',
+                      content: `Stage-Sprung: ${fromLabel} → ${targetLabel}. Übersprungen: ${skippedStages
+                        .map((s) => PIPELINE_STAGE_LABELS[s])
+                        .join(', ')}`,
+                      lead_id: leadId,
+                      metadata: {
+                        stage_skip: true,
+                        from_stage: transition.fromStage,
+                        to_stage: transition.toStage,
+                        skipped_stages: skippedStages,
+                      },
+                    });
+                  }
+                  toast.success('Sprung dokumentiert', {
+                    description: `Übersprungen: ${skippedStages.length} Stage${skippedStages.length > 1 ? 's' : ''}`,
+                  });
+                  setSkipAcknowledged(true);
+                } catch (e) {
+                  console.error('Stage-Skip fehlgeschlagen', e);
+                  toast.error('Sprung konnte nicht gespeichert werden');
+                } finally {
+                  setBusy(false);
+                }
+              }}
               disabled={busy || !allChecked}
               className="bg-amber-600 hover:bg-amber-700 text-white"
             >
-              Sprung bestätigen
+              {busy ? 'Speichert…' : 'Sprung bestätigen & verschieben'}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
