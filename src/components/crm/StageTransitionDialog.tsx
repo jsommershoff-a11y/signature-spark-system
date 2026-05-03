@@ -11,12 +11,35 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
 import { useActivities } from '@/hooks/useActivities';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Lineare Reihenfolge zur Erkennung von Rückwärts-Wechseln.
+// `lost` ist seitwärts (kein Vor/Zurück).
+const STAGE_ORDER: PipelineStage[] = [
+  'new_lead',
+  'setter_call_scheduled',
+  'setter_call_done',
+  'analysis_ready',
+  'offer_draft',
+  'offer_sent',
+  'payment_unlocked',
+  'won',
+];
+
+const isBackwardMove = (from: PipelineStage | null, to: PipelineStage): boolean => {
+  if (!from) return false;
+  const fi = STAGE_ORDER.indexOf(from);
+  const ti = STAGE_ORDER.indexOf(to);
+  if (fi < 0 || ti < 0) return false;
+  return ti < fi;
+};
 
 export type StageTransitionAction =
   | { kind: 'open_calendar' }
