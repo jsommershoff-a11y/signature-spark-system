@@ -194,6 +194,91 @@ export function StageTransitionDialog({
 
   const targetLabel = PIPELINE_STAGE_LABELS[transition.toStage];
 
+  // Rückwärts-Wechsel: Pflicht-Notiz bevor gespeichert wird.
+  if (isBackward) {
+    const fromLabel = transition.fromStage ? PIPELINE_STAGE_LABELS[transition.fromStage] : '';
+    const noteValid = backwardNote.trim().length >= 10;
+    const handleBackward = async () => {
+      if (!noteValid) return;
+      setBusy(true);
+      try {
+        await onConfirm();
+        if (leadId) {
+          const reason = backwardNote.trim();
+          await createActivity.mutateAsync({
+            type: 'notiz',
+            content: `Stage rückwärts verschoben: ${fromLabel} → ${targetLabel}\nGrund: ${reason}`,
+            lead_id: leadId,
+            metadata: {
+              backward_move: true,
+              from_stage: transition.fromStage,
+              to_stage: transition.toStage,
+              reason,
+            },
+          });
+        }
+        toast.success('Lead zurückgesetzt', {
+          description: `Notiz dokumentiert (${fromLabel} → ${targetLabel}).`,
+        });
+      } catch (e) {
+        console.error('Backward-Move fehlgeschlagen', e);
+        toast.error('Rückwärts-Wechsel konnte nicht gespeichert werden');
+      } finally {
+        setBusy(false);
+      }
+    };
+
+    return (
+      <AlertDialog open onOpenChange={(o) => !o && !busy && onCancel()}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-5 w-5" />
+              Lead in vorherige Phase verschieben?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Du verschiebst den Lead von <strong>{fromLabel}</strong> zurück zu{' '}
+              <strong>{targetLabel}</strong>. Bitte dokumentiere den Grund (mind. 10 Zeichen) – das hilft Coaching und Audit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2 py-2">
+            <Label htmlFor="backward-note" className="text-sm font-medium">
+              Grund für Rückstufung <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="backward-note"
+              value={backwardNote}
+              onChange={(e) => setBackwardNote(e.target.value)}
+              placeholder="z. B. Kunde will Angebot nochmals überarbeiten lassen, Termin geplatzt, weitere Discovery nötig …"
+              rows={4}
+              maxLength={500}
+              disabled={busy}
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground text-right tabular-nums">
+              {backwardNote.trim().length}/500 · mindestens 10 Zeichen
+            </p>
+          </div>
+
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={onCancel} disabled={busy}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleBackward}
+              disabled={busy || !noteValid}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {busy ? 'Speichert…' : 'Rückstufung speichern'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
+
   // Wenn keine Konfiguration für diese Stage → direkt bestätigen
   if (!config) {
     return (
