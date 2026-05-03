@@ -134,9 +134,13 @@ export function PipelineBoard({
   onStageChange,
 }: PipelineBoardProps) {
   const [group, setGroup] = useState<PipelineGroup>(DEFAULT_GROUP);
-  const [search, setSearch] = useState('');
-  const [stageFilter, setStageFilter] = useState<PipelineStage | null>(null);
-  const [filters, setFilters] = useState<PipelineFilterValue>(EMPTY_FILTER);
+  const [search, setSearch] = useState<string>(() => loadPersistedState().search ?? '');
+  const [stageFilter, setStageFilter] = useState<PipelineStage | null>(
+    () => loadPersistedState().stageFilter ?? null,
+  );
+  const [filters, setFilters] = useState<PipelineFilterValue>(
+    () => ({ ...EMPTY_FILTER, ...(loadPersistedState().filters ?? {}) }),
+  );
 
   // Aufgaben (für Überfälligkeitsfilter)
   const { tasks } = useTasks();
@@ -158,6 +162,16 @@ export function PipelineBoard({
       /* ignore */
     }
   }, [group]);
+
+  // Suche, Stage- und Filter-Auswahl persistieren
+  useEffect(() => {
+    try {
+      const payload: PersistedState = { search, stageFilter, filters };
+      localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(payload));
+    } catch {
+      /* ignore */
+    }
+  }, [search, stageFilter, filters]);
 
   const activeStages = useMemo<Set<PipelineStage>>(() => {
     if (stageFilter) return new Set<PipelineStage>([stageFilter]);
