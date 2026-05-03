@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Phone, Mail, Calendar, FileText, AlertTriangle, Loader2, Send, LogIn, ExternalLink } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Phone, Mail, Calendar, FileText, AlertTriangle, Loader2, Send, LogIn, ExternalLink, ArrowRightLeft, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
