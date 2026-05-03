@@ -185,15 +185,20 @@ export function StageTransitionDialog({
   const [busy, setBusy] = useState(false);
   const [lossReason, setLossReason] = useState<string>(LOSS_REASONS[0]);
   const [backwardNote, setBackwardNote] = useState<string>('');
+  const [skipConfirmed, setSkipConfirmed] = useState<Record<string, boolean>>({});
+  const [skipAcknowledged, setSkipAcknowledged] = useState(false);
 
   useEffect(() => {
     if (transition) {
       setLossReason(LOSS_REASONS[0]);
       setBackwardNote('');
+      setSkipConfirmed({});
+      setSkipAcknowledged(false);
     }
   }, [transition]);
 
   const isBackward = transition ? isBackwardMove(transition.fromStage, transition.toStage) : false;
+  const skippedStages = transition ? getSkippedStages(transition.fromStage, transition.toStage) : [];
 
   const config = useMemo<PromptConfig | null>(() => {
     if (!transition) return null;
