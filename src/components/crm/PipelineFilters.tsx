@@ -75,6 +75,8 @@ export interface PipelineFilterValue {
   dateRange: DateRangeKey;
   customFrom?: string;
   customTo?: string;
+  /** Mindestanzahl Tage seit `stage_updated_at`. 0/undefined = aus. */
+  stuckDays?: number;
 }
 
 export const EMPTY_FILTER: PipelineFilterValue = {
@@ -87,6 +89,7 @@ export const EMPTY_FILTER: PipelineFilterValue = {
   hasOffer: 'all',
   hasAppointment: 'all',
   dateRange: 'all',
+  stuckDays: 0,
 };
 
 const PRIORITY_OPTIONS: { value: PriorityTier; label: string }[] = [
