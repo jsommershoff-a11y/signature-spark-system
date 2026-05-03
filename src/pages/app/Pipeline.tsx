@@ -69,6 +69,26 @@ export default function Pipeline() {
       return;
     }
 
+    // Skip-Dialog-Suppression: Vorwärts-Sprung über mind. 1 Stage hinweg, wenn
+    // der Nutzer für diese Ziel-Stage „nicht erneut zeigen" gewählt hat.
+    // Sicherheits-Gates (Rückwärts, new_lead-Qualifizierung, lost) bleiben aktiv.
+    const order: PipelineStage[] = [
+      'new_lead', 'setter_call_scheduled', 'setter_call_done',
+      'analysis_ready', 'offer_draft', 'offer_sent', 'payment_unlocked', 'won',
+    ];
+    const fi = fromStage ? order.indexOf(fromStage) : -1;
+    const ti = order.indexOf(stage);
+    const isForwardSkip = fi >= 0 && ti > fi + 1;
+    if (
+      isForwardSkip &&
+      fromStage !== 'new_lead' &&
+      stage !== 'lost' &&
+      isSkipDialogSuppressed(stage)
+    ) {
+      await moveToStage(itemId, stage);
+      return;
+    }
+
     setPendingTransition({ itemId, fromStage, toStage: stage });
   };
 
