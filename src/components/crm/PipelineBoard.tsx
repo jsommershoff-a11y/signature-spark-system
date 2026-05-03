@@ -50,7 +50,25 @@ const STAGE_ORDER: PipelineStage[] = [
 const GROUP_ORDER: PipelineGroup[] = ['active', 'setter', 'closer', 'archive', 'all'];
 
 const STORAGE_KEY = 'crm.pipeline.group';
+const STORAGE_KEY_STATE = 'crm.pipeline.state.v1';
 const DEFAULT_GROUP: PipelineGroup = 'active';
+
+interface PersistedState {
+  search?: string;
+  stageFilter?: PipelineStage | null;
+  filters?: PipelineFilterValue;
+}
+
+function loadPersistedState(): PersistedState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_STATE);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as PersistedState;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
 function isGroup(value: string | null): value is PipelineGroup {
   return value === 'all' || value === 'active' || value === 'setter' || value === 'closer' || value === 'archive';
@@ -116,9 +134,13 @@ export function PipelineBoard({
   onStageChange,
 }: PipelineBoardProps) {
   const [group, setGroup] = useState<PipelineGroup>(DEFAULT_GROUP);
-  const [search, setSearch] = useState('');
-  const [stageFilter, setStageFilter] = useState<PipelineStage | null>(null);
-  const [filters, setFilters] = useState<PipelineFilterValue>(EMPTY_FILTER);
+  const [search, setSearch] = useState<string>(() => loadPersistedState().search ?? '');
+  const [stageFilter, setStageFilter] = useState<PipelineStage | null>(
+    () => loadPersistedState().stageFilter ?? null,
+  );
+  const [filters, setFilters] = useState<PipelineFilterValue>(
+    () => ({ ...EMPTY_FILTER, ...(loadPersistedState().filters ?? {}) }),
+  );
 
   // Aufgaben (für Überfälligkeitsfilter)
   const { tasks } = useTasks();
@@ -140,6 +162,16 @@ export function PipelineBoard({
       /* ignore */
     }
   }, [group]);
+
+  // Suche, Stage- und Filter-Auswahl persistieren
+  useEffect(() => {
+    try {
+      const payload: PersistedState = { search, stageFilter, filters };
+      localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(payload));
+    } catch {
+      /* ignore */
+    }
+  }, [search, stageFilter, filters]);
 
   const activeStages = useMemo<Set<PipelineStage>>(() => {
     if (stageFilter) return new Set<PipelineStage>([stageFilter]);
