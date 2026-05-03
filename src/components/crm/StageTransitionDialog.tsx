@@ -276,6 +276,137 @@ export function StageTransitionDialog({
 
   const targetLabel = PIPELINE_STAGE_LABELS[transition.toStage];
 
+  // new_lead → andere Stage: Pflicht-Qualifizierung (Owner + Quelle bestätigen)
+  if (needsQualification && !qualAcknowledged) {
+    const ownerValid = !!qualOwnerId;
+    const sourceValid = !!qualSource && qualSourceConfirmed;
+    const formValid = ownerValid && sourceValid;
+    const leadName = leadData
+      ? [leadData.first_name, leadData.last_name].filter(Boolean).join(' ').trim() || leadData.company || 'Lead'
+      : 'Lead';
+
+    const handleQualify = async () => {
+      if (!formValid || !leadId) return;
+      setBusy(true);
+      try {
+        const updates: Record<string, unknown> = {};
+        if (qualOwnerId !== leadData?.owner_user_id) updates.owner_user_id = qualOwnerId;
+        if (qualSource && qualSource !== leadData?.source_type) updates.source_type = qualSource;
+        if (Object.keys(updates).length > 0) {
+          const { error } = await supabase.from('crm_leads').update(updates).eq('id', leadId);
+          if (error) throw error;
+        }
+        await createActivity.mutateAsync({
+          type: 'notiz',
+          content: `Lead qualifiziert beim Wechsel ${PIPELINE_STAGE_LABELS.new_lead} → ${targetLabel}. Owner & Quelle bestätigt.`,
+          lead_id: leadId,
+          metadata: {
+            qualification: true,
+            owner_user_id: qualOwnerId,
+            source_type: qualSource,
+            from_stage: 'new_lead',
+            to_stage: transition.toStage,
+          },
+        });
+        setQualAcknowledged(true);
+      } catch (e) {
+        console.error('Qualifizierung fehlgeschlagen', e);
+        toast.error('Qualifizierung konnte nicht gespeichert werden', {
+          description: (e as Error).message,
+        });
+      } finally {
+        setBusy(false);
+      }
+    };
+
+    return (
+      <AlertDialog open onOpenChange={(o) => !o && !busy && onCancel()}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-primary">
+              <UserCheck className="h-5 w-5" />
+              Lead qualifizieren
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Bevor <strong>{leadName}</strong> in <strong>{targetLabel}</strong> verschoben wird, müssen Owner und Quelle bestätigt sein.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="qual-owner" className="text-sm font-medium">
+                Owner zuweisen <span className="text-destructive">*</span>
+              </Label>
+              <Select value={qualOwnerId} onValueChange={setQualOwnerId}>
+                <SelectTrigger id="qual-owner">
+                  <SelectValue placeholder="Verantwortliche/n auswählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assignedUserId && (
+                    <SelectItem value={assignedUserId}>Mir zuweisen ({profile?.full_name ?? 'Ich'})</SelectItem>
+                  )}
+                  {owners
+                    .filter((o) => o.id !== assignedUserId)
+                    .map((o) => (
+                      <SelectItem key={o.id} value={o.id}>
+                        {o.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="qual-source" className="text-sm font-medium">
+                Lead-Quelle bestätigen <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={qualSource}
+                onValueChange={(v) => {
+                  setQualSource(v as LeadSourceType);
+                  setQualSourceConfirmed(false);
+                }}
+              >
+                <SelectTrigger id="qual-source">
+                  <SelectValue placeholder="Quelle auswählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex items-start gap-2 pt-1">
+                <Checkbox
+                  id="qual-source-confirm"
+                  checked={qualSourceConfirmed}
+                  onCheckedChange={(v) => setQualSourceConfirmed(v === true)}
+                  disabled={!qualSource}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="qual-source-confirm" className="cursor-pointer text-xs leading-snug text-muted-foreground">
+                  Ich bestätige, dass die Quelle {qualSource ? <strong>{SOURCE_TYPE_LABELS[qualSource]}</strong> : '…'} korrekt ist.
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={onCancel} disabled={busy}>
+              Abbrechen
+            </Button>
+            <Button onClick={handleQualify} disabled={busy || !formValid}>
+              {busy ? 'Speichert…' : 'Qualifizieren & weiter'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
+
   // Rückwärts-Wechsel: Pflicht-Notiz bevor gespeichert wird.
   // Stage-Skip: Vorwärts-Sprung über mindestens eine Stage hinweg → aktive Bestätigung.
   if (skippedStages.length > 0 && !skipAcknowledged) {
