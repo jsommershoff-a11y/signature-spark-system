@@ -180,9 +180,9 @@ function readStateFromParams(sp: URLSearchParams): {
       ['high', 'medium', 'low'],
     ),
     owners: csvSet<string>(sp.get(URL_KEYS.owners), null),
-    icpBands: csvSet<'a' | 'b' | 'c' | 'unscored'>(
+    icpBands: csvSet<'high' | 'medium' | 'low' | 'none'>(
       sp.get(URL_KEYS.icpBands),
-      ['a', 'b', 'c', 'unscored'],
+      ['high', 'medium', 'low', 'none'],
     ),
     stages: csvSet<PipelineStage>(sp.get(URL_KEYS.stages), stageAllowed),
     sources: csvSet<LeadSourceType>(sp.get(URL_KEYS.sources), null),
