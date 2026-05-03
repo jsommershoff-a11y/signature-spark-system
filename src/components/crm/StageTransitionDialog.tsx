@@ -211,6 +211,60 @@ export function StageTransitionDialog({
   const targetLabel = PIPELINE_STAGE_LABELS[transition.toStage];
 
   // Rückwärts-Wechsel: Pflicht-Notiz bevor gespeichert wird.
+  // Stage-Skip: Vorwärts-Sprung über mindestens eine Stage hinweg → aktive Bestätigung.
+  if (skippedStages.length > 0 && !skipAcknowledged) {
+    const fromLabel = transition.fromStage ? PIPELINE_STAGE_LABELS[transition.fromStage] : '';
+    const allChecked = skippedStages.every((s) => skipConfirmed[s]);
+    return (
+      <AlertDialog open onOpenChange={(o) => !o && !busy && onCancel()}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-5 w-5" />
+              {skippedStages.length === 1 ? 'Eine Stage' : `${skippedStages.length} Stages`} überspringen?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Du verschiebst den Lead von <strong>{fromLabel}</strong> direkt zu{' '}
+              <strong>{targetLabel}</strong>. Bitte bestätige, dass die folgenden Schritte bewusst übersprungen werden:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <ul className="space-y-2 py-2">
+            {skippedStages.map((s) => (
+              <li key={s} className="flex items-start gap-2">
+                <Checkbox
+                  id={`skip-${s}`}
+                  checked={!!skipConfirmed[s]}
+                  onCheckedChange={(v) =>
+                    setSkipConfirmed((prev) => ({ ...prev, [s]: v === true }))
+                  }
+                  className="mt-0.5"
+                />
+                <Label htmlFor={`skip-${s}`} className="cursor-pointer text-sm leading-snug">
+                  <span className="font-medium">{PIPELINE_STAGE_LABELS[s]}</span>
+                  <span className="text-muted-foreground"> wird übersprungen</span>
+                </Label>
+              </li>
+            ))}
+          </ul>
+
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={onCancel} disabled={busy}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={() => setSkipAcknowledged(true)}
+              disabled={busy || !allChecked}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              Sprung bestätigen
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
   if (isBackward) {
     const fromLabel = transition.fromStage ? PIPELINE_STAGE_LABELS[transition.fromStage] : '';
     const noteValid = backwardNote.trim().length >= 10;
