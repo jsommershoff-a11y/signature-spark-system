@@ -214,6 +214,53 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
     }
   };
 
+  const [resetting, setResetting] = useState(false);
+  const resetChecklist = async () => {
+    if (!pipelineItemId || done === 0) return;
+    const confirmed = window.confirm(
+      `Checkliste für „${PIPELINE_STAGE_LABELS[stage]}" wirklich zurücksetzen?`,
+    );
+    if (!confirmed) return;
+    setResetting(true);
+    const prev = checklistRef.current;
+    const next: ChecklistMap = { ...prev, [stage]: {} };
+    checklistRef.current = next;
+    setChecklist(next);
+    // Pending Activity-Logs für diese Stage verwerfen.
+    pendingActivitiesRef.current = [];
+    // Erlaube Re-Logging beim erneuten Anhaken.
+    for (const key of Array.from(loggedActivitiesRef.current)) {
+      if (key.startsWith(`${stage}:`)) loggedActivitiesRef.current.delete(key);
+    }
+    try {
+      if (inFlightRef.current) {
+        try { await inFlightRef.current; } catch { /* noop */ }
+      }
+      const { data: current, error: readErr } = await supabase
+        .from('pipeline_items')
+        .select('meta')
+        .eq('id', pipelineItemId)
+        .maybeSingle();
+      if (readErr) throw readErr;
+      const meta = ((current?.meta as Record<string, unknown> | null) ?? {}) as Record<string, unknown>;
+      const newMeta = { ...meta, checklist: next };
+      const { error } = await supabase
+        .from('pipeline_items')
+        .update({ meta: newMeta })
+        .eq('id', pipelineItemId);
+      if (error) throw error;
+      lastSavedRef.current = next;
+      queryClient.invalidateQueries({ queryKey: ['pipeline'] });
+      toast.success('Checkliste zurückgesetzt');
+    } catch (err) {
+      checklistRef.current = prev;
+      setChecklist(prev);
+      toast.error('Reset fehlgeschlagen', { description: (err as Error).message });
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
