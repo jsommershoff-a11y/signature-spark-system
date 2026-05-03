@@ -1,4 +1,4 @@
-import { Shield, Zap, GitBranch, TrendingUp, ShieldCheck, UserCheck, Clock, ArrowRight } from "lucide-react";
+import { Euro, ShieldCheck as ShieldIcon, Zap, TrendingUp, ShieldCheck, UserCheck, Clock, ArrowRight } from "lucide-react";
 import founderPortrait from "@/assets/founder-hero.jpeg";
 import { landingTokens as t } from "@/styles/landing-tokens";
 
@@ -7,10 +7,10 @@ interface HeroSectionProps {
 }
 
 const benefits = [
-  { icon: Shield, text: "Weniger operative Abhängigkeit von einzelnen Personen" },
-  { icon: Zap, text: "Schnellere Reaktionszeiten – z. B. Lead-Antwort in unter 2 Min. statt 4 Std." },
-  { icon: GitBranch, text: "Saubere Prozesse statt manueller Übergaben" },
-  { icon: TrendingUp, text: "Mehr Planbarkeit für Wachstum und Skalierung" },
+  { icon: Euro, text: "Bis zu 40 % weniger operative Kosten durch automatisierte Prozesse" },
+  { icon: Zap, text: "Aufgaben, die früher Stunden dauerten, laufen in Minuten – ohne Personal" },
+  { icon: ShieldIcon, text: "Krisenfest: dein Unternehmen läuft auch bei Ausfall, Wechsel oder Auftragsdelle weiter" },
+  { icon: TrendingUp, text: "Mehr Marge, mehr Planbarkeit, mehr Geschwindigkeit für Wachstum" },
 ];
 
 const trustBadges = [
@@ -34,19 +34,19 @@ export const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
           {/* Left: Copy */}
           <div>
             <span className="inline-block text-primary text-sm font-semibold tracking-wide uppercase mb-4">
-              Automatisierung für Unternehmen
+              Kosten senken · Krisenfest werden
             </span>
 
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.12] text-white mb-6">
-              Automatisierung für Unternehmen funktioniert erst, wenn deine Informationen im eigenen System liegen.
+              Automatisiere dein Unternehmen, spare massiv Kosten – und mach dich krisenfest.
             </h1>
 
-            <p className="text-base md:text-lg text-white/70 leading-relaxed mb-4 max-w-2xl">
-              Solange Wissen, Prozesse und Entscheidungen in Köpfen, Chats oder bei externen Partnern hängen, beschleunigt KI nur Chaos. Wir systematisieren dein Unternehmen so, dass du Kontrolle, Geschwindigkeit und Skalierbarkeit zurückgewinnst.
+            <p className="text-base md:text-lg text-white/80 leading-relaxed mb-4 max-w-2xl">
+              Unsere Kunden senken ihre operativen Kosten um bis zu <span className="text-white font-semibold">40 %</span>, weil wiederkehrende Aufgaben, Angebote, Follow-ups und Reportings automatisch laufen – statt Personal zu binden.
             </p>
 
-            <p className="text-sm text-white/45 mb-6 max-w-2xl">
-              Ein Steuerberater-Wechsel, ein Mitarbeiterausfall oder fehlende Dokumentation können dein Unternehmen in kurzer Zeit ausbremsen.
+            <p className="text-base text-white/70 leading-relaxed mb-6 max-w-2xl">
+              Das Ergebnis: höhere Marge, weniger Abhängigkeit von einzelnen Mitarbeitern und ein Unternehmen, das auch bei Auftragsdellen, Krankheit oder wirtschaftlicher Unsicherheit stabil läuft.
             </p>
 
             {/* Trust Badges */}
