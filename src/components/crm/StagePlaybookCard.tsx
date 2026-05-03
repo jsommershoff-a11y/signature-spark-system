@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { BookOpen, Target, Lightbulb } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { BookOpen, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
 import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
 import { STAGE_PLAYBOOK } from '@/lib/sales-scripts/stage-playbook';
 import { supabase } from '@/integrations/supabase/client';
@@ -94,6 +95,34 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
         </div>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
+        {/* Fortschrittsbalken pro Stage */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-medium text-muted-foreground flex items-center gap-1.5">
+              {done === total && total > 0 && (
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              )}
+              Fortschritt
+            </span>
+            <span
+              className={cn(
+                'font-semibold tabular-nums',
+                done === total && total > 0 ? 'text-emerald-600' : 'text-foreground',
+              )}
+            >
+              {total > 0 ? Math.round((done / total) * 100) : 0}%
+            </span>
+          </div>
+          <Progress
+            value={total > 0 ? (done / total) * 100 : 0}
+            className={cn(
+              'h-2 transition-colors',
+              done === total && total > 0 && '[&>div]:bg-emerald-500',
+            )}
+            aria-label={`Sales-Skript Fortschritt: ${done} von ${total} Punkten erledigt`}
+          />
+        </div>
+
         <div className="flex items-start gap-2">
           <Target className="h-3.5 w-3.5 mt-0.5 text-primary shrink-0" />
           <div>
