@@ -5,6 +5,7 @@ import { SEOHead } from "@/components/landing/SEOHead";
 import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
 import { TestimonialGrid } from "@/components/landing/conversion/TestimonialGrid";
 import { FAQSection } from "@/components/landing/FAQSection";
+import { StickyBookingBar } from "@/components/landing/StickyBookingBar";
 import { landingTokens } from "@/styles/landing-tokens";
 import { trackEvent } from "@/lib/analytics";
 import { CheckCircle2, Calendar, Target, ShieldCheck } from "lucide-react";
@@ -176,6 +177,13 @@ const Erstgespraech = () => {
         subline="Wähle einen freien Termin – wir freuen uns auf dich."
         ctaText="Jetzt Termin sichern"
         onCtaClick={goToBooking}
+        trackingCta={TRACKING_CTA}
+      />
+
+      <StickyBookingBar
+        onCtaClick={goToBooking}
+        ctaText="Termin sichern"
+        label="Kostenloses 30-Min. Erstgespräch – unverbindlich"
         trackingCta={TRACKING_CTA}
       />
     </PublicLayout>
