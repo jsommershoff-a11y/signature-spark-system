@@ -596,16 +596,15 @@ export function PipelineBoard({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Suche…"
-              className="pl-8 h-9 text-sm"
+              className="pl-8 h-9 pr-14 text-sm"
             />
-            {hasActiveQuery && (
-              <Badge
-                variant="secondary"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]"
-              >
-                {visibleLeads}
-              </Badge>
-            )}
+            <Badge
+              variant={hasActiveQuery ? 'secondary' : 'outline'}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] tabular-nums"
+              title={`${visibleLeads} von ${totalLeads} Treffern${hasActiveQuery ? ' (gefiltert)' : ''}`}
+            >
+              {visibleLeads}/{totalLeads}
+            </Badge>
           </div>
           <div className="w-32 shrink-0">
             <PipelineFilters
