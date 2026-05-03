@@ -12,6 +12,8 @@ interface HeroProps {
   solution?: string;
   /** Optional revenue badge (e.g., "Nur für Unternehmer ab 100.000 € Umsatz") */
   badge?: string;
+  /** Analytics: CTA-Quelle/Funnel (Default: "qualifizierung") */
+  trackingCta?: string;
 }
 
 export const Hero = ({ 
@@ -22,6 +24,7 @@ export const Hero = ({
   problem,
   solution,
   badge,
+  trackingCta = "qualifizierung",
 }: HeroProps) => {
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-background via-muted to-background overflow-hidden">
@@ -72,7 +75,7 @@ export const Hero = ({
             </p>
           )}
           
-          <CTAButton onClick={onCtaClick} trackingStage="hero" trackingCta="qualifizierung">
+          <CTAButton onClick={onCtaClick} trackingStage="hero" trackingCta={trackingCta}>
             {ctaText}
           </CTAButton>
         </div>

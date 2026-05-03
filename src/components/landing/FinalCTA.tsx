@@ -5,9 +5,17 @@ interface FinalCTAProps {
   subline: string;
   ctaText: string;
   onCtaClick: () => void;
+  /** Analytics: CTA-Quelle/Funnel (Default: "qualifizierung") */
+  trackingCta?: string;
 }
 
-export const FinalCTA = ({ headline, subline, ctaText, onCtaClick }: FinalCTAProps) => {
+export const FinalCTA = ({
+  headline,
+  subline,
+  ctaText,
+  onCtaClick,
+  trackingCta = "qualifizierung",
+}: FinalCTAProps) => {
   return (
     <section className="py-20 bg-gradient-to-br from-primary-dark via-primary to-primary-deep relative overflow-hidden">
       {/* Background decoration */}
@@ -26,7 +34,7 @@ export const FinalCTA = ({ headline, subline, ctaText, onCtaClick }: FinalCTAPro
             {subline}
           </p>
           
-          <CTAButton onClick={onCtaClick} trackingStage="final" trackingCta="qualifizierung">
+          <CTAButton onClick={onCtaClick} trackingStage="final" trackingCta={trackingCta}>
             {ctaText}
           </CTAButton>
         </div>
