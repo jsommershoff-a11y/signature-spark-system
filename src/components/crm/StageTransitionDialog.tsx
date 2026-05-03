@@ -450,6 +450,22 @@ export function StageTransitionDialog({
             ))}
           </ul>
 
+          <div className="flex items-start gap-2 pt-1">
+            <Checkbox
+              id="skip-dont-ask-again"
+              checked={skipDontAskAgain}
+              onCheckedChange={(v) => setSkipDontAskAgain(v === true)}
+              disabled={busy}
+              className="mt-0.5"
+            />
+            <Label htmlFor="skip-dont-ask-again" className="cursor-pointer text-xs leading-snug text-muted-foreground">
+              Skip-Dialog für <strong>{targetLabel}</strong> nicht erneut zeigen
+              <span className="block text-[10px] opacity-70">
+                Sicherheits-Gates für Rückwärts-Wechsel, Qualifizierung und „Verloren" bleiben aktiv.
+              </span>
+            </Label>
+          </div>
+
           <AlertDialogFooter>
             <Button variant="ghost" onClick={onCancel} disabled={busy}>
               Abbrechen
@@ -475,9 +491,16 @@ export function StageTransitionDialog({
                       },
                     });
                   }
-                  toast.success('Sprung dokumentiert', {
-                    description: `Übersprungen: ${skippedStages.length} Stage${skippedStages.length > 1 ? 's' : ''}`,
-                  });
+                  if (skipDontAskAgain) {
+                    suppressSkipDialog(transition.toStage);
+                    toast.success('Sprung dokumentiert', {
+                      description: `Skip-Dialog für ${targetLabel} ist jetzt stumm.`,
+                    });
+                  } else {
+                    toast.success('Sprung dokumentiert', {
+                      description: `Übersprungen: ${skippedStages.length} Stage${skippedStages.length > 1 ? 's' : ''}`,
+                    });
+                  }
                   onCancel();
                 } catch (e) {
                   console.error('Stage-Skip fehlgeschlagen', e);
