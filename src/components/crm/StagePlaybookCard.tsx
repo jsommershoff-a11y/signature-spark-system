@@ -3,13 +3,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { BookOpen, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BookOpen, Target, Lightbulb, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
 import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
 import { STAGE_PLAYBOOK } from '@/lib/sales-scripts/stage-playbook';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
+
+// Lineare Default-Reihenfolge der Stages für Auto-Vorschlag.
+// `lost` ist explizit kein Vorschlag (nur manuell setzbar).
+const STAGE_PROGRESSION: PipelineStage[] = [
+  'new_lead',
+  'setter_call_scheduled',
+  'setter_call_done',
+  'analysis_ready',
+  'offer_draft',
+  'offer_sent',
+  'payment_unlocked',
+  'won',
+];
+
+const getNextStage = (current: PipelineStage): PipelineStage | null => {
+  const idx = STAGE_PROGRESSION.indexOf(current);
+  if (idx < 0 || idx >= STAGE_PROGRESSION.length - 1) return null;
+  return STAGE_PROGRESSION[idx + 1];
+};
 
 interface StagePlaybookCardProps {
   stage: PipelineStage;
@@ -31,6 +51,7 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
 
   const [checklist, setChecklist] = useState<ChecklistMap>(initialChecklist);
   const [saving, setSaving] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
 
   useEffect(() => {
     setChecklist(initialChecklist);
@@ -41,6 +62,9 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
   const stageChecks = checklist[stage] ?? {};
   const total = entry.fragen.length;
   const done = entry.fragen.reduce((acc, _q, idx) => acc + (stageChecks[String(idx)] ? 1 : 0), 0);
+  const isComplete = total > 0 && done === total;
+  const nextStage = getNextStage(stage);
+  const canAdvance = isComplete && !!nextStage && !!pipelineItemId;
 
   const toggle = async (idx: number, value: boolean) => {
     const next: ChecklistMap = {
