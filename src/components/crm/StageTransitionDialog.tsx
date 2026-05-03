@@ -41,6 +41,16 @@ const isBackwardMove = (from: PipelineStage | null, to: PipelineStage): boolean 
   return ti < fi;
 };
 
+/** Liefert übersprungene Stages bei Vorwärts-Sprung (>1 Schritt). Leeres Array = kein Skip. */
+const getSkippedStages = (from: PipelineStage | null, to: PipelineStage): PipelineStage[] => {
+  if (!from) return [];
+  const fi = STAGE_ORDER.indexOf(from);
+  const ti = STAGE_ORDER.indexOf(to);
+  if (fi < 0 || ti < 0) return [];
+  if (ti - fi <= 1) return [];
+  return STAGE_ORDER.slice(fi + 1, ti);
+};
+
 export type StageTransitionAction =
   | { kind: 'open_calendar' }
   | { kind: 'open_email' }
