@@ -203,6 +203,11 @@ function readStateFromParams(sp: URLSearchParams): {
     ),
     customFrom: sp.get(URL_KEYS.customFrom) || undefined,
     customTo: sp.get(URL_KEYS.customTo) || undefined,
+    stuckDays: (() => {
+      const raw = sp.get(URL_KEYS.stuckDays);
+      const n = raw ? parseInt(raw, 10) : 0;
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    })(),
   };
 
   return {
