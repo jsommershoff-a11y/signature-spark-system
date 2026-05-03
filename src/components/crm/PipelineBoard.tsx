@@ -251,26 +251,45 @@ export function PipelineBoard({
   onItemClick,
   onStageChange,
 }: PipelineBoardProps) {
-  const [group, setGroup] = useState<PipelineGroup>(DEFAULT_GROUP);
-  const [search, setSearch] = useState<string>(() => loadPersistedState().search ?? '');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initial-State: URL-Params haben Vorrang vor localStorage
+  const initialFromUrl = useMemo(() => readStateFromParams(searchParams), []);
+  const persisted = useMemo(() => loadPersistedState(), []);
+  const hasUrlState = useMemo(() => {
+    for (const k of Object.values(URL_KEYS)) {
+      if (searchParams.has(k)) return true;
+    }
+    return false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const [group, setGroup] = useState<PipelineGroup>(
+    initialFromUrl.group ?? DEFAULT_GROUP,
+  );
+  const [search, setSearch] = useState<string>(
+    hasUrlState ? initialFromUrl.search : persisted.search ?? '',
+  );
   const [stageFilter, setStageFilter] = useState<PipelineStage | null>(
-    () => loadPersistedState().stageFilter ?? null,
+    hasUrlState ? initialFromUrl.stageFilter : persisted.stageFilter ?? null,
   );
   const [filters, setFilters] = useState<PipelineFilterValue>(
-    () => ({ ...EMPTY_FILTER, ...(loadPersistedState().filters ?? {}) }),
+    hasUrlState ? initialFromUrl.filters : { ...EMPTY_FILTER, ...(persisted.filters ?? {}) },
   );
 
   // Aufgaben (für Überfälligkeitsfilter)
   const { tasks } = useTasks();
 
-  // Auswahl beim Mount aus localStorage laden
+  // Group beim Mount nur dann aus localStorage laden, wenn keine URL-Params da sind
   useEffect(() => {
+    if (hasUrlState) return;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (isGroup(stored)) setGroup(stored);
     } catch {
       /* ignore */
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -290,6 +309,34 @@ export function PipelineBoard({
       /* ignore */
     }
   }, [search, stageFilter, filters]);
+
+  // URL-Sync: Lokale Änderungen → URL
+  const skipNextUrlWriteRef = useRef(false);
+  useEffect(() => {
+    if (skipNextUrlWriteRef.current) {
+      skipNextUrlWriteRef.current = false;
+      return;
+    }
+    const next = writeStateToParams(searchParams, { group, search, stageFilter, filters });
+    // Nur schreiben, wenn sich etwas verändert
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group, search, stageFilter, filters]);
+
+  // URL-Sync: Externe URL-Änderungen (z. B. Back/Forward, geteilter Link) → State
+  useEffect(() => {
+    const fromUrl = readStateFromParams(searchParams);
+    skipNextUrlWriteRef.current = true;
+    if (fromUrl.group && fromUrl.group !== group) setGroup(fromUrl.group);
+    if (fromUrl.search !== search) setSearch(fromUrl.search);
+    if ((fromUrl.stageFilter ?? null) !== (stageFilter ?? null)) setStageFilter(fromUrl.stageFilter);
+    const a = JSON.stringify(fromUrl.filters);
+    const b = JSON.stringify(filters);
+    if (a !== b) setFilters(fromUrl.filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const activeStages = useMemo<Set<PipelineStage>>(() => {
     if (stageFilter) return new Set<PipelineStage>([stageFilter]);
