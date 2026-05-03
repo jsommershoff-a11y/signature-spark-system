@@ -13,13 +13,22 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
+import { PipelineStage, PIPELINE_STAGE_LABELS, LeadSourceType, SOURCE_TYPE_LABELS } from '@/types/crm';
 import { useActivities } from '@/hooks/useActivities';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 // Lineare Reihenfolge zur Erkennung von Rückwärts-Wechseln.
 // `lost` ist seitwärts (kein Vor/Zurück).
