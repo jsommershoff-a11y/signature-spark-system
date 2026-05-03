@@ -13,13 +13,22 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
+import { PipelineStage, PIPELINE_STAGE_LABELS, LeadSourceType, SOURCE_TYPE_LABELS } from '@/types/crm';
 import { useActivities } from '@/hooks/useActivities';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 // Lineare Reihenfolge zur Erkennung von Rückwärts-Wechseln.
 // `lost` ist seitwärts (kein Vor/Zurück).
@@ -189,17 +198,74 @@ export function StageTransitionDialog({
   const [skipConfirmed, setSkipConfirmed] = useState<Record<string, boolean>>({});
   const [skipAcknowledged, setSkipAcknowledged] = useState(false);
 
+  // new_lead-Qualifizierung: Owner + Quelle bestätigen, bevor weiterverschoben werden darf.
+  const [qualOwnerId, setQualOwnerId] = useState<string>('');
+  const [qualSource, setQualSource] = useState<LeadSourceType | ''>('');
+  const [qualSourceConfirmed, setQualSourceConfirmed] = useState(false);
+  const [qualAcknowledged, setQualAcknowledged] = useState(false);
+
   useEffect(() => {
     if (transition) {
       setLossReason(LOSS_REASONS[0]);
       setBackwardNote('');
       setSkipConfirmed({});
       setSkipAcknowledged(false);
+      setQualOwnerId('');
+      setQualSource('');
+      setQualSourceConfirmed(false);
+      setQualAcknowledged(false);
     }
   }, [transition]);
 
   const isBackward = transition ? isBackwardMove(transition.fromStage, transition.toStage) : false;
   const skippedStages = transition ? getSkippedStages(transition.fromStage, transition.toStage) : [];
+  // Qualifizierungs-Gate aktiv, wenn Lead die `new_lead`-Stage verlässt (außer in `lost`).
+  const needsQualification =
+    !!transition &&
+    transition.fromStage === 'new_lead' &&
+    transition.toStage !== 'new_lead' &&
+    transition.toStage !== 'lost';
+
+  // Lead-Daten für Qualifizierungs-Vorbelegung & Owner-Update
+  const { data: leadData } = useQuery({
+    queryKey: ['crm-lead-qual', leadId],
+    enabled: !!leadId && needsQualification && !qualAcknowledged,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crm_leads')
+        .select('id, owner_user_id, source_type, first_name, last_name, company')
+        .eq('id', leadId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Verfügbare Owner (Sales-Rollen) für Auswahl
+  const { data: owners = [] } = useQuery({
+    queryKey: ['crm-qual-owners'],
+    enabled: needsQualification && !qualAcknowledged,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, full_name')
+        .order('full_name', { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map((p) => ({
+        id: p.id as string,
+        name: (p.full_name as string) || `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || 'Unbenannt',
+      }));
+    },
+  });
+
+  // Vorbelegung aus existierendem Lead (nur einmal pro Transition)
+  useEffect(() => {
+    if (!needsQualification || !leadData) return;
+    if (!qualOwnerId && leadData.owner_user_id) setQualOwnerId(leadData.owner_user_id as string);
+    if (!qualSource && leadData.source_type) setQualSource(leadData.source_type as LeadSourceType);
+  }, [needsQualification, leadData, qualOwnerId, qualSource]);
+
 
   const config = useMemo<PromptConfig | null>(() => {
     if (!transition) return null;
@@ -209,6 +275,137 @@ export function StageTransitionDialog({
   if (!transition) return null;
 
   const targetLabel = PIPELINE_STAGE_LABELS[transition.toStage];
+
+  // new_lead → andere Stage: Pflicht-Qualifizierung (Owner + Quelle bestätigen)
+  if (needsQualification && !qualAcknowledged) {
+    const ownerValid = !!qualOwnerId;
+    const sourceValid = !!qualSource && qualSourceConfirmed;
+    const formValid = ownerValid && sourceValid;
+    const leadName = leadData
+      ? [leadData.first_name, leadData.last_name].filter(Boolean).join(' ').trim() || leadData.company || 'Lead'
+      : 'Lead';
+
+    const handleQualify = async () => {
+      if (!formValid || !leadId) return;
+      setBusy(true);
+      try {
+        const updates: Record<string, unknown> = {};
+        if (qualOwnerId !== leadData?.owner_user_id) updates.owner_user_id = qualOwnerId;
+        if (qualSource && qualSource !== leadData?.source_type) updates.source_type = qualSource;
+        if (Object.keys(updates).length > 0) {
+          const { error } = await supabase.from('crm_leads').update(updates).eq('id', leadId);
+          if (error) throw error;
+        }
+        await createActivity.mutateAsync({
+          type: 'notiz',
+          content: `Lead qualifiziert beim Wechsel ${PIPELINE_STAGE_LABELS.new_lead} → ${targetLabel}. Owner & Quelle bestätigt.`,
+          lead_id: leadId,
+          metadata: {
+            qualification: true,
+            owner_user_id: qualOwnerId,
+            source_type: qualSource,
+            from_stage: 'new_lead',
+            to_stage: transition.toStage,
+          },
+        });
+        setQualAcknowledged(true);
+      } catch (e) {
+        console.error('Qualifizierung fehlgeschlagen', e);
+        toast.error('Qualifizierung konnte nicht gespeichert werden', {
+          description: (e as Error).message,
+        });
+      } finally {
+        setBusy(false);
+      }
+    };
+
+    return (
+      <AlertDialog open onOpenChange={(o) => !o && !busy && onCancel()}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-primary">
+              <UserCheck className="h-5 w-5" />
+              Lead qualifizieren
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Bevor <strong>{leadName}</strong> in <strong>{targetLabel}</strong> verschoben wird, müssen Owner und Quelle bestätigt sein.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="qual-owner" className="text-sm font-medium">
+                Owner zuweisen <span className="text-destructive">*</span>
+              </Label>
+              <Select value={qualOwnerId} onValueChange={setQualOwnerId}>
+                <SelectTrigger id="qual-owner">
+                  <SelectValue placeholder="Verantwortliche/n auswählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assignedUserId && (
+                    <SelectItem value={assignedUserId}>Mir zuweisen ({profile?.full_name ?? 'Ich'})</SelectItem>
+                  )}
+                  {owners
+                    .filter((o) => o.id !== assignedUserId)
+                    .map((o) => (
+                      <SelectItem key={o.id} value={o.id}>
+                        {o.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="qual-source" className="text-sm font-medium">
+                Lead-Quelle bestätigen <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={qualSource}
+                onValueChange={(v) => {
+                  setQualSource(v as LeadSourceType);
+                  setQualSourceConfirmed(false);
+                }}
+              >
+                <SelectTrigger id="qual-source">
+                  <SelectValue placeholder="Quelle auswählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex items-start gap-2 pt-1">
+                <Checkbox
+                  id="qual-source-confirm"
+                  checked={qualSourceConfirmed}
+                  onCheckedChange={(v) => setQualSourceConfirmed(v === true)}
+                  disabled={!qualSource}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="qual-source-confirm" className="cursor-pointer text-xs leading-snug text-muted-foreground">
+                  Ich bestätige, dass die Quelle {qualSource ? <strong>{SOURCE_TYPE_LABELS[qualSource]}</strong> : '…'} korrekt ist.
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={onCancel} disabled={busy}>
+              Abbrechen
+            </Button>
+            <Button onClick={handleQualify} disabled={busy || !formValid}>
+              {busy ? 'Speichert…' : 'Qualifizieren & weiter'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
 
   // Rückwärts-Wechsel: Pflicht-Notiz bevor gespeichert wird.
   // Stage-Skip: Vorwärts-Sprung über mindestens eine Stage hinweg → aktive Bestätigung.
