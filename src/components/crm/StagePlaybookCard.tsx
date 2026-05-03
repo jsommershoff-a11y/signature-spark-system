@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -55,9 +55,26 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
   const [saving, setSaving] = useState(false);
   const [advancing, setAdvancing] = useState(false);
 
+  // Refs für Debounce + Konflikt-freies Speichern bei schnellen Klicks.
+  const checklistRef = useRef<ChecklistMap>(initialChecklist);
+  const lastSavedRef = useRef<ChecklistMap>(initialChecklist);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inFlightRef = useRef<Promise<void> | null>(null);
+  const pendingActivitiesRef = useRef<Array<{ idx: number; question: string }>>([]);
+  const loggedActivitiesRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     setChecklist(initialChecklist);
+    checklistRef.current = initialChecklist;
+    lastSavedRef.current = initialChecklist;
+    loggedActivitiesRef.current = new Set();
   }, [initialChecklist, pipelineItemId]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
 
   if (!entry) return null;
 
@@ -68,16 +85,17 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
   const nextStage = getNextStage(stage);
   const canAdvance = isComplete && !!nextStage && !!pipelineItemId;
 
-  const toggle = async (idx: number, value: boolean) => {
-    const next: ChecklistMap = {
-      ...checklist,
-      [stage]: { ...stageChecks, [String(idx)]: value },
-    };
-    setChecklist(next);
-
+  const flushSave = useCallback(async () => {
     if (!pipelineItemId) return;
+    // Vorherigen Save abwarten, damit Updates seriell laufen (kein Lost-Update).
+    if (inFlightRef.current) {
+      try { await inFlightRef.current; } catch { /* noop */ }
+    }
+    const snapshot = checklistRef.current;
+    if (snapshot === lastSavedRef.current) return;
+
     setSaving(true);
-    try {
+    const run = (async () => {
       const { data: current, error: readErr } = await supabase
         .from('pipeline_items')
         .select('meta, lead_id')
@@ -85,46 +103,89 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
         .maybeSingle();
       if (readErr) throw readErr;
       const meta = ((current?.meta as Record<string, unknown> | null) ?? {}) as Record<string, unknown>;
-      const newMeta = { ...meta, checklist: next };
+      const newMeta = { ...meta, checklist: snapshot };
       const { error } = await supabase
         .from('pipeline_items')
         .update({ meta: newMeta })
         .eq('id', pipelineItemId);
       if (error) throw error;
+      lastSavedRef.current = snapshot;
       queryClient.invalidateQueries({ queryKey: ['pipeline'] });
 
-      // Fire-and-forget Activity-Log – nur beim Anhaken, nicht beim Entfernen.
-      // Fehler hier dürfen die Checkliste nicht blockieren.
-      if (value && profile?.id && current?.lead_id) {
-        const question = entry.fragen[idx];
-        void supabase
-          .from('activities')
-          .insert({
-            lead_id: current.lead_id,
-            user_id: profile.id,
-            type: 'playbook_check' as never,
-            content: `Sales-Skript Häkchen gesetzt: ${question}`,
-            metadata: {
-              stage,
-              stage_label: PIPELINE_STAGE_LABELS[stage],
-              question_index: idx,
-              question,
-              pipeline_item_id: pipelineItemId,
-            } as never,
-          })
-          .then(({ error: actErr }) => {
-            if (actErr) console.warn('[playbook_check] activity log failed', actErr);
-            queryClient.invalidateQueries({ queryKey: ['activities'] });
-          });
+      // Activity-Logs für neu angehakte Fragen (deduped).
+      const toLog = pendingActivitiesRef.current.splice(0);
+      if (toLog.length && profile?.id && current?.lead_id) {
+        for (const { idx, question } of toLog) {
+          const key = `${stage}:${idx}`;
+          if (loggedActivitiesRef.current.has(key)) continue;
+          loggedActivitiesRef.current.add(key);
+          void supabase
+            .from('activities')
+            .insert({
+              lead_id: current.lead_id,
+              user_id: profile.id,
+              type: 'playbook_check' as never,
+              content: `Sales-Skript Häkchen gesetzt: ${question}`,
+              metadata: {
+                stage,
+                stage_label: PIPELINE_STAGE_LABELS[stage],
+                question_index: idx,
+                question,
+                pipeline_item_id: pipelineItemId,
+              } as never,
+            })
+            .then(({ error: actErr }) => {
+              if (actErr) console.warn('[playbook_check] activity log failed', actErr);
+            });
+        }
+        queryClient.invalidateQueries({ queryKey: ['activities'] });
       }
-    } catch (err) {
+    })();
+
+    inFlightRef.current = run.catch((err) => {
       toast.error('Checkliste konnte nicht gespeichert werden', {
         description: (err as Error).message,
       });
-      setChecklist(checklist);
-    } finally {
-      setSaving(false);
+      // Optimistisches UI auf letzten bekannten Server-Stand zurücksetzen.
+      checklistRef.current = lastSavedRef.current;
+      setChecklist(lastSavedRef.current);
+    }).finally(() => {
+      inFlightRef.current = null;
+      // Falls währenddessen weiter geklickt wurde: erneut speichern.
+      if (checklistRef.current !== lastSavedRef.current) {
+        void flushSave();
+      } else {
+        setSaving(false);
+      }
+    });
+
+    await inFlightRef.current;
+  }, [pipelineItemId, queryClient, profile?.id, stage]);
+
+  const scheduleSave = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveTimerRef.current = null;
+      void flushSave();
+    }, 350);
+  }, [flushSave]);
+
+  const toggle = (idx: number, value: boolean) => {
+    const prevStageChecks = checklistRef.current[stage] ?? {};
+    const next: ChecklistMap = {
+      ...checklistRef.current,
+      [stage]: { ...prevStageChecks, [String(idx)]: value },
+    };
+    checklistRef.current = next;
+    setChecklist(next);
+
+    if (!pipelineItemId) return;
+
+    if (value) {
+      pendingActivitiesRef.current.push({ idx, question: entry.fragen[idx] });
     }
+    setSaving(true);
+    scheduleSave();
   };
 
   const advanceStage = async () => {
