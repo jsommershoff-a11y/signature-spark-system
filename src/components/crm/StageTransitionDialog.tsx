@@ -198,6 +198,7 @@ export function StageTransitionDialog({
   const [backwardNote, setBackwardNote] = useState<string>('');
   const [skipConfirmed, setSkipConfirmed] = useState<Record<string, boolean>>({});
   const [skipAcknowledged, setSkipAcknowledged] = useState(false);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
 
   // new_lead-Qualifizierung: Owner + Quelle bestätigen, bevor weiterverschoben werden darf.
   const [qualOwnerId, setQualOwnerId] = useState<string>('');
