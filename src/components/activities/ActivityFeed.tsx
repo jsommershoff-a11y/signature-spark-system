@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Phone, Mail, Calendar, FileText, AlertTriangle, Loader2, Send, LogIn, ExternalLink } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Phone, Mail, Calendar, FileText, AlertTriangle, Loader2, Send, LogIn, ExternalLink, ArrowRightLeft, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,8 @@ const TYPE_CONFIG: Record<ActivityType, { icon: typeof Phone; label: string; col
   notiz: { icon: FileText, label: 'Notiz', color: 'text-muted-foreground' },
   fehler: { icon: AlertTriangle, label: 'Fehler', color: 'text-destructive' },
   login: { icon: LogIn, label: 'Portal-Login', color: 'text-emerald-500' },
+  stage_changed: { icon: ArrowRightLeft, label: 'Stage-Wechsel', color: 'text-amber-500' },
+  playbook_check: { icon: CheckSquare, label: 'Sales-Skript', color: 'text-primary' },
 };
 
 // Only these can be created manually
@@ -70,6 +72,41 @@ export function ActivityFeed({ leadId, customerId }: ActivityFeedProps) {
 
   const [type, setType] = useState<ActivityType>('notiz');
   const [content, setContent] = useState('');
+  const [hiddenTypes, setHiddenTypes] = useState<Set<ActivityType>>(new Set());
+
+  // Welche Typen kommen überhaupt im Feed vor → nur dafür Chips zeigen
+  const presentTypes = useMemo(() => {
+    const set = new Set<ActivityType>();
+    activities.forEach((a) => set.add(a.type));
+    return set;
+  }, [activities]);
+
+  const typeCounts = useMemo(() => {
+    const counts: Partial<Record<ActivityType, number>> = {};
+    activities.forEach((a) => {
+      counts[a.type] = (counts[a.type] ?? 0) + 1;
+    });
+    return counts;
+  }, [activities]);
+
+  const filteredActivities = useMemo(
+    () => activities.filter((a) => !hiddenTypes.has(a.type)),
+    [activities, hiddenTypes],
+  );
+
+  const toggleType = (t: ActivityType) => {
+    setHiddenTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+  };
+
+  // Reihenfolge der Chips
+  const CHIP_ORDER: ActivityType[] = [
+    'stage_changed', 'anruf', 'email', 'meeting', 'notiz', 'fehler', 'login', 'playbook_check',
+  ];
 
   const handleSubmit = async () => {
     if (!content.trim()) return;
@@ -131,18 +168,58 @@ export function ActivityFeed({ leadId, customerId }: ActivityFeedProps) {
         />
       </div>
 
+      {/* Filter chips */}
+      {presentTypes.size > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {CHIP_ORDER.filter((t) => presentTypes.has(t)).map((t) => {
+            const cfg = TYPE_CONFIG[t];
+            const ChipIcon = cfg.icon;
+            const isHidden = hiddenTypes.has(t);
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => toggleType(t)}
+                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors ${
+                  isHidden
+                    ? 'bg-muted/40 text-muted-foreground border-dashed opacity-60 hover:opacity-100'
+                    : 'bg-background hover:bg-muted/40'
+                }`}
+                aria-pressed={!isHidden}
+                title={isHidden ? `${cfg.label} einblenden` : `${cfg.label} ausblenden`}
+              >
+                <ChipIcon className={`h-3 w-3 ${isHidden ? 'text-muted-foreground' : cfg.color}`} />
+                <span>{cfg.label}</span>
+                <span className="text-muted-foreground">({typeCounts[t] ?? 0})</span>
+              </button>
+            );
+          })}
+          {hiddenTypes.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setHiddenTypes(new Set())}
+              className="text-[11px] text-muted-foreground underline-offset-2 hover:underline ml-1"
+            >
+              Filter zurücksetzen
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Activity list */}
       {isLoading ? (
         <div className="flex justify-center py-8">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
-      ) : activities.length === 0 ? (
+      ) : filteredActivities.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-8">
-          Noch keine Aktivitäten vorhanden
+          {activities.length === 0
+            ? 'Noch keine Aktivitäten vorhanden'
+            : 'Keine Aktivitäten passen zum aktuellen Filter'}
         </p>
       ) : (
         <div className="space-y-2">
-          {activities.map((a) => {
+          {filteredActivities.map((a) => {
             const cfg = TYPE_CONFIG[a.type] || TYPE_CONFIG.notiz;
             const Icon = cfg.icon;
             const eventBadge = getEventLabel(a);
