@@ -72,6 +72,41 @@ export function ActivityFeed({ leadId, customerId }: ActivityFeedProps) {
 
   const [type, setType] = useState<ActivityType>('notiz');
   const [content, setContent] = useState('');
+  const [hiddenTypes, setHiddenTypes] = useState<Set<ActivityType>>(new Set());
+
+  // Welche Typen kommen überhaupt im Feed vor → nur dafür Chips zeigen
+  const presentTypes = useMemo(() => {
+    const set = new Set<ActivityType>();
+    activities.forEach((a) => set.add(a.type));
+    return set;
+  }, [activities]);
+
+  const typeCounts = useMemo(() => {
+    const counts: Partial<Record<ActivityType, number>> = {};
+    activities.forEach((a) => {
+      counts[a.type] = (counts[a.type] ?? 0) + 1;
+    });
+    return counts;
+  }, [activities]);
+
+  const filteredActivities = useMemo(
+    () => activities.filter((a) => !hiddenTypes.has(a.type)),
+    [activities, hiddenTypes],
+  );
+
+  const toggleType = (t: ActivityType) => {
+    setHiddenTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+  };
+
+  // Reihenfolge der Chips
+  const CHIP_ORDER: ActivityType[] = [
+    'stage_changed', 'anruf', 'email', 'meeting', 'notiz', 'fehler', 'login', 'playbook_check',
+  ];
 
   const handleSubmit = async () => {
     if (!content.trim()) return;
