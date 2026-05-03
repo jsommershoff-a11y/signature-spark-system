@@ -4967,7 +4967,13 @@ export type Database = {
       }
     }
     Enums: {
-      activity_type: "anruf" | "email" | "meeting" | "notiz" | "fehler"
+      activity_type:
+        | "anruf"
+        | "email"
+        | "meeting"
+        | "notiz"
+        | "fehler"
+        | "playbook_check"
       affiliate_status: "pending" | "onboarding" | "active" | "disabled"
       app_role:
         | "admin"
@@ -5193,7 +5199,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      activity_type: ["anruf", "email", "meeting", "notiz", "fehler"],
+      activity_type: [
+        "anruf",
+        "email",
+        "meeting",
+        "notiz",
+        "fehler",
+        "playbook_check",
+      ],
       affiliate_status: ["pending", "onboarding", "active", "disabled"],
       app_role: [
         "admin",

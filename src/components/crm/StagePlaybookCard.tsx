@@ -10,6 +10,7 @@ import { STAGE_PLAYBOOK } from '@/lib/sales-scripts/stage-playbook';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 // Lineare Default-Reihenfolge der Stages für Auto-Vorschlag.
@@ -43,6 +44,7 @@ type ChecklistMap = Record<string, Record<string, boolean>>;
 export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, className }: StagePlaybookCardProps) {
   const entry = STAGE_PLAYBOOK[stage];
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
 
   const initialChecklist = useMemo<ChecklistMap>(() => {
     const cl = (initialMeta as { checklist?: ChecklistMap } | null | undefined)?.checklist;
@@ -78,7 +80,7 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
     try {
       const { data: current, error: readErr } = await supabase
         .from('pipeline_items')
-        .select('meta')
+        .select('meta, lead_id')
         .eq('id', pipelineItemId)
         .maybeSingle();
       if (readErr) throw readErr;
@@ -90,6 +92,31 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
         .eq('id', pipelineItemId);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ['pipeline'] });
+
+      // Fire-and-forget Activity-Log – nur beim Anhaken, nicht beim Entfernen.
+      // Fehler hier dürfen die Checkliste nicht blockieren.
+      if (value && profile?.id && current?.lead_id) {
+        const question = entry.fragen[idx];
+        void supabase
+          .from('activities')
+          .insert({
+            lead_id: current.lead_id,
+            user_id: profile.id,
+            type: 'playbook_check' as never,
+            content: `Sales-Skript Häkchen gesetzt: ${question}`,
+            metadata: {
+              stage,
+              stage_label: PIPELINE_STAGE_LABELS[stage],
+              question_index: idx,
+              question,
+              pipeline_item_id: pipelineItemId,
+            } as never,
+          })
+          .then(({ error: actErr }) => {
+            if (actErr) console.warn('[playbook_check] activity log failed', actErr);
+            queryClient.invalidateQueries({ queryKey: ['activities'] });
+          });
+      }
     } catch (err) {
       toast.error('Checkliste konnte nicht gespeichert werden', {
         description: (err as Error).message,
