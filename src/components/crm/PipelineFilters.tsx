@@ -347,6 +347,30 @@ function FiltersInner({
           )}
         </div>
 
+        {/* Stuck (Tage in Phase) */}
+        <Select
+          value={String(value.stuckDays ?? 0)}
+          onValueChange={(v) => onChange({ ...value, stuckDays: Number(v) })}
+        >
+          <SelectTrigger
+            className={cn(
+              'h-8 text-xs gap-1.5 w-auto px-2.5',
+              (value.stuckDays ?? 0) > 0 && 'border-primary/60 bg-primary/5',
+            )}
+            title="Filtert Leads, die seit X Tagen in der gleichen Phase liegen"
+          >
+            <Hourglass className="h-3.5 w-3.5" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="0">Stuck: Aus</SelectItem>
+            <SelectItem value="3">≥ 3 Tage in Phase</SelectItem>
+            <SelectItem value="7">≥ 7 Tage in Phase</SelectItem>
+            <SelectItem value="14">≥ 14 Tage in Phase</SelectItem>
+            <SelectItem value="30">≥ 30 Tage in Phase</SelectItem>
+          </SelectContent>
+        </Select>
+
         {activeCount > 0 && (
           <Button
             variant="ghost"
