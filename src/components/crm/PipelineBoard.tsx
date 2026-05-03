@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -127,32 +128,168 @@ function getDateRangeBounds(
   return { from: null, to: null };
 }
 
+// ---------- URL <-> State Sync ----------
+
+const URL_KEYS = {
+  group: 'g',
+  search: 'q',
+  stage: 'stage',
+  priorities: 'pri',
+  owners: 'own',
+  icpBands: 'icp',
+  stages: 'st',
+  sources: 'src',
+  overdue: 'od',
+  hasOffer: 'off',
+  hasAppointment: 'apt',
+  dateRange: 'dr',
+  customFrom: 'df',
+  customTo: 'dt',
+} as const;
+
+function csvSet<T extends string>(value: string | null, allowed: readonly T[] | null): T[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((v) => v.trim())
+    .filter((v): v is T => v.length > 0 && (!allowed || (allowed as readonly string[]).includes(v))) as T[];
+}
+
+function paramOr<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
+  return value && (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
+}
+
+function readStateFromParams(sp: URLSearchParams): {
+  group: PipelineGroup | null;
+  search: string;
+  stageFilter: PipelineStage | null;
+  filters: PipelineFilterValue;
+} {
+  const groupRaw = sp.get(URL_KEYS.group);
+  const stageRaw = sp.get(URL_KEYS.stage);
+  const stageAllowed = STAGE_ORDER as readonly PipelineStage[];
+  const stageFilter =
+    stageRaw && (stageAllowed as readonly string[]).includes(stageRaw)
+      ? (stageRaw as PipelineStage)
+      : null;
+
+  const filters: PipelineFilterValue = {
+    ...EMPTY_FILTER,
+    priorities: csvSet<'high' | 'medium' | 'low'>(
+      sp.get(URL_KEYS.priorities),
+      ['high', 'medium', 'low'],
+    ),
+    owners: csvSet<string>(sp.get(URL_KEYS.owners), null),
+    icpBands: csvSet<'high' | 'medium' | 'low' | 'none'>(
+      sp.get(URL_KEYS.icpBands),
+      ['high', 'medium', 'low', 'none'],
+    ),
+    stages: csvSet<PipelineStage>(sp.get(URL_KEYS.stages), stageAllowed),
+    sources: csvSet<LeadSourceType>(sp.get(URL_KEYS.sources), null),
+    overdue: paramOr(sp.get(URL_KEYS.overdue), ['all', 'overdue', 'on_track'] as const, 'all'),
+    hasOffer: paramOr(sp.get(URL_KEYS.hasOffer), ['all', 'with', 'without'] as const, 'all'),
+    hasAppointment: paramOr(
+      sp.get(URL_KEYS.hasAppointment),
+      ['all', 'with', 'without'] as const,
+      'all',
+    ),
+    dateRange: paramOr(
+      sp.get(URL_KEYS.dateRange),
+      ['all', 'today', 'week', 'month', 'custom'] as const,
+      'all',
+    ),
+    customFrom: sp.get(URL_KEYS.customFrom) || undefined,
+    customTo: sp.get(URL_KEYS.customTo) || undefined,
+  };
+
+  return {
+    group: isGroup(groupRaw) ? groupRaw : null,
+    search: sp.get(URL_KEYS.search) ?? '',
+    stageFilter,
+    filters,
+  };
+}
+
+function writeStateToParams(
+  current: URLSearchParams,
+  state: {
+    group: PipelineGroup;
+    search: string;
+    stageFilter: PipelineStage | null;
+    filters: PipelineFilterValue;
+  },
+): URLSearchParams {
+  const next = new URLSearchParams(current);
+  const set = (key: string, value: string | null | undefined) => {
+    if (value && value.length > 0) next.set(key, value);
+    else next.delete(key);
+  };
+
+  set(URL_KEYS.group, state.group !== DEFAULT_GROUP ? state.group : null);
+  set(URL_KEYS.search, state.search.trim() || null);
+  set(URL_KEYS.stage, state.stageFilter ?? null);
+
+  const f = state.filters;
+  set(URL_KEYS.priorities, f.priorities.join(',') || null);
+  set(URL_KEYS.owners, f.owners.join(',') || null);
+  set(URL_KEYS.icpBands, f.icpBands.join(',') || null);
+  set(URL_KEYS.stages, f.stages.join(',') || null);
+  set(URL_KEYS.sources, f.sources.join(',') || null);
+  set(URL_KEYS.overdue, f.overdue !== 'all' ? f.overdue : null);
+  set(URL_KEYS.hasOffer, f.hasOffer !== 'all' ? f.hasOffer : null);
+  set(URL_KEYS.hasAppointment, f.hasAppointment !== 'all' ? f.hasAppointment : null);
+  set(URL_KEYS.dateRange, f.dateRange !== 'all' ? f.dateRange : null);
+  set(URL_KEYS.customFrom, f.customFrom ?? null);
+  set(URL_KEYS.customTo, f.customTo ?? null);
+
+  return next;
+}
+
 export function PipelineBoard({
   pipelineByStage,
   loading,
   onItemClick,
   onStageChange,
 }: PipelineBoardProps) {
-  const [group, setGroup] = useState<PipelineGroup>(DEFAULT_GROUP);
-  const [search, setSearch] = useState<string>(() => loadPersistedState().search ?? '');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initial-State: URL-Params haben Vorrang vor localStorage
+  const initialFromUrl = useMemo(() => readStateFromParams(searchParams), []);
+  const persisted = useMemo(() => loadPersistedState(), []);
+  const hasUrlState = useMemo(() => {
+    for (const k of Object.values(URL_KEYS)) {
+      if (searchParams.has(k)) return true;
+    }
+    return false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const [group, setGroup] = useState<PipelineGroup>(
+    initialFromUrl.group ?? DEFAULT_GROUP,
+  );
+  const [search, setSearch] = useState<string>(
+    hasUrlState ? initialFromUrl.search : persisted.search ?? '',
+  );
   const [stageFilter, setStageFilter] = useState<PipelineStage | null>(
-    () => loadPersistedState().stageFilter ?? null,
+    hasUrlState ? initialFromUrl.stageFilter : persisted.stageFilter ?? null,
   );
   const [filters, setFilters] = useState<PipelineFilterValue>(
-    () => ({ ...EMPTY_FILTER, ...(loadPersistedState().filters ?? {}) }),
+    hasUrlState ? initialFromUrl.filters : { ...EMPTY_FILTER, ...(persisted.filters ?? {}) },
   );
 
   // Aufgaben (für Überfälligkeitsfilter)
   const { tasks } = useTasks();
 
-  // Auswahl beim Mount aus localStorage laden
+  // Group beim Mount nur dann aus localStorage laden, wenn keine URL-Params da sind
   useEffect(() => {
+    if (hasUrlState) return;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (isGroup(stored)) setGroup(stored);
     } catch {
       /* ignore */
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -172,6 +309,34 @@ export function PipelineBoard({
       /* ignore */
     }
   }, [search, stageFilter, filters]);
+
+  // URL-Sync: Lokale Änderungen → URL
+  const skipNextUrlWriteRef = useRef(false);
+  useEffect(() => {
+    if (skipNextUrlWriteRef.current) {
+      skipNextUrlWriteRef.current = false;
+      return;
+    }
+    const next = writeStateToParams(searchParams, { group, search, stageFilter, filters });
+    // Nur schreiben, wenn sich etwas verändert
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group, search, stageFilter, filters]);
+
+  // URL-Sync: Externe URL-Änderungen (z. B. Back/Forward, geteilter Link) → State
+  useEffect(() => {
+    const fromUrl = readStateFromParams(searchParams);
+    skipNextUrlWriteRef.current = true;
+    if (fromUrl.group && fromUrl.group !== group) setGroup(fromUrl.group);
+    if (fromUrl.search !== search) setSearch(fromUrl.search);
+    if ((fromUrl.stageFilter ?? null) !== (stageFilter ?? null)) setStageFilter(fromUrl.stageFilter);
+    const a = JSON.stringify(fromUrl.filters);
+    const b = JSON.stringify(filters);
+    if (a !== b) setFilters(fromUrl.filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const activeStages = useMemo<Set<PipelineStage>>(() => {
     if (stageFilter) return new Set<PipelineStage>([stageFilter]);
