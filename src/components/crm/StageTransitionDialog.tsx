@@ -276,7 +276,7 @@ export function StageTransitionDialog({
                   toast.success('Sprung dokumentiert', {
                     description: `Übersprungen: ${skippedStages.length} Stage${skippedStages.length > 1 ? 's' : ''}`,
                   });
-                  setSkipAcknowledged(true);
+                  onCancel();
                 } catch (e) {
                   console.error('Stage-Skip fehlgeschlagen', e);
                   toast.error('Sprung konnte nicht gespeichert werden');
