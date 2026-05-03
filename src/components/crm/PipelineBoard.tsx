@@ -480,6 +480,12 @@ export function PipelineBoard({
       if (from && ref < from) return false;
       if (to && ref > to) return false;
     }
+    if (filters.stuckDays && filters.stuckDays > 0) {
+      const ref = item.stage_updated_at ? new Date(item.stage_updated_at) : null;
+      if (!ref) return false;
+      const ageDays = (Date.now() - ref.getTime()) / 86_400_000;
+      if (ageDays < filters.stuckDays) return false;
+    }
     return true;
   };
 
