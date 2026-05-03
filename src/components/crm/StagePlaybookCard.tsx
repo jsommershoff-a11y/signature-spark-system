@@ -3,13 +3,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { BookOpen, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BookOpen, Target, Lightbulb, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
 import { PipelineStage, PIPELINE_STAGE_LABELS } from '@/types/crm';
 import { STAGE_PLAYBOOK } from '@/lib/sales-scripts/stage-playbook';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
+
+// Lineare Default-Reihenfolge der Stages für Auto-Vorschlag.
+// `lost` ist explizit kein Vorschlag (nur manuell setzbar).
+const STAGE_PROGRESSION: PipelineStage[] = [
+  'new_lead',
+  'setter_call_scheduled',
+  'setter_call_done',
+  'analysis_ready',
+  'offer_draft',
+  'offer_sent',
+  'payment_unlocked',
+  'won',
+];
+
+const getNextStage = (current: PipelineStage): PipelineStage | null => {
+  const idx = STAGE_PROGRESSION.indexOf(current);
+  if (idx < 0 || idx >= STAGE_PROGRESSION.length - 1) return null;
+  return STAGE_PROGRESSION[idx + 1];
+};
 
 interface StagePlaybookCardProps {
   stage: PipelineStage;
@@ -31,6 +51,7 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
 
   const [checklist, setChecklist] = useState<ChecklistMap>(initialChecklist);
   const [saving, setSaving] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
 
   useEffect(() => {
     setChecklist(initialChecklist);
@@ -41,6 +62,9 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
   const stageChecks = checklist[stage] ?? {};
   const total = entry.fragen.length;
   const done = entry.fragen.reduce((acc, _q, idx) => acc + (stageChecks[String(idx)] ? 1 : 0), 0);
+  const isComplete = total > 0 && done === total;
+  const nextStage = getNextStage(stage);
+  const canAdvance = isComplete && !!nextStage && !!pipelineItemId;
 
   const toggle = async (idx: number, value: boolean) => {
     const next: ChecklistMap = {
@@ -73,6 +97,32 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
       setChecklist(checklist);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const advanceStage = async () => {
+    if (!pipelineItemId || !nextStage) return;
+    setAdvancing(true);
+    try {
+      const { error } = await supabase
+        .from('pipeline_items')
+        .update({
+          stage: nextStage,
+          stage_updated_at: new Date().toISOString(),
+        })
+        .eq('id', pipelineItemId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      toast.success('Lead verschoben', {
+        description: `Neue Phase: ${PIPELINE_STAGE_LABELS[nextStage]}`,
+      });
+    } catch (err) {
+      toast.error('Stage konnte nicht aktualisiert werden', {
+        description: (err as Error).message,
+      });
+    } finally {
+      setAdvancing(false);
     }
   };
 
@@ -166,6 +216,33 @@ export function StagePlaybookCard({ stage, pipelineItemId, initialMeta, classNam
             </p>
           )}
         </div>
+
+        {/* Auto-Stage-Vorschlag bei 100% Erfüllung */}
+        {canAdvance && nextStage && (
+          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-2 animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-start gap-2">
+              <Sparkles className="h-4 w-4 mt-0.5 text-emerald-600 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                  Alle Punkte abgehakt – bereit für die nächste Phase
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  Vorschlag: <span className="font-medium text-foreground">{PIPELINE_STAGE_LABELS[nextStage]}</span>
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={advanceStage}
+              disabled={advancing}
+              className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {advancing ? 'Verschiebe…' : 'In nächste Phase verschieben'}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
+
         <div className="flex items-start gap-2 rounded-md bg-muted/40 p-2">
           <Lightbulb className="h-3.5 w-3.5 mt-0.5 text-amber-500 shrink-0" />
           <p className="text-xs text-muted-foreground">{entry.hinweis}</p>
