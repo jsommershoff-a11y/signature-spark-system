@@ -216,6 +216,7 @@ export function StageTransitionDialog({
       setQualSource('');
       setQualSourceConfirmed(false);
       setQualAcknowledged(false);
+      setDontAskAgain(false);
     }
   }, [transition]);
 
