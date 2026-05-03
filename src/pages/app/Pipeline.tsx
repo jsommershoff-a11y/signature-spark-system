@@ -6,6 +6,7 @@ import { LeadDetailSidebar } from '@/components/crm/LeadDetailSidebar';
 import { StageTransitionDialog } from '@/components/crm/StageTransitionDialog';
 import { PipelineStage, CrmLead } from '@/types/crm';
 import { isStageDialogSuppressed, isSkipDialogSuppressed } from '@/lib/crm/stage-dialog-prefs';
+import { trackEvent } from '@/lib/analytics';
 
 export default function Pipeline() {
   const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
@@ -85,6 +86,11 @@ export default function Pipeline() {
       stage !== 'lost' &&
       isSkipDialogSuppressed(stage)
     ) {
+      void trackEvent('skip_dialog_bypassed', {
+        to_stage: stage,
+        from_stage: fromStage,
+        skipped_count: ti - fi - 1,
+      });
       await moveToStage(itemId, stage);
       return;
     }
