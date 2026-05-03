@@ -29,6 +29,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { suppressStageDialog } from '@/lib/crm/stage-dialog-prefs';
 
 // Lineare Reihenfolge zur Erkennung von Rückwärts-Wechseln.
 // `lost` ist seitwärts (kein Vor/Zurück).
