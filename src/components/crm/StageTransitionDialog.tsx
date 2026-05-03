@@ -29,7 +29,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { suppressStageDialog } from '@/lib/crm/stage-dialog-prefs';
+import { suppressStageDialog, suppressSkipDialog } from '@/lib/crm/stage-dialog-prefs';
 
 // Lineare Reihenfolge zur Erkennung von Rückwärts-Wechseln.
 // `lost` ist seitwärts (kein Vor/Zurück).
@@ -199,6 +199,7 @@ export function StageTransitionDialog({
   const [skipConfirmed, setSkipConfirmed] = useState<Record<string, boolean>>({});
   const [skipAcknowledged, setSkipAcknowledged] = useState(false);
   const [dontAskAgain, setDontAskAgain] = useState(false);
+  const [skipDontAskAgain, setSkipDontAskAgain] = useState(false);
 
   // new_lead-Qualifizierung: Owner + Quelle bestätigen, bevor weiterverschoben werden darf.
   const [qualOwnerId, setQualOwnerId] = useState<string>('');
@@ -217,6 +218,7 @@ export function StageTransitionDialog({
       setQualSourceConfirmed(false);
       setQualAcknowledged(false);
       setDontAskAgain(false);
+      setSkipDontAskAgain(false);
     }
   }, [transition]);
 
@@ -448,6 +450,22 @@ export function StageTransitionDialog({
             ))}
           </ul>
 
+          <div className="flex items-start gap-2 pt-1">
+            <Checkbox
+              id="skip-dont-ask-again"
+              checked={skipDontAskAgain}
+              onCheckedChange={(v) => setSkipDontAskAgain(v === true)}
+              disabled={busy}
+              className="mt-0.5"
+            />
+            <Label htmlFor="skip-dont-ask-again" className="cursor-pointer text-xs leading-snug text-muted-foreground">
+              Skip-Dialog für <strong>{targetLabel}</strong> nicht erneut zeigen
+              <span className="block text-[10px] opacity-70">
+                Sicherheits-Gates für Rückwärts-Wechsel, Qualifizierung und „Verloren" bleiben aktiv.
+              </span>
+            </Label>
+          </div>
+
           <AlertDialogFooter>
             <Button variant="ghost" onClick={onCancel} disabled={busy}>
               Abbrechen
@@ -473,9 +491,16 @@ export function StageTransitionDialog({
                       },
                     });
                   }
-                  toast.success('Sprung dokumentiert', {
-                    description: `Übersprungen: ${skippedStages.length} Stage${skippedStages.length > 1 ? 's' : ''}`,
-                  });
+                  if (skipDontAskAgain) {
+                    suppressSkipDialog(transition.toStage);
+                    toast.success('Sprung dokumentiert', {
+                      description: `Skip-Dialog für ${targetLabel} ist jetzt stumm.`,
+                    });
+                  } else {
+                    toast.success('Sprung dokumentiert', {
+                      description: `Übersprungen: ${skippedStages.length} Stage${skippedStages.length > 1 ? 's' : ''}`,
+                    });
+                  }
                   onCancel();
                 } catch (e) {
                   console.error('Stage-Skip fehlgeschlagen', e);

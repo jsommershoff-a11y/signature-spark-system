@@ -5,7 +5,7 @@ import { PipelineBoard } from '@/components/crm/PipelineBoard';
 import { LeadDetailSidebar } from '@/components/crm/LeadDetailSidebar';
 import { StageTransitionDialog } from '@/components/crm/StageTransitionDialog';
 import { PipelineStage, CrmLead } from '@/types/crm';
-import { isStageDialogSuppressed } from '@/lib/crm/stage-dialog-prefs';
+import { isStageDialogSuppressed, isSkipDialogSuppressed } from '@/lib/crm/stage-dialog-prefs';
 
 export default function Pipeline() {
   const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
@@ -65,6 +65,26 @@ export default function Pipeline() {
       return fi >= 0 && ti === fi + 1;
     })();
     if (isOneStepForward && fromStage !== 'new_lead' && isStageDialogSuppressed(stage)) {
+      await moveToStage(itemId, stage);
+      return;
+    }
+
+    // Skip-Dialog-Suppression: Vorwärts-Sprung über mind. 1 Stage hinweg, wenn
+    // der Nutzer für diese Ziel-Stage „nicht erneut zeigen" gewählt hat.
+    // Sicherheits-Gates (Rückwärts, new_lead-Qualifizierung, lost) bleiben aktiv.
+    const order: PipelineStage[] = [
+      'new_lead', 'setter_call_scheduled', 'setter_call_done',
+      'analysis_ready', 'offer_draft', 'offer_sent', 'payment_unlocked', 'won',
+    ];
+    const fi = fromStage ? order.indexOf(fromStage) : -1;
+    const ti = order.indexOf(stage);
+    const isForwardSkip = fi >= 0 && ti > fi + 1;
+    if (
+      isForwardSkip &&
+      fromStage !== 'new_lead' &&
+      stage !== 'lost' &&
+      isSkipDialogSuppressed(stage)
+    ) {
       await moveToStage(itemId, stage);
       return;
     }
