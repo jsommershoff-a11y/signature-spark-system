@@ -30,6 +30,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { suppressStageDialog, suppressSkipDialog } from '@/lib/crm/stage-dialog-prefs';
+import { trackEvent } from '@/lib/analytics';
 
 // Lineare Reihenfolge zur Erkennung von Rückwärts-Wechseln.
 // `lost` ist seitwärts (kein Vor/Zurück).
@@ -493,6 +494,12 @@ export function StageTransitionDialog({
                   }
                   if (skipDontAskAgain) {
                     suppressSkipDialog(transition.toStage);
+                    void trackEvent('skip_dialog_suppressed', {
+                      to_stage: transition.toStage,
+                      from_stage: transition.fromStage,
+                      skipped_stages: skippedStages,
+                      skipped_count: skippedStages.length,
+                    });
                     toast.success('Sprung dokumentiert', {
                       description: `Skip-Dialog für ${targetLabel} ist jetzt stumm.`,
                     });
