@@ -2934,6 +2934,60 @@ export type Database = {
           },
         ]
       }
+      newsletter_signups: {
+        Row: {
+          consent_marketing: boolean
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          meta: Json
+          name: string | null
+          source: string | null
+          status: string
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+          whatsapp: string
+        }
+        Insert: {
+          consent_marketing?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          meta?: Json
+          name?: string | null
+          source?: string | null
+          status?: string
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          whatsapp: string
+        }
+        Update: {
+          consent_marketing?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          meta?: Json
+          name?: string | null
+          source?: string | null
+          status?: string
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
