@@ -79,18 +79,23 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
               </DialogDescription>
             </DialogHeader>
 
-            {/* Live-Call Hinweis */}
-            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 flex gap-3">
-              <Video className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <div className="text-xs">
-                <div className="font-semibold text-foreground flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  2× wöchentlich Live-Call inklusive
+            {/* Live-Call Hinweis – stark hervorgehoben */}
+            <div className="relative rounded-lg border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-primary/5 p-3.5">
+              <div className="absolute -top-2 right-3 bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                ● Live inklusive
+              </div>
+              <div className="flex gap-3">
+                <Video className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <div className="font-bold text-foreground flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
+                    2× pro Woche Live-Call: Di & Do · 19:00
+                  </div>
+                  <p className="text-muted-foreground mt-1">
+                    Schau <strong>live im Bildschirm-Sharing</strong> zu, wie wir Prompts schreiben,
+                    KI-Workflows bauen und reale Kundenfälle lösen – stell deine Fragen direkt im Call.
+                  </p>
                 </div>
-                <p className="text-muted-foreground mt-0.5">
-                  Schau live zu, wie wir Prompts & KI-Workflows bauen, optimieren und auf reale
-                  Kundenfälle anwenden – mit der Möglichkeit, Fragen direkt zu stellen.
-                </p>
               </div>
             </div>
 
