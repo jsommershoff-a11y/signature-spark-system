@@ -562,6 +562,11 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                       <p className="text-[11px] font-medium text-foreground">
                         Oder direkt hier abschicken (kein Mail-Programm nötig):
                       </p>
+                      {/* Honeypot */}
+                      <div aria-hidden="true" className="absolute left-[-9999px] top-[-9999px] h-0 w-0 overflow-hidden" tabIndex={-1}>
+                        <label htmlFor="nl-sup-website">Website</label>
+                        <input id="nl-sup-website" type="text" name="website" autoComplete="off" tabIndex={-1} value={supportWebsite} onChange={(e) => setSupportWebsite(e.target.value)} />
+                      </div>
                       <textarea
                         value={supportMsg}
                         onChange={(e) => setSupportMsg(e.target.value.slice(0, 2000))}
