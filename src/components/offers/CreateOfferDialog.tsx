@@ -282,6 +282,7 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
         terms_and_conditions: DEFAULT_AGB + VARIABLE_OFFER_AGB_ADDENDUM,
         withdrawal_policy: DEFAULT_WITHDRAWAL_POLICY,
         variable_offer_data: variableData,
+        roi_data: Object.keys(roiData).length ? roiData : undefined,
       };
     }
 
