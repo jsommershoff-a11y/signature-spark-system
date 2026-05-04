@@ -109,9 +109,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
   // Dynamic steps based on mode
   const getSteps = () => {
     if (isVariable) {
-      return ['Programmauswahl', 'Leistung & Kosten', 'Zahlung', 'Zusammenfassung'] as const;
+      return ['Programmauswahl', 'Leistung & Kosten', 'Kosten-Nutzen', 'Zahlung', 'Zusammenfassung'] as const;
     }
-    return ['Bedarfsermittlung', 'Programmauswahl', 'Bausteine & Positionen', 'Zahlung', 'Zusammenfassung'] as const;
+    return ['Bedarfsermittlung', 'Programmauswahl', 'Bausteine & Positionen', 'Kosten-Nutzen', 'Zahlung', 'Zusammenfassung'] as const;
   };
 
   const STEPS = getSteps();
