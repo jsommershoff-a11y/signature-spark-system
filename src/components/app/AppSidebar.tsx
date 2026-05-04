@@ -75,6 +75,7 @@ const navGroups: NavGroup[] = [
       { label: 'CRM', href: '/app/crm', icon: Building2, staffOnly: true },
       { label: 'Leads', href: '/app/leads', icon: UserPlus, staffOnly: true },
       { label: 'Pipeline', href: '/app/pipeline', icon: Kanban, staffOnly: true },
+      { label: 'Deals', href: '/app/deals', icon: Kanban, staffOnly: true },
       { label: 'Calls', href: '/app/calls', icon: Phone, staffOnly: true },
       { label: 'Angebote', href: '/app/offers', icon: FileText, staffOnly: true },
       { label: 'Kunden', href: '/app/customers', icon: Users, staffOnly: true },
