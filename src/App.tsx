@@ -62,6 +62,7 @@ import AdminSettings from "./pages/app/admin/AdminSettings";
 import AdminUpgradeFunnel from "./pages/app/admin/AdminUpgradeFunnel";
 import AdminAuditLog from "./pages/app/admin/AdminAuditLog";
 import AdminPushLog from "./pages/app/admin/AdminPushLog";
+import AdminInboundEmail from "./pages/app/admin/AdminInboundEmail";
 import AdminWebhooks from "./pages/app/AdminWebhooks";
 import Unauthorized from "./pages/app/Unauthorized";
 import Calls from "./pages/app/Calls";
@@ -275,6 +276,7 @@ const App = () => (
                 <Route path="upgrade-funnel" element={<AdminUpgradeFunnel />} />
                 <Route path="audit-log" element={<AdminAuditLog />} />
                 <Route path="push-log" element={<AdminPushLog />} />
+                <Route path="inbound-email" element={<AdminInboundEmail />} />
               </Route>
               {/* Webhooks jetzt unter Admin-Settings als Tab */}
               <Route path="webhooks" element={<Navigate to="/app/admin/settings" replace />} />
