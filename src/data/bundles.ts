@@ -73,9 +73,9 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     solution:
       "3 sofort produktive Bots, die in 7 Tagen live gehen: Termine, E-Mail und Angebote laufen ab Tag 1 automatisch.",
     ctaText: "Starter-Bundle anfragen",
-    seoTitle: "Starter-Bundle: 3 KI-Bots in 7 Tagen produktiv | KI-Automationen",
+    seoTitle: "Starter-Bundle: 3 KI-Bots in 7 Tagen live | KI-Automationen",
     seoDescription:
-      "Der schnellste Einstieg in Automatisierung: KI-Terminbot, KI-E-Mail-Assistent und KI-Angebotsgenerator als fertiges Starter-Bundle. Live in 7 Tagen.",
+      "Starter-Bundle: KI-Terminbot, E-Mail-Assistent & Angebotsgenerator – live in 7 Tagen. Festpreis in 24 h, DSGVO-konform, 8–15 h/Woche freie Mitarbeiterzeit.",
     automationSlugs: ["ki-terminbot", "ki-email-assistent", "ki-angebots-generator"],
     oneLiner:
       "Termine, E-Mails und Angebote ab Tag 7 automatisiert – mit nur einem Onboarding.",
