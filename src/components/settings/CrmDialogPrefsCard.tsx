@@ -80,12 +80,17 @@ export default function CrmDialogPrefsCard() {
             <div className="flex flex-wrap gap-2">
               {skipSuppressed.map((stage) => {
                 const overridden = mandatoryStages.includes(stage);
+                const expiry = getSkipDialogExpiry(stage);
+                const days = expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86_400_000)) : null;
                 return (
-                  <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1">
+                  <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1" title={expiry ? `Verfällt automatisch in ${days} Tag${days === 1 ? '' : 'en'}` : undefined}>
                     {overridden && <ShieldAlert className="h-3 w-3 text-destructive" aria-label="Admin-Policy aktiv" />}
                     <span className={overridden ? 'line-through text-muted-foreground' : ''}>
                       {PIPELINE_STAGE_LABELS[stage]}
                     </span>
+                    {days !== null && (
+                      <span className="text-[10px] text-muted-foreground">{days}d</span>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
