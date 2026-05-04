@@ -14,6 +14,8 @@ import {
   clearSkipDialogSuppression,
   resetStageDialogSuppressions,
 } from '@/lib/crm/stage-dialog-prefs';
+import { useMandatorySkipStages } from '@/hooks/useAppSettings';
+import { ShieldAlert } from 'lucide-react';
 
 export default function CrmDialogPrefsCard() {
   const [stageSuppressed, setStageSuppressed] = useState<PipelineStage[]>([]);
