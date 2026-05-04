@@ -600,7 +600,11 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                               }
                               setSupportSent(true);
                               setSupportStarted(true);
-                              toast.success("Support-Anfrage gesendet. Wir melden uns binnen 1 Werktag.");
+                              if ((data as any)?.deduplicated) {
+                                toast.success("Anfrage bereits eingegangen – wir melden uns binnen 1 Werktag.");
+                              } else {
+                                toast.success("Support-Anfrage gesendet. Wir melden uns binnen 1 Werktag.");
+                              }
                             } catch (err) {
                               toast.error(
                                 err instanceof Error
