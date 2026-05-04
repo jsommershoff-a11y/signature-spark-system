@@ -72,6 +72,9 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resending, setResending] = useState(false);
   const [supportStarted, setSupportStarted] = useState(false);
+  const [supportMsg, setSupportMsg] = useState("");
+  const [supportSending, setSupportSending] = useState(false);
+  const [supportSent, setSupportSent] = useState(false);
   const upcomingCalls = getNextLiveCalls(2);
 
   // Live-Validierung der WhatsApp-Nummer (nur wenn nicht leer)
@@ -416,6 +419,79 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                       </a>
                     </Button>
                   </div>
+
+                  {/* Mini-Formular: Support direkt aus dem Modal abschicken */}
+                  {!supportSent ? (
+                    <div className="rounded-md border border-border bg-muted/30 p-2.5 space-y-2">
+                      <p className="text-[11px] font-medium text-foreground">
+                        Oder direkt hier abschicken (kein Mail-Programm nötig):
+                      </p>
+                      <textarea
+                        value={supportMsg}
+                        onChange={(e) => setSupportMsg(e.target.value.slice(0, 2000))}
+                        placeholder='Was funktioniert nicht? (z. B. "Keine Mail erhalten, auch nicht im Spam")'
+                        rows={3}
+                        maxLength={2000}
+                        className="w-full text-xs rounded-md border border-input bg-background px-2 py-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                      />
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-muted-foreground">
+                          {supportMsg.length}/2000 · Daten werden automatisch mitgeschickt
+                        </span>
+                        <Button
+                          size="sm"
+                          className="h-7 text-xs"
+                          disabled={supportSending || supportMsg.trim().length < 5}
+                          onClick={async () => {
+                            setSupportSending(true);
+                            try {
+                              const { data, error } = await supabase.functions.invoke("support-request", {
+                                body: {
+                                  email: form.email,
+                                  name: form.name,
+                                  whatsapp: form.whatsapp,
+                                  message: supportMsg.trim(),
+                                  mailStatus,
+                                  optInLabel: optInLabel[mailStatus],
+                                  reasonLabel: reasonLabel[mailStatus],
+                                  pageUrl: typeof window !== "undefined" ? window.location.href : "",
+                                },
+                              });
+                              if (error || (data as any)?.error) {
+                                throw new Error((data as any)?.error ?? error?.message);
+                              }
+                              setSupportSent(true);
+                              setSupportStarted(true);
+                              toast.success("Support-Anfrage gesendet. Wir melden uns binnen 1 Werktag.");
+                            } catch (err) {
+                              toast.error(
+                                err instanceof Error
+                                  ? `Senden fehlgeschlagen: ${err.message}`
+                                  : "Senden fehlgeschlagen.",
+                              );
+                            } finally {
+                              setSupportSending(false);
+                            }
+                          }}
+                        >
+                          {supportSending ? (
+                            <>
+                              <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> Senden…
+                            </>
+                          ) : (
+                            <>Support anfragen</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-md bg-green-50 border border-green-300 p-2.5">
+                      <p className="text-[11px] text-green-900 flex items-center gap-1.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                        Anfrage übermittelt. Antwort an <strong>{form.email}</strong> binnen 1 Werktag.
+                      </p>
+                    </div>
+                  )}
                   {supportStarted && (
                     <div className="rounded-md bg-green-50 border border-green-300 p-2.5 space-y-2 mt-1">
                       <p className="text-[11px] text-green-900 flex items-center gap-1.5">

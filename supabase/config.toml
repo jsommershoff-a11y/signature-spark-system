@@ -47,3 +47,7 @@ verify_jwt = false
 
 [functions.send-newsletter-confirmation]
 verify_jwt = false
+
+[functions.support-request]
+verify_jwt = false
+
