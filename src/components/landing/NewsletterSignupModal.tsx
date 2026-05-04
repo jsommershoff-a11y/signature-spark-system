@@ -46,7 +46,7 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
       });
       if (error || (data as any)?.error) throw new Error((data as any)?.error ?? error?.message);
       setDone(true);
-      toast.success("Eintragung erfolgreich – 1 Monat Mitgliederbereich freigeschaltet!");
+      toast.success("Fast geschafft – bitte E-Mail bestätigen!");
     } catch (err: any) {
       toast.error(err?.message ?? "Eintragung fehlgeschlagen.");
     } finally {
@@ -60,12 +60,17 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
         {done ? (
           <div className="space-y-4 text-center py-4">
             <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto" />
-            <DialogTitle>Du bist drin! 🎉</DialogTitle>
+            <DialogTitle>Fast geschafft – bitte E-Mail bestätigen ✉️</DialogTitle>
             <p className="text-sm text-muted-foreground">
-              30 Tage Mitgliederbereich-Zugang sind freigeschaltet. <strong>Check deine E-Mails</strong> – wir
-              haben dir gerade einen 1-Klick-Login-Link geschickt.
+              Wir haben dir gerade eine <strong>Bestätigungs-Mail</strong> geschickt.
+              Klicke auf den Link darin, um deinen <strong>30-Tage-Mitgliederbereich-Zugang</strong>{" "}
+              freizuschalten. Erst nach Bestätigung erhältst du den 1-Klick-Login und die
+              Live-Call-Termine.
             </p>
-            <Button onClick={() => onOpenChange(false)} className="w-full">Schließen</Button>
+            <p className="text-xs text-muted-foreground">
+              Keine Mail erhalten? Schau in den Spam-Ordner oder versuch es in 2 Minuten erneut.
+            </p>
+            <Button onClick={() => onOpenChange(false)} className="w-full">Verstanden</Button>
           </div>
         ) : (
           <>
