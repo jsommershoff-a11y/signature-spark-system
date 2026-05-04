@@ -15,3 +15,4 @@ export { TargetAudienceSection } from "./TargetAudienceSection";
 export { RootCauseSection } from "./RootCauseSection";
 export { SystemPhasesSection } from "./SystemPhasesSection";
 export { StructogramUSPSection } from "./StructogramUSPSection";
+export { BundleSupportFAQ } from "./BundleSupportFAQ";

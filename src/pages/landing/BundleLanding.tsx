@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProofBar } from "@/components/landing/ProofBar";
 import { DeliveryRoadmap } from "@/components/landing/DeliveryRoadmap";
 import { FAQSection } from "@/components/landing/FAQSection";
+import { BundleSupportFAQ } from "@/components/landing/BundleSupportFAQ";
 import { ProductCTA } from "@/components/landing/ProductCTA";
 import { StickyCtaBanner } from "@/components/landing/conversion/StickyCtaBanner";
 import { TrustLogosSection } from "@/components/landing/home/TrustLogosSection";
@@ -360,6 +361,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
       {/* 5. FAQ + Einwände (FAQ ist bewusst auf 4 Einträge gekürzt) */}
       <FAQSection items={allFaq} trackingSection={`bundle:${bundle.slug}:faq`} />
       <ObjectionFAQSection trackingSection={`bundle:${bundle.slug}:objections`} />
+      <BundleSupportFAQ context={`bundle:${bundle.slug}`} />
 
       {/* 6. CTA */}
       <section ref={finalRef} className="bg-[#FFF3EB] py-16">
