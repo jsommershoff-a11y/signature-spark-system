@@ -12,8 +12,8 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const email = String(body?.email ?? "").trim().toLowerCase();
-    const name = body?.name ? String(body.name).trim().slice(0, 200) : null;
-    const whatsapp = String(body?.whatsapp ?? "").trim();
+    const name = body?.name ? String(body.name).trim().slice(0, 200) : "";
+    const whatsappRaw = body?.whatsapp ? String(body.whatsapp).trim() : "";
     const source = body?.source ? String(body.source).slice(0, 100) : "newsletter";
     const consent = body?.consent === true;
 
@@ -23,11 +23,20 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const phoneDigits = whatsapp.replace(/[^\d+]/g, "");
-    if (!whatsapp || phoneDigits.replace(/\D/g, "").length < 7 || whatsapp.length > 40) {
-      return new Response(JSON.stringify({ error: "Bitte gültige WhatsApp-Nummer angeben (Pflicht)." }), {
+    if (!name || name.length < 2) {
+      return new Response(JSON.stringify({ error: "Bitte Namen angeben." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+    let whatsapp: string | null = null;
+    if (whatsappRaw) {
+      const digits = whatsappRaw.replace(/\D/g, "");
+      if (digits.length < 7 || whatsappRaw.length > 40) {
+        return new Response(JSON.stringify({ error: "WhatsApp-Nummer ungültig." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      whatsapp = whatsappRaw;
     }
     if (!consent) {
       return new Response(JSON.stringify({ error: "Bitte Einwilligung bestätigen." }), {
