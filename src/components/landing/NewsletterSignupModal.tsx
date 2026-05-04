@@ -202,6 +202,24 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
               <p className="text-[11px] text-muted-foreground">
                 Keine Mail? Bitte Spam-Ordner prüfen.
               </p>
+              {mailStatus !== "already" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resendConfirmation}
+                  disabled={resending || resendCooldown > 0}
+                  className="w-full mt-1"
+                >
+                  {resending ? (
+                    <><Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> Wird gesendet…</>
+                  ) : resendCooldown > 0 ? (
+                    <><Clock className="h-3.5 w-3.5 mr-2" /> Erneut senden in {resendCooldown}s</>
+                  ) : (
+                    <><RefreshCw className="h-3.5 w-3.5 mr-2" /> Bestätigungs-Mail erneut senden</>
+                  )}
+                </Button>
+              )}
             </div>
 
             {/* WhatsApp-Bestätigung – nur wenn Nummer angegeben */}
