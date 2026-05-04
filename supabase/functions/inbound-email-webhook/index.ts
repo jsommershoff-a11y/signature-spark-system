@@ -335,15 +335,21 @@ Deno.serve(async (req) => {
 
     // === 4) Team-Benachrichtigungen (Teams + E-Mail) ===
     const ticketRef = `#${String(ticketId).slice(0, 8).toUpperCase()}`;
-    const priorityBadge = ticketRow?.priority === "high" ? "🔴 HIGH" : "🟢 NORMAL";
+    const priorityBadge = needsReview
+      ? "🟡 NEEDS REVIEW"
+      : (ticketRow?.priority === "high" ? "🔴 HIGH" : "🟢 NORMAL");
+    const headline = needsReview
+      ? `🟡 Inbound-Mail OHNE Ticket-Bezug → Needs-Review-Ticket ${escapeHtml(ticketRef)}`
+      : `💬 Neue Antwort auf Support-Ticket ${escapeHtml(ticketRef)}`;
     const previewHtml = escapeHtml(cleanText.slice(0, 1500)).replace(/\n/g, "<br/>");
     const notifyHtml = `
-      <p><b>💬 Neue Antwort auf Support-Ticket ${escapeHtml(ticketRef)}</b> &nbsp; ${priorityBadge}</p>
+      <p><b>${headline}</b> &nbsp; ${priorityBadge}</p>
       <ul>
         <li><b>Von:</b> ${escapeHtml(fromName || "")} &lt;${escapeHtml(fromEmail || "")}&gt;</li>
         <li><b>Betreff:</b> ${escapeHtml(subject)}</li>
-        <li><b>Original-Ticket:</b> ${escapeHtml(ticketRow?.subject || "—")}</li>
+        ${needsReview ? "" : `<li><b>Original-Ticket:</b> ${escapeHtml(ticketRow?.subject || "—")}</li>`}
       </ul>
+      ${needsReview ? "<p style=\"color:#b45309\"><b>⚠️ Bitte manuell prüfen und ggf. dem richtigen Ticket/Lead zuordnen.</b></p>" : ""}
       <p><b>Nachricht:</b><br/>${previewHtml}</p>
       <p style="color:#666;font-size:11px">Ticket-ID: ${escapeHtml(ticketId)}</p>
     `;
