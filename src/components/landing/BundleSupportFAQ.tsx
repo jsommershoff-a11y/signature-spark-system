@@ -107,6 +107,19 @@ export const BundleSupportFAQ = ({ context }: Props) => {
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Honeypot — für Bots sichtbar, für User per CSS verborgen */}
+                  <div aria-hidden="true" className="absolute left-[-9999px] top-[-9999px] h-0 w-0 overflow-hidden" tabIndex={-1}>
+                    <label htmlFor="sup-website">Website</label>
+                    <input
+                      id="sup-website"
+                      type="text"
+                      name="website"
+                      autoComplete="off"
+                      tabIndex={-1}
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                  </div>
                   <div className="grid sm:grid-cols-2 gap-3">
                     <div>
                       <Label htmlFor="sup-name" className="text-xs">
