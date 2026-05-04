@@ -75,6 +75,8 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [supportMsg, setSupportMsg] = useState("");
   const [supportSending, setSupportSending] = useState(false);
   const [supportSent, setSupportSent] = useState(false);
+  const [waStuck, setWaStuck] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<string | undefined>(undefined);
   const upcomingCalls = getNextLiveCalls(2);
 
   // Live-Validierung der WhatsApp-Nummer (nur wenn nicht leer)
