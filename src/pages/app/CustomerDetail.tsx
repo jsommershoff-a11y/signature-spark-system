@@ -252,7 +252,7 @@ export default function CustomerDetail() {
   const docOpens = (extras?.enrichment_json as any)?.document_opens ?? null;
 
   // === Pipeline ===
-  const pipelineStage = extras?.status ?? data?.record_status ?? null;
+  const pipelineStage = pipelineItemStage ?? extras?.status ?? data?.record_status ?? null;
   const stageHistory = activities.filter(a => (a.type ?? '').toLowerCase().includes('stage'));
   const lostReason = (extras?.enrichment_json as any)?.lost_reason ?? null;
   const nextStep = activities.find(a => (a.type ?? '').toLowerCase() === 'next_step')?.content
