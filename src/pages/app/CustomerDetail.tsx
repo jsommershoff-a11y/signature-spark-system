@@ -398,42 +398,36 @@ export default function CustomerDetail() {
 
           {/* === Cockpit: Quick-Links === */}
           {/*
-            TODO: Sobald /app/inbox, /app/offers, /app/tasks, /app/pipeline
-            den Query-Parameter ?customer=<id> bzw. ?lead=<id> auswerten,
-            filtert dieser Bereich automatisch — die Links sind bereits vorbereitet.
+            Routen werden via isRouteAvailable() geprüft. Fehlt eine Ziel-Route
+            im Router, wird der Button automatisch deaktiviert (mit Tooltip)
+            bzw. versteckt (hideIfMissing).
           */}
           <Card>
             <CardContent className="py-4">
               <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/inbox?customer=${data.id}`}>
-                    <Inbox className="h-3.5 w-3.5 mr-1.5" />Kommunikation öffnen
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/offers?customer=${data.id}`}>
-                    <FileText className="h-3.5 w-3.5 mr-1.5" />Angebote anzeigen
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="default">
-                  <Link to={`/app/offers?customer=${data.id}&action=create`}>
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/tasks?customer=${data.id}`}>
-                    <CheckSquare className="h-3.5 w-3.5 mr-1.5" />Aufgaben anzeigen
-                  </Link>
-                </Button>
+                <RouteAwareLinkButton to={`/app/inbox?customer=${data.id}`} variant="outline">
+                  <Inbox className="h-3.5 w-3.5 mr-1.5" />Kommunikation öffnen
+                </RouteAwareLinkButton>
+                <RouteAwareLinkButton to={`/app/offers?customer=${data.id}`} variant="outline">
+                  <FileText className="h-3.5 w-3.5 mr-1.5" />Angebote anzeigen
+                </RouteAwareLinkButton>
+                <RouteAwareLinkButton to={`/app/offers?customer=${data.id}&action=create`} variant="default">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen
+                </RouteAwareLinkButton>
+                <RouteAwareLinkButton to={`/app/tasks?customer=${data.id}`} variant="outline">
+                  <CheckSquare className="h-3.5 w-3.5 mr-1.5" />Aufgaben anzeigen
+                </RouteAwareLinkButton>
                 <Button size="sm" variant="default" onClick={() => setQuickAddOpen(true)}>
                   <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe erstellen
                 </Button>
                 {data.source === 'crm_lead' && (
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`/app/pipeline?lead=${data.id}`}>
-                      <TrendingUp className="h-3.5 w-3.5 mr-1.5" />In Pipeline öffnen
-                    </Link>
-                  </Button>
+                  <RouteAwareLinkButton
+                    to={`/app/pipeline?lead=${data.id}`}
+                    variant="outline"
+                    hideIfMissing
+                  >
+                    <TrendingUp className="h-3.5 w-3.5 mr-1.5" />In Pipeline öffnen
+                  </RouteAwareLinkButton>
                 )}
               </div>
             </CardContent>
