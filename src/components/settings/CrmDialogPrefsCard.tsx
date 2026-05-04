@@ -13,6 +13,8 @@ import {
   clearStageDialogSuppression,
   clearSkipDialogSuppression,
   resetStageDialogSuppressions,
+  getSkipDialogExpiry,
+  getStageDialogExpiry,
 } from '@/lib/crm/stage-dialog-prefs';
 import { useMandatorySkipStages } from '@/hooks/useAppSettings';
 import { ShieldAlert } from 'lucide-react';
