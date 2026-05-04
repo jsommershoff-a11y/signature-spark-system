@@ -591,6 +591,8 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                                   optInLabel: optInLabel[mailStatus],
                                   reasonLabel: reasonLabel[mailStatus],
                                   pageUrl: typeof window !== "undefined" ? window.location.href : "",
+                                  website: supportWebsite,
+                                  formStartedAt: supportFormStartedAt,
                                 },
                               });
                               if (error || (data as any)?.error) {
