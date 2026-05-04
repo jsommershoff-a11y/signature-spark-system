@@ -223,26 +223,59 @@ Deno.serve(async (req) => {
       if (t) ticketId = t.id;
     }
 
+    let needsReview = false;
     if (!ticketId) {
-      console.warn("inbound-email: no ticket match", { from: fromEmail, subject });
-      // Trotzdem an Team weiterleiten — keine Antwort verlieren
-      const orphanHtml = `
-        <p><b>📨 Eingehende E-Mail ohne Ticket-Bezug</b></p>
-        <ul>
-          <li><b>Von:</b> ${escapeHtml(fromName || "")} &lt;${escapeHtml(fromEmail || "")}&gt;</li>
-          <li><b>An:</b> ${escapeHtml(to)}</li>
-          <li><b>Betreff:</b> ${escapeHtml(subject)}</li>
-        </ul>
-        <p><b>Nachricht:</b><br/>${escapeHtml(stripQuoted(text)).replace(/\n/g, "<br/>")}</p>
-        <p style="color:#666;font-size:11px">Bitte manuell zuordnen oder neues Ticket anlegen.</p>
-      `;
-      await Promise.all([
-        notifyTeams(orphanHtml, `📨 Inbound-Mail (kein Ticket) – ${fromEmail || "?"}`),
-        notifyEmail(TEAM_INBOX, `[Support] Eingehende Mail ohne Ticket – ${fromEmail || "?"}`, orphanHtml),
-      ]);
-      return new Response(JSON.stringify({ ok: false, reason: "no_ticket_match", forwarded: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.warn("inbound-email: no ticket match — creating Needs-Review ticket", { from: fromEmail, subject });
+      needsReview = true;
+      const cleanedFallback = stripQuoted(text);
+      const reviewBody = [
+        `⚠️ Eingehende E-Mail ohne erkennbare Ticket-ID — bitte manuell zuordnen.`,
+        ``,
+        `Von: ${fromName || ""} <${fromEmail || "(unbekannt)"}>`,
+        `An: ${to}`,
+        `Betreff: ${subject}`,
+        `Message-ID: ${messageId || "—"}`,
+        `In-Reply-To: ${inReplyTo || "—"}`,
+        ``,
+        `--- Nachricht ---`,
+        cleanedFallback.slice(0, 8000),
+      ].join("\n");
+
+      const { data: reviewTicket, error: reviewErr } = await supabase
+        .from("support_tickets")
+        .insert({
+          subject: `[Needs Review] ${subject?.slice(0, 200) || "Eingehende E-Mail"}`,
+          body: reviewBody,
+          status: "open",
+          priority: "high",
+          source: "email",
+          sender_email: fromEmail,
+          sender_name: fromName,
+          email_message_id: messageId,
+          internal_notes: "Automatisch erzeugt vom Inbound-Webhook — keine Ticket-ID erkannt.",
+        })
+        .select("id")
+        .single();
+
+      if (reviewErr || !reviewTicket) {
+        console.error("inbound-email: needs-review ticket insert failed", reviewErr);
+        const orphanHtml = `
+          <p><b>🚨 Inbound-Mail OHNE Ticket-Bezug & Needs-Review-Ticket konnte NICHT angelegt werden</b></p>
+          <ul><li><b>Von:</b> ${escapeHtml(fromEmail || "?")}</li><li><b>Betreff:</b> ${escapeHtml(subject)}</li></ul>
+          <p>${escapeHtml(cleanedFallback.slice(0, 1500)).replace(/\n/g, "<br/>")}</p>
+          <p style="color:#c00;font-size:11px">Fehler: ${escapeHtml(String(reviewErr?.message || "unknown"))}</p>
+        `;
+        await Promise.all([
+          notifyTeams(orphanHtml, `🚨 Inbound-Mail Fehler – ${fromEmail || "?"}`),
+          notifyEmail(TEAM_INBOX, `[Support] Inbound-Mail FEHLER – ${fromEmail || "?"}`, orphanHtml),
+        ]);
+        return new Response(JSON.stringify({ ok: false, reason: "review_ticket_failed" }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      ticketId = reviewTicket.id;
+      // Flow läuft normal weiter — Notifications markieren das Ticket als „Needs Review".
     }
 
     // === 1) Inbound-Message am Ticket speichern ===
