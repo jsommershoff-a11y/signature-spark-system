@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import logoSignature from "@/assets/ki-automationen-logo.svg";
+import { NewsletterSignupModal } from "@/components/landing/NewsletterSignupModal";
+import { Mail, Sparkles } from "lucide-react";
 
 const branches = [
   { title: "Handwerk", path: "/handwerk" },
@@ -10,7 +13,10 @@ const branches = [
 ];
 
 export const Footer = () => {
+  const [open, setOpen] = useState(false);
+
   return (
+    <>
     <footer className="py-16 bg-gradient-to-b from-[#0F3E2E] to-[#0a2a20]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid md:grid-cols-3 gap-10 mb-10">
@@ -23,8 +29,19 @@ export const Footer = () => {
               />
               <span className="text-white font-semibold text-base">KI Automationen</span>
             </Link>
-            <p className="text-white/40 text-sm leading-relaxed">
+            <p className="text-white/40 text-sm leading-relaxed mb-4">
               Einfache Automatisierungen für Unternehmen – Struktur, Entlastung, Kontrolle.
+            </p>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="inline-flex items-center gap-2 rounded-md bg-white text-[#0F3E2E] hover:bg-white/90 transition-colors text-sm font-semibold px-4 py-2.5 shadow-sm"
+            >
+              <Sparkles className="h-4 w-4" />
+              Newsletter + 1 Monat gratis
+            </button>
+            <p className="text-white/40 text-[11px] mt-2 leading-snug">
+              Inkl. 2× wöchentlich Live-Call: live Prompts & KI bauen
             </p>
           </div>
           
@@ -48,6 +65,10 @@ export const Footer = () => {
             <nav className="flex flex-col gap-3">
               <Link to="/qualifizierung" className="text-white/40 hover:text-white transition-colors text-sm">
                 Potenzial-Analyse buchen
+              </Link>
+              <Link to="/newsletter" className="text-white/40 hover:text-white transition-colors text-sm inline-flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" />
+                Newsletter + 1 Monat gratis
               </Link>
               <Link to="/community" className="text-white/40 hover:text-white transition-colors text-sm">
                 KI-Community
@@ -75,5 +96,7 @@ export const Footer = () => {
         </div>
       </div>
     </footer>
+    <NewsletterSignupModal open={open} onOpenChange={setOpen} source="footer" />
+    </>
   );
 };
