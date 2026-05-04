@@ -67,6 +67,8 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [done, setDone] = useState(false);
   const [mailStatus, setMailStatus] = useState<"sent" | "queued" | "already" | "failed">("queued");
   const [form, setForm] = useState({ email: "", name: "", whatsapp: "", consent: false });
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resending, setResending] = useState(false);
   const upcomingCalls = getNextLiveCalls(2);
 
   // Live-Validierung der WhatsApp-Nummer (nur wenn nicht leer)
