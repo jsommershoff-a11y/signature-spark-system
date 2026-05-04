@@ -13,6 +13,8 @@ const branches = [
 ];
 
 export const Footer = () => {
+  const [open, setOpen] = useState(false);
+
   return (
     <footer className="py-16 bg-gradient-to-b from-[#0F3E2E] to-[#0a2a20]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
