@@ -342,12 +342,9 @@ export default function CustomerDetail() {
               <InfoRow icon={<Phone className="h-4 w-4" />} label="Telefon" value={data.phone} />
               <InfoRow icon={<Building2 className="h-4 w-4" />} label="Firma" value={data.company} />
               <InfoRow icon={<User className="h-4 w-4" />} label="Zugewiesen" value={data.assigned_staff_name ?? 'Jan (Standard)'} />
-              {nextStep && (
-                <div className="sm:col-span-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Nächster Schritt</div>
-                  <div className="font-medium">{nextStep}</div>
-                </div>
-              )}
+              <div className="sm:col-span-2">
+                <NextStepCell info={nextStepInfo} variant="detail" />
+              </div>
             </CardContent>
           </Card>
 
