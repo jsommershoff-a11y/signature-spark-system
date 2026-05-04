@@ -219,7 +219,7 @@ export default function CustomerDetail() {
       }
     })();
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, reloadKey]);
 
   const displayName = (d: Detail) =>
     d.full_name || `${d.first_name ?? ''} ${d.last_name ?? ''}`.trim() || d.email || '—';
