@@ -38,6 +38,8 @@ export const BundleSupportFAQ = ({ context }: Props) => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState(""); // Honeypot — muss leer bleiben
+  const [formStartedAt] = useState(() => Date.now());
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -49,22 +51,27 @@ export const BundleSupportFAQ = ({ context }: Props) => {
     }
     setSending(true);
     try {
-      const { error } = await supabase.functions.invoke("support-request", {
+      const { data, error } = await supabase.functions.invoke("support-request", {
         body: {
           email: parsed.data.email,
           name: parsed.data.name,
           message: parsed.data.message,
-          mailStatus: "queued", // Kontextfeld – Anfrage kommt aus Bundle-FAQ, nicht aus Mail-Flow
+          mailStatus: "queued",
           optInLabel: `Support-Anfrage aus FAQ (${context})`,
           reasonLabel: "Allgemeine Support-Frage über Landingpage-FAQ",
-          pageUrl:
-            typeof window !== "undefined" ? window.location.href : context,
+          pageUrl: typeof window !== "undefined" ? window.location.href : context,
+          website,
+          formStartedAt,
         },
       });
       if (error) throw error;
       setSent(true);
       setMessage("");
-      toast.success("Support-Anfrage gesendet. Wir melden uns innerhalb von 24 h.");
+      if ((data as any)?.deduplicated) {
+        toast.success("Anfrage bereits eingegangen – wir melden uns in Kürze.");
+      } else {
+        toast.success("Support-Anfrage gesendet. Wir melden uns innerhalb von 24 h.");
+      }
     } catch (e) {
       console.error("BundleSupportFAQ submit error", e);
       toast.error("Konnte nicht gesendet werden. Bitte E-Mail an info@krs-signature.de.");
