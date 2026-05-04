@@ -28,6 +28,7 @@ import Widerruf from "./pages/landing/Widerruf";
 import Datenschutz from "./pages/landing/Datenschutz";
 import Community from "./pages/landing/Community";
 import Newsletter from "./pages/landing/Newsletter";
+import NewsletterConfirm from "./pages/landing/NewsletterConfirm";
 import Automatisierungen from "./pages/landing/Automatisierungen";
 import AutomatisierungDetail from "./pages/landing/AutomatisierungDetail";
 import EigenerBot from "./pages/landing/EigenerBot";
@@ -125,6 +126,7 @@ const App = () => (
             <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/community" element={<Community />} />
             <Route path="/newsletter" element={<Newsletter />} />
+            <Route path="/newsletter/bestaetigung" element={<NewsletterConfirm />} />
             <Route path="/automatisierungen" element={<Automatisierungen />} />
             <Route path="/automatisierungen/:slug" element={<AutomatisierungDetail />} />
             <Route path="/eigener-bot" element={<EigenerBot />} />
