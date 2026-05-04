@@ -1,13 +1,14 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/app/PageHeader";
-import { Plug, Mail, Tags, Activity, Download, Webhook, ShoppingBag } from "lucide-react";
+import { Plug, Mail, Tags, Activity, Download, Webhook, ShoppingBag, ShieldAlert } from "lucide-react";
 import AdminIntegrations from "@/components/admin/AdminIntegrations";
 import AdminEmailTemplates from "@/components/admin/AdminEmailTemplates";
 import AdminSlotClassificationRules from "@/components/admin/AdminSlotClassificationRules";
 import AdminSystemLogs from "@/components/admin/AdminSystemLogs";
 import AdminBackupExport from "@/components/admin/AdminBackupExport";
 import AdminCatalog from "@/components/admin/AdminCatalog";
+import AdminCrmDialogPolicyCard from "@/components/admin/AdminCrmDialogPolicyCard";
 import AdminWebhooks from "../AdminWebhooks";
 
 export default function AdminSettings() {
