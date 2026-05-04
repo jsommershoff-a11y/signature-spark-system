@@ -29,6 +29,16 @@ import { useSavedViews } from '@/hooks/useSavedViews';
 import { SavedViewsBar } from '@/components/crm/SavedViewsBar';
 import { ActivityFeed } from '@/components/activities/ActivityFeed';
 import { MEMBER_STATUS_LABELS, MEMBER_STATUS_COLORS, PRODUCT_LABELS } from '@/types/members';
+import { resolveNextStep } from '@/lib/next-step';
+import { NextStepCell } from '@/components/crm/NextStepCell';
+
+// Mapping record_status → Pipeline-Empfehlung
+const RECORD_STATUS_TO_STAGE: Record<string, string> = {
+  lead: 'new_lead',
+  contact: 'setter_call_done',
+  customer: 'won',
+  deleted: 'lost',
+};
 
 type CustomerViewFilter = { search: string; statusFilter: CustomerRecordStatus | 'all' };
 
@@ -223,6 +233,7 @@ export default function Customers() {
                     </TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="min-w-[200px]">Nächster Schritt</TableHead>
                     <TableHead>E-Mail</TableHead>
                     <TableHead>Telefon</TableHead>
                     <TableHead>Firma</TableHead>
@@ -254,6 +265,14 @@ export default function Customers() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={badge.className}>{badge.label}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <NextStepCell
+                            info={resolveNextStep({
+                              stage: RECORD_STATUS_TO_STAGE[c.record_status],
+                              ownerName: c.assigned_staff_name,
+                            })}
+                          />
                         </TableCell>
                         <TableCell>{c.email ?? '—'}</TableCell>
                         <TableCell>{c.phone ?? '—'}</TableCell>

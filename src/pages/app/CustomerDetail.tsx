@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { resolveNextStep } from '@/lib/next-step';
+import { NextStepCell } from '@/components/crm/NextStepCell';
 
 type Detail = {
   id: string;
@@ -100,6 +102,7 @@ export default function CustomerDetail() {
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [calls, setCalls] = useState<CallRow[]>([]);
   const [offers, setOffers] = useState<OfferRow[]>([]);
+  const [pipelineItemStage, setPipelineItemStage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -184,7 +187,20 @@ export default function CustomerDetail() {
           queries.push(Promise.resolve({ data: [] }));
         }
 
-        const [extrasRes, actRes, taskRes, callRes, offerRes] = await Promise.all(queries);
+        // Pipeline-Item (nur lead_id) — liefert echten pipeline_stage
+        if (row.source === 'crm_lead') {
+          queries.push(
+            supabase
+              .from('pipeline_items')
+              .select('stage')
+              .eq('lead_id', row.id)
+              .maybeSingle(),
+          );
+        } else {
+          queries.push(Promise.resolve({ data: null }));
+        }
+
+        const [extrasRes, actRes, taskRes, callRes, offerRes, pipelineRes] = await Promise.all(queries);
         if (cancelled) return;
 
         setExtras((extrasRes?.data as CrmExtras) ?? null);
@@ -192,6 +208,7 @@ export default function CustomerDetail() {
         setTasks((taskRes?.data as TaskRow[]) ?? []);
         setCalls((callRes?.data as CallRow[]) ?? []);
         setOffers((offerRes?.data as OfferRow[]) ?? []);
+        setPipelineItemStage(((pipelineRes?.data as any)?.stage as string) ?? null);
       } catch (e: any) {
         toast.error(e?.message ?? 'Datensatz konnte nicht geladen werden.');
       } finally {
@@ -237,12 +254,17 @@ export default function CustomerDetail() {
   const docOpens = (extras?.enrichment_json as any)?.document_opens ?? null;
 
   // === Pipeline ===
-  const pipelineStage = extras?.status ?? data?.record_status ?? null;
+  const pipelineStage = pipelineItemStage ?? extras?.status ?? data?.record_status ?? null;
   const stageHistory = activities.filter(a => (a.type ?? '').toLowerCase().includes('stage'));
   const lostReason = (extras?.enrichment_json as any)?.lost_reason ?? null;
-  const nextStep = activities.find(a => (a.type ?? '').toLowerCase() === 'next_step')?.content
-    ?? openTasks[0]?.title
-    ?? null;
+  const nextStepInfo = useMemo(() => resolveNextStep({
+    tasks: openTasks.map(t => ({
+      title: t.title, due_at: t.due_at, status: t.status, type: t.type,
+    })),
+    stage: pipelineItemStage,
+    ownerName: data?.assigned_staff_name,
+  }), [openTasks, pipelineItemStage, data?.assigned_staff_name]);
+  const nextStep = nextStepInfo.label;
 
   // === Abschlussnähe (icp_fit_score als Proxy) ===
   const closeness = extras?.icp_fit_score ?? null;
@@ -320,12 +342,9 @@ export default function CustomerDetail() {
               <InfoRow icon={<Phone className="h-4 w-4" />} label="Telefon" value={data.phone} />
               <InfoRow icon={<Building2 className="h-4 w-4" />} label="Firma" value={data.company} />
               <InfoRow icon={<User className="h-4 w-4" />} label="Zugewiesen" value={data.assigned_staff_name ?? 'Jan (Standard)'} />
-              {nextStep && (
-                <div className="sm:col-span-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Nächster Schritt</div>
-                  <div className="font-medium">{nextStep}</div>
-                </div>
-              )}
+              <div className="sm:col-span-2">
+                <NextStepCell info={nextStepInfo} variant="detail" />
+              </div>
             </CardContent>
           </Card>
 

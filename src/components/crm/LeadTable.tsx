@@ -27,6 +27,8 @@ import {
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { getPriorityTextClass, getPriorityLabel } from '@/lib/pipeline-stage';
+import { resolveNextStep } from '@/lib/next-step';
+import { NextStepCell } from '@/components/crm/NextStepCell';
 
 interface LeadTableProps {
   leads: CrmLead[];
@@ -167,6 +169,15 @@ export function LeadTable({
               </span>
             </div>
 
+            <div className="mt-2">
+              <NextStepCell
+                info={resolveNextStep({
+                  stage: lead.pipeline_item?.stage,
+                  ownerName: lead.owner?.full_name || lead.owner?.first_name || null,
+                })}
+              />
+            </div>
+
             <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
               <div className="flex items-center gap-3 min-w-0">
                 {lead.email && (
@@ -200,6 +211,7 @@ export function LeadTable({
               <TableHead>Name</TableHead>
               <TableHead>Firma</TableHead>
               <TableHead>Stage</TableHead>
+              <TableHead className="min-w-[200px]">Nächster Schritt</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Quelle</TableHead>
               <TableHead>Besitzer</TableHead>
@@ -255,6 +267,14 @@ export function LeadTable({
                       {PIPELINE_STAGE_LABELS[lead.pipeline_item.stage]}
                     </Badge>
                   )}
+                </TableCell>
+                <TableCell>
+                  <NextStepCell
+                    info={resolveNextStep({
+                      stage: lead.pipeline_item?.stage,
+                      ownerName: lead.owner?.full_name || lead.owner?.first_name || null,
+                    })}
+                  />
                 </TableCell>
                 <TableCell>
                   <Badge className={getStatusColor(lead.status)}>
