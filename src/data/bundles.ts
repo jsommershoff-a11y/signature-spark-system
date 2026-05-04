@@ -73,9 +73,9 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     solution:
       "3 sofort produktive Bots, die in 7 Tagen live gehen: Termine, E-Mail und Angebote laufen ab Tag 1 automatisch.",
     ctaText: "Starter-Bundle anfragen",
-    seoTitle: "Starter-Bundle: 3 KI-Bots in 7 Tagen produktiv | KI-Automationen",
+    seoTitle: "Starter-Bundle: 3 KI-Bots in 7 Tagen live | KI-Automationen",
     seoDescription:
-      "Der schnellste Einstieg in Automatisierung: KI-Terminbot, KI-E-Mail-Assistent und KI-Angebotsgenerator als fertiges Starter-Bundle. Live in 7 Tagen.",
+      "Starter-Bundle: KI-Terminbot, E-Mail-Assistent & Angebotsgenerator – live in 7 Tagen. Festpreis in 24 h, DSGVO-konform, 8–15 h/Woche freie Mitarbeiterzeit.",
     automationSlugs: ["ki-terminbot", "ki-email-assistent", "ki-angebots-generator"],
     oneLiner:
       "Termine, E-Mails und Angebote ab Tag 7 automatisiert – mit nur einem Onboarding.",
@@ -153,10 +153,9 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     solution:
       "7 produktive KI-Bots als geschlossenes System: Voice, Termin, E-Mail, Angebote, Lead-Qualifizierung, Daten-Extraktion und Content. End-to-End vom ersten Touchpoint bis zur Rechnung.",
     ctaText: "Growth-Bundle anfragen",
-    seoTitle:
-      "Growth-Bundle: 7 KI-Bots als komplettes System | KI-Automationen",
+    seoTitle: "Growth-Bundle: 7 KI-Bots als End-to-End-System | KI-Automationen",
     seoDescription:
-      "Die komplette KI-Suite für skalierende Betriebe: Voice-Agent, Terminbot, E-Mail-Assistent, Angebotsgenerator, Lead-Qualifizierung, Daten-Extraktion und Content-Engine als ein System.",
+      "Growth-Bundle: Voice, Termin, E-Mail, Angebote, Lead-Scoring, Daten & Content als ein System. 1–2 FTE Entlastung, Rollout in 4–6 Wochen, Festpreis in 24 h.",
     automationSlugs: [
       "ki-voice-assistent-empfang",
       "ki-terminbot",
