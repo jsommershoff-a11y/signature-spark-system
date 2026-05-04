@@ -1,0 +1,2 @@
+ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS message_hash text;
+CREATE INDEX IF NOT EXISTS idx_support_tickets_dedup ON public.support_tickets (sender_email, message_hash, created_at DESC);

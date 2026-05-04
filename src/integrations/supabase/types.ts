@@ -4350,6 +4350,7 @@ export type Database = {
           id: string
           internal_notes: string | null
           lead_id: string | null
+          message_hash: string | null
           priority: Database["public"]["Enums"]["ticket_priority"]
           sender_email: string | null
           sender_name: string | null
@@ -4369,6 +4370,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           lead_id?: string | null
+          message_hash?: string | null
           priority?: Database["public"]["Enums"]["ticket_priority"]
           sender_email?: string | null
           sender_name?: string | null
@@ -4388,6 +4390,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           lead_id?: string | null
+          message_hash?: string | null
           priority?: Database["public"]["Enums"]["ticket_priority"]
           sender_email?: string | null
           sender_name?: string | null
