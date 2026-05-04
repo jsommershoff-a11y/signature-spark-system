@@ -169,6 +169,15 @@ export function LeadTable({
               </span>
             </div>
 
+            <div className="mt-2">
+              <NextStepCell
+                info={resolveNextStep({
+                  stage: lead.pipeline_item?.stage,
+                  ownerName: lead.owner?.full_name || lead.owner?.first_name || null,
+                })}
+              />
+            </div>
+
             <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
               <div className="flex items-center gap-3 min-w-0">
                 {lead.email && (
