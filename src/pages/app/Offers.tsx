@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOffers } from '@/hooks/useOffers';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,16 +7,24 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OfferApprovalCard, CreateOfferDialog } from '@/components/offers';
 import { Plus, Search, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { OfferStatus } from '@/types/offers';
 
 export default function Offers() {
   const { offers, isLoading, approveOffer, sendOffer } = useOffers();
   const { hasMinRole } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<OfferStatus | 'all'>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // Auto-open Wizard via ?action=create (z.B. aus CRM-Cockpit)
+  useEffect(() => {
+    if (searchParams.get('action') === 'create') setCreateDialogOpen(true);
+  }, [searchParams]);
+  // TODO: ?customer=<id> als Pre-Filter ausnutzen, sobald Wizard
+  // Lead-Vorauswahl per ID unterstützt.
 
   const canApprove = hasMinRole('gruppenbetreuer');
   const canSend = hasMinRole('vertriebspartner');
@@ -71,9 +79,9 @@ export default function Offers() {
             Verwalten Sie Ihre Angebote und verfolgen Sie den Status.
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
+        <Button onClick={() => setCreateDialogOpen(true)} size="lg">
           <Plus className="h-4 w-4 mr-2" />
-          Neues Angebot
+          Neues Angebot erstellen
         </Button>
       </div>
 
