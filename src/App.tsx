@@ -278,6 +278,7 @@ const App = () => (
                 <Route path="audit-log" element={<AdminAuditLog />} />
                 <Route path="push-log" element={<AdminPushLog />} />
                 <Route path="inbound-email" element={<AdminInboundEmail />} />
+                <Route path="support-tickets" element={<AdminSupportTickets />} />
               </Route>
               {/* Webhooks jetzt unter Admin-Settings als Tab */}
               <Route path="webhooks" element={<Navigate to="/app/admin/settings" replace />} />
