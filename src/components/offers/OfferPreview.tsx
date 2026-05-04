@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import type { OfferContent } from '@/types/offers';
 import { formatCents } from '@/types/offers';
 import { PainPointRadar } from './PainPointRadar';
+import { RoiSummaryCard } from './RoiSummaryCard';
 
 interface OfferPreviewProps {
   content: OfferContent;
