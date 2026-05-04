@@ -47,10 +47,17 @@ const SOURCE_ICON = {
 
 export default function Tickets() {
   const [tab, setTab] = useState<TicketStatus | 'all'>('open');
+  const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all');
   const [selected, setSelected] = useState<SupportTicket | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data: tickets = [], isLoading } = useTickets(tab);
+  const { data: tickets = [], isLoading } = useTickets(tab, priorityFilter);
+  const update = useUpdateTicket();
+
+  const handleQuickAction = (e: React.MouseEvent, id: string, patch: Partial<SupportTicket>) => {
+    e.stopPropagation();
+    update.mutate({ id, patch });
+  };
 
   return (
     <div className="space-y-6">
@@ -64,15 +71,30 @@ export default function Tickets() {
         </Button>
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as TicketStatus | 'all')}>
-        <TabsList>
-          <TabsTrigger value="open">Offen</TabsTrigger>
-          <TabsTrigger value="in_progress">In Bearbeitung</TabsTrigger>
-          <TabsTrigger value="waiting">Wartet</TabsTrigger>
-          <TabsTrigger value="closed">Geschlossen</TabsTrigger>
-          <TabsTrigger value="all">Alle</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex flex-wrap gap-3 items-center">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as TicketStatus | 'all')}>
+          <TabsList>
+            <TabsTrigger value="open">Offen</TabsTrigger>
+            <TabsTrigger value="in_progress">In Bearbeitung</TabsTrigger>
+            <TabsTrigger value="waiting">Wartet</TabsTrigger>
+            <TabsTrigger value="closed">Geschlossen</TabsTrigger>
+            <TabsTrigger value="all">Alle</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="flex items-center gap-2 ml-auto">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as TicketPriority | 'all')}>
+            <SelectTrigger className="w-44"><SelectValue placeholder="Priorität" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle Prioritäten</SelectItem>
+              <SelectItem value="urgent">Dringend</SelectItem>
+              <SelectItem value="high">Hoch</SelectItem>
+              <SelectItem value="normal">Normal</SelectItem>
+              <SelectItem value="low">Niedrig</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {isLoading ? (
         <Card><CardContent className="py-10 text-center text-muted-foreground">Lade Tickets…</CardContent></Card>
@@ -100,9 +122,34 @@ export default function Tickets() {
                       )}
                       {t.body && <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{t.body}</p>}
                     </div>
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {formatDistanceToNow(new Date(t.created_at), { addSuffix: true, locale: de })}
-                    </span>
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(t.created_at), { addSuffix: true, locale: de })}
+                      </span>
+                      <div className="flex gap-1">
+                        {t.status === 'open' && (
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
+                            onClick={(e) => handleQuickAction(e, t.id, { status: 'in_progress' })}
+                            title="In Bearbeitung nehmen">
+                            <PlayCircle className="h-3.5 w-3.5 mr-1" /> Übernehmen
+                          </Button>
+                        )}
+                        {t.status === 'in_progress' && (
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
+                            onClick={(e) => handleQuickAction(e, t.id, { status: 'waiting' })}
+                            title="Auf Antwort warten">
+                            <PauseCircle className="h-3.5 w-3.5 mr-1" /> Warten
+                          </Button>
+                        )}
+                        {t.status !== 'closed' && (
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs text-emerald-700 border-emerald-500/40 hover:bg-emerald-500/10"
+                            onClick={(e) => handleQuickAction(e, t.id, { status: 'closed' })}
+                            title="Als beantwortet markieren">
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Beantwortet
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
