@@ -324,6 +324,62 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
               </AccordionItem>
             </Accordion>
 
+            {/* Direkter Support-Kontakt – Fallback wenn Mail/WhatsApp scheitern */}
+            {(() => {
+              const subject = "Hilfe bei Newsletter-Bestätigung";
+              const body = [
+                `Hallo KRS-Team,`,
+                ``,
+                `meine Newsletter-Bestätigung funktioniert nicht. Bitte schaltet meinen 30-Tage-Zugang manuell frei.`,
+                ``,
+                `Meine Daten:`,
+                `• Name: ${form.name || "(bitte ergänzen)"}`,
+                `• E-Mail: ${form.email}`,
+                `• WhatsApp: ${form.whatsapp || "(nicht angegeben)"}`,
+                `• Mail-Status im Modal: ${mailStatus}`,
+                `• Zeitpunkt: ${new Date().toLocaleString("de-DE")}`,
+                ``,
+                `Danke!`,
+              ].join("\n");
+              const mailto = `mailto:info@krs-signature.de?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+              return (
+                <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-background p-3 space-y-2">
+                  <p className="text-[11px] text-muted-foreground">
+                    Nichts klappt? Wir schalten dich manuell frei – meist binnen 1 Werktag.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button asChild size="sm" variant="outline" className="text-xs">
+                      <a href={mailto}>
+                        <Mail className="h-3.5 w-3.5 mr-1.5" />
+                        Support-Mail
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="text-xs">
+                      <a
+                        href={buildWhatsAppLink(
+                          [
+                            `Hallo KRS-Team,`,
+                            ``,
+                            `meine Newsletter-Bestätigung funktioniert nicht.`,
+                            `Name: ${form.name || "(bitte ergänzen)"}`,
+                            `E-Mail: ${form.email}`,
+                            `Mail-Status: ${mailStatus}`,
+                            ``,
+                            `Bitte schaltet meinen 30-Tage-Zugang manuell frei. Danke!`,
+                          ].join("\n"),
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
+                        Support-WhatsApp
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
+
             <Button onClick={() => onOpenChange(false)} variant="outline" className="w-full">
               Verstanden
             </Button>
