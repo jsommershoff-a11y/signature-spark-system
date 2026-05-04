@@ -8,6 +8,7 @@ import { PaymentUnlockButton } from '@/components/offers/PaymentUnlockButton';
 import { PainPointRadar } from '@/components/offers/PainPointRadar';
 import { ProgressTracker } from '@/components/offers/ProgressTracker';
 import { SalesGuideWizard } from '@/components/offers/SalesGuideWizard';
+import { RoiSummaryCard } from '@/components/offers/RoiSummaryCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
