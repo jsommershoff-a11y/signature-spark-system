@@ -206,7 +206,7 @@ export default function CustomerDetail() {
         setTasks((taskRes?.data as TaskRow[]) ?? []);
         setCalls((callRes?.data as CallRow[]) ?? []);
         setOffers((offerRes?.data as OfferRow[]) ?? []);
-        setPipelineStage(((pipelineRes?.data as any)?.stage as string) ?? null);
+        setPipelineItemStage(((pipelineRes?.data as any)?.stage as string) ?? null);
       } catch (e: any) {
         toast.error(e?.message ?? 'Datensatz konnte nicht geladen werden.');
       } finally {
