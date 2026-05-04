@@ -338,7 +338,7 @@ Deno.serve(async (req) => {
     // === 3) Ticket-Kontext + zugewiesener Mitarbeiter laden ===
     const { data: ticketRow } = await supabase
       .from("support_tickets")
-      .select("lead_id, sender_email, assigned_to, subject, priority")
+      .select("lead_id, sender_email, assigned_to, subject, priority, teams_thread_id")
       .eq("id", ticketId)
       .maybeSingle();
 
