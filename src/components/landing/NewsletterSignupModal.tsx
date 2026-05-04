@@ -290,11 +290,70 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      // Heuristik: Wenn nach Klick innerhalb von 1.2s das Fenster
+                      // NICHT den Fokus verliert (kein blur/visibilitychange),
+                      // hat WhatsApp den Deep-Link wahrscheinlich nicht geöffnet.
+                      let switched = false;
+                      const onBlur = () => { switched = true; };
+                      const onVis = () => { if (document.hidden) switched = true; };
+                      window.addEventListener("blur", onBlur, { once: true });
+                      document.addEventListener("visibilitychange", onVis, { once: true });
+                      window.setTimeout(() => {
+                        window.removeEventListener("blur", onBlur);
+                        document.removeEventListener("visibilitychange", onVis);
+                        if (!switched) {
+                          setWaStuck(true);
+                          setFaqOpen("no-wa");
+                          toast.info("WhatsApp scheint nicht zu öffnen – wir zeigen dir jetzt Alternativen.");
+                        }
+                      }, 1200);
+                    }}
                   >
                     <MessageCircle className="h-4 w-4 mr-2" />
                     WhatsApp-Bestätigung senden
                   </a>
                 </Button>
+
+                {/* Zustandsbasierter CTA – greift, wenn WhatsApp hakt */}
+                {waStuck && (
+                  <div className="mt-2 rounded-md border border-amber-400/60 bg-amber-50 p-2.5 space-y-2">
+                    <p className="text-[11px] text-amber-900 flex items-start gap-1.5 leading-snug">
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        WhatsApp-Bestätigung hakt? Wir klären deinen Zugang in 15 Min telefonisch –
+                        kostenlos & unverbindlich.
+                      </span>
+                    </p>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="w-full h-8 text-xs bg-primary hover:bg-primary/90"
+                    >
+                      <Link
+                        to="/qualifizierung"
+                        onClick={() => onOpenChange(false)}
+                      >
+                        Kostenloses Klarheitsgespräch sichern
+                        <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Manuell als „hakt" markieren – wenn die Heuristik nicht greift */}
+                {!waStuck && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWaStuck(true);
+                      setFaqOpen("no-wa");
+                    }}
+                    className="text-[10px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  >
+                    WhatsApp öffnet nicht? Hilfe anzeigen
+                  </button>
+                )}
               </div>
             )}
 
