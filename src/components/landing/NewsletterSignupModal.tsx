@@ -225,7 +225,7 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 </span>
               </label>
 
-              <Button type="submit" disabled={loading} className="w-full">
+              <Button type="submit" disabled={loading || !!whatsappError} className="w-full">
                 {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Jetzt eintragen & 30 Tage freischalten
               </Button>
