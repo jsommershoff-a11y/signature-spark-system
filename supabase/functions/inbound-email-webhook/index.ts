@@ -225,8 +225,22 @@ Deno.serve(async (req) => {
 
     if (!ticketId) {
       console.warn("inbound-email: no ticket match", { from: fromEmail, subject });
-      // Trotzdem 200 zurückgeben, damit SendGrid nicht endlos retried
-      return new Response(JSON.stringify({ ok: false, reason: "no_ticket_match" }), {
+      // Trotzdem an Team weiterleiten — keine Antwort verlieren
+      const orphanHtml = `
+        <p><b>📨 Eingehende E-Mail ohne Ticket-Bezug</b></p>
+        <ul>
+          <li><b>Von:</b> ${escapeHtml(fromName || "")} &lt;${escapeHtml(fromEmail || "")}&gt;</li>
+          <li><b>An:</b> ${escapeHtml(to)}</li>
+          <li><b>Betreff:</b> ${escapeHtml(subject)}</li>
+        </ul>
+        <p><b>Nachricht:</b><br/>${escapeHtml(stripQuoted(text)).replace(/\n/g, "<br/>")}</p>
+        <p style="color:#666;font-size:11px">Bitte manuell zuordnen oder neues Ticket anlegen.</p>
+      `;
+      await Promise.all([
+        notifyTeams(orphanHtml, `📨 Inbound-Mail (kein Ticket) – ${fromEmail || "?"}`),
+        notifyEmail(TEAM_INBOX, `[Support] Eingehende Mail ohne Ticket – ${fromEmail || "?"}`, orphanHtml),
+      ]);
+      return new Response(JSON.stringify({ ok: false, reason: "no_ticket_match", forwarded: true }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -257,10 +271,10 @@ Deno.serve(async (req) => {
       .eq("id", ticketId);
     if (tUpdErr) console.error("inbound-email: update ticket status failed", tUpdErr);
 
-    // === 3) Activity am verknüpften Lead loggen (best-effort) ===
+    // === 3) Ticket-Kontext + zugewiesener Mitarbeiter laden ===
     const { data: ticketRow } = await supabase
       .from("support_tickets")
-      .select("lead_id, sender_email")
+      .select("lead_id, sender_email, assigned_to, subject, priority")
       .eq("id", ticketId)
       .maybeSingle();
 
@@ -275,6 +289,7 @@ Deno.serve(async (req) => {
       if (lead) leadId = lead.id;
     }
 
+    // Activity am Lead loggen
     if (leadId) {
       const preview = cleanText.slice(0, 500) || subject;
       await supabase.from("activities").insert({
@@ -285,9 +300,42 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log("inbound-email: processed", { ticketId, from: fromEmail });
+    // === 4) Team-Benachrichtigungen (Teams + E-Mail) ===
+    const ticketRef = `#${String(ticketId).slice(0, 8).toUpperCase()}`;
+    const priorityBadge = ticketRow?.priority === "high" ? "🔴 HIGH" : "🟢 NORMAL";
+    const previewHtml = escapeHtml(cleanText.slice(0, 1500)).replace(/\n/g, "<br/>");
+    const notifyHtml = `
+      <p><b>💬 Neue Antwort auf Support-Ticket ${escapeHtml(ticketRef)}</b> &nbsp; ${priorityBadge}</p>
+      <ul>
+        <li><b>Von:</b> ${escapeHtml(fromName || "")} &lt;${escapeHtml(fromEmail || "")}&gt;</li>
+        <li><b>Betreff:</b> ${escapeHtml(subject)}</li>
+        <li><b>Original-Ticket:</b> ${escapeHtml(ticketRow?.subject || "—")}</li>
+      </ul>
+      <p><b>Nachricht:</b><br/>${previewHtml}</p>
+      <p style="color:#666;font-size:11px">Ticket-ID: ${escapeHtml(ticketId)}</p>
+    `;
 
-    return new Response(JSON.stringify({ ok: true, ticket_id: ticketId, lead_id: leadId }), {
+    // Empfänger: zugewiesener Mitarbeiter (falls vorhanden) + Team-Inbox als CC
+    const recipients = new Set<string>([TEAM_INBOX]);
+    if (ticketRow?.assigned_to) {
+      const { data: assignee } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", ticketRow.assigned_to)
+        .maybeSingle();
+      if (assignee?.email) recipients.add(assignee.email);
+    }
+
+    await Promise.all([
+      notifyTeams(notifyHtml, `Antwort ${ticketRef} – ${fromEmail || ""}`),
+      ...Array.from(recipients).map((to) =>
+        notifyEmail(to, `[Support ${ticketRef}] Neue Antwort von ${fromEmail || "Kunde"}`, notifyHtml),
+      ),
+    ]);
+
+    console.log("inbound-email: processed + notified", { ticketId, recipients: [...recipients] });
+
+    return new Response(JSON.stringify({ ok: true, ticket_id: ticketId, lead_id: leadId, notified: [...recipients] }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
