@@ -9,6 +9,7 @@ import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock, Mail, MessageC
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getNextLiveCalls, formatLiveCall } from "@/config/liveCalls";
+import { buildWhatsAppLink } from "@/config/whatsapp";
 
 // Plausibilitäts- & Format-Check für internationale Telefonnummern (E.164-orientiert).
 // Erlaubt führendes "+", Ziffern, sowie typische Trennzeichen (Leerzeichen, "-", "/", "(", ")").
@@ -145,9 +146,9 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                   className="w-full bg-green-600 hover:bg-green-700 text-white"
                 >
                   <a
-                    href={`https://wa.me/4915123456789?text=${encodeURIComponent(
+                    href={buildWhatsAppLink(
                       `Newsletter-Bestätigung für ${form.email} – bitte aktivieren.`,
-                    )}`}
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
