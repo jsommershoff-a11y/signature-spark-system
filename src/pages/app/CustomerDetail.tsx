@@ -17,6 +17,51 @@ import { de } from 'date-fns/locale';
 import { resolveNextStep } from '@/lib/next-step';
 import { NextStepCell } from '@/components/crm/NextStepCell';
 import { QuickAddTaskDialog } from '@/components/crm/QuickAddTaskDialog';
+import { isRouteAvailable } from '@/lib/route-availability';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+/**
+ * Rendert einen Button mit Link nur, wenn die Zielroute existiert.
+ * Andernfalls: Button wird deaktiviert mit Tooltip-Hinweis.
+ * `hideIfMissing` versteckt den Button stattdessen komplett.
+ */
+function RouteAwareLinkButton({
+  to,
+  children,
+  hideIfMissing = false,
+  size = 'sm',
+  variant = 'outline',
+}: {
+  to: string;
+  children: React.ReactNode;
+  hideIfMissing?: boolean;
+  size?: 'sm' | 'default' | 'lg' | 'icon';
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive' | 'link';
+}) {
+  const available = isRouteAvailable(to);
+  if (!available && hideIfMissing) return null;
+  if (!available) {
+    return (
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-block">
+              <Button size={size} variant={variant} disabled aria-disabled="true">
+                {children}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>Diese Seite ist aktuell nicht verfügbar</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+  return (
+    <Button asChild size={size} variant={variant}>
+      <Link to={to}>{children}</Link>
+    </Button>
+  );
+}
 
 type Detail = {
   id: string;
@@ -353,42 +398,36 @@ export default function CustomerDetail() {
 
           {/* === Cockpit: Quick-Links === */}
           {/*
-            TODO: Sobald /app/inbox, /app/offers, /app/tasks, /app/pipeline
-            den Query-Parameter ?customer=<id> bzw. ?lead=<id> auswerten,
-            filtert dieser Bereich automatisch — die Links sind bereits vorbereitet.
+            Routen werden via isRouteAvailable() geprüft. Fehlt eine Ziel-Route
+            im Router, wird der Button automatisch deaktiviert (mit Tooltip)
+            bzw. versteckt (hideIfMissing).
           */}
           <Card>
             <CardContent className="py-4">
               <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/inbox?customer=${data.id}`}>
-                    <Inbox className="h-3.5 w-3.5 mr-1.5" />Kommunikation öffnen
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/offers?customer=${data.id}`}>
-                    <FileText className="h-3.5 w-3.5 mr-1.5" />Angebote anzeigen
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="default">
-                  <Link to={`/app/offers?customer=${data.id}&action=create`}>
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/tasks?customer=${data.id}`}>
-                    <CheckSquare className="h-3.5 w-3.5 mr-1.5" />Aufgaben anzeigen
-                  </Link>
-                </Button>
+                <RouteAwareLinkButton to={`/app/inbox?customer=${data.id}`} variant="outline">
+                  <Inbox className="h-3.5 w-3.5 mr-1.5" />Kommunikation öffnen
+                </RouteAwareLinkButton>
+                <RouteAwareLinkButton to={`/app/offers?customer=${data.id}`} variant="outline">
+                  <FileText className="h-3.5 w-3.5 mr-1.5" />Angebote anzeigen
+                </RouteAwareLinkButton>
+                <RouteAwareLinkButton to={`/app/offers?customer=${data.id}&action=create`} variant="default">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen
+                </RouteAwareLinkButton>
+                <RouteAwareLinkButton to={`/app/tasks?customer=${data.id}`} variant="outline">
+                  <CheckSquare className="h-3.5 w-3.5 mr-1.5" />Aufgaben anzeigen
+                </RouteAwareLinkButton>
                 <Button size="sm" variant="default" onClick={() => setQuickAddOpen(true)}>
                   <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe erstellen
                 </Button>
                 {data.source === 'crm_lead' && (
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`/app/pipeline?lead=${data.id}`}>
-                      <TrendingUp className="h-3.5 w-3.5 mr-1.5" />In Pipeline öffnen
-                    </Link>
-                  </Button>
+                  <RouteAwareLinkButton
+                    to={`/app/pipeline?lead=${data.id}`}
+                    variant="outline"
+                    hideIfMissing
+                  >
+                    <TrendingUp className="h-3.5 w-3.5 mr-1.5" />In Pipeline öffnen
+                  </RouteAwareLinkButton>
                 )}
               </div>
             </CardContent>
@@ -409,9 +448,9 @@ export default function CustomerDetail() {
                 </div>
               )}
               <div className="mt-4 pt-3 border-t flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/inbox?customer=${data.id}`}><Mail className="h-3.5 w-3.5 mr-1.5" />Inbox öffnen</Link>
-                </Button>
+                <RouteAwareLinkButton to={`/app/inbox?customer=${data.id}`} variant="outline">
+                  <Mail className="h-3.5 w-3.5 mr-1.5" />Inbox öffnen
+                </RouteAwareLinkButton>
               </div>
             </SectionCard>
 
@@ -445,9 +484,9 @@ export default function CustomerDetail() {
               icon={<FileText className="h-4 w-4" />}
               title="Angebote"
               action={
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/offers?customer=${data.id}&action=create`}><Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen</Link>
-                </Button>
+                <RouteAwareLinkButton to={`/app/offers?customer=${data.id}&action=create`} variant="outline">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen
+                </RouteAwareLinkButton>
               }
             >
               {offers.length === 0 ? (
