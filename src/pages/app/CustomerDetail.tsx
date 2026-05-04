@@ -184,7 +184,20 @@ export default function CustomerDetail() {
           queries.push(Promise.resolve({ data: [] }));
         }
 
-        const [extrasRes, actRes, taskRes, callRes, offerRes] = await Promise.all(queries);
+        // Pipeline-Item (nur lead_id) — liefert echten pipeline_stage
+        if (row.source === 'crm_lead') {
+          queries.push(
+            supabase
+              .from('pipeline_items')
+              .select('stage')
+              .eq('lead_id', row.id)
+              .maybeSingle(),
+          );
+        } else {
+          queries.push(Promise.resolve({ data: null }));
+        }
+
+        const [extrasRes, actRes, taskRes, callRes, offerRes, pipelineRes] = await Promise.all(queries);
         if (cancelled) return;
 
         setExtras((extrasRes?.data as CrmExtras) ?? null);
@@ -192,6 +205,7 @@ export default function CustomerDetail() {
         setTasks((taskRes?.data as TaskRow[]) ?? []);
         setCalls((callRes?.data as CallRow[]) ?? []);
         setOffers((offerRes?.data as OfferRow[]) ?? []);
+        setPipelineStage(((pipelineRes?.data as any)?.stage as string) ?? null);
       } catch (e: any) {
         toast.error(e?.message ?? 'Datensatz konnte nicht geladen werden.');
       } finally {
