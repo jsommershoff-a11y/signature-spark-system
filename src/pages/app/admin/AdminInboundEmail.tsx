@@ -14,6 +14,19 @@ import {
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
+type Route = {
+  id: string;
+  label: string;
+  local_part: string;
+  reply_domain: string;
+  default_priority: "low" | "normal" | "high";
+  is_default: boolean;
+  enabled: boolean;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type Status = {
   webhook: { url: string; secret_configured: boolean };
   reply: {
@@ -21,6 +34,7 @@ type Status = {
     domain_configured: boolean;
     sample_address: string;
   };
+  routes: Route[];
   notifications: {
     resend_configured: boolean;
     teams_configured: boolean;
