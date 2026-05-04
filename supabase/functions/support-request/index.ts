@@ -80,6 +80,48 @@ Deno.serve(async (req) => {
     const ticketId = ticket?.id ?? null;
     const ticketRef = ticketId ? `#${String(ticketId).slice(0, 8).toUpperCase()}` : "(kein Ticket)";
 
+    // 1b) Microsoft Teams Notification (best-effort)
+    try {
+      const TEAMS_KEY = Deno.env.get("MICROSOFT_TEAMS_API_KEY");
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      const TEAM_ID = "65e33c2b-34bf-491b-81cb-b0cde7af3067"; // KI Team
+      const CHANNEL_ID = "19:kaNJGMj0D8Qd7c1s55jxdCITlymSTqHCOS690RMhQG81@thread.tacv2"; // KI Power Team
+      if (TEAMS_KEY && LOVABLE_API_KEY) {
+        const priorityBadge = d.mailStatus === "failed" ? "🔴 HIGH" : "🟢 NORMAL";
+        const teamsHtml = `
+          <p><b>🎫 Neues Support-Ticket ${escapeHtml(ticketRef)}</b> &nbsp; ${priorityBadge}</p>
+          <ul>
+            <li><b>Von:</b> ${escapeHtml(d.name || "-")} &lt;${escapeHtml(d.email)}&gt;</li>
+            <li><b>WhatsApp:</b> ${escapeHtml(d.whatsapp || "-")}</li>
+            <li><b>Mail-Status:</b> ${escapeHtml(d.mailStatus)} (${escapeHtml(d.reasonLabel || "-")})</li>
+            <li><b>Quelle:</b> ${escapeHtml(d.pageUrl || "-")}</li>
+          </ul>
+          <p><b>Nachricht:</b><br/>${escapeHtml(d.message).replace(/\n/g, "<br/>")}</p>
+          <p style="color:#666;font-size:11px">Ticket-ID: ${escapeHtml(ticketId ?? "-")}</p>
+        `;
+        const tRes = await fetch(
+          `https://connector-gateway.lovable.dev/microsoft_teams/teams/${TEAM_ID}/channels/${encodeURIComponent(CHANNEL_ID)}/messages`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "X-Connection-Api-Key": TEAMS_KEY,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              body: { contentType: "html", content: teamsHtml },
+              subject: `Support ${ticketRef} – ${d.email}`,
+            }),
+          },
+        );
+        if (!tRes.ok) {
+          console.error("Teams notify failed:", tRes.status, await tRes.text());
+        }
+      }
+    } catch (teamsErr) {
+      console.error("Teams notify error:", teamsErr);
+    }
+
     // 2) Mail an Team via Resend
     const subject = `[Support ${ticketRef}] ${d.email} – ${d.mailStatus}`;
     const html = `
