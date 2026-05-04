@@ -68,6 +68,10 @@ export default function AdminSettings() {
           <Card><CardContent className="p-4 md:p-6"><AdminSystemLogs /></CardContent></Card>
         </TabsContent>
 
+        <TabsContent value="crm-policy" className="mt-6">
+          <AdminCrmDialogPolicyCard />
+        </TabsContent>
+
         <TabsContent value="webhooks" className="mt-6">
           <AdminWebhooks />
         </TabsContent>
