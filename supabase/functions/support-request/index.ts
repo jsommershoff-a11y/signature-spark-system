@@ -123,6 +123,52 @@ Deno.serve(async (req) => {
       throw new Error(`Resend ${r.status}: ${txt}`);
     }
 
+    // 3) Bestätigungs-Mail an den Absender (best-effort, blockiert nicht)
+    const confirmHtml = `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
+        <h2 style="color:#0F3E2E;margin:0 0 12px">Wir haben deine Anfrage erhalten ✅</h2>
+        <p style="margin:0 0 12px">Hallo ${escapeHtml(d.name || "")},</p>
+        <p style="margin:0 0 16px">vielen Dank für deine Nachricht. Dein Support-Ticket
+          <strong style="color:#f97316">${escapeHtml(ticketRef)}</strong>
+          wurde angelegt. Unser Team meldet sich innerhalb von 24 Stunden an Werktagen bei dir
+          unter <strong>${escapeHtml(d.email)}</strong>.</p>
+        <div style="background:#FFF3EB;border-left:4px solid #f97316;padding:12px 16px;border-radius:6px;margin:16px 0">
+          <p style="margin:0 0 6px;font-weight:600">Deine Nachricht:</p>
+          <p style="margin:0;white-space:pre-wrap;color:#374151;font-size:14px">${escapeHtml(d.message)}</p>
+        </div>
+        <p style="margin:16px 0 0;font-size:13px;color:#6b7280">
+          Du kannst auf diese Mail einfach antworten – deine Antwort landet direkt im Ticket.
+        </p>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+        <p style="font-size:12px;color:#9ca3af;margin:0">
+          KRS Signature · info@krs-signature.de · Ticket ${escapeHtml(ticketRef)}
+        </p>
+      </div>
+    `;
+
+    try {
+      const c = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "KRS Support <info@krs-signature.de>",
+          to: [d.email],
+          reply_to: "info@krs-signature.de",
+          subject: `Wir haben deine Anfrage erhalten – Ticket ${ticketRef}`,
+          html: confirmHtml,
+        }),
+      });
+      if (!c.ok) {
+        const txt = await c.text();
+        console.error("Confirmation mail failed:", c.status, txt);
+      }
+    } catch (confirmErr) {
+      console.error("Confirmation mail error:", confirmErr);
+    }
+
     return new Response(
       JSON.stringify({ ok: true, ticketId, ticketRef }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
