@@ -16,7 +16,7 @@ import {
   type TicketStatus,
   type TicketPriority,
 } from '@/hooks/useTickets';
-import { Plus, Mail, Inbox, Phone as PhoneIcon, Hand } from 'lucide-react';
+import { Plus, Mail, Inbox, Phone as PhoneIcon, Hand, CheckCircle2, PlayCircle, PauseCircle, Filter } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 
