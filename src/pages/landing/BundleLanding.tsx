@@ -51,6 +51,8 @@ interface BundleLandingTemplateProps {
  */
 const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
   const navigate = useNavigate();
+  const [newsletterOpen, setNewsletterOpen] = useState(false);
+  const upcomingCalls = getNextLiveCalls(2);
   const heroRef = useSectionViewTracking<HTMLElement>("hero", bundle.slug);
   const midRef = useSectionViewTracking<HTMLElement>("mid_page", bundle.slug);
   const finalRef = useSectionViewTracking<HTMLElement>("final", bundle.slug);
