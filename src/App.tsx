@@ -123,6 +123,7 @@ const App = () => (
             <Route path="/widerruf" element={<Widerruf />} />
             <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/newsletter" element={<Newsletter />} />
             <Route path="/automatisierungen" element={<Automatisierungen />} />
             <Route path="/automatisierungen/:slug" element={<AutomatisierungDetail />} />
             <Route path="/eigener-bot" element={<EigenerBot />} />
