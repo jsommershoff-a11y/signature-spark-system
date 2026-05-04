@@ -65,6 +65,7 @@ type Props = {
 export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_modal" }: Props) => {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [mailStatus, setMailStatus] = useState<"sent" | "queued" | "already" | "failed">("queued");
   const [form, setForm] = useState({ email: "", name: "", whatsapp: "", consent: false });
   const upcomingCalls = getNextLiveCalls(2);
 
@@ -90,8 +91,21 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
         body: { ...parsed.data, source },
       });
       if (error || (data as any)?.error) throw new Error((data as any)?.error ?? error?.message);
+      const d = (data as any) ?? {};
+      const status: "sent" | "queued" | "already" | "failed" = d.already_confirmed
+        ? "already"
+        : d.mail_sent === true
+          ? "sent"
+          : d.mail_sent === false
+            ? "failed"
+            : "queued";
+      setMailStatus(status);
       setDone(true);
-      toast.success("Fast geschafft – bitte E-Mail bestätigen!");
+      toast.success(
+        status === "already"
+          ? "Du bist bereits eingetragen."
+          : "Fast geschafft – bitte E-Mail bestätigen!",
+      );
     } catch (err: any) {
       toast.error(err?.message ?? "Eintragung fehlgeschlagen.");
     } finally {
