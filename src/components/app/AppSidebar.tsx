@@ -30,6 +30,7 @@ import {
   Rocket,
   Package,
   Bot,
+  Activity,
 } from 'lucide-react';
 
 interface NavItem {
@@ -73,6 +74,7 @@ const navGroups: NavGroup[] = [
     label: 'Vertrieb',
     items: [
       { label: 'CRM', href: '/app/crm', icon: Building2, staffOnly: true },
+      { label: 'CRM Dashboard', href: '/app/crm-dashboard', icon: Activity, staffOnly: true },
       { label: 'Leads', href: '/app/leads', icon: UserPlus, staffOnly: true },
       { label: 'Pipeline', href: '/app/pipeline', icon: Kanban, staffOnly: true },
       { label: 'Deals', href: '/app/deals', icon: Kanban, staffOnly: true },

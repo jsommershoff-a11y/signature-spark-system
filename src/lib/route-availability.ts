@@ -19,6 +19,7 @@ const REGISTERED_APP_ROUTES: ReadonlySet<string> = new Set([
   '/app/pipeline',
   '/app/deals',
   '/app/crm',
+  '/app/crm-dashboard',
   '/app/customers',
   '/app/calls',
   '/app/goals',
