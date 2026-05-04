@@ -27,6 +27,7 @@ import AGB from "./pages/landing/AGB";
 import Widerruf from "./pages/landing/Widerruf";
 import Datenschutz from "./pages/landing/Datenschutz";
 import Community from "./pages/landing/Community";
+import Newsletter from "./pages/landing/Newsletter";
 import Automatisierungen from "./pages/landing/Automatisierungen";
 import AutomatisierungDetail from "./pages/landing/AutomatisierungDetail";
 import EigenerBot from "./pages/landing/EigenerBot";
