@@ -95,5 +95,7 @@ export const Footer = () => {
         </div>
       </div>
     </footer>
+    <NewsletterSignupModal open={open} onOpenChange={setOpen} source="footer" />
+    </>
   );
 };
