@@ -260,6 +260,39 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
               </div>
             )}
 
+            {/* FAQ */}
+            <Accordion type="single" collapsible className="rounded-lg border bg-muted/30 px-3">
+              <AccordionItem value="why" className="border-b last:border-b-0">
+                <AccordionTrigger className="text-xs font-semibold py-2.5 hover:no-underline">
+                  Warum muss ich überhaupt bestätigen?
+                </AccordionTrigger>
+                <AccordionContent className="text-xs text-muted-foreground pb-3">
+                  Aus rechtlichen Gründen (Double-Opt-In nach DSGVO) müssen wir prüfen, dass die Adresse wirklich dir gehört. Erst nach deiner Bestätigung schalten wir den 30-Tage-Zugang frei und versenden Live-Call-Reminder.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="no-mail" className="border-b last:border-b-0">
+                <AccordionTrigger className="text-xs font-semibold py-2.5 hover:no-underline">
+                  Keine Bestätigungs-Mail erhalten?
+                </AccordionTrigger>
+                <AccordionContent className="text-xs text-muted-foreground pb-3 space-y-1.5">
+                  <p>1. Prüfe deinen <strong>Spam- bzw. Werbung-Ordner</strong> (oft landet die erste Mail dort).</p>
+                  <p>2. Warte 1–2 Minuten – die Zustellung kann je nach Provider kurz dauern.</p>
+                  <p>3. Klick auf <strong>„Bestätigungs-Mail erneut senden"</strong> oben.</p>
+                  <p>4. Falls auch das nicht klappt: Schreib uns kurz an <a href="mailto:info@krs-signature.de" className="underline text-primary">info@krs-signature.de</a>.</p>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="no-wa" className="border-b-0">
+                <AccordionTrigger className="text-xs font-semibold py-2.5 hover:no-underline">
+                  WhatsApp-Bestätigung funktioniert nicht?
+                </AccordionTrigger>
+                <AccordionContent className="text-xs text-muted-foreground pb-3 space-y-1.5">
+                  <p>• Stelle sicher, dass WhatsApp auf deinem Gerät installiert ist.</p>
+                  <p>• Wenn der Button keinen Chat öffnet, speichere unsere Nummer manuell: <strong>+49 175 1127114</strong> und sende uns die vorbereitete Bestätigungsnachricht.</p>
+                  <p>• Die WhatsApp-Bestätigung ist optional – die E-Mail-Bestätigung reicht für deinen Zugang aus.</p>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
             <Button onClick={() => onOpenChange(false)} variant="outline" className="w-full">
               Verstanden
             </Button>
