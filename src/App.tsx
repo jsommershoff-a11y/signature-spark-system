@@ -63,6 +63,7 @@ import AdminUpgradeFunnel from "./pages/app/admin/AdminUpgradeFunnel";
 import AdminAuditLog from "./pages/app/admin/AdminAuditLog";
 import AdminPushLog from "./pages/app/admin/AdminPushLog";
 import AdminInboundEmail from "./pages/app/admin/AdminInboundEmail";
+import AdminSupportTickets from "./pages/app/admin/AdminSupportTickets";
 import AdminWebhooks from "./pages/app/AdminWebhooks";
 import Unauthorized from "./pages/app/Unauthorized";
 import Calls from "./pages/app/Calls";
