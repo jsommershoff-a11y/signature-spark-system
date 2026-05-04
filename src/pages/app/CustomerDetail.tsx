@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { resolveNextStep } from '@/lib/next-step';
 import { NextStepCell } from '@/components/crm/NextStepCell';
+import { QuickAddTaskDialog } from '@/components/crm/QuickAddTaskDialog';
 
 type Detail = {
   id: string;
