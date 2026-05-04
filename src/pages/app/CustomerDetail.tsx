@@ -105,6 +105,8 @@ export default function CustomerDetail() {
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [pipelineItemStage, setPipelineItemStage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
