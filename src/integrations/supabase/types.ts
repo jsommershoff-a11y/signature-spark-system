@@ -2936,6 +2936,10 @@ export type Database = {
       }
       newsletter_signups: {
         Row: {
+          confirm_token: string | null
+          confirmation_ip: string | null
+          confirmation_sent_at: string | null
+          confirmed_at: string | null
           consent_marketing: boolean
           created_at: string
           email: string
@@ -2945,6 +2949,7 @@ export type Database = {
           name: string | null
           source: string | null
           status: string
+          token_expires_at: string | null
           trial_ends_at: string | null
           trial_started_at: string | null
           updated_at: string
@@ -2953,6 +2958,10 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          confirm_token?: string | null
+          confirmation_ip?: string | null
+          confirmation_sent_at?: string | null
+          confirmed_at?: string | null
           consent_marketing?: boolean
           created_at?: string
           email: string
@@ -2962,6 +2971,7 @@ export type Database = {
           name?: string | null
           source?: string | null
           status?: string
+          token_expires_at?: string | null
           trial_ends_at?: string | null
           trial_started_at?: string | null
           updated_at?: string
@@ -2970,6 +2980,10 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          confirm_token?: string | null
+          confirmation_ip?: string | null
+          confirmation_sent_at?: string | null
+          confirmed_at?: string | null
           consent_marketing?: boolean
           created_at?: string
           email?: string
@@ -2979,6 +2993,7 @@ export type Database = {
           name?: string | null
           source?: string | null
           status?: string
+          token_expires_at?: string | null
           trial_ends_at?: string | null
           trial_started_at?: string | null
           updated_at?: string
