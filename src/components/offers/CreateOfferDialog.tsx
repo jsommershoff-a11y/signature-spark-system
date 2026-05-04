@@ -98,6 +98,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
   // Notes
   const [notes, setNotes] = useState('');
 
+  // ROI / Kosten-Nutzen
+  const [roiData, setRoiData] = useState<RoiData>({});
+
   // Validation
   const [priceError, setPriceError] = useState('');
 
