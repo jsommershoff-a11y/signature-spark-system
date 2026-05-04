@@ -445,7 +445,7 @@ export default function CustomerDetail() {
               title="Angebote"
               action={
                 <Button asChild size="sm" variant="outline">
-                  <Link to="/app/offers"><Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen</Link>
+                  <Link to={`/app/offers?customer=${data.id}&action=create`}><Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen</Link>
                 </Button>
               }
             >
