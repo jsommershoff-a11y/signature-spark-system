@@ -7,6 +7,7 @@ import { StageTransitionDialog } from '@/components/crm/StageTransitionDialog';
 import { PipelineStage, CrmLead } from '@/types/crm';
 import { isStageDialogSuppressed, isSkipDialogSuppressed } from '@/lib/crm/stage-dialog-prefs';
 import { trackEvent } from '@/lib/analytics';
+import { useMandatorySkipStages } from '@/hooks/useAppSettings';
 
 export default function Pipeline() {
   const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
