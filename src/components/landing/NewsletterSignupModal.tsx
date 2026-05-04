@@ -358,7 +358,13 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
             )}
 
             {/* FAQ */}
-            <Accordion type="single" collapsible className="rounded-lg border bg-muted/30 px-3">
+            <Accordion
+              type="single"
+              collapsible
+              value={faqOpen}
+              onValueChange={(v) => setFaqOpen(v || undefined)}
+              className="rounded-lg border bg-muted/30 px-3"
+            >
               <AccordionItem value="why" className="border-b last:border-b-0">
                 <AccordionTrigger className="text-xs font-semibold py-2.5 hover:no-underline">
                   Warum muss ich überhaupt bestätigen?
