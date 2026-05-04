@@ -119,7 +119,7 @@ export default function CustomerDetail() {
         if (!row) return;
 
         // Parallel fetch of related data — alle best-effort, Fehler werden geloggt.
-        const queries: Promise<any>[] = [];
+        const queries: any[] = [];
 
         // CRM extras (nur wenn crm_lead)
         if (row.source === 'crm_lead') {
