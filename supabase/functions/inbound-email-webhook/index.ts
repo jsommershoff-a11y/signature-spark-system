@@ -21,6 +21,56 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const INBOUND_SECRET = Deno.env.get("INBOUND_EMAIL_SECRET");
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const TEAMS_KEY = Deno.env.get("MICROSOFT_TEAMS_API_KEY");
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+// Microsoft Teams Ziel (KI Power Team — wie in support-request)
+const TEAMS_TEAM_ID = "65e33c2b-34bf-491b-81cb-b0cde7af3067";
+const TEAMS_CHANNEL_ID = "19:kaNJGMj0D8Qd7c1s55jxdCITlymSTqHCOS690RMhQG81@thread.tacv2";
+const TEAM_INBOX = "info@krs-signature.de";
+
+const escapeHtml = (s: string) =>
+  (s || "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
+
+async function notifyTeams(html: string, subject: string) {
+  if (!TEAMS_KEY || !LOVABLE_API_KEY) return;
+  try {
+    const r = await fetch(
+      `https://connector-gateway.lovable.dev/microsoft_teams/teams/${TEAMS_TEAM_ID}/channels/${encodeURIComponent(TEAMS_CHANNEL_ID)}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "X-Connection-Api-Key": TEAMS_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ body: { contentType: "html", content: html }, subject }),
+      },
+    );
+    if (!r.ok) console.error("inbound-email: teams notify failed", r.status, await r.text());
+  } catch (e) { console.error("inbound-email: teams notify error", e); }
+}
+
+async function notifyEmail(to: string, subject: string, html: string) {
+  if (!RESEND_API_KEY) return;
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "Support <info@krs-signature.de>",
+        to: [to],
+        subject,
+        html,
+      }),
+    });
+    if (!r.ok) console.error("inbound-email: resend notify failed", r.status, await r.text());
+  } catch (e) { console.error("inbound-email: resend notify error", e); }
+}
+
 
 const SHORT_ID_RE = /\b([0-9a-f]{8})\b/i;
 const SUBJECT_TICKET_RE = /#([0-9a-f]{8})/i;
