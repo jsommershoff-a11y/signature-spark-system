@@ -269,6 +269,14 @@ export function LeadTable({
                   )}
                 </TableCell>
                 <TableCell>
+                  <NextStepCell
+                    info={resolveNextStep({
+                      stage: lead.pipeline_item?.stage,
+                      ownerName: lead.owner?.full_name || lead.owner?.first_name || null,
+                    })}
+                  />
+                </TableCell>
+                <TableCell>
                   <Badge className={getStatusColor(lead.status)}>
                     {LEAD_STATUS_LABELS[lead.status]}
                   </Badge>
