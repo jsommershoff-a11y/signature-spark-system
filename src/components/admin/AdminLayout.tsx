@@ -9,6 +9,7 @@ import {
   Settings as SettingsIcon,
   TrendingUp,
   ScrollText,
+  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const adminNav = [
   { label: "Trials", href: "/app/admin/trials", icon: Clock },
   { label: "Upgrade-Funnel", href: "/app/admin/upgrade-funnel", icon: TrendingUp },
   { label: "Audit-Log", href: "/app/admin/audit-log", icon: ScrollText },
+  { label: "Inbound E-Mail", href: "/app/admin/inbound-email", icon: Inbox },
   { label: "Einstellungen", href: "/app/admin/settings", icon: SettingsIcon },
 ];
 
