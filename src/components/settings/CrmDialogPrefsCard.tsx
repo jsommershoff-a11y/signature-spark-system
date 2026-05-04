@@ -127,20 +127,27 @@ export default function CrmDialogPrefsCard() {
             <p className="text-xs text-muted-foreground">Keine Übergangs-Dialoge stillgestellt.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {stageSuppressed.map((stage) => (
-                <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1">
-                  {PIPELINE_STAGE_LABELS[stage]}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5"
-                    onClick={() => handleClearStage(stage)}
-                    aria-label={`Übergangs-Dialog für ${PIPELINE_STAGE_LABELS[stage]} reaktivieren`}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              ))}
+              {stageSuppressed.map((stage) => {
+                const expiry = getStageDialogExpiry(stage);
+                const days = expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86_400_000)) : null;
+                return (
+                  <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1" title={expiry ? `Verfällt automatisch in ${days} Tag${days === 1 ? '' : 'en'}` : undefined}>
+                    {PIPELINE_STAGE_LABELS[stage]}
+                    {days !== null && (
+                      <span className="text-[10px] text-muted-foreground">{days}d</span>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5"
+                      onClick={() => handleClearStage(stage)}
+                      aria-label={`Übergangs-Dialog für ${PIPELINE_STAGE_LABELS[stage]} reaktivieren`}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                );
+              })}
             </div>
           )}
         </div>
