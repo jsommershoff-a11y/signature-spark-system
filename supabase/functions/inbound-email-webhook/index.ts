@@ -35,23 +35,39 @@ const escapeHtml = (s: string) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
   );
 
-async function notifyTeams(html: string, subject: string) {
-  if (!TEAMS_KEY || !LOVABLE_API_KEY) return;
+async function notifyTeams(
+  html: string,
+  subject: string,
+  parentMessageId?: string | null,
+): Promise<string | null> {
+  if (!TEAMS_KEY || !LOVABLE_API_KEY) return null;
   try {
-    const r = await fetch(
-      `https://connector-gateway.lovable.dev/microsoft_teams/teams/${TEAMS_TEAM_ID}/channels/${encodeURIComponent(TEAMS_CHANNEL_ID)}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "X-Connection-Api-Key": TEAMS_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ body: { contentType: "html", content: html }, subject }),
+    // Wenn Parent-ID vorhanden → als Reply im Ticket-Thread posten,
+    // sonst als neue Top-Level-Nachricht im Channel.
+    const url = parentMessageId
+      ? `https://connector-gateway.lovable.dev/microsoft_teams/teams/${TEAMS_TEAM_ID}/channels/${encodeURIComponent(TEAMS_CHANNEL_ID)}/messages/${encodeURIComponent(parentMessageId)}/replies`
+      : `https://connector-gateway.lovable.dev/microsoft_teams/teams/${TEAMS_TEAM_ID}/channels/${encodeURIComponent(TEAMS_CHANNEL_ID)}/messages`;
+    const payload: Record<string, unknown> = { body: { contentType: "html", content: html } };
+    // Subject ist nur bei Top-Level-Nachrichten erlaubt (Replies dürfen kein subject haben).
+    if (!parentMessageId) payload.subject = subject;
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "X-Connection-Api-Key": TEAMS_KEY,
+        "Content-Type": "application/json",
       },
-    );
-    if (!r.ok) console.error("inbound-email: teams notify failed", r.status, await r.text());
-  } catch (e) { console.error("inbound-email: teams notify error", e); }
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      console.error("inbound-email: teams notify failed", r.status, await r.text());
+      return null;
+    }
+    try {
+      const j = await r.json();
+      return j?.id ? String(j.id) : null;
+    } catch { return null; }
+  } catch (e) { console.error("inbound-email: teams notify error", e); return null; }
 }
 
 async function notifyEmail(to: string, subject: string, html: string) {
