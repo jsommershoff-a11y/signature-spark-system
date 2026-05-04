@@ -62,8 +62,8 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
             <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto" />
             <DialogTitle>Du bist drin! 🎉</DialogTitle>
             <p className="text-sm text-muted-foreground">
-              Wir haben dir 1 Monat kostenlosen Mitgliederbereich-Zugang freigeschaltet.
-              Die Zugangsdaten und Live-Call-Termine bekommst du gleich per E-Mail & WhatsApp.
+              30 Tage Mitgliederbereich-Zugang sind freigeschaltet. <strong>Check deine E-Mails</strong> – wir
+              haben dir gerade einen 1-Klick-Login-Link geschickt.
             </p>
             <Button onClick={() => onOpenChange(false)} className="w-full">Schließen</Button>
           </div>
