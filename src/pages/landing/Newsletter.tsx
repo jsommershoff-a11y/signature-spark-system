@@ -87,7 +87,7 @@ const Newsletter = () => {
             </p>
           </div>
         </section>
-      </main>
+      </div>
 
       <NewsletterSignupModal open={open} onOpenChange={setOpen} source="newsletter_page" />
     </PublicLayout>
