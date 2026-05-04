@@ -26,15 +26,16 @@ export interface SupportTicket {
   updated_at: string;
 }
 
-export function useTickets(statusFilter?: TicketStatus | 'all') {
+export function useTickets(statusFilter?: TicketStatus | 'all', priorityFilter?: TicketPriority | 'all') {
   return useQuery({
-    queryKey: ['support-tickets', statusFilter ?? 'all'],
+    queryKey: ['support-tickets', statusFilter ?? 'all', priorityFilter ?? 'all'],
     queryFn: async () => {
       let q = supabase
         .from('support_tickets')
         .select('*')
         .order('created_at', { ascending: false });
       if (statusFilter && statusFilter !== 'all') q = q.eq('status', statusFilter);
+      if (priorityFilter && priorityFilter !== 'all') q = q.eq('priority', priorityFilter);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as SupportTicket[];
