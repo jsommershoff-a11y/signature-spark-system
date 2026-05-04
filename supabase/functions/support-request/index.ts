@@ -216,12 +216,28 @@ Deno.serve(async (req) => {
     }
 
     // 3) Bestätigungs-Mail an den Absender (best-effort, blockiert nicht)
-    // Threading: ticket+<shortid>@<INBOUND_REPLY_DOMAIN> als Reply-To, damit
-    //            das Inbound-Webhook Antworten dem Ticket zuordnen kann.
-    const INBOUND_REPLY_DOMAIN = Deno.env.get("INBOUND_REPLY_DOMAIN"); // z.B. "reply.krs-signature.de"
+    // Threading: <local>+<shortid>@<domain> als Reply-To, damit das Inbound-Webhook
+    // Antworten dem Ticket zuordnen kann. Default-Route aus inbound_email_config
+    // ziehen, fallback auf ENV INBOUND_REPLY_DOMAIN + "ticket".
+    let routeLocal = "ticket";
+    let routeDomain = Deno.env.get("INBOUND_REPLY_DOMAIN") || "";
+    try {
+      const { data: defaultRoute } = await supabase
+        .from("inbound_email_config")
+        .select("local_part, reply_domain")
+        .eq("enabled", true)
+        .eq("is_default", true)
+        .maybeSingle();
+      if (defaultRoute?.local_part && defaultRoute?.reply_domain) {
+        routeLocal = defaultRoute.local_part;
+        routeDomain = defaultRoute.reply_domain;
+      }
+    } catch (routeErr) {
+      console.warn("support-request: route lookup failed", routeErr);
+    }
     const shortIdLower = ticketId ? String(ticketId).slice(0, 8).toLowerCase() : null;
-    const replyToAddr = INBOUND_REPLY_DOMAIN && shortIdLower
-      ? `ticket+${shortIdLower}@${INBOUND_REPLY_DOMAIN}`
+    const replyToAddr = routeDomain && shortIdLower
+      ? `${routeLocal}+${shortIdLower}@${routeDomain}`
       : "info@krs-signature.de";
     const confirmHtml = `
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
