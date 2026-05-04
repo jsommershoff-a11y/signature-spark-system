@@ -1,4 +1,5 @@
 import { z } from "npm:zod@3.23.8";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,6 +30,10 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY missing");
 
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
     const parsed = Schema.safeParse(await req.json());
     if (!parsed.success) {
       return new Response(
@@ -38,10 +43,49 @@ Deno.serve(async (req) => {
     }
     const d = parsed.data;
     const ts = new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" });
-    const subject = `[Newsletter-Support] ${d.email} – ${d.mailStatus}`;
+
+    // 1) Ticket in Supabase anlegen (Source of Truth)
+    const subjectShort = `Newsletter-Support – ${d.email} (${d.mailStatus})`;
+    const bodyForTicket = [
+      `E-Mail: ${d.email}`,
+      `Name: ${d.name || "(nicht angegeben)"}`,
+      `WhatsApp: ${d.whatsapp || "(nicht angegeben)"}`,
+      `Mail-Status: ${d.mailStatus}`,
+      `Opt-in: ${d.optInLabel || "—"}`,
+      `Grund: ${d.reasonLabel || "—"}`,
+      `Seite: ${d.pageUrl || "—"}`,
+      ``,
+      `--- Nachricht ---`,
+      d.message,
+    ].join("\n");
+
+    const { data: ticket, error: ticketErr } = await supabase
+      .from("support_tickets")
+      .insert({
+        subject: subjectShort,
+        body: bodyForTicket,
+        status: "open",
+        priority: d.mailStatus === "failed" ? "high" : "normal",
+        source: "manual",
+        sender_email: d.email,
+        sender_name: d.name || null,
+      })
+      .select("id")
+      .single();
+
+    if (ticketErr) {
+      console.error("support_tickets insert failed:", ticketErr);
+    }
+
+    const ticketId = ticket?.id ?? null;
+    const ticketRef = ticketId ? `#${String(ticketId).slice(0, 8).toUpperCase()}` : "(kein Ticket)";
+
+    // 2) Mail an Team via Resend
+    const subject = `[Support ${ticketRef}] ${d.email} – ${d.mailStatus}`;
     const html = `
       <h2>Neue Support-Anfrage (Newsletter-Bestätigung)</h2>
-      <p><strong>Zeitpunkt:</strong> ${escapeHtml(ts)}</p>
+      <p><strong>Ticket:</strong> ${escapeHtml(ticketRef)}<br/>
+         <strong>Zeitpunkt:</strong> ${escapeHtml(ts)}</p>
       <h3>Kontakt</h3>
       <ul>
         <li><strong>E-Mail:</strong> ${escapeHtml(d.email)}</li>
@@ -56,7 +100,7 @@ Deno.serve(async (req) => {
       </ul>
       <h3>Nachricht</h3>
       <p style="white-space:pre-wrap;border-left:3px solid #f97316;padding-left:12px">${escapeHtml(d.message)}</p>
-      <p style="color:#666;font-size:12px">Seite: ${escapeHtml(d.pageUrl)}</p>
+      <p style="color:#666;font-size:12px">Seite: ${escapeHtml(d.pageUrl)}<br/>Ticket-ID: ${escapeHtml(ticketId ?? "—")}</p>
     `;
 
     const r = await fetch("https://api.resend.com/emails", {
@@ -79,9 +123,10 @@ Deno.serve(async (req) => {
       throw new Error(`Resend ${r.status}: ${txt}`);
     }
 
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ ok: true, ticketId, ticketRef }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e) {
     console.error("support-request error:", e);
     return new Response(
