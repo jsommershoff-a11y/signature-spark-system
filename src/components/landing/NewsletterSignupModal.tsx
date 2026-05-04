@@ -104,6 +104,22 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                   </p>
                 </div>
               </div>
+
+              {upcomingCalls.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-primary/20">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1.5 flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> Nächste Live-Calls
+                  </div>
+                  <ul className="space-y-1">
+                    {upcomingCalls.map((c, i) => (
+                      <li key={i} className="flex items-baseline justify-between gap-2 text-xs">
+                        <span className="font-medium text-foreground">{formatLiveCall(c.date)}</span>
+                        <span className="text-muted-foreground truncate">{c.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <form onSubmit={submit} className="space-y-3">
