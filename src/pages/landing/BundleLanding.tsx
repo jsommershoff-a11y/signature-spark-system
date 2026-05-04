@@ -87,6 +87,27 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
   // Die übrigen Einwände werden über ObjectionFAQSection abgedeckt → keine Doppelung.
   const allFaq = [...bundle.faq.slice(0, 3), COMMON_FAQ[0]];
 
+  // SEO: FAQPage-Schema für Rich Results in Google
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: allFaq.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  };
+
+  // SEO: BreadcrumbList für Sitelinks
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Start", item: "https://ki-automationen.io/" },
+      { "@type": "ListItem", position: 2, name: bundle.badge, item: `https://ki-automationen.io${bundle.path}` },
+    ],
+  };
+
   return (
     <PublicLayout>
       <StickyCtaBanner />
@@ -94,7 +115,8 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
         title={bundle.seoTitle}
         description={bundle.seoDescription}
         canonical={bundle.path}
-        jsonLd={[productJsonLd]}
+        ogImage={`https://ki-automationen.io/og-${bundle.slug}.png`}
+        jsonLd={[productJsonLd, faqJsonLd, breadcrumbJsonLd]}
       />
 
       {/* 1. HERO */}
