@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import logoSignature from "@/assets/ki-automationen-logo.svg";
+import { NewsletterSignupModal } from "@/components/landing/NewsletterSignupModal";
+import { Mail, Sparkles } from "lucide-react";
 
 const branches = [
   { title: "Handwerk", path: "/handwerk" },
