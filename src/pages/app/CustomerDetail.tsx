@@ -485,8 +485,8 @@ export default function CustomerDetail() {
               icon={<CheckSquare className="h-4 w-4" />}
               title="Aufgaben"
               action={
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/tasks?customer=${data.id}&action=create`}><Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe</Link>
+                <Button size="sm" variant="outline" onClick={() => setQuickAddOpen(true)}>
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe
                 </Button>
               }
             >
