@@ -319,12 +319,13 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       terms_and_conditions: DEFAULT_AGB,
       withdrawal_policy: DEFAULT_WITHDRAWAL_POLICY,
       discovery_data: discoveryData || undefined,
+      roi_data: Object.keys(roiData).length ? roiData : undefined,
     };
   }, [
     selectedLead, offerMode, durationMonths, selectedModules, computedLineItems,
     totals, discountCents, discountReason, taxRate, paymentType, installments,
     paymentProvider, discoveryData, isVariable, expectedService, estimatedCompletion,
-    estimatedCostEuro, additionalCostNote,
+    estimatedCostEuro, additionalCostNote, roiData,
   ]);
 
   // ---- Submit ----
