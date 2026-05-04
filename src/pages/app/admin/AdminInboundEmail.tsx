@@ -282,6 +282,9 @@ export default function AdminInboundEmail() {
         </CardContent>
       </Card>
 
+      {/* Inbound-Routen */}
+      <InboundEmailRoutes routes={status.routes ?? []} onChange={load} />
+
       {/* Benachrichtigungen */}
       <Card>
         <CardHeader>
