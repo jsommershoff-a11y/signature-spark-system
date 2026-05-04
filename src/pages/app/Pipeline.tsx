@@ -20,6 +20,7 @@ export default function Pipeline() {
 
   const { pipelineByStage, loading, moveToStage } = usePipeline();
   const { updateLead } = useLeads();
+  const { stages: mandatorySkipStages } = useMandatorySkipStages();
 
   const handleItemClick = (item: PipelineItemWithLead) => {
     if (item.lead) {
