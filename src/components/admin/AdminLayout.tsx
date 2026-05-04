@@ -10,6 +10,7 @@ import {
   TrendingUp,
   ScrollText,
   Inbox,
+  LifeBuoy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ const adminNav = [
   { label: "Upgrade-Funnel", href: "/app/admin/upgrade-funnel", icon: TrendingUp },
   { label: "Audit-Log", href: "/app/admin/audit-log", icon: ScrollText },
   { label: "Inbound E-Mail", href: "/app/admin/inbound-email", icon: Inbox },
+  { label: "Support-Tickets", href: "/app/admin/support-tickets", icon: LifeBuoy },
   { label: "Einstellungen", href: "/app/admin/settings", icon: SettingsIcon },
 ];
 
