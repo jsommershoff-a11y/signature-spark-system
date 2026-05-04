@@ -409,7 +409,6 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                     </div>
                   )}
                 </div>
-                </div>
               );
             })()}
 
