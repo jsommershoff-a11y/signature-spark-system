@@ -20,6 +20,7 @@ import { ShieldAlert } from 'lucide-react';
 export default function CrmDialogPrefsCard() {
   const [stageSuppressed, setStageSuppressed] = useState<PipelineStage[]>([]);
   const [skipSuppressed, setSkipSuppressed] = useState<PipelineStage[]>([]);
+  const { stages: mandatoryStages } = useMandatorySkipStages();
 
   const refresh = useCallback(() => {
     setStageSuppressed(listSuppressedStageDialogs());
