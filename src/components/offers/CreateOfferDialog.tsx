@@ -22,6 +22,8 @@ import {
 import { PainPointDiscovery } from './PainPointDiscovery';
 import { ProgramThumbnail } from './ProgramThumbnail';
 import { OfferPreview } from './OfferPreview';
+import { RoiCalculatorForm } from './RoiCalculatorForm';
+import type { RoiData } from '@/lib/roi-calc';
 import {
   OFFER_MODULES, REQUIRED_MODULES, MODULE_DEPENDENCIES,
   validateOfferPrice, validateModuleSelection, checkModuleDependencies,
@@ -96,6 +98,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
   // Notes
   const [notes, setNotes] = useState('');
 
+  // ROI / Kosten-Nutzen
+  const [roiData, setRoiData] = useState<RoiData>({});
+
   // Validation
   const [priceError, setPriceError] = useState('');
 
@@ -104,9 +109,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
   // Dynamic steps based on mode
   const getSteps = () => {
     if (isVariable) {
-      return ['Programmauswahl', 'Leistung & Kosten', 'Zahlung', 'Zusammenfassung'] as const;
+      return ['Programmauswahl', 'Leistung & Kosten', 'Kosten-Nutzen', 'Zahlung', 'Zusammenfassung'] as const;
     }
-    return ['Bedarfsermittlung', 'Programmauswahl', 'Bausteine & Positionen', 'Zahlung', 'Zusammenfassung'] as const;
+    return ['Bedarfsermittlung', 'Programmauswahl', 'Bausteine & Positionen', 'Kosten-Nutzen', 'Zahlung', 'Zusammenfassung'] as const;
   };
 
   const STEPS = getSteps();
@@ -149,6 +154,7 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       setAdditionalCostNote(
         'Sollte sich während der Umsetzung herausstellen, dass der geschätzte Aufwand überschritten wird, werden Sie vorab informiert und eine Freigabe eingeholt. Ohne Ihre Zustimmung entstehen keine Mehrkosten über 15% der ursprünglichen Schätzung.'
       );
+      setRoiData({});
     }
   }, [open]);
 
@@ -212,8 +218,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       switch (step) {
         case 0: return !!selectedLeadId && !!offerMode;
         case 1: return !!expectedService && estimatedCostEuro > 0;
-        case 2: return true;
+        case 2: return true; // ROI optional
         case 3: return true;
+        case 4: return true;
         default: return true;
       }
     }
@@ -221,8 +228,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       case 0: return !!selectedLeadId;
       case 1: return !!offerMode;
       case 2: return lineItems.some(li => li.name && li.unit_price_euro > 0);
-      case 3: return true;
-      case 4: return !priceError;
+      case 3: return true; // ROI optional
+      case 4: return true;
+      case 5: return !priceError;
       default: return true;
     }
   };
@@ -274,6 +282,7 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
         terms_and_conditions: DEFAULT_AGB + VARIABLE_OFFER_AGB_ADDENDUM,
         withdrawal_policy: DEFAULT_WITHDRAWAL_POLICY,
         variable_offer_data: variableData,
+        roi_data: Object.keys(roiData).length ? roiData : undefined,
       };
     }
 
@@ -310,12 +319,13 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       terms_and_conditions: DEFAULT_AGB,
       withdrawal_policy: DEFAULT_WITHDRAWAL_POLICY,
       discovery_data: discoveryData || undefined,
+      roi_data: Object.keys(roiData).length ? roiData : undefined,
     };
   }, [
     selectedLead, offerMode, durationMonths, selectedModules, computedLineItems,
     totals, discountCents, discountReason, taxRate, paymentType, installments,
     paymentProvider, discoveryData, isVariable, expectedService, estimatedCompletion,
-    estimatedCostEuro, additionalCostNote,
+    estimatedCostEuro, additionalCostNote, roiData,
   ]);
 
   // ---- Submit ----
@@ -714,6 +724,24 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
   };
 
   // =============================================
+  // RENDER: ROI step (shared)
+  // =============================================
+
+  const renderRoiStep = () => {
+    const suggestedOneTime = isVariable
+      ? estimatedCostEuro
+      : totals.subtotal / 100;
+    return (
+      <RoiCalculatorForm
+        value={roiData}
+        onChange={setRoiData}
+        suggestedOneTimeEur={suggestedOneTime > 0 ? suggestedOneTime : undefined}
+        suggestedDurationMonths={isVariable ? 12 : durationMonths}
+      />
+    );
+  };
+
+  // =============================================
   // RENDER: Current step dispatch
   // =============================================
 
@@ -722,8 +750,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       switch (step) {
         case 0: return renderLeadAndProgramStep();
         case 1: return renderVariableServiceStep();
-        case 2: return renderPaymentStep();
-        case 3: return renderSummaryStep();
+        case 2: return renderRoiStep();
+        case 3: return renderPaymentStep();
+        case 4: return renderSummaryStep();
         default: return null;
       }
     }
@@ -732,8 +761,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       case 0: return renderStandardStep0();
       case 1: return renderStandardStep1();
       case 2: return renderStandardStep2();
-      case 3: return renderPaymentStep();
-      case 4: return renderSummaryStep();
+      case 3: return renderRoiStep();
+      case 4: return renderPaymentStep();
+      case 5: return renderSummaryStep();
       default: return null;
     }
   };

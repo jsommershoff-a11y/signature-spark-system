@@ -149,6 +149,9 @@ export interface OfferContent {
   // Variable Offer Data
   variable_offer_data?: VariableOfferData;
   
+  // Kosten-Nutzen-Rechnung (ROI)
+  roi_data?: import('@/lib/roi-calc').RoiData;
+  
   // KI-generierte Inhalte
   ai_generated?: OfferAiGenerated;
   

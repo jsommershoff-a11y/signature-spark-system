@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import type { OfferContent } from '@/types/offers';
 import { formatCents } from '@/types/offers';
 import { PainPointRadar } from './PainPointRadar';
+import { RoiSummaryCard } from './RoiSummaryCard';
 
 interface OfferPreviewProps {
   content: OfferContent;
@@ -169,6 +170,18 @@ export function OfferPreview({ content, companyLogo }: OfferPreviewProps) {
             </div>
           )}
         </>
+      )}
+
+      {/* Kosten-Nutzen-Rechnung */}
+      {content.roi_data && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Ihr wirtschaftlicher Hebel</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RoiSummaryCard data={content.roi_data} />
+          </CardContent>
+        </Card>
       )}
     </div>
   );
