@@ -325,6 +325,21 @@ export default function OfferDetail() {
       {/* Offer Preview */}
       {offerJson && <OfferPreview content={offerJson} />}
 
+      {/* Kosten-Nutzen-Rechnung */}
+      {offerJson?.roi_data && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Kosten-Nutzen-Rechnung
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RoiSummaryCard data={offerJson.roi_data} />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Progress Tracker for variable offers (staff + admin) */}
       {offerJson?.offer_mode === 'variable' && hasMinRole('vertriebspartner') && (
         <ProgressTracker offer={offer} onUpdate={handleProgressUpdate} />
