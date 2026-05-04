@@ -153,10 +153,9 @@ export const BUNDLES: Record<"start" | "growth", Bundle> = {
     solution:
       "7 produktive KI-Bots als geschlossenes System: Voice, Termin, E-Mail, Angebote, Lead-Qualifizierung, Daten-Extraktion und Content. End-to-End vom ersten Touchpoint bis zur Rechnung.",
     ctaText: "Growth-Bundle anfragen",
-    seoTitle:
-      "Growth-Bundle: 7 KI-Bots als komplettes System | KI-Automationen",
+    seoTitle: "Growth-Bundle: 7 KI-Bots als End-to-End-System | KI-Automationen",
     seoDescription:
-      "Die komplette KI-Suite für skalierende Betriebe: Voice-Agent, Terminbot, E-Mail-Assistent, Angebotsgenerator, Lead-Qualifizierung, Daten-Extraktion und Content-Engine als ein System.",
+      "Growth-Bundle: Voice, Termin, E-Mail, Angebote, Lead-Scoring, Daten & Content als ein System. 1–2 FTE Entlastung, Rollout in 4–6 Wochen, Festpreis in 24 h.",
     automationSlugs: [
       "ki-voice-assistent-empfang",
       "ki-terminbot",
