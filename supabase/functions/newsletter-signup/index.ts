@@ -91,8 +91,6 @@ serve(async (req) => {
 
     try {
       // 1) User finden oder anlegen
-      const { data: existing } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1 });
-      // listUsers paginiert – stattdessen gezielt per Profil-Lookup
       const { data: profByEmail } = await supabase
         .from("profiles")
         .select("user_id")
