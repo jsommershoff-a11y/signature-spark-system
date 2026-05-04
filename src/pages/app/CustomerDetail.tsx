@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { resolveNextStep } from '@/lib/next-step';
 import { NextStepCell } from '@/components/crm/NextStepCell';
+import { QuickAddTaskDialog } from '@/components/crm/QuickAddTaskDialog';
 
 type Detail = {
   id: string;
@@ -104,6 +105,8 @@ export default function CustomerDetail() {
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [pipelineItemStage, setPipelineItemStage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -216,7 +219,7 @@ export default function CustomerDetail() {
       }
     })();
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, reloadKey]);
 
   const displayName = (d: Detail) =>
     d.full_name || `${d.first_name ?? ''} ${d.last_name ?? ''}`.trim() || d.email || '—';
@@ -377,10 +380,8 @@ export default function CustomerDetail() {
                     <CheckSquare className="h-3.5 w-3.5 mr-1.5" />Aufgaben anzeigen
                   </Link>
                 </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/tasks?customer=${data.id}&action=create`}>
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe erstellen
-                  </Link>
+                <Button size="sm" variant="default" onClick={() => setQuickAddOpen(true)}>
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe erstellen
                 </Button>
                 {data.source === 'crm_lead' && (
                   <Button asChild size="sm" variant="outline">
@@ -484,8 +485,8 @@ export default function CustomerDetail() {
               icon={<CheckSquare className="h-4 w-4" />}
               title="Aufgaben"
               action={
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/tasks?customer=${data.id}&action=create`}><Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe</Link>
+                <Button size="sm" variant="outline" onClick={() => setQuickAddOpen(true)}>
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe
                 </Button>
               }
             >
@@ -592,6 +593,14 @@ export default function CustomerDetail() {
               )}
             </SectionCard>
           </div>
+
+          <QuickAddTaskDialog
+            open={quickAddOpen}
+            onOpenChange={setQuickAddOpen}
+            targetId={data.id}
+            targetSource={data.source}
+            onCreated={() => setReloadKey(k => k + 1)}
+          />
         </>
       )}
     </div>
