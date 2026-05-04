@@ -100,6 +100,7 @@ export default function CustomerDetail() {
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [calls, setCalls] = useState<CallRow[]>([]);
   const [offers, setOffers] = useState<OfferRow[]>([]);
+  const [pipelineItemStage, setPipelineItemStage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
