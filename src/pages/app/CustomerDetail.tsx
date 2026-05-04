@@ -348,6 +348,51 @@ export default function CustomerDetail() {
             </CardContent>
           </Card>
 
+          {/* === Cockpit: Quick-Links === */}
+          {/*
+            TODO: Sobald /app/inbox, /app/offers, /app/tasks, /app/pipeline
+            den Query-Parameter ?customer=<id> bzw. ?lead=<id> auswerten,
+            filtert dieser Bereich automatisch — die Links sind bereits vorbereitet.
+          */}
+          <Card>
+            <CardContent className="py-4">
+              <div className="flex flex-wrap gap-2">
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/app/inbox?customer=${data.id}`}>
+                    <Inbox className="h-3.5 w-3.5 mr-1.5" />Kommunikation öffnen
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/app/offers?customer=${data.id}`}>
+                    <FileText className="h-3.5 w-3.5 mr-1.5" />Angebote anzeigen
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="default">
+                  <Link to={`/app/offers?customer=${data.id}&action=create`}>
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/app/tasks?customer=${data.id}`}>
+                    <CheckSquare className="h-3.5 w-3.5 mr-1.5" />Aufgaben anzeigen
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/app/tasks?customer=${data.id}&action=create`}>
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe erstellen
+                  </Link>
+                </Button>
+                {data.source === 'crm_lead' && (
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={`/app/pipeline?lead=${data.id}`}>
+                      <TrendingUp className="h-3.5 w-3.5 mr-1.5" />In Pipeline öffnen
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* === Grid für Sektionen 2-8 === */}
           <div className="grid gap-6 lg:grid-cols-2">
             {/* 2. Kommunikation */}
