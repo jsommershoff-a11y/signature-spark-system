@@ -108,9 +108,10 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 />
               </div>
               <div>
-                <Label htmlFor="ns-name">Name (optional)</Label>
+                <Label htmlFor="ns-name">Name *</Label>
                 <Input
                   id="ns-name"
+                  required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Max Mustermann"
@@ -118,18 +119,17 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 />
               </div>
               <div>
-                <Label htmlFor="ns-whatsapp">WhatsApp-Nummer *</Label>
+                <Label htmlFor="ns-whatsapp">WhatsApp-Nummer (optional)</Label>
                 <Input
                   id="ns-whatsapp"
                   type="tel"
-                  required
                   value={form.whatsapp}
                   onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
                   placeholder="+49 170 1234567"
                   autoComplete="tel"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  Für Live-Call-Reminder & Zugangsdaten – Pflicht.
+                  Empfohlen für Live-Call-Reminder direkt aufs Handy.
                 </p>
               </div>
 
