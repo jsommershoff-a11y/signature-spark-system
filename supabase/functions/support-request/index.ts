@@ -73,37 +73,20 @@ Deno.serve(async (req) => {
     // Spam-Schutz #3: Deduplizierung — identische email + message-hash binnen 5 Min => kein neues Ticket.
     const messageHash = await sha256Hex(`${d.email.toLowerCase()}|${d.message.trim()}`);
     const fiveMinAgo = new Date(Date.now() - 5 * 60_000).toISOString();
-    const { data: dupTicket } = await supabase
-      .from("support_tickets")
-      .select("id, created_at")
-      .eq("sender_email", d.email)
-      .gte("created_at", fiveMinAgo)
-      .order("created_at", { ascending: false })
-      .limit(10);
 
-    const dupMatch = (dupTicket ?? []).find((t: any) => {
-      // body enthält die Original-Nachricht, einfacher Vergleich genügt
-      return false; // wir prüfen unten via Hash über Body-Suffix
-    });
-    // Vergleich über tatsächlichen Body-Inhalt (message ist letzter Block nach "--- Nachricht ---")
-    const isDuplicate = (dupTicket ?? []).some((t: any) => {
-      // Heuristik: wir vergleichen den Hash via String-Match in body
-      return false;
-    });
-
-    // Sauberer Hash-Vergleich: zweite Query gegen optional gespeicherten Hash
     const { data: hashHit } = await supabase
       .from("support_tickets")
       .select("id")
       .eq("sender_email", d.email)
+      .eq("message_hash", messageHash)
       .gte("created_at", fiveMinAgo)
-      .contains("meta", { message_hash: messageHash } as any)
+      .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (hashHit?.id) {
       const ref = `#${String(hashHit.id).slice(0, 8).toUpperCase()}`;
-      console.log("support-request duplicate suppressed", { ref });
+      console.log("support-request duplicate suppressed", { ref, email: d.email });
       return new Response(
         JSON.stringify({ ok: true, ticketId: hashHit.id, ticketRef: ref, deduplicated: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
