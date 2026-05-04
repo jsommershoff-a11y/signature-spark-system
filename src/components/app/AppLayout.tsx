@@ -18,9 +18,11 @@ import { Breadcrumbs } from './Breadcrumbs';
 import { TrialGuard } from '@/components/TrialGuard';
 import { TrialTopBar } from './TrialTopBar';
 import { MobileBottomNav } from './MobileBottomNav';
+import { useCrmDialogPrefsSync } from '@/hooks/useCrmDialogPrefsSync';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useCrmDialogPrefsSync();
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden app-scope pt-safe">
