@@ -115,6 +115,44 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
     }
   };
 
+  // Cooldown-Timer für Resend-Button
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const resendConfirmation = async () => {
+    if (resending || resendCooldown > 0) return;
+    setResending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("newsletter-signup", {
+        body: {
+          email: form.email,
+          name: form.name,
+          whatsapp: normalizePhone(form.whatsapp),
+          consent: true,
+          source: `${source}_resend`,
+        },
+      });
+      if (error || (data as any)?.error) throw new Error((data as any)?.error ?? error?.message);
+      const d = (data as any) ?? {};
+      if (d.already_confirmed) {
+        setMailStatus("already");
+        toast.info("Diese Adresse ist bereits bestätigt.");
+      } else {
+        setMailStatus(d.mail_sent ? "sent" : "queued");
+        toast.success("Bestätigungs-Mail erneut angefordert.");
+      }
+      setResendCooldown(30);
+    } catch (err: any) {
+      setMailStatus("failed");
+      toast.error(err?.message ?? "Erneuter Versand fehlgeschlagen.");
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
