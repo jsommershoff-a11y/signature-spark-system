@@ -75,6 +75,8 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [supportMsg, setSupportMsg] = useState("");
   const [supportSending, setSupportSending] = useState(false);
   const [supportSent, setSupportSent] = useState(false);
+  const [supportWebsite, setSupportWebsite] = useState(""); // Honeypot
+  const [supportFormStartedAt] = useState(() => Date.now());
   const [waStuck, setWaStuck] = useState(false);
   const [faqOpen, setFaqOpen] = useState<string | undefined>(undefined);
   const upcomingCalls = getNextLiveCalls(2);
@@ -560,6 +562,11 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                       <p className="text-[11px] font-medium text-foreground">
                         Oder direkt hier abschicken (kein Mail-Programm nötig):
                       </p>
+                      {/* Honeypot */}
+                      <div aria-hidden="true" className="absolute left-[-9999px] top-[-9999px] h-0 w-0 overflow-hidden" tabIndex={-1}>
+                        <label htmlFor="nl-sup-website">Website</label>
+                        <input id="nl-sup-website" type="text" name="website" autoComplete="off" tabIndex={-1} value={supportWebsite} onChange={(e) => setSupportWebsite(e.target.value)} />
+                      </div>
                       <textarea
                         value={supportMsg}
                         onChange={(e) => setSupportMsg(e.target.value.slice(0, 2000))}
@@ -589,6 +596,8 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                                   optInLabel: optInLabel[mailStatus],
                                   reasonLabel: reasonLabel[mailStatus],
                                   pageUrl: typeof window !== "undefined" ? window.location.href : "",
+                                  website: supportWebsite,
+                                  formStartedAt: supportFormStartedAt,
                                 },
                               });
                               if (error || (data as any)?.error) {
@@ -596,7 +605,11 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                               }
                               setSupportSent(true);
                               setSupportStarted(true);
-                              toast.success("Support-Anfrage gesendet. Wir melden uns binnen 1 Werktag.");
+                              if ((data as any)?.deduplicated) {
+                                toast.success("Anfrage bereits eingegangen – wir melden uns binnen 1 Werktag.");
+                              } else {
+                                toast.success("Support-Anfrage gesendet. Wir melden uns binnen 1 Werktag.");
+                              }
                             } catch (err) {
                               toast.error(
                                 err instanceof Error

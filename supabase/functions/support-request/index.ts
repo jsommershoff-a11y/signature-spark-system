@@ -16,7 +16,15 @@ const Schema = z.object({
   optInLabel: z.string().max(300).optional().default(""),
   reasonLabel: z.string().max(300).optional().default(""),
   pageUrl: z.string().max(500).optional().default(""),
+  // Spam-Schutz (Honeypot + Min-Time-to-Submit). Beide optional, damit alte Clients weiter funktionieren.
+  website: z.string().max(200).optional().default(""),
+  formStartedAt: z.number().int().nonnegative().optional(),
 });
+
+const sha256Hex = async (input: string) => {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+};
 
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) =>
@@ -44,6 +52,47 @@ Deno.serve(async (req) => {
     const d = parsed.data;
     const ts = new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" });
 
+    // Spam-Schutz #1: Honeypot — befülltes "website"-Feld = Bot. Vortäuschen, dass alles ok ist.
+    if (d.website && d.website.trim().length > 0) {
+      console.warn("support-request honeypot triggered", { ip: req.headers.get("x-forwarded-for") });
+      return new Response(JSON.stringify({ ok: true, ticketRef: "(spam-blocked)" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Spam-Schutz #2: Min-Time-to-Submit — Mensch braucht >=2 s.
+    if (typeof d.formStartedAt === "number") {
+      const elapsed = Date.now() - d.formStartedAt;
+      if (elapsed >= 0 && elapsed < 2000) {
+        console.warn("support-request submitted too fast", { elapsed });
+        return new Response(JSON.stringify({ ok: true, ticketRef: "(spam-blocked)" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Spam-Schutz #3: Deduplizierung — identische email + message-hash binnen 5 Min => kein neues Ticket.
+    const messageHash = await sha256Hex(`${d.email.toLowerCase()}|${d.message.trim()}`);
+    const fiveMinAgo = new Date(Date.now() - 5 * 60_000).toISOString();
+
+    const { data: hashHit } = await supabase
+      .from("support_tickets")
+      .select("id")
+      .eq("sender_email", d.email)
+      .eq("message_hash", messageHash)
+      .gte("created_at", fiveMinAgo)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (hashHit?.id) {
+      const ref = `#${String(hashHit.id).slice(0, 8).toUpperCase()}`;
+      console.log("support-request duplicate suppressed", { ref, email: d.email });
+      return new Response(
+        JSON.stringify({ ok: true, ticketId: hashHit.id, ticketRef: ref, deduplicated: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // 1) Ticket in Supabase anlegen (Source of Truth)
     const subjectShort = `Newsletter-Support – ${d.email} (${d.mailStatus})`;
     const bodyForTicket = [
@@ -69,6 +118,7 @@ Deno.serve(async (req) => {
         source: "manual",
         sender_email: d.email,
         sender_name: d.name || null,
+        message_hash: messageHash,
       })
       .select("id")
       .single();
