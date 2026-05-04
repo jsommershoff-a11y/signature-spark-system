@@ -130,14 +130,34 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
 
             {/* E-Mail-Bestätigung */}
             <div className="rounded-lg border border-primary/30 bg-primary/5 p-3.5 space-y-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                <Mail className="h-4 w-4 text-primary" />
-                Bestätigungs-Mail unterwegs
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <Mail className="h-4 w-4 text-primary" />
+                  Bestätigungs-Mail
+                </div>
+                {(() => {
+                  const map = {
+                    sent: { label: "✓ Gesendet", cls: "bg-green-100 text-green-700 border-green-300" },
+                    queued: { label: "⏳ In Warteschlange", cls: "bg-amber-100 text-amber-700 border-amber-300" },
+                    already: { label: "✓ Bereits bestätigt", cls: "bg-blue-100 text-blue-700 border-blue-300" },
+                    failed: { label: "⚠ Versand fehlgeschlagen", cls: "bg-red-100 text-red-700 border-red-300" },
+                  } as const;
+                  const s = map[mailStatus];
+                  return (
+                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${s.cls}`}>
+                      {s.label}
+                    </span>
+                  );
+                })()}
               </div>
               <p className="text-xs text-muted-foreground">
-                Wir haben gerade eine Mail an{" "}
-                <strong className="text-foreground break-all">{form.email}</strong> geschickt.
-                Klick auf den Link darin, um deinen <strong>30-Tage-Zugang</strong> freizuschalten.
+                {mailStatus === "already" ? (
+                  <>Diese Adresse <strong className="text-foreground break-all">{form.email}</strong> ist bereits bestätigt.</>
+                ) : mailStatus === "failed" ? (
+                  <>Wir konnten die Mail an <strong className="text-foreground break-all">{form.email}</strong> aktuell nicht zustellen. Bitte später erneut versuchen oder uns kontaktieren.</>
+                ) : (
+                  <>Mail an <strong className="text-foreground break-all">{form.email}</strong>. Klick auf den Link darin, um deinen <strong>30-Tage-Zugang</strong> freizuschalten.</>
+                )}
               </p>
               <p className="text-[11px] text-muted-foreground">
                 Keine Mail? Bitte Spam-Ordner prüfen.
