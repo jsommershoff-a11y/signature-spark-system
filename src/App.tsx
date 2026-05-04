@@ -43,6 +43,7 @@ import CRM from "./pages/app/CRM";
 import Leads from "./pages/app/Leads";
 import Pipeline from "./pages/app/Pipeline";
 import Customers from "./pages/app/Customers";
+import CustomerDetail from "./pages/app/CustomerDetail";
 import Tasks from "./pages/app/Tasks";
 import Courses from "./pages/app/Courses";
 import Academy from "./pages/app/Academy";
@@ -169,6 +170,16 @@ const App = () => (
               <Route path="customers" element={
                 <ProtectedRoute requireMinRole="vertriebspartner">
                   <Customers />
+                </ProtectedRoute>
+              } />
+              <Route path="customers/:id" element={
+                <ProtectedRoute requireMinRole="vertriebspartner">
+                  <CustomerDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="crm/:id" element={
+                <ProtectedRoute requireMinRole="vertriebspartner">
+                  <CustomerDetail />
                 </ProtectedRoute>
               } />
               <Route path="tasks" element={<Tasks />} />

@@ -267,7 +267,9 @@ export function LeadTable({
                   </span>
                 </TableCell>
                 <TableCell>
-                  {lead.owner?.full_name || lead.owner?.first_name || '-'}
+                  {lead.owner?.full_name || lead.owner?.first_name || (
+                    <span className="text-muted-foreground italic">Jan (Standard)</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <span className="text-sm text-muted-foreground">
