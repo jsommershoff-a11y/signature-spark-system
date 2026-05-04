@@ -218,8 +218,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       switch (step) {
         case 0: return !!selectedLeadId && !!offerMode;
         case 1: return !!expectedService && estimatedCostEuro > 0;
-        case 2: return true;
+        case 2: return true; // ROI optional
         case 3: return true;
+        case 4: return true;
         default: return true;
       }
     }
@@ -227,8 +228,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       case 0: return !!selectedLeadId;
       case 1: return !!offerMode;
       case 2: return lineItems.some(li => li.name && li.unit_price_euro > 0);
-      case 3: return true;
-      case 4: return !priceError;
+      case 3: return true; // ROI optional
+      case 4: return true;
+      case 5: return !priceError;
       default: return true;
     }
   };
