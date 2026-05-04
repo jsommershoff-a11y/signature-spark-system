@@ -193,13 +193,21 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 <Input
                   id="ns-whatsapp"
                   type="tel"
+                  inputMode="tel"
                   value={form.whatsapp}
                   onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+                  onBlur={(e) => setForm({ ...form, whatsapp: normalizePhone(e.target.value) })}
                   placeholder="+49 170 1234567"
                   autoComplete="tel"
+                  aria-invalid={!!whatsappError}
+                  aria-describedby="ns-whatsapp-help"
+                  className={whatsappError ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Empfohlen für Live-Call-Reminder direkt aufs Handy.
+                <p
+                  id="ns-whatsapp-help"
+                  className={`text-[11px] mt-1 ${whatsappError ? "text-destructive" : "text-muted-foreground"}`}
+                >
+                  {whatsappError ?? "Empfohlen für Live-Call-Reminder. Internationales Format, z. B. +49 170 1234567."}
                 </p>
               </div>
 
