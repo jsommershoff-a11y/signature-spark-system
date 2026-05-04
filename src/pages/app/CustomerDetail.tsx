@@ -593,6 +593,14 @@ export default function CustomerDetail() {
               )}
             </SectionCard>
           </div>
+
+          <QuickAddTaskDialog
+            open={quickAddOpen}
+            onOpenChange={setQuickAddOpen}
+            targetId={data.id}
+            targetSource={data.source}
+            onCreated={() => setReloadKey(k => k + 1)}
+          />
         </>
       )}
     </div>
