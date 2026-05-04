@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Users, Loader2, UserCheck, TrendingUp, AlertTriangle, Trash2, ArrowRightCircle, RotateCcw, UserPlus, Upload } from 'lucide-react';
 import { CreateContactDialog } from '@/components/crm/CreateContactDialog';
 import { ImportContactsDialog } from '@/components/crm/ImportContactsDialog';
@@ -47,6 +48,7 @@ const STATUS_BADGE: Record<CustomerRecordStatus, { label: string; className: str
 };
 
 export default function Customers() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<CustomerRecordStatus | 'all'>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -233,8 +235,13 @@ export default function Customers() {
                     const key = rowKey(c);
                     const checked = selectedIds.has(key);
                     const badge = STATUS_BADGE[c.record_status];
+                    const ownerLabel = c.assigned_staff_name ?? 'Jan (Standard)';
                     return (
-                      <TableRow key={key} className={checked ? 'bg-muted/30' : ''}>
+                      <TableRow
+                        key={key}
+                        className={`cursor-pointer hover:bg-muted/50 transition-colors ${checked ? 'bg-muted/30' : ''}`}
+                        onClick={() => navigate(`/app/customers/${c.id}`)}
+                      >
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
                             checked={checked}
@@ -242,10 +249,7 @@ export default function Customers() {
                             aria-label="Auswählen"
                           />
                         </TableCell>
-                        <TableCell
-                          className="font-medium cursor-pointer hover:underline"
-                          onClick={() => setSelected(c)}
-                        >
+                        <TableCell className="font-medium">
                           {displayName(c)}
                         </TableCell>
                         <TableCell>
@@ -254,8 +258,12 @@ export default function Customers() {
                         <TableCell>{c.email ?? '—'}</TableCell>
                         <TableCell>{c.phone ?? '—'}</TableCell>
                         <TableCell>{c.company ?? '—'}</TableCell>
-                        <TableCell>{c.assigned_staff_name ?? '—'}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
+                          <span className={c.assigned_staff_name ? '' : 'text-muted-foreground italic'}>
+                            {ownerLabel}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           {c.record_status === 'contact' && (
                             <Button
                               variant="ghost"
