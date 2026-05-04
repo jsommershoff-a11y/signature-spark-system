@@ -216,6 +216,13 @@ Deno.serve(async (req) => {
     }
 
     // 3) Bestätigungs-Mail an den Absender (best-effort, blockiert nicht)
+    // Threading: ticket+<shortid>@<INBOUND_REPLY_DOMAIN> als Reply-To, damit
+    //            das Inbound-Webhook Antworten dem Ticket zuordnen kann.
+    const INBOUND_REPLY_DOMAIN = Deno.env.get("INBOUND_REPLY_DOMAIN"); // z.B. "reply.krs-signature.de"
+    const shortIdLower = ticketId ? String(ticketId).slice(0, 8).toLowerCase() : null;
+    const replyToAddr = INBOUND_REPLY_DOMAIN && shortIdLower
+      ? `ticket+${shortIdLower}@${INBOUND_REPLY_DOMAIN}`
+      : "info@krs-signature.de";
     const confirmHtml = `
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
         <h2 style="color:#0F3E2E;margin:0 0 12px">Wir haben deine Anfrage erhalten ✅</h2>
@@ -248,14 +255,31 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: "KRS Support <info@krs-signature.de>",
           to: [d.email],
-          reply_to: "info@krs-signature.de",
+          reply_to: replyToAddr,
           subject: `Wir haben deine Anfrage erhalten – Ticket ${ticketRef}`,
           html: confirmHtml,
+          headers: {
+            "X-Ticket-Id": ticketId ?? "",
+            "X-Ticket-Ref": ticketRef,
+          },
         }),
       });
       if (!c.ok) {
         const txt = await c.text();
         console.error("Confirmation mail failed:", c.status, txt);
+      } else if (ticketId) {
+        try {
+          const j = await c.json();
+          const resendId = j?.id ? `<${j.id}@resend.email>` : null;
+          if (resendId) {
+            await supabase
+              .from("support_tickets")
+              .update({ email_message_id: resendId })
+              .eq("id", ticketId);
+          }
+        } catch (parseErr) {
+          console.warn("Confirmation mail: could not parse resend id", parseErr);
+        }
       }
     } catch (confirmErr) {
       console.error("Confirmation mail error:", confirmErr);
