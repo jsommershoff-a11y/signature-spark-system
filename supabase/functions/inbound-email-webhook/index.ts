@@ -72,9 +72,15 @@ async function notifyEmail(to: string, subject: string, html: string) {
 }
 
 
-const SHORT_ID_RE = /\b([0-9a-f]{8})\b/i;
 const SUBJECT_TICKET_RE = /#([0-9a-f]{8})/i;
-const TO_PLUS_RE = /ticket\+([0-9a-f]{8})@/i;
+// Default-Pattern (Fallback wenn keine Routes konfiguriert sind)
+const DEFAULT_TO_PLUS_RE = /(?:ticket|support)\+([0-9a-f]{8})@/i;
+
+function buildToPlusRegex(localParts: string[]): RegExp {
+  if (!localParts.length) return DEFAULT_TO_PLUS_RE;
+  const escaped = localParts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  return new RegExp(`(?:${escaped})\\+([0-9a-f]{8})@`, "i");
+}
 
 function extractEmail(addr: string | null | undefined): string | null {
   if (!addr) return null;
