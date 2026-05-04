@@ -171,6 +171,18 @@ export function OfferPreview({ content, companyLogo }: OfferPreviewProps) {
           )}
         </>
       )}
+
+      {/* Kosten-Nutzen-Rechnung */}
+      {content.roi_data && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Ihr wirtschaftlicher Hebel</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RoiSummaryCard data={content.roi_data} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
