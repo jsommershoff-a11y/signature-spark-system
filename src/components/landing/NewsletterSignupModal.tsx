@@ -230,7 +230,7 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                   WhatsApp-Bestätigung
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Bestätige deine Nummer in 1 Klick und erhalte Live-Call-Reminder direkt aufs Handy.
+                  Sende uns die vorbereitete Nachricht – damit bestätigst du deine Anmeldung und aktivierst die Live-Call-Reminder direkt auf deinem Handy.
                 </p>
                 <Button
                   asChild
@@ -239,7 +239,16 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 >
                   <a
                     href={buildWhatsAppLink(
-                      `Newsletter-Bestätigung für ${form.email} – bitte aktivieren.`,
+                      [
+                        `Hallo KRS-Team,`,
+                        ``,
+                        `hiermit bestätige ich meine Newsletter-Anmeldung${form.name ? ` (${form.name})` : ""}.`,
+                        `E-Mail: ${form.email}`,
+                        ``,
+                        `Bitte aktiviert meinen 30-Tage-Zugang sowie die Live-Call-Reminder auf dieser WhatsApp-Nummer.`,
+                        ``,
+                        `Danke!`,
+                      ].join("\n"),
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
