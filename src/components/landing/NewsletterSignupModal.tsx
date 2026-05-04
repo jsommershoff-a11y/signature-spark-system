@@ -308,7 +308,23 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 <AccordionContent className="text-xs text-muted-foreground pb-3 space-y-1.5">
                   <p>1. Prüfe deinen <strong>Spam- bzw. Werbung-Ordner</strong> (oft landet die erste Mail dort).</p>
                   <p>2. Warte 1–2 Minuten – die Zustellung kann je nach Provider kurz dauern.</p>
-                  <p>3. Klick auf <strong>„Bestätigungs-Mail erneut senden"</strong> oben.</p>
+                  <p>3. Direkt hier erneut anfordern:</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={resendConfirmation}
+                    disabled={resending || resendCooldown > 0 || mailStatus === "already"}
+                    className="w-full h-8 text-xs"
+                  >
+                    {resending ? (
+                      <><Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> Wird gesendet…</>
+                    ) : resendCooldown > 0 ? (
+                      <><Clock className="h-3 w-3 mr-1.5" /> Erneut senden in {resendCooldown}s</>
+                    ) : (
+                      <><RefreshCw className="h-3 w-3 mr-1.5" /> Bestätigungs-Mail jetzt erneut senden</>
+                    )}
+                  </Button>
                   <p>4. Falls auch das nicht klappt: Schreib uns kurz an <a href="mailto:info@krs-signature.de" className="underline text-primary">info@krs-signature.de</a>.</p>
                 </AccordionContent>
               </AccordionItem>
