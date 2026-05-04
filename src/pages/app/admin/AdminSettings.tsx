@@ -37,6 +37,9 @@ export default function AdminSettings() {
           <TabsTrigger value="logs" className="gap-1.5 rounded-xl">
             <Activity className="h-3.5 w-3.5" /> Logs
           </TabsTrigger>
+          <TabsTrigger value="crm-policy" className="gap-1.5 rounded-xl">
+            <ShieldAlert className="h-3.5 w-3.5" /> CRM-Policy
+          </TabsTrigger>
           <TabsTrigger value="webhooks" className="gap-1.5 rounded-xl">
             <Webhook className="h-3.5 w-3.5" /> Webhooks
           </TabsTrigger>
