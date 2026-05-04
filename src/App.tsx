@@ -172,6 +172,11 @@ const App = () => (
                   <Pipeline />
                 </ProtectedRoute>
               } />
+              <Route path="deals" element={
+                <ProtectedRoute requireMinRole="vertriebspartner">
+                  <Deals />
+                </ProtectedRoute>
+              } />
               <Route path="customers" element={
                 <ProtectedRoute requireMinRole="vertriebspartner">
                   <Customers />
