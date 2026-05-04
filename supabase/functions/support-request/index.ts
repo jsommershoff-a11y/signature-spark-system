@@ -255,14 +255,31 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: "KRS Support <info@krs-signature.de>",
           to: [d.email],
-          reply_to: "info@krs-signature.de",
+          reply_to: replyToAddr,
           subject: `Wir haben deine Anfrage erhalten – Ticket ${ticketRef}`,
           html: confirmHtml,
+          headers: {
+            "X-Ticket-Id": ticketId ?? "",
+            "X-Ticket-Ref": ticketRef,
+          },
         }),
       });
       if (!c.ok) {
         const txt = await c.text();
         console.error("Confirmation mail failed:", c.status, txt);
+      } else if (ticketId) {
+        try {
+          const j = await c.json();
+          const resendId = j?.id ? `<${j.id}@resend.email>` : null;
+          if (resendId) {
+            await supabase
+              .from("support_tickets")
+              .update({ email_message_id: resendId })
+              .eq("id", ticketId);
+          }
+        } catch (parseErr) {
+          console.warn("Confirmation mail: could not parse resend id", parseErr);
+        }
       }
     } catch (confirmErr) {
       console.error("Confirmation mail error:", confirmErr);
