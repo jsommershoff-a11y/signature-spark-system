@@ -380,10 +380,8 @@ export default function CustomerDetail() {
                     <CheckSquare className="h-3.5 w-3.5 mr-1.5" />Aufgaben anzeigen
                   </Link>
                 </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/tasks?customer=${data.id}&action=create`}>
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe erstellen
-                  </Link>
+                <Button size="sm" variant="default" onClick={() => setQuickAddOpen(true)}>
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />Aufgabe erstellen
                 </Button>
                 {data.source === 'crm_lead' && (
                   <Button asChild size="sm" variant="outline">
