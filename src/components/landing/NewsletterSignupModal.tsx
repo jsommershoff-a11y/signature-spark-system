@@ -67,9 +67,18 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [form, setForm] = useState({ email: "", name: "", whatsapp: "", consent: false });
   const upcomingCalls = getNextLiveCalls(2);
 
+  // Live-Validierung der WhatsApp-Nummer (nur wenn nicht leer)
+  const whatsappError = (() => {
+    if (!form.whatsapp.trim()) return null;
+    const res = whatsappSchema.safeParse(form.whatsapp);
+    return res.success ? null : res.error.issues[0]?.message ?? "Ungültige Nummer.";
+  })();
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = Schema.safeParse(form);
+    // Normalisierte Nummer für Validierung & Versand
+    const payload = { ...form, whatsapp: normalizePhone(form.whatsapp) };
+    const parsed = Schema.safeParse(payload);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.");
       return;
