@@ -154,6 +154,7 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       setAdditionalCostNote(
         'Sollte sich während der Umsetzung herausstellen, dass der geschätzte Aufwand überschritten wird, werden Sie vorab informiert und eine Freigabe eingeholt. Ohne Ihre Zustimmung entstehen keine Mehrkosten über 15% der ursprünglichen Schätzung.'
       );
+      setRoiData({});
     }
   }, [open]);
 
