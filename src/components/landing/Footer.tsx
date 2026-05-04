@@ -65,6 +65,10 @@ export const Footer = () => {
               <Link to="/qualifizierung" className="text-white/40 hover:text-white transition-colors text-sm">
                 Potenzial-Analyse buchen
               </Link>
+              <Link to="/newsletter" className="text-white/40 hover:text-white transition-colors text-sm inline-flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" />
+                Newsletter + 1 Monat gratis
+              </Link>
               <Link to="/community" className="text-white/40 hover:text-white transition-colors text-sm">
                 KI-Community
               </Link>
