@@ -79,9 +79,9 @@ export default function Offers() {
             Verwalten Sie Ihre Angebote und verfolgen Sie den Status.
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
+        <Button onClick={() => setCreateDialogOpen(true)} size="lg">
           <Plus className="h-4 w-4 mr-2" />
-          Neues Angebot
+          Neues Angebot erstellen
         </Button>
       </div>
 
