@@ -17,6 +17,51 @@ import { de } from 'date-fns/locale';
 import { resolveNextStep } from '@/lib/next-step';
 import { NextStepCell } from '@/components/crm/NextStepCell';
 import { QuickAddTaskDialog } from '@/components/crm/QuickAddTaskDialog';
+import { isRouteAvailable } from '@/lib/route-availability';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+/**
+ * Rendert einen Button mit Link nur, wenn die Zielroute existiert.
+ * Andernfalls: Button wird deaktiviert mit Tooltip-Hinweis.
+ * `hideIfMissing` versteckt den Button stattdessen komplett.
+ */
+function RouteAwareLinkButton({
+  to,
+  children,
+  hideIfMissing = false,
+  size = 'sm',
+  variant = 'outline',
+}: {
+  to: string;
+  children: React.ReactNode;
+  hideIfMissing?: boolean;
+  size?: 'sm' | 'default' | 'lg' | 'icon';
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive' | 'link';
+}) {
+  const available = isRouteAvailable(to);
+  if (!available && hideIfMissing) return null;
+  if (!available) {
+    return (
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-block">
+              <Button size={size} variant={variant} disabled aria-disabled="true">
+                {children}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>Diese Seite ist aktuell nicht verfügbar</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+  return (
+    <Button asChild size={size} variant={variant}>
+      <Link to={to}>{children}</Link>
+    </Button>
+  );
+}
 
 type Detail = {
   id: string;
