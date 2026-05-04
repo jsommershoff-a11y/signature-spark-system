@@ -10,15 +10,48 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getNextLiveCalls, formatLiveCall } from "@/config/liveCalls";
 
+// Plausibilitäts- & Format-Check für internationale Telefonnummern (E.164-orientiert).
+// Erlaubt führendes "+", Ziffern, sowie typische Trennzeichen (Leerzeichen, "-", "/", "(", ")").
+// Nach Normalisierung müssen 8–15 Ziffern übrig bleiben (ITU-T E.164).
+const PHONE_ALLOWED_CHARS = /^[+0-9\s\-/().]+$/;
+const normalizePhone = (raw: string) => {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  const hasPlus = trimmed.startsWith("+");
+  const digits = trimmed.replace(/\D/g, "");
+  return hasPlus ? `+${digits}` : digits;
+};
+
+const whatsappSchema = z
+  .string()
+  .trim()
+  .max(40, "WhatsApp-Nummer ist zu lang.")
+  .refine((v) => v === "" || PHONE_ALLOWED_CHARS.test(v), {
+    message: "WhatsApp-Nummer enthält ungültige Zeichen.",
+  })
+  .refine(
+    (v) => {
+      if (v === "") return true;
+      const digits = v.replace(/\D/g, "");
+      return digits.length >= 8 && digits.length <= 15;
+    },
+    { message: "WhatsApp-Nummer muss 8–15 Ziffern enthalten (z. B. +49 170 1234567)." }
+  )
+  .refine(
+    (v) => {
+      if (v === "") return true;
+      // Empfehlung: internationales Format mit "+" oder mit "00" als Auslandspräfix.
+      return v.startsWith("+") || v.startsWith("00") || v.startsWith("0");
+    },
+    { message: "Bitte im internationalen Format eingeben (z. B. +49 …)." }
+  )
+  .optional()
+  .or(z.literal(""));
+
 const Schema = z.object({
   email: z.string().trim().email("Bitte gültige E-Mail eingeben.").max(320),
   name: z.string().trim().min(2, "Bitte Namen angeben.").max(200),
-  whatsapp: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .or(z.literal("")),
+  whatsapp: whatsappSchema,
   consent: z.literal(true, { errorMap: () => ({ message: "Bitte Einwilligung bestätigen." }) }),
 });
 
