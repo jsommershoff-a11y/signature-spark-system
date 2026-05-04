@@ -344,7 +344,19 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
 
             {/* Direkter Support-Kontakt – Fallback wenn Mail/WhatsApp scheitern */}
             {(() => {
-              const subject = "Hilfe bei Newsletter-Bestätigung";
+              const optInLabel: Record<typeof mailStatus, string> = {
+                sent: "Opt-in erteilt – Double-Opt-in-Mail versendet, aber noch nicht bestätigt",
+                queued: "Opt-in erteilt – Double-Opt-in-Mail wird gerade versendet",
+                already: "Double-Opt-in bereits abgeschlossen (E-Mail bestätigt)",
+                failed: "Opt-in erteilt – Double-Opt-in-Mail konnte NICHT zugestellt werden",
+              };
+              const reasonLabel: Record<typeof mailStatus, string> = {
+                sent: "Bestätigungs-Mail nicht angekommen (nicht im Posteingang/Spam auffindbar)",
+                queued: "Bestätigungs-Mail noch nicht eingetroffen – Versand hängt in der Warteschlange",
+                already: "Zugang trotz abgeschlossenem Double-Opt-in nicht freigeschaltet",
+                failed: "Versand der Bestätigungs-Mail ist fehlgeschlagen (Zustellfehler vom Mailserver)",
+              };
+              const subject = `Hilfe bei Newsletter-Bestätigung [${mailStatus}]`;
               const body = [
                 `Hallo KRS-Team,`,
                 ``,
@@ -354,8 +366,16 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 `• Name: ${form.name || "(bitte ergänzen)"}`,
                 `• E-Mail: ${form.email}`,
                 `• WhatsApp: ${form.whatsapp || "(nicht angegeben)"}`,
-                `• Mail-Status im Modal: ${mailStatus}`,
+                ``,
+                `Opt-in / Double-Opt-in-Status:`,
+                `• ${optInLabel[mailStatus]}`,
+                `• Technischer Status-Code: ${mailStatus}`,
+                ``,
+                `Grund der Fehlermeldung:`,
+                `• ${reasonLabel[mailStatus]}`,
+                ``,
                 `• Zeitpunkt: ${new Date().toLocaleString("de-DE")}`,
+                `• Seite: ${typeof window !== "undefined" ? window.location.href : ""}`,
                 ``,
                 `Danke!`,
               ].join("\n");
@@ -381,7 +401,9 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                             `meine Newsletter-Bestätigung funktioniert nicht.`,
                             `Name: ${form.name || "(bitte ergänzen)"}`,
                             `E-Mail: ${form.email}`,
-                            `Mail-Status: ${mailStatus}`,
+                            ``,
+                            `Opt-in-Status: ${optInLabel[mailStatus]} (Code: ${mailStatus})`,
+                            `Grund: ${reasonLabel[mailStatus]}`,
                             ``,
                             `Bitte schaltet meinen 30-Tage-Zugang manuell frei. Danke!`,
                           ].join("\n"),
