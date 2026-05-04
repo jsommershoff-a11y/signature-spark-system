@@ -211,6 +211,7 @@ export function LeadTable({
               <TableHead>Name</TableHead>
               <TableHead>Firma</TableHead>
               <TableHead>Stage</TableHead>
+              <TableHead className="min-w-[200px]">Nächster Schritt</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Quelle</TableHead>
               <TableHead>Besitzer</TableHead>
