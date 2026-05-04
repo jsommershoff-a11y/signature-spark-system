@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock, Mail, MessageCircle } from "lucide-react";
+import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock, Mail, MessageCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getNextLiveCalls, formatLiveCall } from "@/config/liveCalls";
@@ -67,6 +67,8 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [done, setDone] = useState(false);
   const [mailStatus, setMailStatus] = useState<"sent" | "queued" | "already" | "failed">("queued");
   const [form, setForm] = useState({ email: "", name: "", whatsapp: "", consent: false });
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resending, setResending] = useState(false);
   const upcomingCalls = getNextLiveCalls(2);
 
   // Live-Validierung der WhatsApp-Nummer (nur wenn nicht leer)
@@ -110,6 +112,44 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
       toast.error(err?.message ?? "Eintragung fehlgeschlagen.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Cooldown-Timer für Resend-Button
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const resendConfirmation = async () => {
+    if (resending || resendCooldown > 0) return;
+    setResending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("newsletter-signup", {
+        body: {
+          email: form.email,
+          name: form.name,
+          whatsapp: normalizePhone(form.whatsapp),
+          consent: true,
+          source: `${source}_resend`,
+        },
+      });
+      if (error || (data as any)?.error) throw new Error((data as any)?.error ?? error?.message);
+      const d = (data as any) ?? {};
+      if (d.already_confirmed) {
+        setMailStatus("already");
+        toast.info("Diese Adresse ist bereits bestätigt.");
+      } else {
+        setMailStatus(d.mail_sent ? "sent" : "queued");
+        toast.success("Bestätigungs-Mail erneut angefordert.");
+      }
+      setResendCooldown(30);
+    } catch (err: any) {
+      setMailStatus("failed");
+      toast.error(err?.message ?? "Erneuter Versand fehlgeschlagen.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -162,6 +202,24 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
               <p className="text-[11px] text-muted-foreground">
                 Keine Mail? Bitte Spam-Ordner prüfen.
               </p>
+              {mailStatus !== "already" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resendConfirmation}
+                  disabled={resending || resendCooldown > 0}
+                  className="w-full mt-1"
+                >
+                  {resending ? (
+                    <><Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> Wird gesendet…</>
+                  ) : resendCooldown > 0 ? (
+                    <><Clock className="h-3.5 w-3.5 mr-2" /> Erneut senden in {resendCooldown}s</>
+                  ) : (
+                    <><RefreshCw className="h-3.5 w-3.5 mr-2" /> Bestätigungs-Mail erneut senden</>
+                  )}
+                </Button>
+              )}
             </div>
 
             {/* WhatsApp-Bestätigung – nur wenn Nummer angegeben */}
