@@ -223,6 +223,36 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
               )}
             </div>
 
+            {/* Aktivierungs-Timeline */}
+            <div className="rounded-lg border border-amber-300/50 bg-amber-50 p-3.5 space-y-2.5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+                <Clock className="h-4 w-4" />
+                Freischaltung in unter 1 Minute
+              </div>
+              <ol className="space-y-1.5 text-xs text-amber-900/90">
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-green-600 text-[10px] font-bold text-white">✓</span>
+                  <span><strong>Anmeldung erhalten</strong> – jetzt</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${mailStatus === "sent" || mailStatus === "already" ? "bg-green-600 text-white" : "bg-amber-400 text-amber-950 animate-pulse"}`}>
+                    {mailStatus === "sent" || mailStatus === "already" ? "✓" : "2"}
+                  </span>
+                  <span>
+                    <strong>Bestätigung per Mail</strong> – du klickst auf den Link
+                    <span className="block text-[10px] text-amber-800/70">typischerweise innerhalb von 1–3 Min nach Eintragung</span>
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold">3</span>
+                  <span>
+                    <strong>30-Tage-Zugang aktiv</strong> – sofort nach Klick (&lt; 1 Min)
+                    <span className="block text-[10px] text-amber-800/70">Magic-Link landet automatisch in deinem Postfach</span>
+                  </span>
+                </li>
+              </ol>
+            </div>
+
             {/* WhatsApp-Bestätigung – nur wenn Nummer angegeben */}
             {form.whatsapp.trim() && (
               <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3.5 space-y-2">
