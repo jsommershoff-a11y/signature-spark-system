@@ -22,6 +22,8 @@ import {
 import { PainPointDiscovery } from './PainPointDiscovery';
 import { ProgramThumbnail } from './ProgramThumbnail';
 import { OfferPreview } from './OfferPreview';
+import { RoiCalculatorForm } from './RoiCalculatorForm';
+import type { RoiData } from '@/lib/roi-calc';
 import {
   OFFER_MODULES, REQUIRED_MODULES, MODULE_DEPENDENCIES,
   validateOfferPrice, validateModuleSelection, checkModuleDependencies,
