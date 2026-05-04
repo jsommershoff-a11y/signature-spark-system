@@ -257,9 +257,14 @@ export default function CustomerDetail() {
   const pipelineStage = pipelineItemStage ?? extras?.status ?? data?.record_status ?? null;
   const stageHistory = activities.filter(a => (a.type ?? '').toLowerCase().includes('stage'));
   const lostReason = (extras?.enrichment_json as any)?.lost_reason ?? null;
-  const nextStep = activities.find(a => (a.type ?? '').toLowerCase() === 'next_step')?.content
-    ?? openTasks[0]?.title
-    ?? null;
+  const nextStepInfo = useMemo(() => resolveNextStep({
+    tasks: openTasks.map(t => ({
+      title: t.title, due_at: t.due_at, status: t.status, type: t.type,
+    })),
+    stage: pipelineItemStage,
+    ownerName: data?.assigned_staff_name,
+  }), [openTasks, pipelineItemStage, data?.assigned_staff_name]);
+  const nextStep = nextStepInfo.label;
 
   // === Abschlussnähe (icp_fit_score als Proxy) ===
   const closeness = extras?.icp_fit_score ?? null;
