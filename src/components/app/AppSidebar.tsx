@@ -30,6 +30,7 @@ import {
   Rocket,
   Package,
   Bot,
+  Activity,
 } from 'lucide-react';
 
 interface NavItem {
