@@ -448,9 +448,9 @@ export default function CustomerDetail() {
                 </div>
               )}
               <div className="mt-4 pt-3 border-t flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/inbox?customer=${data.id}`}><Mail className="h-3.5 w-3.5 mr-1.5" />Inbox öffnen</Link>
-                </Button>
+                <RouteAwareLinkButton to={`/app/inbox?customer=${data.id}`} variant="outline">
+                  <Mail className="h-3.5 w-3.5 mr-1.5" />Inbox öffnen
+                </RouteAwareLinkButton>
               </div>
             </SectionCard>
 
@@ -484,9 +484,9 @@ export default function CustomerDetail() {
               icon={<FileText className="h-4 w-4" />}
               title="Angebote"
               action={
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/app/offers?customer=${data.id}&action=create`}><Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen</Link>
-                </Button>
+                <RouteAwareLinkButton to={`/app/offers?customer=${data.id}&action=create`} variant="outline">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />Angebot erstellen
+                </RouteAwareLinkButton>
               }
             >
               {offers.length === 0 ? (
