@@ -724,6 +724,24 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
   };
 
   // =============================================
+  // RENDER: ROI step (shared)
+  // =============================================
+
+  const renderRoiStep = () => {
+    const suggestedOneTime = isVariable
+      ? estimatedCostEuro
+      : totals.subtotal / 100;
+    return (
+      <RoiCalculatorForm
+        value={roiData}
+        onChange={setRoiData}
+        suggestedOneTimeEur={suggestedOneTime > 0 ? suggestedOneTime : undefined}
+        suggestedDurationMonths={isVariable ? 12 : durationMonths}
+      />
+    );
+  };
+
+  // =============================================
   // RENDER: Current step dispatch
   // =============================================
 
@@ -732,8 +750,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       switch (step) {
         case 0: return renderLeadAndProgramStep();
         case 1: return renderVariableServiceStep();
-        case 2: return renderPaymentStep();
-        case 3: return renderSummaryStep();
+        case 2: return renderRoiStep();
+        case 3: return renderPaymentStep();
+        case 4: return renderSummaryStep();
         default: return null;
       }
     }
@@ -742,8 +761,9 @@ export const CreateOfferDialog = forwardRef<HTMLDivElement, CreateOfferDialogPro
       case 0: return renderStandardStep0();
       case 1: return renderStandardStep1();
       case 2: return renderStandardStep2();
-      case 3: return renderPaymentStep();
-      case 4: return renderSummaryStep();
+      case 3: return renderRoiStep();
+      case 4: return renderPaymentStep();
+      case 5: return renderSummaryStep();
       default: return null;
     }
   };
