@@ -1,0 +1,1 @@
+ALTER TABLE public.newsletter_signups ALTER COLUMN whatsapp DROP NOT NULL;

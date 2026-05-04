@@ -2950,7 +2950,7 @@ export type Database = {
           updated_at: string
           user_agent: string | null
           user_id: string | null
-          whatsapp: string
+          whatsapp: string | null
         }
         Insert: {
           consent_marketing?: boolean
@@ -2967,7 +2967,7 @@ export type Database = {
           updated_at?: string
           user_agent?: string | null
           user_id?: string | null
-          whatsapp: string
+          whatsapp?: string | null
         }
         Update: {
           consent_marketing?: boolean
@@ -2984,7 +2984,7 @@ export type Database = {
           updated_at?: string
           user_agent?: string | null
           user_id?: string | null
-          whatsapp?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
