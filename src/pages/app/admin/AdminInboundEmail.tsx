@@ -13,6 +13,20 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { InboundEmailRoutes } from "@/components/admin/InboundEmailRoutes";
+
+type Route = {
+  id: string;
+  label: string;
+  local_part: string;
+  reply_domain: string;
+  default_priority: "low" | "normal" | "high";
+  is_default: boolean;
+  enabled: boolean;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 type Status = {
   webhook: { url: string; secret_configured: boolean };
@@ -21,6 +35,7 @@ type Status = {
     domain_configured: boolean;
     sample_address: string;
   };
+  routes: Route[];
   notifications: {
     resend_configured: boolean;
     teams_configured: boolean;
@@ -76,21 +91,42 @@ export default function AdminInboundEmail() {
     if (!v) return { ok: false, reason: "Bitte eine Adresse eingeben." };
     const re = /^[a-z0-9._+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
     if (!re.test(v)) return { ok: false, reason: "Ungültiges E-Mail-Format." };
+
+    const [local, domain] = v.split("@");
+    const enabledRoutes = (status?.routes || []).filter((r) => r.enabled);
+
+    // Wenn Routes konfiguriert sind, müssen sie matchen
+    if (enabledRoutes.length > 0) {
+      const localBase = local.includes("+") ? local.split("+")[0] : local;
+      const match = enabledRoutes.find(
+        (r) => r.reply_domain.toLowerCase() === domain && r.local_part.toLowerCase() === localBase,
+      );
+      if (!match) {
+        return {
+          ok: false,
+          reason: `Postfach existiert nicht — keine aktive Route für "${localBase}@${domain}". Lege eine Route in der Konfiguration unten an.`,
+        };
+      }
+      return {
+        ok: true as const,
+        reason: `Adresse passt zur Route "${match.label}" und wird vom Webhook akzeptiert.`,
+      };
+    }
+
+    // Fallback (kein Route konfiguriert): ENV-basierte Prüfung
     if (!status?.reply.domain) {
       return {
         ok: false,
         reason:
-          "Reply-Domain (INBOUND_REPLY_DOMAIN) ist nicht konfiguriert. Postfach kann nicht zugeordnet werden.",
+          "Keine Inbound-Route konfiguriert und keine Reply-Domain (ENV) gesetzt. Postfach kann nicht zugeordnet werden.",
       };
     }
-    const domain = v.split("@")[1];
     if (domain !== status.reply.domain) {
       return {
         ok: false,
         reason: `Domain "${domain}" passt nicht zur Reply-Domain "${status.reply.domain}".`,
       };
     }
-    const local = v.split("@")[0];
     if (!local.startsWith("ticket+") && local !== "ticket") {
       return {
         ok: false,
@@ -245,6 +281,9 @@ export default function AdminInboundEmail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Inbound-Routen */}
+      <InboundEmailRoutes routes={status.routes ?? []} onChange={load} />
 
       {/* Benachrichtigungen */}
       <Card>

@@ -65,6 +65,20 @@ Deno.serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(5);
 
+    // Inbound-Routes (admin-konfigurierbar)
+    const { data: routes } = await admin
+      .from("inbound_email_config")
+      .select("id, label, local_part, reply_domain, default_priority, is_default, enabled, description, created_at, updated_at")
+      .order("is_default", { ascending: false })
+      .order("created_at", { ascending: true });
+
+    const defaultRoute = (routes || []).find((r: any) => r.is_default && r.enabled) || null;
+    const sampleAddress = defaultRoute
+      ? `${defaultRoute.local_part}+abcd1234@${defaultRoute.reply_domain}`
+      : (replyDomain
+        ? `ticket+abcd1234@${replyDomain}`
+        : "ticket+abcd1234@<INBOUND_REPLY_DOMAIN>");
+
     // Last successful inbound (for "is the pipeline alive?" indicator)
     const lastInboundAt = recentInbound?.[0]?.created_at ?? null;
 
@@ -74,12 +88,11 @@ Deno.serve(async (req) => {
         secret_configured: inboundSecret,
       },
       reply: {
-        domain: replyDomain,
-        domain_configured: !!replyDomain,
-        sample_address: replyDomain
-          ? `ticket+abcd1234@${replyDomain}`
-          : "ticket+abcd1234@<INBOUND_REPLY_DOMAIN>",
+        domain: defaultRoute?.reply_domain ?? replyDomain,
+        domain_configured: !!(defaultRoute || replyDomain),
+        sample_address: sampleAddress,
       },
+      routes: routes ?? [],
       notifications: {
         resend_configured: resendOk,
         teams_configured: teamsOk,

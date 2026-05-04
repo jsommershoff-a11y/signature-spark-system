@@ -72,9 +72,15 @@ async function notifyEmail(to: string, subject: string, html: string) {
 }
 
 
-const SHORT_ID_RE = /\b([0-9a-f]{8})\b/i;
 const SUBJECT_TICKET_RE = /#([0-9a-f]{8})/i;
-const TO_PLUS_RE = /ticket\+([0-9a-f]{8})@/i;
+// Default-Pattern (Fallback wenn keine Routes konfiguriert sind)
+const DEFAULT_TO_PLUS_RE = /(?:ticket|support)\+([0-9a-f]{8})@/i;
+
+function buildToPlusRegex(localParts: string[]): RegExp {
+  if (!localParts.length) return DEFAULT_TO_PLUS_RE;
+  const escaped = localParts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  return new RegExp(`(?:${escaped})\\+([0-9a-f]{8})@`, "i");
+}
 
 function extractEmail(addr: string | null | undefined): string | null {
   if (!addr) return null;
@@ -101,9 +107,10 @@ function findTicketShortId(opts: {
   subject?: string;
   text?: string;
   html?: string;
+  toPlusRe: RegExp;
 }): string | null {
   if (opts.to) {
-    const m = opts.to.match(TO_PLUS_RE);
+    const m = opts.to.match(opts.toPlusRe);
     if (m) return m[1].toLowerCase();
   }
   if (opts.subject) {
@@ -180,8 +187,16 @@ Deno.serve(async (req) => {
     const inReplyTo = headerMap["in-reply-to"] || null;
     const references = headerMap["references"] || null;
 
+    // === Inbound-Routes laden (Admin-konfigurierbar) ===
+    const { data: routes } = await supabase
+      .from("inbound_email_config")
+      .select("local_part, reply_domain, enabled")
+      .eq("enabled", true);
+    const localParts = (routes || []).map((r: any) => r.local_part);
+    const toPlusRe = buildToPlusRegex(localParts);
+
     // === Ticket-ID Erkennung ===
-    let shortId = findTicketShortId({ to, subject, text, html });
+    let shortId = findTicketShortId({ to, subject, text, html, toPlusRe });
     let ticketId: string | null = null;
 
     if (shortId) {

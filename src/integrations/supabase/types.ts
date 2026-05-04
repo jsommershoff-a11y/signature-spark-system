@@ -2112,6 +2112,45 @@ export type Database = {
         }
         Relationships: []
       }
+      inbound_email_config: {
+        Row: {
+          created_at: string
+          default_priority: string
+          description: string | null
+          enabled: boolean
+          id: string
+          is_default: boolean
+          label: string
+          local_part: string
+          reply_domain: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_priority?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          is_default?: boolean
+          label: string
+          local_part: string
+          reply_domain: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_priority?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          is_default?: boolean
+          label?: string
+          local_part?: string
+          reply_domain?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       incoming_mail: {
         Row: {
           ai_summary: string | null
