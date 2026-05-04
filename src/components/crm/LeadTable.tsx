@@ -27,6 +27,8 @@ import {
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { getPriorityTextClass, getPriorityLabel } from '@/lib/pipeline-stage';
+import { resolveNextStep } from '@/lib/next-step';
+import { NextStepCell } from '@/components/crm/NextStepCell';
 
 interface LeadTableProps {
   leads: CrmLead[];
