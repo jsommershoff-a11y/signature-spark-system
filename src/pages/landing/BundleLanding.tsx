@@ -116,6 +116,7 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
         description={bundle.seoDescription}
         canonical={bundle.path}
         ogImage={`https://ki-automationen.io/og-${bundle.slug}.png`}
+        ogType="product"
         jsonLd={[productJsonLd, faqJsonLd, breadcrumbJsonLd]}
       />
 
