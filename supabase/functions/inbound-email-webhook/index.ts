@@ -35,23 +35,39 @@ const escapeHtml = (s: string) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
   );
 
-async function notifyTeams(html: string, subject: string) {
-  if (!TEAMS_KEY || !LOVABLE_API_KEY) return;
+async function notifyTeams(
+  html: string,
+  subject: string,
+  parentMessageId?: string | null,
+): Promise<string | null> {
+  if (!TEAMS_KEY || !LOVABLE_API_KEY) return null;
   try {
-    const r = await fetch(
-      `https://connector-gateway.lovable.dev/microsoft_teams/teams/${TEAMS_TEAM_ID}/channels/${encodeURIComponent(TEAMS_CHANNEL_ID)}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "X-Connection-Api-Key": TEAMS_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ body: { contentType: "html", content: html }, subject }),
+    // Wenn Parent-ID vorhanden → als Reply im Ticket-Thread posten,
+    // sonst als neue Top-Level-Nachricht im Channel.
+    const url = parentMessageId
+      ? `https://connector-gateway.lovable.dev/microsoft_teams/teams/${TEAMS_TEAM_ID}/channels/${encodeURIComponent(TEAMS_CHANNEL_ID)}/messages/${encodeURIComponent(parentMessageId)}/replies`
+      : `https://connector-gateway.lovable.dev/microsoft_teams/teams/${TEAMS_TEAM_ID}/channels/${encodeURIComponent(TEAMS_CHANNEL_ID)}/messages`;
+    const payload: Record<string, unknown> = { body: { contentType: "html", content: html } };
+    // Subject ist nur bei Top-Level-Nachrichten erlaubt (Replies dürfen kein subject haben).
+    if (!parentMessageId) payload.subject = subject;
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "X-Connection-Api-Key": TEAMS_KEY,
+        "Content-Type": "application/json",
       },
-    );
-    if (!r.ok) console.error("inbound-email: teams notify failed", r.status, await r.text());
-  } catch (e) { console.error("inbound-email: teams notify error", e); }
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      console.error("inbound-email: teams notify failed", r.status, await r.text());
+      return null;
+    }
+    try {
+      const j = await r.json();
+      return j?.id ? String(j.id) : null;
+    } catch { return null; }
+  } catch (e) { console.error("inbound-email: teams notify error", e); return null; }
 }
 
 async function notifyEmail(to: string, subject: string, html: string) {
@@ -322,7 +338,7 @@ Deno.serve(async (req) => {
     // === 3) Ticket-Kontext + zugewiesener Mitarbeiter laden ===
     const { data: ticketRow } = await supabase
       .from("support_tickets")
-      .select("lead_id, sender_email, assigned_to, subject, priority")
+      .select("lead_id, sender_email, assigned_to, subject, priority, teams_thread_id")
       .eq("id", ticketId)
       .maybeSingle();
 
@@ -380,16 +396,29 @@ Deno.serve(async (req) => {
       if (assignee?.email) recipients.add(assignee.email);
     }
 
-    await Promise.all([
-      notifyTeams(notifyHtml, needsReview
-        ? `🟡 Needs Review ${ticketRef} – ${fromEmail || ""}`
-        : `Antwort ${ticketRef} – ${fromEmail || ""}`),
+    const parentMsgId = ticketRow?.teams_thread_id || null;
+    const teamsSubject = needsReview
+      ? `🟡 Needs Review ${ticketRef} – ${fromEmail || ""}`
+      : `Antwort ${ticketRef} – ${fromEmail || ""}`;
+
+    const [postedId] = await Promise.all([
+      notifyTeams(notifyHtml, teamsSubject, parentMsgId),
       ...Array.from(recipients).map((to) =>
         notifyEmail(to, needsReview
           ? `[Support ${ticketRef}] 🟡 Needs Review – ${fromEmail || "Unbekannt"}`
           : `[Support ${ticketRef}] Neue Antwort von ${fromEmail || "Kunde"}`, notifyHtml),
       ),
     ]);
+
+    // Falls noch kein Thread existierte (z. B. Ticket aus Inbound erstellt) →
+    // Top-Level-Message-ID als Thread-Anker speichern, damit künftige
+    // Notifications darunter gruppiert werden.
+    if (!parentMsgId && postedId) {
+      await supabase
+        .from("support_tickets")
+        .update({ teams_thread_id: postedId })
+        .eq("id", ticketId);
+    }
 
     console.log("inbound-email: processed + notified", { ticketId, recipients: [...recipients] });
 

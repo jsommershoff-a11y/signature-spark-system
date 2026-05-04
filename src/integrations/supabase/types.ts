@@ -4396,6 +4396,7 @@ export type Database = {
           source: Database["public"]["Enums"]["ticket_source"]
           status: Database["public"]["Enums"]["ticket_status"]
           subject: string
+          teams_thread_id: string | null
           updated_at: string
         }
         Insert: {
@@ -4416,6 +4417,7 @@ export type Database = {
           source?: Database["public"]["Enums"]["ticket_source"]
           status?: Database["public"]["Enums"]["ticket_status"]
           subject: string
+          teams_thread_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -4436,6 +4438,7 @@ export type Database = {
           source?: Database["public"]["Enums"]["ticket_source"]
           status?: Database["public"]["Enums"]["ticket_status"]
           subject?: string
+          teams_thread_id?: string | null
           updated_at?: string
         }
         Relationships: [
