@@ -111,6 +111,9 @@ export default function CrmDialogPrefsCard() {
               Admin-Policy: Skip-Dialog ist für markierte Stages verpflichtend und überschreibt deine Stillstellung.
             </p>
           )}
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Stillstellungen verfallen automatisch nach 30 Tagen.
+          </p>
         </div>
 
         <Separator />
