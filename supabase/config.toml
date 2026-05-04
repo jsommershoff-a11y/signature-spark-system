@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.telegram-approval-webhook]
 verify_jwt = false
+
+[functions.newsletter-signup]
+verify_jwt = false
