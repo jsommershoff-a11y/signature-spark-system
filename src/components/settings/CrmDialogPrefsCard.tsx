@@ -13,6 +13,8 @@ import {
   clearStageDialogSuppression,
   clearSkipDialogSuppression,
   resetStageDialogSuppressions,
+  getSkipDialogExpiry,
+  getStageDialogExpiry,
 } from '@/lib/crm/stage-dialog-prefs';
 import { useMandatorySkipStages } from '@/hooks/useAppSettings';
 import { ShieldAlert } from 'lucide-react';
@@ -78,12 +80,17 @@ export default function CrmDialogPrefsCard() {
             <div className="flex flex-wrap gap-2">
               {skipSuppressed.map((stage) => {
                 const overridden = mandatoryStages.includes(stage);
+                const expiry = getSkipDialogExpiry(stage);
+                const days = expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86_400_000)) : null;
                 return (
-                  <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1">
+                  <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1" title={expiry ? `Verfällt automatisch in ${days} Tag${days === 1 ? '' : 'en'}` : undefined}>
                     {overridden && <ShieldAlert className="h-3 w-3 text-destructive" aria-label="Admin-Policy aktiv" />}
                     <span className={overridden ? 'line-through text-muted-foreground' : ''}>
                       {PIPELINE_STAGE_LABELS[stage]}
                     </span>
+                    {days !== null && (
+                      <span className="text-[10px] text-muted-foreground">{days}d</span>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -104,6 +111,9 @@ export default function CrmDialogPrefsCard() {
               Admin-Policy: Skip-Dialog ist für markierte Stages verpflichtend und überschreibt deine Stillstellung.
             </p>
           )}
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Stillstellungen verfallen automatisch nach 30 Tagen.
+          </p>
         </div>
 
         <Separator />
@@ -117,20 +127,27 @@ export default function CrmDialogPrefsCard() {
             <p className="text-xs text-muted-foreground">Keine Übergangs-Dialoge stillgestellt.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {stageSuppressed.map((stage) => (
-                <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1">
-                  {PIPELINE_STAGE_LABELS[stage]}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5"
-                    onClick={() => handleClearStage(stage)}
-                    aria-label={`Übergangs-Dialog für ${PIPELINE_STAGE_LABELS[stage]} reaktivieren`}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              ))}
+              {stageSuppressed.map((stage) => {
+                const expiry = getStageDialogExpiry(stage);
+                const days = expiry ? Math.max(0, Math.ceil((expiry - Date.now()) / 86_400_000)) : null;
+                return (
+                  <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1" title={expiry ? `Verfällt automatisch in ${days} Tag${days === 1 ? '' : 'en'}` : undefined}>
+                    {PIPELINE_STAGE_LABELS[stage]}
+                    {days !== null && (
+                      <span className="text-[10px] text-muted-foreground">{days}d</span>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5"
+                      onClick={() => handleClearStage(stage)}
+                      aria-label={`Übergangs-Dialog für ${PIPELINE_STAGE_LABELS[stage]} reaktivieren`}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                );
+              })}
             </div>
           )}
         </div>
