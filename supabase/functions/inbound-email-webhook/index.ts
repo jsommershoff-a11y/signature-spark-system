@@ -187,8 +187,16 @@ Deno.serve(async (req) => {
     const inReplyTo = headerMap["in-reply-to"] || null;
     const references = headerMap["references"] || null;
 
+    // === Inbound-Routes laden (Admin-konfigurierbar) ===
+    const { data: routes } = await supabase
+      .from("inbound_email_config")
+      .select("local_part, reply_domain, enabled")
+      .eq("enabled", true);
+    const localParts = (routes || []).map((r: any) => r.local_part);
+    const toPlusRe = buildToPlusRegex(localParts);
+
     // === Ticket-ID Erkennung ===
-    let shortId = findTicketShortId({ to, subject, text, html });
+    let shortId = findTicketShortId({ to, subject, text, html, toPlusRe });
     let ticketId: string | null = null;
 
     if (shortId) {
