@@ -43,7 +43,7 @@ export default function CustomerDetail() {
         });
         if (error) throw error;
         const row = (rows ?? []).find((r: any) => r.id === id);
-        setData(row ?? null);
+        setData((row as Detail) ?? null);
       } catch (e: any) {
         toast.error(e?.message ?? 'Datensatz konnte nicht geladen werden.');
       } finally {
