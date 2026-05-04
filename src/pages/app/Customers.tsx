@@ -233,6 +233,7 @@ export default function Customers() {
                     </TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="min-w-[200px]">Nächster Schritt</TableHead>
                     <TableHead>E-Mail</TableHead>
                     <TableHead>Telefon</TableHead>
                     <TableHead>Firma</TableHead>
