@@ -28,8 +28,19 @@ export const Footer = () => {
               />
               <span className="text-white font-semibold text-base">KI Automationen</span>
             </Link>
-            <p className="text-white/40 text-sm leading-relaxed">
+            <p className="text-white/40 text-sm leading-relaxed mb-4">
               Einfache Automatisierungen für Unternehmen – Struktur, Entlastung, Kontrolle.
+            </p>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="inline-flex items-center gap-2 rounded-md bg-white text-[#0F3E2E] hover:bg-white/90 transition-colors text-sm font-semibold px-4 py-2.5 shadow-sm"
+            >
+              <Sparkles className="h-4 w-4" />
+              Newsletter + 1 Monat gratis
+            </button>
+            <p className="text-white/40 text-[11px] mt-2 leading-snug">
+              Inkl. 2× wöchentlich Live-Call: live Prompts & KI bauen
             </p>
           </div>
           
