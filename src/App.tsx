@@ -43,6 +43,7 @@ import Dashboard from "./pages/app/Dashboard";
 import CRM from "./pages/app/CRM";
 import Leads from "./pages/app/Leads";
 import Pipeline from "./pages/app/Pipeline";
+import Deals from "./pages/app/Deals";
 import Customers from "./pages/app/Customers";
 import CustomerDetail from "./pages/app/CustomerDetail";
 import Tasks from "./pages/app/Tasks";
