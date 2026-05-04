@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock, Mail, MessageCircle, RefreshCw, ArrowRight } from "lucide-react";
+import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock, Mail, MessageCircle, RefreshCw, ArrowRight, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -75,6 +75,8 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [supportMsg, setSupportMsg] = useState("");
   const [supportSending, setSupportSending] = useState(false);
   const [supportSent, setSupportSent] = useState(false);
+  const [waStuck, setWaStuck] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<string | undefined>(undefined);
   const upcomingCalls = getNextLiveCalls(2);
 
   // Live-Validierung der WhatsApp-Nummer (nur wenn nicht leer)
@@ -288,16 +290,81 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      // Heuristik: Wenn nach Klick innerhalb von 1.2s das Fenster
+                      // NICHT den Fokus verliert (kein blur/visibilitychange),
+                      // hat WhatsApp den Deep-Link wahrscheinlich nicht geöffnet.
+                      let switched = false;
+                      const onBlur = () => { switched = true; };
+                      const onVis = () => { if (document.hidden) switched = true; };
+                      window.addEventListener("blur", onBlur, { once: true });
+                      document.addEventListener("visibilitychange", onVis, { once: true });
+                      window.setTimeout(() => {
+                        window.removeEventListener("blur", onBlur);
+                        document.removeEventListener("visibilitychange", onVis);
+                        if (!switched) {
+                          setWaStuck(true);
+                          setFaqOpen("no-wa");
+                          toast.info("WhatsApp scheint nicht zu öffnen – wir zeigen dir jetzt Alternativen.");
+                        }
+                      }, 1200);
+                    }}
                   >
                     <MessageCircle className="h-4 w-4 mr-2" />
                     WhatsApp-Bestätigung senden
                   </a>
                 </Button>
+
+                {/* Zustandsbasierter CTA – greift, wenn WhatsApp hakt */}
+                {waStuck && (
+                  <div className="mt-2 rounded-md border border-amber-400/60 bg-amber-50 p-2.5 space-y-2">
+                    <p className="text-[11px] text-amber-900 flex items-start gap-1.5 leading-snug">
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                      <span>
+                        WhatsApp-Bestätigung hakt? Wir klären deinen Zugang in 15 Min telefonisch –
+                        kostenlos & unverbindlich.
+                      </span>
+                    </p>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="w-full h-8 text-xs bg-primary hover:bg-primary/90"
+                    >
+                      <Link
+                        to="/qualifizierung"
+                        onClick={() => onOpenChange(false)}
+                      >
+                        Kostenloses Klarheitsgespräch sichern
+                        <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Manuell als „hakt" markieren – wenn die Heuristik nicht greift */}
+                {!waStuck && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWaStuck(true);
+                      setFaqOpen("no-wa");
+                    }}
+                    className="text-[10px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  >
+                    WhatsApp öffnet nicht? Hilfe anzeigen
+                  </button>
+                )}
               </div>
             )}
 
             {/* FAQ */}
-            <Accordion type="single" collapsible className="rounded-lg border bg-muted/30 px-3">
+            <Accordion
+              type="single"
+              collapsible
+              value={faqOpen}
+              onValueChange={(v) => setFaqOpen(v || undefined)}
+              className="rounded-lg border bg-muted/30 px-3"
+            >
               <AccordionItem value="why" className="border-b last:border-b-0">
                 <AccordionTrigger className="text-xs font-semibold py-2.5 hover:no-underline">
                   Warum muss ich überhaupt bestätigen?
@@ -338,6 +405,27 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                   WhatsApp-Bestätigung funktioniert nicht?
                 </AccordionTrigger>
                 <AccordionContent className="text-xs text-muted-foreground pb-3 space-y-1.5">
+                  {waStuck && (
+                    <div className="rounded-md border border-primary/40 bg-primary/5 p-2.5 mb-2 space-y-1.5">
+                      <p className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                        <AlertCircle className="h-3.5 w-3.5 text-primary" />
+                        Schneller Weg: Lass uns das gemeinsam klären
+                      </p>
+                      <p className="text-[11px] leading-snug">
+                        Statt manuell zu fummeln – buche dir 15 Min, wir aktivieren deinen Zugang live im Call.
+                      </p>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="w-full h-8 text-[11px] bg-primary hover:bg-primary/90"
+                      >
+                        <Link to="/qualifizierung" onClick={() => onOpenChange(false)}>
+                          Kostenloses Klarheitsgespräch sichern
+                          <ArrowRight className="h-3 w-3 ml-1.5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                   <p>• Stelle sicher, dass WhatsApp auf deinem Gerät installiert ist.</p>
                   <p>• Wenn der Button keinen Chat öffnet, speichere unsere Nummer manuell: <strong>+49 175 1127114</strong> und sende uns die vorbereitete Bestätigungsnachricht.</p>
                   <p>• Die WhatsApp-Bestätigung ist optional – die E-Mail-Bestätigung reicht für deinen Zugang aus.</p>
