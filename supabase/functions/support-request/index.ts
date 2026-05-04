@@ -166,6 +166,21 @@ Deno.serve(async (req) => {
         );
         if (!tRes.ok) {
           console.error("Teams notify failed:", tRes.status, await tRes.text());
+        } else {
+          // Parent-Message-ID speichern → spätere Notifications werden als Reply
+          // im selben Thread („KI Power Team") gepostet (Ticket-Gruppierung).
+          try {
+            const tJson = await tRes.json();
+            const parentId = tJson?.id ? String(tJson.id) : null;
+            if (parentId && ticketId) {
+              await supabase
+                .from("support_tickets")
+                .update({ teams_thread_id: parentId })
+                .eq("id", ticketId);
+            }
+          } catch (parseErr) {
+            console.error("Teams parse parent id failed:", parseErr);
+          }
         }
       }
     } catch (teamsErr) {
