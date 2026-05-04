@@ -107,9 +107,10 @@ function findTicketShortId(opts: {
   subject?: string;
   text?: string;
   html?: string;
+  toPlusRe: RegExp;
 }): string | null {
   if (opts.to) {
-    const m = opts.to.match(TO_PLUS_RE);
+    const m = opts.to.match(opts.toPlusRe);
     if (m) return m[1].toLowerCase();
   }
   if (opts.subject) {
