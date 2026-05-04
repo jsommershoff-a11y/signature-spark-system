@@ -19,7 +19,7 @@ const Newsletter = () => {
         <link rel="canonical" href="https://www.dein-automatisierungsberater.de/newsletter" />
       </Helmet>
 
-      <main className="bg-gradient-to-b from-background to-muted/30">
+      <div className="bg-gradient-to-b from-background to-muted/30">
         <section className="max-w-4xl mx-auto px-4 sm:px-6 py-16 md:py-24">
           <div className="text-center space-y-4 mb-10">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1.5 rounded-full">
