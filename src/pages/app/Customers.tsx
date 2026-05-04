@@ -266,6 +266,14 @@ export default function Customers() {
                         <TableCell>
                           <Badge variant="outline" className={badge.className}>{badge.label}</Badge>
                         </TableCell>
+                        <TableCell>
+                          <NextStepCell
+                            info={resolveNextStep({
+                              stage: RECORD_STATUS_TO_STAGE[c.record_status],
+                              ownerName: c.assigned_staff_name,
+                            })}
+                          />
+                        </TableCell>
                         <TableCell>{c.email ?? '—'}</TableCell>
                         <TableCell>{c.phone ?? '—'}</TableCell>
                         <TableCell>{c.company ?? '—'}</TableCell>
