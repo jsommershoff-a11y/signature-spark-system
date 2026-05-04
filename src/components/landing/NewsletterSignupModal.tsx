@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock } from "lucide-react";
+import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock, Mail, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getNextLiveCalls, formatLiveCall } from "@/config/liveCalls";
@@ -102,19 +102,65 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         {done ? (
-          <div className="space-y-4 text-center py-4">
-            <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto" />
-            <DialogTitle>Fast geschafft – bitte E-Mail bestätigen ✉️</DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Wir haben dir gerade eine <strong>Bestätigungs-Mail</strong> geschickt.
-              Klicke auf den Link darin, um deinen <strong>30-Tage-Mitgliederbereich-Zugang</strong>{" "}
-              freizuschalten. Erst nach Bestätigung erhältst du den 1-Klick-Login und die
-              Live-Call-Termine.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Keine Mail erhalten? Schau in den Spam-Ordner oder versuch es in 2 Minuten erneut.
-            </p>
-            <Button onClick={() => onOpenChange(false)} className="w-full">Verstanden</Button>
+          <div className="space-y-4 py-2">
+            <div className="text-center space-y-3">
+              <div className="mx-auto h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              </div>
+              <DialogTitle className="text-xl">Eintragung erfolgreich! 🎉</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                Danke{form.name ? `, ${form.name.split(" ")[0]}` : ""} – wir haben deine Anmeldung erhalten.
+              </p>
+            </div>
+
+            {/* E-Mail-Bestätigung */}
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3.5 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Mail className="h-4 w-4 text-primary" />
+                Bestätigungs-Mail unterwegs
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Wir haben gerade eine Mail an{" "}
+                <strong className="text-foreground break-all">{form.email}</strong> geschickt.
+                Klick auf den Link darin, um deinen <strong>30-Tage-Zugang</strong> freizuschalten.
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Keine Mail? Bitte Spam-Ordner prüfen.
+              </p>
+            </div>
+
+            {/* WhatsApp-Bestätigung – nur wenn Nummer angegeben */}
+            {form.whatsapp.trim() && (
+              <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3.5 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <MessageCircle className="h-4 w-4 text-green-600" />
+                  WhatsApp-Bestätigung
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Bestätige deine Nummer in 1 Klick und erhalte Live-Call-Reminder direkt aufs Handy.
+                </p>
+                <Button
+                  asChild
+                  size="sm"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <a
+                    href={`https://wa.me/4915123456789?text=${encodeURIComponent(
+                      `Newsletter-Bestätigung für ${form.email} – bitte aktivieren.`,
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    WhatsApp-Bestätigung senden
+                  </a>
+                </Button>
+              </div>
+            )}
+
+            <Button onClick={() => onOpenChange(false)} variant="outline" className="w-full">
+              Verstanden
+            </Button>
           </div>
         ) : (
           <>
