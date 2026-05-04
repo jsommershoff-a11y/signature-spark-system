@@ -16,7 +16,15 @@ const Schema = z.object({
   optInLabel: z.string().max(300).optional().default(""),
   reasonLabel: z.string().max(300).optional().default(""),
   pageUrl: z.string().max(500).optional().default(""),
+  // Spam-Schutz (Honeypot + Min-Time-to-Submit). Beide optional, damit alte Clients weiter funktionieren.
+  website: z.string().max(200).optional().default(""),
+  formStartedAt: z.number().int().nonnegative().optional(),
 });
+
+const sha256Hex = async (input: string) => {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+};
 
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) =>
