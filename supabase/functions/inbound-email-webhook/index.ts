@@ -366,9 +366,13 @@ Deno.serve(async (req) => {
     }
 
     await Promise.all([
-      notifyTeams(notifyHtml, `Antwort ${ticketRef} – ${fromEmail || ""}`),
+      notifyTeams(notifyHtml, needsReview
+        ? `🟡 Needs Review ${ticketRef} – ${fromEmail || ""}`
+        : `Antwort ${ticketRef} – ${fromEmail || ""}`),
       ...Array.from(recipients).map((to) =>
-        notifyEmail(to, `[Support ${ticketRef}] Neue Antwort von ${fromEmail || "Kunde"}`, notifyHtml),
+        notifyEmail(to, needsReview
+          ? `[Support ${ticketRef}] 🟡 Needs Review – ${fromEmail || "Unbekannt"}`
+          : `[Support ${ticketRef}] Neue Antwort von ${fromEmail || "Kunde"}`, notifyHtml),
       ),
     ]);
 
