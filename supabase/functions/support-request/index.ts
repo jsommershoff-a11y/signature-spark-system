@@ -216,6 +216,13 @@ Deno.serve(async (req) => {
     }
 
     // 3) Bestätigungs-Mail an den Absender (best-effort, blockiert nicht)
+    // Threading: ticket+<shortid>@<INBOUND_REPLY_DOMAIN> als Reply-To, damit
+    //            das Inbound-Webhook Antworten dem Ticket zuordnen kann.
+    const INBOUND_REPLY_DOMAIN = Deno.env.get("INBOUND_REPLY_DOMAIN"); // z.B. "reply.krs-signature.de"
+    const shortIdLower = ticketId ? String(ticketId).slice(0, 8).toLowerCase() : null;
+    const replyToAddr = INBOUND_REPLY_DOMAIN && shortIdLower
+      ? `ticket+${shortIdLower}@${INBOUND_REPLY_DOMAIN}`
+      : "info@krs-signature.de";
     const confirmHtml = `
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
         <h2 style="color:#0F3E2E;margin:0 0 12px">Wir haben deine Anfrage erhalten ✅</h2>
