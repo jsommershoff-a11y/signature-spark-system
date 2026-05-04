@@ -405,6 +405,27 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                   WhatsApp-Bestätigung funktioniert nicht?
                 </AccordionTrigger>
                 <AccordionContent className="text-xs text-muted-foreground pb-3 space-y-1.5">
+                  {waStuck && (
+                    <div className="rounded-md border border-primary/40 bg-primary/5 p-2.5 mb-2 space-y-1.5">
+                      <p className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                        <AlertCircle className="h-3.5 w-3.5 text-primary" />
+                        Schneller Weg: Lass uns das gemeinsam klären
+                      </p>
+                      <p className="text-[11px] leading-snug">
+                        Statt manuell zu fummeln – buche dir 15 Min, wir aktivieren deinen Zugang live im Call.
+                      </p>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="w-full h-8 text-[11px] bg-primary hover:bg-primary/90"
+                      >
+                        <Link to="/qualifizierung" onClick={() => onOpenChange(false)}>
+                          Kostenloses Klarheitsgespräch sichern
+                          <ArrowRight className="h-3 w-3 ml-1.5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                   <p>• Stelle sicher, dass WhatsApp auf deinem Gerät installiert ist.</p>
                   <p>• Wenn der Button keinen Chat öffnet, speichere unsere Nummer manuell: <strong>+49 175 1127114</strong> und sende uns die vorbereitete Bestätigungsnachricht.</p>
                   <p>• Die WhatsApp-Bestätigung ist optional – die E-Mail-Bestätigung reicht für deinen Zugang aus.</p>
