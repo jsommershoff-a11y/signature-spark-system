@@ -4282,6 +4282,62 @@ export type Database = {
           },
         ]
       }
+      support_ticket_messages: {
+        Row: {
+          body_html: string | null
+          body_text: string | null
+          created_at: string
+          direction: string
+          from_email: string | null
+          from_name: string | null
+          id: string
+          in_reply_to: string | null
+          message_id: string | null
+          raw_payload: Json | null
+          subject: string | null
+          ticket_id: string
+          to_email: string | null
+        }
+        Insert: {
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string
+          direction: string
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          in_reply_to?: string | null
+          message_id?: string | null
+          raw_payload?: Json | null
+          subject?: string | null
+          ticket_id: string
+          to_email?: string | null
+        }
+        Update: {
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string
+          direction?: string
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          in_reply_to?: string | null
+          message_id?: string | null
+          raw_payload?: Json | null
+          subject?: string | null
+          ticket_id?: string
+          to_email?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           ai_summary: string | null
