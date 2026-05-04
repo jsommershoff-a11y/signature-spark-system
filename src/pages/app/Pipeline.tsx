@@ -7,6 +7,7 @@ import { StageTransitionDialog } from '@/components/crm/StageTransitionDialog';
 import { PipelineStage, CrmLead } from '@/types/crm';
 import { isStageDialogSuppressed, isSkipDialogSuppressed } from '@/lib/crm/stage-dialog-prefs';
 import { trackEvent } from '@/lib/analytics';
+import { useMandatorySkipStages } from '@/hooks/useAppSettings';
 
 export default function Pipeline() {
   const [selectedLead, setSelectedLead] = useState<CrmLead | null>(null);
@@ -19,6 +20,7 @@ export default function Pipeline() {
 
   const { pipelineByStage, loading, moveToStage } = usePipeline();
   const { updateLead } = useLeads();
+  const { stages: mandatorySkipStages } = useMandatorySkipStages();
 
   const handleItemClick = (item: PipelineItemWithLead) => {
     if (item.lead) {
@@ -80,10 +82,12 @@ export default function Pipeline() {
     const fi = fromStage ? order.indexOf(fromStage) : -1;
     const ti = order.indexOf(stage);
     const isForwardSkip = fi >= 0 && ti > fi + 1;
+    const isMandatory = mandatorySkipStages.includes(stage);
     if (
       isForwardSkip &&
       fromStage !== 'new_lead' &&
       stage !== 'lost' &&
+      !isMandatory &&
       isSkipDialogSuppressed(stage)
     ) {
       void trackEvent('skip_dialog_bypassed', {

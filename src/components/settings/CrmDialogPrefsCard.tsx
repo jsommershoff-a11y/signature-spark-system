@@ -14,10 +14,13 @@ import {
   clearSkipDialogSuppression,
   resetStageDialogSuppressions,
 } from '@/lib/crm/stage-dialog-prefs';
+import { useMandatorySkipStages } from '@/hooks/useAppSettings';
+import { ShieldAlert } from 'lucide-react';
 
 export default function CrmDialogPrefsCard() {
   const [stageSuppressed, setStageSuppressed] = useState<PipelineStage[]>([]);
   const [skipSuppressed, setSkipSuppressed] = useState<PipelineStage[]>([]);
+  const { stages: mandatoryStages } = useMandatorySkipStages();
 
   const refresh = useCallback(() => {
     setStageSuppressed(listSuppressedStageDialogs());
@@ -73,21 +76,33 @@ export default function CrmDialogPrefsCard() {
             <p className="text-xs text-muted-foreground">Keine Skip-Dialoge stillgestellt.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {skipSuppressed.map((stage) => (
-                <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1">
-                  {PIPELINE_STAGE_LABELS[stage]}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5"
-                    onClick={() => handleClearSkip(stage)}
-                    aria-label={`Skip-Dialog für ${PIPELINE_STAGE_LABELS[stage]} reaktivieren`}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              ))}
+              {skipSuppressed.map((stage) => {
+                const overridden = mandatoryStages.includes(stage);
+                return (
+                  <Badge key={stage} variant="outline" className="gap-1.5 pl-2 pr-1 py-1">
+                    {overridden && <ShieldAlert className="h-3 w-3 text-destructive" aria-label="Admin-Policy aktiv" />}
+                    <span className={overridden ? 'line-through text-muted-foreground' : ''}>
+                      {PIPELINE_STAGE_LABELS[stage]}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5"
+                      onClick={() => handleClearSkip(stage)}
+                      aria-label={`Skip-Dialog für ${PIPELINE_STAGE_LABELS[stage]} reaktivieren`}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                );
+              })}
             </div>
+          )}
+          {mandatoryStages.length > 0 && (
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1 pt-1">
+              <ShieldAlert className="h-3 w-3" />
+              Admin-Policy: Skip-Dialog ist für markierte Stages verpflichtend und überschreibt deine Stillstellung.
+            </p>
           )}
         </div>
 
