@@ -333,7 +333,7 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                   <p>4. Falls auch das nicht klappt: Schreib uns kurz an <a href="mailto:info@krs-signature.de" className="underline text-primary">info@krs-signature.de</a>.</p>
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="no-wa" className="border-b-0">
+              <AccordionItem value="no-wa" className="border-b last:border-b-0">
                 <AccordionTrigger className="text-xs font-semibold py-2.5 hover:no-underline">
                   WhatsApp-Bestätigung funktioniert nicht?
                 </AccordionTrigger>
@@ -341,6 +341,52 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                   <p>• Stelle sicher, dass WhatsApp auf deinem Gerät installiert ist.</p>
                   <p>• Wenn der Button keinen Chat öffnet, speichere unsere Nummer manuell: <strong>+49 175 1127114</strong> und sende uns die vorbereitete Bestätigungsnachricht.</p>
                   <p>• Die WhatsApp-Bestätigung ist optional – die E-Mail-Bestätigung reicht für deinen Zugang aus.</p>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="wa-deeplink" className="border-b-0">
+                <AccordionTrigger className="text-xs font-semibold py-2.5 hover:no-underline">
+                  WhatsApp-Link öffnet nicht – wie manuell?
+                </AccordionTrigger>
+                <AccordionContent className="text-xs text-muted-foreground pb-3 space-y-1.5">
+                  <p>Falls der Klick auf „Per WhatsApp bestätigen" nichts tut (z. B. Browser blockiert Deep-Links, WhatsApp Web nicht eingeloggt), hast du drei manuelle Wege:</p>
+                  <p><strong>1. Direkt-Link kopieren &amp; öffnen:</strong></p>
+                  <div className="flex items-center gap-1.5">
+                    <code className="flex-1 truncate rounded bg-background px-2 py-1 text-[10px] border">
+                      https://wa.me/491751127114
+                    </code>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      className="h-7 text-[10px] px-2"
+                      onClick={() => {
+                        navigator.clipboard.writeText("https://wa.me/491751127114");
+                        toast.success("Link kopiert – im Browser einfügen.");
+                      }}
+                    >
+                      Kopieren
+                    </Button>
+                  </div>
+                  <p><strong>2. Nummer manuell speichern</strong> und uns selbst anschreiben:</p>
+                  <div className="flex items-center gap-1.5">
+                    <code className="flex-1 rounded bg-background px-2 py-1 text-[10px] border">
+                      +49 175 1127114
+                    </code>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      className="h-7 text-[10px] px-2"
+                      onClick={() => {
+                        navigator.clipboard.writeText("+491751127114");
+                        toast.success("Nummer kopiert.");
+                      }}
+                    >
+                      Kopieren
+                    </Button>
+                  </div>
+                  <p><strong>3. Auf dem Smartphone:</strong> WhatsApp öffnen → „Neuer Chat" → Nummer eingeben → Nachricht „Newsletter-Bestätigung für {form.email}" senden.</p>
+                  <p className="text-[10px] italic">Tipp: Auf dem Desktop muss WhatsApp Web (web.whatsapp.com) einmal eingeloggt sein, damit der Deep-Link greift.</p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
