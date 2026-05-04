@@ -118,6 +118,7 @@ Deno.serve(async (req) => {
         source: "manual",
         sender_email: d.email,
         sender_name: d.name || null,
+        message_hash: messageHash,
       })
       .select("id")
       .single();
