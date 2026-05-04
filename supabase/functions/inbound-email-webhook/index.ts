@@ -396,16 +396,29 @@ Deno.serve(async (req) => {
       if (assignee?.email) recipients.add(assignee.email);
     }
 
-    await Promise.all([
-      notifyTeams(notifyHtml, needsReview
-        ? `🟡 Needs Review ${ticketRef} – ${fromEmail || ""}`
-        : `Antwort ${ticketRef} – ${fromEmail || ""}`),
+    const parentMsgId = ticketRow?.teams_thread_id || null;
+    const teamsSubject = needsReview
+      ? `🟡 Needs Review ${ticketRef} – ${fromEmail || ""}`
+      : `Antwort ${ticketRef} – ${fromEmail || ""}`;
+
+    const [postedId] = await Promise.all([
+      notifyTeams(notifyHtml, teamsSubject, parentMsgId),
       ...Array.from(recipients).map((to) =>
         notifyEmail(to, needsReview
           ? `[Support ${ticketRef}] 🟡 Needs Review – ${fromEmail || "Unbekannt"}`
           : `[Support ${ticketRef}] Neue Antwort von ${fromEmail || "Kunde"}`, notifyHtml),
       ),
     ]);
+
+    // Falls noch kein Thread existierte (z. B. Ticket aus Inbound erstellt) →
+    // Top-Level-Message-ID als Thread-Anker speichern, damit künftige
+    // Notifications darunter gruppiert werden.
+    if (!parentMsgId && postedId) {
+      await supabase
+        .from("support_tickets")
+        .update({ teams_thread_id: postedId })
+        .eq("id", ticketId);
+    }
 
     console.log("inbound-email: processed + notified", { ticketId, recipients: [...recipients] });
 
