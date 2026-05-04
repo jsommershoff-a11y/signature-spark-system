@@ -29,6 +29,16 @@ import { useSavedViews } from '@/hooks/useSavedViews';
 import { SavedViewsBar } from '@/components/crm/SavedViewsBar';
 import { ActivityFeed } from '@/components/activities/ActivityFeed';
 import { MEMBER_STATUS_LABELS, MEMBER_STATUS_COLORS, PRODUCT_LABELS } from '@/types/members';
+import { resolveNextStep } from '@/lib/next-step';
+import { NextStepCell } from '@/components/crm/NextStepCell';
+
+// Mapping record_status → Pipeline-Empfehlung
+const RECORD_STATUS_TO_STAGE: Record<string, string> = {
+  lead: 'new_lead',
+  contact: 'setter_call_done',
+  customer: 'won',
+  deleted: 'lost',
+};
 
 type CustomerViewFilter = { search: string; statusFilter: CustomerRecordStatus | 'all' };
 
