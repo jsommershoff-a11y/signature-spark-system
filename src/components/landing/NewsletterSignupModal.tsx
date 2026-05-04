@@ -429,7 +429,7 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                       <textarea
                         value={supportMsg}
                         onChange={(e) => setSupportMsg(e.target.value.slice(0, 2000))}
-                        placeholder="Was funktioniert nicht? (z. B. „Keine Mail erhalten, auch nicht im Spam")"
+                        placeholder='Was funktioniert nicht? (z. B. "Keine Mail erhalten, auch nicht im Spam")'
                         rows={3}
                         maxLength={2000}
                         className="w-full text-xs rounded-md border border-input bg-background px-2 py-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
