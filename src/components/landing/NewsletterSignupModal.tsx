@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock, Mail, MessageCircle, RefreshCw } from "lucide-react";
+import { Loader2, CheckCircle2, Calendar, Sparkles, Video, Clock, Mail, MessageCircle, RefreshCw, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getNextLiveCalls, formatLiveCall } from "@/config/liveCalls";
@@ -70,6 +71,7 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [form, setForm] = useState({ email: "", name: "", whatsapp: "", consent: false });
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resending, setResending] = useState(false);
+  const [supportStarted, setSupportStarted] = useState(false);
   const upcomingCalls = getNextLiveCalls(2);
 
   // Live-Validierung der WhatsApp-Nummer (nur wenn nicht leer)
@@ -364,13 +366,13 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                     Nichts klappt? Wir schalten dich manuell frei – meist binnen 1 Werktag.
                   </p>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button asChild size="sm" variant="outline" className="text-xs">
+                    <Button asChild size="sm" variant="outline" className="text-xs" onClick={() => setSupportStarted(true)}>
                       <a href={mailto}>
                         <Mail className="h-3.5 w-3.5 mr-1.5" />
                         Support-Mail
                       </a>
                     </Button>
-                    <Button asChild size="sm" variant="outline" className="text-xs">
+                    <Button asChild size="sm" variant="outline" className="text-xs" onClick={() => setSupportStarted(true)}>
                       <a
                         href={buildWhatsAppLink(
                           [
@@ -392,6 +394,21 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                       </a>
                     </Button>
                   </div>
+                  {supportStarted && (
+                    <div className="rounded-md bg-green-50 border border-green-300 p-2.5 space-y-2 mt-1">
+                      <p className="text-[11px] text-green-900 flex items-center gap-1.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                        Support-Anfrage gestartet. Wir melden uns in Kürze.
+                      </p>
+                      <Button asChild size="sm" className="w-full h-8 text-xs bg-green-600 hover:bg-green-700 text-white">
+                        <Link to="/auth" onClick={() => onOpenChange(false)}>
+                          Weiter zum Login / Aktivierung
+                          <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 </div>
               );
             })()}
