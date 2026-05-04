@@ -10,15 +10,48 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getNextLiveCalls, formatLiveCall } from "@/config/liveCalls";
 
+// Plausibilitäts- & Format-Check für internationale Telefonnummern (E.164-orientiert).
+// Erlaubt führendes "+", Ziffern, sowie typische Trennzeichen (Leerzeichen, "-", "/", "(", ")").
+// Nach Normalisierung müssen 8–15 Ziffern übrig bleiben (ITU-T E.164).
+const PHONE_ALLOWED_CHARS = /^[+0-9\s\-/().]+$/;
+const normalizePhone = (raw: string) => {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  const hasPlus = trimmed.startsWith("+");
+  const digits = trimmed.replace(/\D/g, "");
+  return hasPlus ? `+${digits}` : digits;
+};
+
+const whatsappSchema = z
+  .string()
+  .trim()
+  .max(40, "WhatsApp-Nummer ist zu lang.")
+  .refine((v) => v === "" || PHONE_ALLOWED_CHARS.test(v), {
+    message: "WhatsApp-Nummer enthält ungültige Zeichen.",
+  })
+  .refine(
+    (v) => {
+      if (v === "") return true;
+      const digits = v.replace(/\D/g, "");
+      return digits.length >= 8 && digits.length <= 15;
+    },
+    { message: "WhatsApp-Nummer muss 8–15 Ziffern enthalten (z. B. +49 170 1234567)." }
+  )
+  .refine(
+    (v) => {
+      if (v === "") return true;
+      // Empfehlung: internationales Format mit "+" oder mit "00" als Auslandspräfix.
+      return v.startsWith("+") || v.startsWith("00") || v.startsWith("0");
+    },
+    { message: "Bitte im internationalen Format eingeben (z. B. +49 …)." }
+  )
+  .optional()
+  .or(z.literal(""));
+
 const Schema = z.object({
   email: z.string().trim().email("Bitte gültige E-Mail eingeben.").max(320),
   name: z.string().trim().min(2, "Bitte Namen angeben.").max(200),
-  whatsapp: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .or(z.literal("")),
+  whatsapp: whatsappSchema,
   consent: z.literal(true, { errorMap: () => ({ message: "Bitte Einwilligung bestätigen." }) }),
 });
 
@@ -34,9 +67,18 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
   const [form, setForm] = useState({ email: "", name: "", whatsapp: "", consent: false });
   const upcomingCalls = getNextLiveCalls(2);
 
+  // Live-Validierung der WhatsApp-Nummer (nur wenn nicht leer)
+  const whatsappError = (() => {
+    if (!form.whatsapp.trim()) return null;
+    const res = whatsappSchema.safeParse(form.whatsapp);
+    return res.success ? null : res.error.issues[0]?.message ?? "Ungültige Nummer.";
+  })();
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = Schema.safeParse(form);
+    // Normalisierte Nummer für Validierung & Versand
+    const payload = { ...form, whatsapp: normalizePhone(form.whatsapp) };
+    const parsed = Schema.safeParse(payload);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Bitte Eingaben prüfen.");
       return;
@@ -151,13 +193,21 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 <Input
                   id="ns-whatsapp"
                   type="tel"
+                  inputMode="tel"
                   value={form.whatsapp}
                   onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+                  onBlur={(e) => setForm({ ...form, whatsapp: normalizePhone(e.target.value) })}
                   placeholder="+49 170 1234567"
                   autoComplete="tel"
+                  aria-invalid={!!whatsappError}
+                  aria-describedby="ns-whatsapp-help"
+                  className={whatsappError ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Empfohlen für Live-Call-Reminder direkt aufs Handy.
+                <p
+                  id="ns-whatsapp-help"
+                  className={`text-[11px] mt-1 ${whatsappError ? "text-destructive" : "text-muted-foreground"}`}
+                >
+                  {whatsappError ?? "Empfohlen für Live-Call-Reminder. Internationales Format, z. B. +49 170 1234567."}
                 </p>
               </div>
 
@@ -175,7 +225,7 @@ export const NewsletterSignupModal = ({ open, onOpenChange, source = "footer_mod
                 </span>
               </label>
 
-              <Button type="submit" disabled={loading} className="w-full">
+              <Button type="submit" disabled={loading || !!whatsappError} className="w-full">
                 {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Jetzt eintragen & 30 Tage freischalten
               </Button>
