@@ -409,7 +409,7 @@ export default function CustomerDetail() {
               )}
               <div className="mt-4 pt-3 border-t flex flex-wrap gap-2">
                 <Button asChild size="sm" variant="outline">
-                  <Link to="/app/inbox"><Mail className="h-3.5 w-3.5 mr-1.5" />Inbox öffnen</Link>
+                  <Link to={`/app/inbox?customer=${data.id}`}><Mail className="h-3.5 w-3.5 mr-1.5" />Inbox öffnen</Link>
                 </Button>
               </div>
             </SectionCard>
