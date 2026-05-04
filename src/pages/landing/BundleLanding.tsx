@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Package } from "lucide-react";
+import { ArrowRight, CheckCircle2, Package, Gift, Video, Calendar } from "lucide-react";
+import { NewsletterSignupModal } from "@/components/landing/NewsletterSignupModal";
+import { getNextLiveCalls, formatLiveCall } from "@/config/liveCalls";
 import { PublicLayout } from "@/components/landing/PublicLayout";
 import { SEOHead } from "@/components/landing/SEOHead";
 import { Button } from "@/components/ui/button";
