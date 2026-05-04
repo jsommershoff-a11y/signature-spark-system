@@ -11,12 +11,13 @@ import { toast } from "sonner";
 
 const Schema = z.object({
   email: z.string().trim().email("Bitte gültige E-Mail eingeben.").max(320),
-  name: z.string().trim().max(200).optional().or(z.literal("")),
+  name: z.string().trim().min(2, "Bitte Namen angeben.").max(200),
   whatsapp: z
     .string()
     .trim()
-    .min(7, "WhatsApp-Nummer ist Pflicht (für Live-Call-Reminder).")
-    .max(40),
+    .max(40)
+    .optional()
+    .or(z.literal("")),
   consent: z.literal(true, { errorMap: () => ({ message: "Bitte Einwilligung bestätigen." }) }),
 });
 
