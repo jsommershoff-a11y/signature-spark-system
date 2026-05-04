@@ -82,10 +82,12 @@ export default function Pipeline() {
     const fi = fromStage ? order.indexOf(fromStage) : -1;
     const ti = order.indexOf(stage);
     const isForwardSkip = fi >= 0 && ti > fi + 1;
+    const isMandatory = mandatorySkipStages.includes(stage);
     if (
       isForwardSkip &&
       fromStage !== 'new_lead' &&
       stage !== 'lost' &&
+      !isMandatory &&
       isSkipDialogSuppressed(stage)
     ) {
       void trackEvent('skip_dialog_bypassed', {
