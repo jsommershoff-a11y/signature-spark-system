@@ -152,6 +152,65 @@ const BundleLandingTemplate = ({ bundle }: BundleLandingTemplateProps) => {
         </div>
       </section>
 
+      {/* 1b. NEWSLETTER CTA – 1 Monat kostenloser Mitgliederbereich */}
+      <section className="bg-gradient-to-br from-[#FFF3EB] via-background to-[#FFF3EB] border-y border-primary/20 py-10 md:py-14">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="rounded-2xl bg-card border-2 border-primary/30 shadow-lg p-6 md:p-8 grid md:grid-cols-[1fr_auto] gap-6 items-center">
+            <div>
+              <Badge className="bg-primary/15 text-primary border-primary/30 mb-3 inline-flex items-center gap-1.5">
+                <Gift className="h-3.5 w-3.5" />
+                Gratis-Bonus für Newsletter-Leser
+              </Badge>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight mb-2">
+                1 Monat kostenlos im Mitgliederbereich
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-3">
+                Trag dich in unseren Newsletter ein und erhalte sofort{" "}
+                <strong className="text-foreground">30 Tage Vollzugriff</strong> auf den Mitgliederbereich –
+                inklusive aller Live-Calls, Prompt-Bibliothek und KI-Workflows.
+              </p>
+              {upcomingCalls.length > 0 && (
+                <div className="flex flex-wrap gap-2 text-xs items-center">
+                  <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary font-medium px-2.5 py-1 rounded-full">
+                    <Video className="h-3 w-3" />
+                    Nächste Live-Calls:
+                  </span>
+                  {upcomingCalls.map((c, i) => (
+                    <span key={i} className="inline-flex items-center gap-1.5 text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      {formatLiveCall(c.date)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary-deep shrink-0 h-auto py-3 px-5"
+              onClick={() => {
+                trackCtaClick({
+                  stage: "hero",
+                  cta: "newsletter_signup",
+                  label: "1 Monat kostenlos",
+                  destination: "newsletter_modal",
+                  context: bundle.slug,
+                });
+                setNewsletterOpen(true);
+              }}
+            >
+              <Gift className="mr-1.5 h-4 w-4" />
+              Jetzt 30 Tage gratis sichern
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <NewsletterSignupModal
+        open={newsletterOpen}
+        onOpenChange={setNewsletterOpen}
+        source={`bundle_${bundle.slug}`}
+      />
+
       {/* 2. PROBLEM */}
       <section className="bg-background py-14 md:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
