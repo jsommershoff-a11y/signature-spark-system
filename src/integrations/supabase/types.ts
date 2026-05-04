@@ -1054,6 +1054,92 @@ export type Database = {
         }
         Relationships: []
       }
+      deals: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_id: string | null
+          expected_close_date: string | null
+          id: string
+          lead_id: string | null
+          lost_reason: string | null
+          notes: string | null
+          owner_id: string | null
+          probability: number
+          stage: Database["public"]["Enums"]["deal_stage"]
+          stage_updated_at: string
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          customer_id?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          lost_reason?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          probability?: number
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          stage_updated_at?: string
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          customer_id?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          lost_reason?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          probability?: number
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          stage_updated_at?: string
+          title?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drive_sync_runs: {
         Row: {
           errors: Json
@@ -5054,6 +5140,7 @@ export type Database = {
         Returns: boolean
       }
       is_active_member: { Args: { _user_id: string }; Returns: boolean }
+      is_sales_staff: { Args: { _uid: string }; Returns: boolean }
       list_free_slots_public: {
         Args: { _from?: string; _profile_id: string; _to?: string }
         Returns: {
@@ -5226,6 +5313,13 @@ export type Database = {
         | "refunded"
         | "cancelled"
       course_price_tier: "freebie" | "low_budget" | "mid_range" | "high_class"
+      deal_stage:
+        | "new"
+        | "qualified"
+        | "proposal"
+        | "negotiation"
+        | "won"
+        | "lost"
       email_consent_status: "pending" | "confirmed" | "revoked"
       lead_discovered_by: "daily_ai" | "manual" | "inbound"
       lead_source_type:
@@ -5458,6 +5552,14 @@ export const Constants = {
       catalog_mode: ["one_time", "subscription"],
       commission_status: ["pending", "paid", "failed", "refunded", "cancelled"],
       course_price_tier: ["freebie", "low_budget", "mid_range", "high_class"],
+      deal_stage: [
+        "new",
+        "qualified",
+        "proposal",
+        "negotiation",
+        "won",
+        "lost",
+      ],
       email_consent_status: ["pending", "confirmed", "revoked"],
       lead_discovered_by: ["daily_ai", "manual", "inbound"],
       lead_source_type: [
