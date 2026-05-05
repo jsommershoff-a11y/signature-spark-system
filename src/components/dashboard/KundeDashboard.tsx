@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, GraduationCap, ArrowRight, Gift, Sparkles, Phone, PlayCircle } from 'lucide-react';
+import { FileText, GraduationCap, ArrowRight, Gift, Sparkles, Phone, PlayCircle, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMembershipAccess } from '@/hooks/useMembershipAccess';
 import { useLearningPaths } from '@/hooks/useLearningPaths';
@@ -39,45 +39,78 @@ export function KundeDashboard() {
   return (
     <div className="space-y-5 md:space-y-6">
       <TrialStatusWidget />
-      {/* Welcome / Progress Widget */}
-      <Card className="border-border/40 bg-gradient-to-br from-muted/20 via-background to-muted/10 shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
-        <CardContent className="flex flex-col sm:flex-row items-center gap-6 py-8 px-7">
-          <ProgressRing progress={overallProgress} size={90} strokeWidth={7} />
+
+      {/* Welcome / Progress Widget — Tannengrün Hero */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 md:p-8"
+        style={{
+          background: 'linear-gradient(135deg, #0F3E2E 0%, #1a5c42 60%, #0d3326 100%)',
+          boxShadow: '0 8px 32px rgba(15,62,46,0.30)',
+        }}
+      >
+        <div className="flex flex-col sm:flex-row items-center gap-6 relative z-10">
+          <ProgressRing
+            progress={overallProgress}
+            size={96}
+            strokeWidth={8}
+            className="[&_circle]:stroke-white/20 [&_circle:last-child]:stroke-[#F5712F] shrink-0"
+          />
           <div className="flex-1 text-center sm:text-left space-y-2">
-            <h2 className="font-bold text-xl">Dein Signature System – Schritt für Schritt aufbauen</h2>
+            <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
+              <Zap className="h-4 w-4" style={{ color: '#F5712F' }} />
+              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                Dein Lernfortschritt
+              </span>
+            </div>
+            <h2 className="font-bold text-xl text-white">Dein Signature System – Schritt für Schritt aufbauen</h2>
             {totalLessons > 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {completedLessons} von {totalLessons} Lektionen abgeschlossen
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">Starte jetzt mit deiner ersten Lektion.</p>
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>Starte jetzt mit deiner ersten Lektion.</p>
             )}
             {nextLesson && (
               <div className="flex items-center gap-2 mt-2">
-                <PlayCircle className="h-4 w-4 text-success shrink-0" />
-                <span className="text-sm font-medium truncate">Nächste Lektion: {nextLesson.title}</span>
+                <PlayCircle className="h-4 w-4 shrink-0" style={{ color: '#F5712F' }} />
+                <span className="text-sm font-medium truncate text-white">Nächste Lektion: {nextLesson.title}</span>
               </div>
             )}
           </div>
-          <Button asChild className="shrink-0 shadow-[0_0_16px_rgba(246,113,31,0.15)]">
+          <Button
+            asChild
+            className="shrink-0 text-white font-semibold px-5 py-2.5 rounded-xl transition-all hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #F5712F, #e85d1a)', boxShadow: '0 4px 16px rgba(245,113,47,0.4)' }}
+          >
             <Link to={nextLesson ? `/app/academy/course/${nextLesson.courseId}/lesson/${nextLesson.lessonId}` : '/app/academy'}>
               {nextLesson ? 'Weiter lernen →' : 'Starte hier →'}
             </Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Decorative blobs */}
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-10" style={{ backgroundColor: '#F5712F', filter: 'blur(40px)' }} />
+        <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full opacity-8" style={{ backgroundColor: '#F5712F', filter: 'blur(32px)' }} />
+      </div>
 
       {/* Freebie Banner */}
       {hasNoProduct && (
-        <Card className="border-border/40 bg-gradient-to-r from-muted/20 to-muted/30">
+        <Card
+          className="border-0"
+          style={{
+            background: 'linear-gradient(135deg, rgba(245,113,47,0.08) 0%, rgba(245,113,47,0.04) 100%)',
+            border: '1px solid rgba(245,113,47,0.2)',
+            boxShadow: '0 2px 12px rgba(245,113,47,0.08)',
+          }}
+        >
           <CardContent className="flex flex-col sm:flex-row items-center gap-5 py-6 px-5">
-            <div className="p-3 rounded-2xl bg-muted shrink-0">
-              <Gift className="h-8 w-8 text-foreground" />
+            <div className="p-3 rounded-2xl shrink-0" style={{ backgroundColor: 'rgba(245,113,47,0.12)' }}>
+              <Gift className="h-8 w-8" style={{ color: '#F5712F' }} />
             </div>
             <div className="flex-1 text-center sm:text-left">
               <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
                 <h3 className="font-bold text-base">Dein kostenloses KI-Starter-Paket</h3>
-                <Badge variant="secondary" className="gap-1 text-xs">
+                <Badge className="gap-1 text-xs text-white" style={{ backgroundColor: '#F5712F' }}>
                   <Sparkles className="h-3 w-3" />
                   Gratis
                 </Badge>
@@ -87,13 +120,13 @@ export function KundeDashboard() {
               </p>
             </div>
             <div className="flex gap-2 shrink-0">
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" asChild className="border-primary/30 hover:border-primary/60">
                 <Link to="/app/academy">
                   <GraduationCap className="h-4 w-4 mr-1" />
                   Prompts ansehen
                 </Link>
               </Button>
-              <Button size="sm" asChild>
+              <Button size="sm" asChild className="text-white" style={{ backgroundColor: '#F5712F' }}>
                 <Link to="/app/pricing">
                   <Phone className="h-4 w-4 mr-1" />
                   Analyse-Gespräch
@@ -104,36 +137,42 @@ export function KundeDashboard() {
         </Card>
       )}
 
-      {/* Quick Links */}
+      {/* Quick Links — farbige Icon-Boxen */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:-translate-y-px transition-all duration-300">
-          <CardContent className="flex items-center gap-4 py-5 px-5">
-            <div className="p-3 rounded-xl bg-muted flex-shrink-0">
-              <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm md:text-base">Mein System</h3>
-              <p className="text-xs md:text-sm text-muted-foreground">Lernpfade & Fortschritt</p>
-            </div>
-            <Button variant="ghost" size="icon" asChild className="flex-shrink-0">
-              <Link to="/app/academy"><ArrowRight className="h-4 w-4" /></Link>
-            </Button>
-          </CardContent>
-        </Card>
-        <Card className="hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:-translate-y-px transition-all duration-300">
-          <CardContent className="flex items-center gap-4 py-5 px-5">
-            <div className="p-3 rounded-xl bg-muted flex-shrink-0">
-              <FileText className="h-5 w-5 md:h-6 md:w-6 text-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm md:text-base">Dokumente</h3>
-              <p className="text-xs md:text-sm text-muted-foreground">Angebote und Verträge</p>
-            </div>
-            <Button variant="ghost" size="icon" asChild className="flex-shrink-0">
-              <Link to="/app/contracts"><ArrowRight className="h-4 w-4" /></Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <Link to="/app/academy">
+          <Card
+            className="group cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+            style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderTop: '3px solid #0F3E2E' }}
+          >
+            <CardContent className="flex items-center gap-4 py-5 px-5">
+              <div className="p-3 rounded-xl flex-shrink-0" style={{ backgroundColor: 'rgba(15,62,46,0.1)' }}>
+                <GraduationCap className="h-5 w-5 md:h-6 md:w-6" style={{ color: '#0F3E2E' }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm md:text-base group-hover:text-primary transition-colors">Mein System</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Lernpfade & Fortschritt</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to="/app/contracts">
+          <Card
+            className="group cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+            style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderTop: '3px solid #F5712F' }}
+          >
+            <CardContent className="flex items-center gap-4 py-5 px-5">
+              <div className="p-3 rounded-xl flex-shrink-0" style={{ backgroundColor: 'rgba(245,113,47,0.1)' }}>
+                <FileText className="h-5 w-5 md:h-6 md:w-6" style={{ color: '#F5712F' }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm md:text-base group-hover:text-primary transition-colors">Dokumente</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Angebote und Verträge</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* FAQ – Häufige Fragen & nächste Schritte */}

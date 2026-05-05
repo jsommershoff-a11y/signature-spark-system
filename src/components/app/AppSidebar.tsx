@@ -133,14 +133,14 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     const upgradeItem: NavItem = { label: 'Upgrade', href: '/app/upgrade', icon: Rocket };
 
     return (
-      <aside className="w-64 bg-background border-r border-border/40 h-full flex flex-col">
+      <aside className="w-64 h-full flex flex-col" style={{ backgroundColor: '#0F3E2E' }}>
         <nav className="flex-1 p-3 md:p-4 space-y-2 overflow-y-auto overscroll-contain">
-          <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 mb-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+          <div className="rounded-xl p-3 mb-2" style={{ backgroundColor: 'rgba(246,113,31,0.15)', border: '1px solid rgba(246,113,31,0.3)' }}>
+            <div className="flex items-center gap-2 text-xs font-semibold" style={{ color: '#F5712F' }}>
               <Lock className="h-3.5 w-3.5" />
               {trial.isExpired ? 'Trial abgelaufen' : 'Trial-Modus'}
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground leading-snug">
+            <p className="mt-1 text-[11px] leading-snug" style={{ color: 'rgba(255,255,255,0.55)' }}>
               {trial.isExpired
                 ? 'Bitte upgrade für Vollzugriff.'
                 : `Eingeschränkte Sicht${
@@ -157,12 +157,13 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
               onClick={onNavigate}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-2xl text-sm font-medium transition-all duration-200 touch-manipulation min-h-[44px] md:min-h-0',
+                  'flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-xl text-sm font-medium transition-all duration-200 touch-manipulation min-h-[44px] md:min-h-0',
                   isActive
-                    ? 'bg-primary/10 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.15)]'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground active:bg-muted/70'
+                    ? 'text-white shadow-sm'
+                    : 'hover:bg-white/10 active:bg-white/5'
                 )
               }
+              style={({ isActive }) => isActive ? { backgroundColor: '#F5712F' } : { color: 'rgba(255,255,255,0.75)' }}
             >
               <item.icon className="h-[18px] w-[18px] shrink-0" />
               <span className="truncate">{item.label}</span>
@@ -174,11 +175,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             onClick={onNavigate}
             className={({ isActive }) =>
               cn(
-                'mt-3 flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 min-h-[44px] md:min-h-0',
-                'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-sm hover:opacity-95',
-                isActive && 'ring-2 ring-primary/40'
+                'mt-3 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 min-h-[44px] md:min-h-0 text-white shadow-sm hover:opacity-95',
+                isActive && 'ring-2 ring-white/30'
               )
             }
+            style={{ background: 'linear-gradient(135deg, #F5712F, #e85d1a)' }}
           >
             <upgradeItem.icon className="h-[18px] w-[18px] shrink-0" />
             <span className="truncate">Upgrade</span>
@@ -209,12 +210,12 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     .filter(g => g.items.length > 0);
 
   return (
-    <aside className="w-64 bg-background border-r border-border/40 h-full flex flex-col">
+    <aside className="w-64 h-full flex flex-col border-r border-white/5" style={{ backgroundColor: '#0F3E2E' }}>
       <nav className="flex-1 p-3 md:p-4 space-y-5 overflow-y-auto overscroll-contain">
         {visibleGroups.map((group, gi) => (
           <div key={group.label ?? `group-${gi}`} className="space-y-0.5">
             {group.label && (
-              <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 {group.label}
               </div>
             )}
@@ -226,12 +227,16 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-2xl text-sm font-medium transition-all duration-200 touch-manipulation',
+                    'flex items-center gap-3 px-3 py-2.5 md:py-2 rounded-xl text-sm font-medium transition-all duration-200 touch-manipulation',
                     'min-h-[44px] md:min-h-0',
                     isActive
-                      ? 'bg-primary/10 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.15)]'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground active:bg-muted/70'
+                      ? 'text-white shadow-sm'
+                      : 'hover:bg-white/10 active:bg-white/5'
                   )
+                }
+                style={({ isActive }) => isActive
+                  ? { backgroundColor: '#F5712F', color: '#ffffff' }
+                  : { color: 'rgba(255,255,255,0.72)' }
                 }
               >
                 <item.icon className="h-[18px] w-[18px] shrink-0" />

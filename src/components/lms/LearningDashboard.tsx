@@ -5,7 +5,7 @@ import { ProgressRing } from './ProgressRing';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, BookOpen, Trophy, Flame, Target, Sparkles, ArrowRight } from 'lucide-react';
+import { Loader2, BookOpen, Trophy, Flame, Target, Sparkles, ArrowRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { LockedContent, TierProgressHint } from '@/components/app/LockedContent';
 import { TrialInlineNotice } from '@/components/app/TrialInlineNotice';
@@ -36,18 +36,38 @@ export function LearningDashboard() {
     <div className="space-y-8 max-w-6xl mx-auto">
       <TrialInlineNotice />
 
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-foreground/5 via-primary/5 to-primary/10 border border-border/50 p-6 md:p-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <ProgressRing progress={overallProgress} size={100} strokeWidth={8} />
+      {/* Hero Header — Tannengrün Gradient */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 md:p-8"
+        style={{
+          background: 'linear-gradient(135deg, #0F3E2E 0%, #1a5c42 60%, #0d3326 100%)',
+          boxShadow: '0 8px 32px rgba(15,62,46,0.35)',
+        }}
+      >
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 relative z-10">
+          {/* Progress Ring — white strokes on dark bg */}
+          <div className="shrink-0">
+            <ProgressRing
+              progress={overallProgress}
+              size={110}
+              strokeWidth={9}
+              className="[&_circle]:stroke-white/20 [&_circle:last-child]:stroke-[#F5712F]"
+            />
+          </div>
           <div className="flex-1">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="h-5 w-5" style={{ color: '#F5712F' }} />
+              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                KI-Automatisierungsberater
+              </span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
               KI-Academy
             </h1>
-            <p className="text-muted-foreground mt-1 text-base">
+            <p className="mt-1 text-base" style={{ color: 'rgba(255,255,255,0.65)' }}>
               Meistere KI-Tools und automatisiere dein Business – Schritt für Schritt.
             </p>
-            <div className="flex flex-wrap items-center gap-4 mt-4">
+            <div className="flex flex-wrap items-center gap-3 mt-4">
               <StatPill icon={BookOpen} label="Lektionen" value={`${completedLessons}/${totalLessons}`} />
               <StatPill icon={Trophy} label="Abgeschlossen" value={`${paths.filter(p => (p.progress_percent || 0) >= 100).length}/${paths.length} Pfade`} />
               {streak > 0 && <StatPill icon={Flame} label="Streak" value={`${streak} Tage`} />}
@@ -56,8 +76,9 @@ export function LearningDashboard() {
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-primary/5 blur-2xl" />
-        <div className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-primary/5 blur-xl" />
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-10" style={{ backgroundColor: '#F5712F', filter: 'blur(40px)' }} />
+        <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full opacity-10" style={{ backgroundColor: '#F5712F', filter: 'blur(32px)' }} />
+        <div className="absolute top-0 right-0 w-full h-full opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #ffffff 0%, transparent 50%)' }} />
       </div>
 
       {/* Tier Progress */}
@@ -66,13 +87,13 @@ export function LearningDashboard() {
       {/* Learning Paths Grid */}
       {paths.length > 0 && (
         <section>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Target className="h-5 w-5 text-primary" />
                 Lernpfade
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Wähle einen Lernpfad und arbeite dich durch die Levels
               </p>
             </div>
@@ -88,26 +109,40 @@ export function LearningDashboard() {
       {/* Standalone Courses */}
       {standaloneCourses.length > 0 && (
         <section>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-bold mb-5 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             Weitere Kurse
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             {standaloneCourses.map((course) => (
               <Link key={course.id} to={`/app/academy/course/${course.id}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full group">
-                  <CardContent className="p-4 space-y-3">
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">
-                      {course.name}
-                    </h3>
+                <Card
+                  className="cursor-pointer h-full group transition-all duration-300 hover:-translate-y-0.5"
+                  style={{
+                    borderTop: '3px solid #F5712F',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                  }}
+                >
+                  <CardContent className="p-5 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg shrink-0" style={{ backgroundColor: 'rgba(245,113,47,0.1)' }}>
+                        <BookOpen className="h-4 w-4" style={{ color: '#F5712F' }} />
+                      </div>
+                      <h3 className="font-semibold text-sm leading-snug group-hover:text-primary transition-colors">
+                        {course.name}
+                      </h3>
+                    </div>
                     {course.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <p className="text-xs text-muted-foreground line-clamp-2 pl-1">
                         {course.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <BookOpen className="h-4 w-4" />
-                      <span>{course.total_lessons || 0} Lektionen</span>
+                    <div className="flex items-center justify-between pt-1 border-t border-border/40">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <BookOpen className="h-3.5 w-3.5" />
+                        <span>{course.total_lessons || 0} Lektionen</span>
+                      </div>
+                      <ArrowRight className="h-3.5 w-3.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </CardContent>
                 </Card>
@@ -126,7 +161,7 @@ export function LearningDashboard() {
             </div>
             <h3 className="text-lg font-semibold">Deine KI-Academy wird vorbereitet</h3>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Neue Lernpfade und Kurse werden in Kürze freigeschaltet. 
+              Neue Lernpfade und Kurse werden in Kürze freigeschaltet.
               Hier lernst du alles über optimale KI-Nutzung für dein Business.
             </p>
           </CardContent>
@@ -146,10 +181,17 @@ function StatPill({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm border border-border/50 rounded-full px-3 py-1.5">
-      <Icon className="h-4 w-4 text-primary" />
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm font-semibold">{value}</span>
+    <div
+      className="flex items-center gap-2 rounded-full px-3 py-1.5"
+      style={{
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        border: '1px solid rgba(255,255,255,0.18)',
+        backdropFilter: 'blur(8px)',
+      }}
+    >
+      <Icon className="h-3.5 w-3.5" style={{ color: '#F5712F' }} />
+      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{label}</span>
+      <span className="text-sm font-semibold text-white">{value}</span>
     </div>
   );
 }
