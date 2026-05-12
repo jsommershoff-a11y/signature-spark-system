@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ResponsiveFormDialog } from '@/components/app/ResponsiveFormDialog';
 import {
   CrmTask,
+  TaskType,
   UpdateTaskInput,
   TASK_TYPE_LABELS,
 } from '@/types/crm';
@@ -31,7 +32,7 @@ import {
 const formSchema = z.object({
   title: z.string().min(1, 'Titel ist erforderlich'),
   description: z.string().optional(),
-  type: z.enum(['call', 'followup', 'review_offer', 'intervention']),
+  type: z.enum(Object.keys(TASK_TYPE_LABELS) as [TaskType, ...TaskType[]]),
   due_at: z.string().optional(),
 });
 
@@ -40,7 +41,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface EditTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: UpdateTaskInput) => Promise<void>;
+  onSubmit: (data: UpdateTaskInput) => Promise<CrmTask | null>;
   task: CrmTask | null;
 }
 
@@ -83,14 +84,16 @@ export function EditTaskDialog({
 
     setIsSubmitting(true);
     try {
-      await onSubmit({
+      const result = await onSubmit({
         id: task.id,
         title: values.title,
         description: values.description,
         type: values.type,
-        due_at: values.due_at ? new Date(values.due_at).toISOString() : undefined,
+        due_at: values.due_at ? new Date(values.due_at).toISOString() : null,
       });
-      onOpenChange(false);
+      if (result) {
+        onOpenChange(false);
+      }
     } finally {
       setIsSubmitting(false);
     }

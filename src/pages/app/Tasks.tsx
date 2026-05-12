@@ -39,7 +39,7 @@ export default function Tasks() {
   };
 
   const handleUpdateTask = async (data: UpdateTaskInput) => {
-    await updateTask(data);
+    return await updateTask(data);
   };
 
   const todayTasks = openTasks.filter(task => {

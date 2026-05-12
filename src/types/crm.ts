@@ -137,8 +137,9 @@ export interface CreateTaskInput {
   meta?: Record<string, unknown>;
 }
 
-export interface UpdateTaskInput extends Partial<Omit<CreateTaskInput, 'assigned_user_id'>> {
+export interface UpdateTaskInput extends Partial<Omit<CreateTaskInput, 'assigned_user_id' | 'due_at'>> {
   id: string;
+  due_at?: string | null;
 }
 
 // Filter types
