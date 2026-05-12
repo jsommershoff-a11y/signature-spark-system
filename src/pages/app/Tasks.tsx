@@ -5,19 +5,22 @@ import { Plus } from 'lucide-react';
 import { useTasks } from '@/hooks/useTasks';
 import { TaskList } from '@/components/crm/TaskList';
 import { CreateTaskDialog } from '@/components/crm/CreateTaskDialog';
-import { CrmTask, CreateTaskInput } from '@/types/crm';
+import { EditTaskDialog } from '@/components/crm/EditTaskDialog';
+import { CrmTask, CreateTaskInput, UpdateTaskInput } from '@/types/crm';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Tasks() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editTask, setEditTask] = useState<CrmTask | null>(null);
   const { profile } = useAuth();
-  
-  const { 
-    openTasks, 
+
+  const {
+    openTasks,
     doneTasks,
     blockedTasks,
-    loading, 
+    loading,
     createTask,
+    updateTask,
     completeTask,
     reopenTask,
     deleteTask,
@@ -28,11 +31,15 @@ export default function Tasks() {
   };
 
   const handleTaskClick = (task: CrmTask) => {
-    // TODO: Open task detail modal - placeholder for future implementation
+    setEditTask(task);
   };
 
   const handleEditTask = (task: CrmTask) => {
-    // TODO: Open edit modal - placeholder for future implementation
+    setEditTask(task);
+  };
+
+  const handleUpdateTask = async (data: UpdateTaskInput) => {
+    return await updateTask(data);
   };
 
   const todayTasks = openTasks.filter(task => {
@@ -137,6 +144,15 @@ export default function Tasks() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         onSubmit={handleCreateTask}
+      />
+
+      <EditTaskDialog
+        open={editTask !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditTask(null);
+        }}
+        onSubmit={handleUpdateTask}
+        task={editTask}
       />
     </div>
   );
