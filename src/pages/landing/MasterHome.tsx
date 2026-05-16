@@ -13,6 +13,7 @@ import { ResultsSection } from "@/components/landing/home/ResultsSection";
 import { ProcessStepsSection } from "@/components/landing/home/ProcessStepsSection";
 import { BranchenSection } from "@/components/landing/home/BranchenSection";
 import { CaseStudiesSection } from "@/components/landing/home/CaseStudiesSection";
+import { OfferSection } from "@/components/landing/home/OfferSection";
 import { FinalCtaSection } from "@/components/landing/home/FinalCtaSection";
 
 const faqItems = [
@@ -107,6 +108,8 @@ const MasterHome = () => {
         <ProcessStepsSection onCtaClick={handleCTAClick} />
         <BranchenSection />
         <CaseStudiesSection />
+
+        <OfferSection onCtaClick={handleCTAClick} />
 
         <FAQSection
           headline="Häufige Fragen – ehrlich beantwortet"
